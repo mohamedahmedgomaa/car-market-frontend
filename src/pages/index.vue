@@ -1,25 +1,37 @@
-<template>
-  <div>
-    <VCard
-      class="mb-6"
-      title="Kick start your project 🚀"
-    >
-      <VCardText>All the best for your new project.</VCardText>
-      <VCardText>
-        Please make sure to read our <a
-          href="https://demos.pixinvent.com/vuexy-vuejs-admin-template/documentation/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-decoration-none"
-        >
-          Template Documentation
-        </a> to understand where to go from here and how to use our template.
-      </VCardText>
-    </VCard>
+<script setup>
+import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
+import HeroSection from '@/views/front-pages/landing-page/hero-section.vue'
 
-    <VCard title="Want to integrate JWT? 🔒">
-      <VCardText>We carefully crafted JWT flow so you can implement JWT with ease and with minimum efforts.</VCardText>
-      <VCardText>Please read our  JWT Documentation to get more out of JWT authentication.</VCardText>
-    </VCard>
-  </div>
+definePage({ meta: { layout: 'front', public: true } })
+</script>
+
+<template>
+  <HeroSection title="Hero Section"/>
+  <VContainer class="hero__container">
+  <!-- أحدث -->
+  <CarsSection
+    title="Latest Cars"
+    subtitle="Browse our newest listings"
+    :limit="20"
+    :params="{ sort: '-created_at' }"
+    :viewAllTo="{ path: '/user/cars', query: { sort: '-created_at' } }"
+  />
+  <!-- الأغلى -->
+  <CarsSection
+    title="Top Priced Cars"
+    subtitle="The most expensive listings"
+    :limit="20"
+    :params="{ sort: '-price' }"
+    :viewAllTo="{ path: '/user/cars', query: { sort: '-price' } }"
+  />
+
+  <!-- الأكثر تفضيلاً -->
+  <CarsSection
+    title="Most Favorites"
+    subtitle="Loved by our users"
+    :limit="20"
+    :params="{ sort: '-favorites_count' }"
+    :viewAllTo="{ path: '/user/cars', query: { sort: '-favorites_count' } }"
+  />
+  </VContainer>
 </template>

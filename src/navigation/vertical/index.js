@@ -17,7 +17,7 @@ export default function useVerticalNav() {
   const updateMenu = (path) => {
     if (path.startsWith('/admin')) menu.value = cleanMenu(adminMenu)
     else if (path.startsWith('/seller')) menu.value = cleanMenu(sellerMenu)
-    else menu.value = cleanMenu(userMenu)
+    else menu.value = []
   }
 
   watch(

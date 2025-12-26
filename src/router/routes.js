@@ -1,23 +1,15 @@
 export default [
-  // ✅ USER (ديزاين مختلف)
+  // ✅ USER (Front)
   {
     path: '/',
     component: () => import('@/layouts/FrontLayout.vue'),
     children: [
-      {
-        path: '',
-        name: 'user-home',
-        component: () => import('@/pages/second-page.vue'), // اعمل الصفحة دي
-      },
-      {
-        path: 'login',
-        name: 'user-login',
-        component: () => import('@/pages/login.vue'),
-      },
+      { path: '', name: 'user-home', component: () => import('@/pages/index.vue') },
+      { path: 'login', name: 'user-login', component: () => import('@/pages/login.vue') },
     ],
   },
 
-  // ✅ ADMIN (نفس الداشبورد الحالي)
+  // ✅ ADMIN (Dashboard)
   {
     path: '/admin',
     component: () => import('@/layouts/default.vue'),
@@ -27,7 +19,7 @@ export default [
     ],
   },
 
-  // ✅ SELLER (نفس الداشبورد الحالي)
+  // ✅ SELLER (Dashboard)
   {
     path: '/seller',
     component: () => import('@/layouts/default.vue'),
