@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 
 definePage({
@@ -11,6 +11,8 @@ definePage({
 })
 
 const route = useRoute()
+const router = useRouter()
+
 const carId = computed(() => route.params.id)
 
 const loading = ref(false)
@@ -56,7 +58,79 @@ const selectedImage = ref(null)
 const activeImage = computed(() => selectedImage.value || mainImage.value)
 const selectImage = (url) => { selectedImage.value = url }
 
-// ✅ Fetch by id (works on same component reuse)
+// -------------------------
+// ✅ Favorites (Details page)
+// -------------------------
+const getAuth = () => {
+  const token = localStorage.getItem('user_token')
+  let userId = null
+  try {
+    const u = JSON.parse(localStorage.getItem('user_data') || 'null')
+    userId = u?.id ? Number(u.id) : null
+  } catch {}
+  return { token, userId }
+}
+
+const isFav = computed(() => !!car.value?.is_favorited)
+
+const ensureFavFields = (c) => {
+  if (!c) return c
+
+  const { token, userId } = getAuth()
+  const isAuthed = !!token
+
+  const favArr = Array.isArray(c.favorites) ? c.favorites : []
+
+  const favorites_count =
+    (c.favorites_count !== undefined && c.favorites_count !== null)
+      ? Number(c.favorites_count)
+      : favArr.length
+
+  let is_favorited = false
+  if (!isAuthed) {
+    is_favorited = false
+  } else if (c.is_favorited !== undefined && c.is_favorited !== null) {
+    is_favorited = !!c.is_favorited
+  } else if (userId && favArr.length) {
+    is_favorited = favArr.some(f => {
+      const id =
+        Number(f?.id) ||
+        Number(f?.user_id) ||
+        Number(f?.pivot?.user_id)
+      return id === userId
+    })
+  }
+
+  return { ...c, favorites_count, is_favorited }
+}
+
+const toggleFavorite = async () => {
+  const { token } = getAuth()
+  if (!token) return router.push('/login')
+  if (!car.value?.id) return
+
+  try {
+    const res = await carsUserApi.toggleFavorite(car.value.id)
+    const payload = res?.data?.data ?? res?.data ?? {}
+
+    const newFav = !!payload.is_favorited
+    car.value.is_favorited = newFav
+
+    // count (prefer backend count)
+    if (payload.favorites_count !== undefined && payload.favorites_count !== null) {
+      car.value.favorites_count = Number(payload.favorites_count)
+    } else {
+      const current = Number(car.value.favorites_count ?? 0)
+      car.value.favorites_count = newFav ? current + 1 : Math.max(0, current - 1)
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+// -------------------------
+// ✅ Fetch by id
+// -------------------------
 const fetchCar = async () => {
   loading.value = true
   error.value = ''
@@ -71,7 +145,7 @@ const fetchCar = async () => {
       return
     }
 
-    car.value = data
+    car.value = ensureFavFields(data)
   } catch (e) {
     console.error(e)
     car.value = null
@@ -108,7 +182,6 @@ const whatsappLink = computed(() => {
 
 onMounted(fetchCar)
 
-// ✅ أهم حل للمشكلة: لو الـ id اتغير، هات بيانات جديدة + reset الصور + scroll top
 watch(
   () => route.params.id,
   async () => {
@@ -130,6 +203,17 @@ watch(
       <div class="gallery">
         <div class="hero-img">
           <img :src="activeImage" :alt="t(car.title) || `Car #${car.id}`">
+
+          <!-- ✅ Favorite floating button on main image -->
+          <button
+            class="fav-float"
+            type="button"
+            :aria-label="isFav ? 'Remove from favorites' : 'Add to favorites'"
+            @click.prevent.stop="toggleFavorite"
+          >
+            <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="20" />
+            <span class="fav-count">{{ car.favorites_count ?? 0 }}</span>
+          </button>
         </div>
 
         <div v-if="images.length" class="thumbs">
@@ -148,7 +232,20 @@ watch(
       <!-- RIGHT: Info -->
       <div class="info">
         <div class="top">
-          <h1 class="title">{{ t(car.title) || `Car #${car.id}` }}</h1>
+          <div class="title-row">
+            <h1 class="title">{{ t(car.title) || `Car #${car.id}` }}</h1>
+
+            <!-- ✅ Favorite button beside title (optional but nice) -->
+            <button
+              class="fav-inline"
+              type="button"
+              :aria-label="isFav ? 'Remove from favorites' : 'Add to favorites'"
+              @click.prevent.stop="toggleFavorite"
+            >
+              <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="20" />
+              <span class="fav-count">{{ car.favorites_count ?? 0 }}</span>
+            </button>
+          </div>
 
           <div class="price">
             {{ formatPrice(car.price) }}
@@ -231,12 +328,45 @@ watch(
   overflow: hidden;
   background: rgba(0,0,0,.12);
   aspect-ratio: 16/10;
+  position: relative;
 }
 .gallery .hero-img img{
   width:100%;
   height:100%;
   object-fit: cover;
   display:block;
+}
+
+/* ✅ Favorite buttons */
+.fav-float{
+  position:absolute;
+  top:12px;
+  right:12px;
+  border:0;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(6px);
+  color:#fff;
+}
+.fav-inline{
+  border:0;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.08);
+}
+.fav-count{
+  font-weight: 800;
+  font-size: 13px;
+  opacity: .95;
 }
 
 .thumbs{
@@ -265,6 +395,13 @@ watch(
 }
 
 .info .title{ margin:0; font-size:28px; }
+.title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
 .price{ font-size:22px; font-weight:800; margin-top: 8px; }
 .meta{ opacity:.75; margin-top: 6px; display:flex; flex-wrap:wrap; gap:8px; }
 

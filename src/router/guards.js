@@ -1,45 +1,51 @@
-import { useAdminAuth } from '@/stores/adminAuth'
-import { useSellerAuth } from '@/stores/sellerAuth'
-import { useUserAuth } from '@/stores/userAuth'
-
 export function setupGuards(router) {
   router.beforeEach((to, from, next) => {
-    const adminToken = localStorage.getItem('admin_token')
+    const adminToken  = localStorage.getItem('admin_token')
     const sellerToken = localStorage.getItem('seller_token')
-    const userToken  = localStorage.getItem('user_token')
+    const userToken   = localStorage.getItem('user_token')
 
-    // Admin
+    // ✅ لو الصفحة public خلّص
+    if (to.meta?.public) return next()
+
+    // -------------------
+    // Admin area
+    // -------------------
     if (to.path.startsWith('/admin')) {
-      if (adminToken && to.path === '/admin/login') return next('/admin/dashboard')
-      if (!adminToken && to.path !== '/admin/login') return next('/admin/login')
-      return next()
+      if (to.meta?.unauthenticatedOnly) {
+        return adminToken ? next('/admin/dashboard') : next()
+      }
+
+      // protected
+      return adminToken ? next() : next('/admin/login')
     }
 
-    // Seller
+    // -------------------
+    // Seller area
+    // -------------------
     if (to.path.startsWith('/seller')) {
-      if (sellerToken && to.path === '/seller/login') return next('/seller/dashboard')
-      if (!sellerToken && to.path !== '/seller/login') return next('/seller/login')
-      return next()
+      if (to.meta?.unauthenticatedOnly) {
+        return sellerToken ? next('/seller/dashboard') : next()
+      }
+
+      // protected
+      return sellerToken ? next() : next('/seller/login')
     }
 
-    // ✅ Public user pages (guest allowed)
-    const publicUserPaths = [
-      '/user/cars',
-      /^\/user\/cars\/\d+$/,        // details by numeric id
-    ]
+    // -------------------
+    // User area ( /user/* ) + legacy /login
+    // -------------------
+    const isUserArea = to.path.startsWith('/user') || to.path === '/login'
+    if (isUserArea) {
+      if (to.meta?.unauthenticatedOnly) {
+        // لو لوجين بالفعل امنعه من login/register
+        return userToken ? next('/') : next()
+      }
 
-    const isPublicUser =
-      publicUserPaths.some(p => (p instanceof RegExp ? p.test(to.path) : to.path === p || to.path.startsWith(p + '/')))
-
-    // User
-    if (to.path.startsWith('/user') || to.path === '/login' || to.path === '/user/login') {
-      if (isPublicUser) return next()
-
-      if (userToken && (to.path === '/login' || to.path === '/user/login')) return next('/')
-
-      if (!userToken && (to.path !== '/login' && to.path !== '/user/login')) return next('/login')
+      // protected
+      return userToken ? next() : next('/login')
     }
 
+    // باقي الموقع (مثلاً الصفحة الرئيسية)
     next()
   })
 }

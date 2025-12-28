@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import carsUserApi from '@/api/user/carUserApi.js'
 import { useRouter } from 'vue-router'
 
@@ -9,23 +9,23 @@ const props = defineProps({
   title: { type: String, default: 'Cars' },
   subtitle: { type: String, default: '' },
   limit: { type: Number, default: 20 },
-
   params: { type: Object, default: () => ({}) },
   viewAllTo: { type: [String, Object], default: '/user/cars' },
   approvedOnly: { type: Boolean, default: true },
-
-  // ✅ for embedding inside another layout (Profile page)
   embedded: { type: Boolean, default: false },
+
+  // ✅ Controlled mode (Search page passes these)
+  cars: { type: Array, default: null }, // null => uncontrolled, array => controlled
+  loading: { type: Boolean, default: null },
+  error: { type: String, default: null },
+  showViewAll: { type: Boolean, default: true },
 })
 
-const loading = ref(false)
-const error = ref('')
-const cars = ref([])
+const localLoading = ref(false)
+const localError = ref('')
+const localCars = ref([])
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
-const favIds = ref(new Set())
-const isFav = (car) => !!car?.is_favorited
 
 const t = (val) => {
   if (!val) return ''
@@ -54,8 +54,20 @@ const normalizeCars = (payload) => {
   return []
 }
 
-const toggleFavorite = async (car) => {
+const getAuth = () => {
   const token = localStorage.getItem('user_token')
+  let userId = null
+  try {
+    const u = JSON.parse(localStorage.getItem('user_data') || 'null')
+    userId = u?.id ? Number(u.id) : null
+  } catch {}
+  return { token, userId }
+}
+
+const isFav = (car) => !!car?.is_favorited
+
+const toggleFavorite = async (car) => {
+  const { token } = getAuth()
   if (!token) return router.push('/login')
 
   try {
@@ -65,24 +77,31 @@ const toggleFavorite = async (car) => {
     const newFav = !!payload.is_favorited
     car.is_favorited = newFav
 
-    // ✅ count (prefer backend count if exists)
     if (payload.favorites_count !== undefined && payload.favorites_count !== null) {
       car.favorites_count = Number(payload.favorites_count)
     } else {
       const current = Number(car.favorites_count ?? 0)
       car.favorites_count = newFav ? current + 1 : Math.max(0, current - 1)
     }
-
-    if (newFav) favIds.value.add(car.id)
-    else favIds.value.delete(car.id)
   } catch (e) {
     console.error(e)
   }
 }
 
+// ✅ Controlled/uncontrolled display
+const displayCars = computed(() => (props.cars !== null ? props.cars : localCars.value))
+const displayLoading = computed(() => (props.loading !== null ? props.loading : localLoading.value))
+const displayError = computed(() => (props.error !== null ? props.error : localError.value))
+
 const fetchCars = async () => {
-  loading.value = true
-  error.value = ''
+  // ✅ if controlled, DO NOT fetch
+  if (props.cars !== null) return
+
+  localLoading.value = true
+  localError.value = ''
+
+  const { token, userId } = getAuth()
+  const isAuthed = !!token
 
   try {
     const res = await carsUserApi.getAll({
@@ -94,7 +113,6 @@ const fetchCars = async () => {
     const all = normalizeCars(res.data)
     const list = props.approvedOnly ? all.filter(c => c.status === 'approved') : all
 
-    // ✅ normalize favorites from LIST api
     const normalized = list.map(c => {
       const favArr = Array.isArray(c.favorites) ? c.favorites : []
 
@@ -103,29 +121,50 @@ const fetchCars = async () => {
           ? Number(c.favorites_count)
           : favArr.length
 
-      const is_favorited =
-        (c.is_favorited !== undefined && c.is_favorited !== null)
-          ? !!c.is_favorited
-          : favArr.length > 0
+      let is_favorited = false
+      if (!isAuthed) {
+        is_favorited = false
+      } else if (c.is_favorited !== undefined && c.is_favorited !== null) {
+        is_favorited = !!c.is_favorited
+      } else if (userId && favArr.length) {
+        is_favorited = favArr.some(f => {
+          const id =
+            Number(f?.id) ||
+            Number(f?.user_id) ||
+            Number(f?.pivot?.user_id)
+          return id === userId
+        })
+      }
 
       return { ...c, favorites_count, is_favorited }
     })
 
-    cars.value = normalized
-    favIds.value = new Set(normalized.filter(x => x.is_favorited).map(x => x.id))
+    localCars.value = normalized
   } catch (e) {
     console.error(e)
-    error.value = 'Failed to load cars'
-    cars.value = []
-    favIds.value = new Set()
+    localError.value = 'Failed to load cars'
+    localCars.value = []
   } finally {
-    loading.value = false
+    localLoading.value = false
   }
 }
 
 onMounted(fetchCars)
-watch(() => props.params, fetchCars, { deep: true })
-watch(() => props.limit, fetchCars)
+
+// uncontrolled only watches
+watch(
+  () => props.params,
+  () => fetchCars(),
+  { deep: true }
+)
+watch(
+  () => props.limit,
+  () => fetchCars()
+)
+watch(
+  () => props.approvedOnly,
+  () => fetchCars()
+)
 </script>
 
 <template>
@@ -133,22 +172,26 @@ watch(() => props.limit, fetchCars)
     <component :is="embedded ? 'div' : 'VContainer'" class="cars-section__container">
       <div class="cars-section__header">
         <div>
-          <h2 class="cars-section__title">{{ title }}</h2>
+          <h2 v-if="title" class="cars-section__title">{{ title }}</h2>
           <p class="cars-section__subtitle" v-if="subtitle">{{ subtitle }}</p>
         </div>
 
-        <RouterLink class="cars-section__link" :to="viewAllTo">
+        <RouterLink
+          v-if="showViewAll"
+          class="cars-section__link"
+          :to="viewAllTo"
+        >
           View all
         </RouterLink>
       </div>
 
-      <div v-if="loading" class="cars-section__state">Loading cars...</div>
-      <div v-else-if="error" class="cars-section__state error">{{ error }}</div>
-      <div v-else-if="cars.length === 0" class="cars-section__state">No cars found.</div>
+      <div v-if="displayLoading" class="cars-section__state">Loading cars...</div>
+      <div v-else-if="displayError" class="cars-section__state error">{{ displayError }}</div>
+      <div v-else-if="displayCars.length === 0" class="cars-section__state">No cars found.</div>
 
       <div v-else class="cars-grid">
         <RouterLink
-          v-for="car in cars"
+          v-for="car in displayCars"
           :key="car.id"
           class="car-card"
           :to="`/user/cars/${car.id}`"
@@ -198,17 +241,13 @@ watch(() => props.limit, fetchCars)
 .cars-section__state { padding:18px 0; opacity:.8; }
 .cars-section__state.error { opacity:1; }
 
-/* ✅ default (Home): 4 columns */
-.cars-grid {
-  display:grid;
-  gap:16px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
+/* default: 4 columns */
+.cars-grid { display:grid; gap:16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width:1200px){ .cars-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); } }
 @media (max-width:900px){ .cars-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
 @media (max-width:560px){ .cars-grid{ grid-template-columns:1fr; } }
 
-/* ✅ embedded (Profile داخل كارد): 3 columns */
+/* embedded: 3 columns */
 .cars-section--embedded .cars-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width:1200px){ .cars-section--embedded .cars-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
 @media (max-width:600px){ .cars-section--embedded .cars-grid{ grid-template-columns:1fr; } }

@@ -3,6 +3,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 
+import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
+
 // ⚠️ عدّل المسارات حسب APIs الموجودة عندك
 import countryUserApi from '@/api/user/countryUserApi.js'
 import cityUserApi from '@/api/user/cityUserApi.js'
@@ -20,26 +22,10 @@ const router = useRouter()
 // -------------------------
 // Helpers
 // -------------------------
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
 const t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
-}
-
-const getMainImage = (car) => {
-  const imgs = Array.isArray(car?.images) ? car.images : []
-  const main = imgs.find(i => Number(i.is_main) === 1) || imgs[0]
-  if (!main?.path) return 'https://via.placeholder.com/640x420?text=Car'
-  const cleanPath = String(main.path).replaceAll('\\', '/')
-  return `${API_BASE}/storage/${cleanPath}`
-}
-
-const formatPrice = (price) => {
-  const n = Number(price)
-  if (Number.isNaN(n)) return price ?? '—'
-  return n.toLocaleString()
 }
 
 const firstQueryVal = (v) => Array.isArray(v) ? v[0] : v
@@ -81,7 +67,7 @@ const cars = ref([])
 
 const page = ref(Number(firstQueryVal(route.query.page) || 1))
 const perPage = ref(Number(firstQueryVal(route.query.per_page) || 12))
-const sort = ref(String(firstQueryVal(route.query.sort) || '')) // ✅ مهم للـ hero
+const sort = ref(String(firstQueryVal(route.query.sort) || ''))
 const total = ref(0)
 
 // ✅ global search
@@ -122,7 +108,7 @@ const draft = ref({
 })
 
 // -------------------------
-// ✅ Sort options (UI)
+// Sort options
 // -------------------------
 const sortOptions = [
   { title: 'Default', value: '' },
@@ -204,62 +190,59 @@ const loadModels = async () => {
 }
 
 // -------------------------
-// Favorites (from LIST API)
+// ✅ Favorites normalize (FIXED like CarsSection)
 // -------------------------
-const favIds = ref(new Set())
-
-const isFav = (car) => {
-  if (car?.is_favorited !== undefined) return !!car.is_favorited
-  return favIds.value.has(car.id)
+const getAuth = () => {
+  const token = localStorage.getItem('user_token')
+  let userId = null
+  try {
+    const u = JSON.parse(localStorage.getItem('user_data') || 'null')
+    userId = u?.id ? Number(u.id) : null
+  } catch {}
+  return { token, userId }
 }
 
 const normalizeFavFields = (car) => {
+  const { token, userId } = getAuth()
+  const isAuthed = !!token
+
   const favArr = Array.isArray(car?.favorites) ? car.favorites : []
+
   const favorites_count =
     (car?.favorites_count !== undefined && car?.favorites_count !== null)
       ? Number(car.favorites_count)
       : favArr.length
 
-  const is_favorited =
-    (car?.is_favorited !== undefined && car?.is_favorited !== null)
-      ? !!car.is_favorited
-      : favArr.length > 0
+  let is_favorited = false
+
+  if (!isAuthed) {
+    is_favorited = false
+  } else if (car?.is_favorited !== undefined && car?.is_favorited !== null) {
+    is_favorited = !!car.is_favorited
+  } else if (userId && favArr.length) {
+    is_favorited = favArr.some(f => {
+      const id =
+        Number(f?.id) ||
+        Number(f?.user_id) ||
+        Number(f?.pivot?.user_id)
+      return id === userId
+    })
+  }
 
   return { ...car, favorites_count, is_favorited }
-}
-
-const toggleFavorite = async (car) => {
-  const token = localStorage.getItem('user_token')
-  if (!token) return router.push('/login')
-
-  try {
-    const res = await carsUserApi.toggleFavorite(car.id)
-    const payload = res?.data?.data ?? res?.data ?? {}
-
-    const newFav = !!payload.is_favorited
-    car.is_favorited = newFav
-
-    if (payload.favorites_count !== undefined && payload.favorites_count !== null) {
-      car.favorites_count = Number(payload.favorites_count)
-    } else {
-      const current = Number(car.favorites_count ?? 0)
-      car.favorites_count = newFav ? current + 1 : Math.max(0, current - 1)
-    }
-
-    if (newFav) favIds.value.add(car.id)
-    else favIds.value.delete(car.id)
-  } catch (e) {
-    console.error(e)
-  }
 }
 
 // -------------------------
 // Fetch cars
 // -------------------------
-const normalizeCars = (resData) => {
-  // ✅ response عندك: { status, data: [...], meta: {...} }
-  const items = Array.isArray(resData?.data) ? resData.data : []
-  const tt = Number(resData?.meta?.total ?? items.length)
+const normalizeCars = (payload) => {
+  const items =
+    (payload?.data && Array.isArray(payload.data)) ? payload.data :
+      (payload?.data?.data && Array.isArray(payload.data.data)) ? payload.data.data :
+        (Array.isArray(payload)) ? payload :
+          []
+
+  const tt = Number(payload?.meta?.total ?? payload?.data?.meta?.total ?? items.length)
   return { items, total: tt }
 }
 
@@ -303,18 +286,15 @@ const fetchCars = async () => {
     const res = await carsUserApi.getAll(buildParams())
     const { items, total: tt } = normalizeCars(res.data)
 
+    // لو الـ API بيرجع approved بس، ممكن تشيل الفلتر ده
     const approved = items.filter(c => c.status === 'approved')
-    const normalized = approved.map(normalizeFavFields)
-
-    cars.value = normalized
+    cars.value = approved.map(normalizeFavFields)
     total.value = tt
-    favIds.value = new Set(normalized.filter(x => x.is_favorited).map(x => x.id))
   } catch (e) {
     console.error(e)
     error.value = 'Failed to load cars'
     cars.value = []
     total.value = 0
-    favIds.value = new Set()
   } finally {
     loading.value = false
   }
@@ -420,7 +400,7 @@ watch(
     perPage.value = Number(firstQueryVal(newQ.per_page) || 12)
 
     q.value = String(firstQueryVal(newQ['filter[global]']) || '')
-    sort.value = String(firstQueryVal(newQ.sort) || '') // ✅ المهم للـ hero
+    sort.value = String(firstQueryVal(newQ.sort) || '')
 
     countryId.value = newQ['filter[country_id]'] ? Number(firstQueryVal(newQ['filter[country_id]'])) : null
     cityId.value = newQ['filter[city_id]'] ? Number(firstQueryVal(newQ['filter[city_id]'])) : null
@@ -443,7 +423,6 @@ watch(
       ? String(firstQueryVal(newQ['filter[feature_ids]'])).split(',').map(n => Number(n)).filter(Boolean)
       : []
 
-    // sync draft form
     draft.value = {
       q: q.value,
       yearFrom: yearFrom.value,
@@ -482,7 +461,6 @@ watch(brandId, async () => {
   debouncedSync()
 })
 
-// ✅ أضفت sort هنا + perPage
 watch(
   [cityId, modelId, transmission, fuelType, drivetrain, condition, featureIds, perPage, sort],
   () => debouncedSync(),
@@ -522,7 +500,6 @@ onMounted(async () => {
           <VCard class="pa-4" rounded="lg">
             <div class="text-subtitle-1 font-weight-bold mb-3">Filters</div>
 
-            <!-- ✅ Sort UI -->
             <VSelect
               v-model="sort"
               :items="sortOptions"
@@ -535,9 +512,7 @@ onMounted(async () => {
               class="mb-4"
             />
 
-            <!-- =========================
-                 Section 1: Manual Apply
-                 ========================= -->
+            <!-- Manual Apply -->
             <div class="filter-section">
               <div class="filter-section__title">
                 Manual Filters (Apply Button)
@@ -636,9 +611,7 @@ onMounted(async () => {
 
             <VDivider class="my-5" />
 
-            <!-- =========================
-                 Section 2: Auto Apply
-                 ========================= -->
+            <!-- Auto Apply -->
             <div class="filter-section">
               <div class="filter-section__title">
                 Auto Filters (Instant)
@@ -805,66 +778,16 @@ onMounted(async () => {
               </div>
             </div>
 
-            <div v-if="loading" class="py-6 text-center" style="opacity: .8">
-              Loading cars...
-            </div>
-
-            <div v-else-if="error" class="py-6 text-center">
-              {{ error }}
-            </div>
-
-            <div v-else-if="cars.length === 0" class="py-6 text-center" style="opacity: .8">
-              No approved cars found.
-            </div>
-
-            <VRow v-else>
-              <VCol
-                v-for="car in cars"
-                :key="car.id"
-                cols="12"
-                sm="6"
-                lg="4"
-              >
-                <RouterLink class="car-card" :to="`/user/cars/${car.id}`">
-                  <div class="car-img">
-                    <img
-                      :src="getMainImage(car)"
-                      :alt="t(car.title) || `Car #${car.id}`"
-                      loading="lazy"
-                    >
-
-                    <!-- ✅ Favorite button -->
-                    <button
-                      class="fav-btn"
-                      type="button"
-                      :aria-label="isFav(car) ? 'Remove from favorites' : 'Add to favorites'"
-                      @click.prevent.stop="toggleFavorite(car)"
-                    >
-                      <VIcon :icon="isFav(car) ? 'tabler-heart-filled' : 'tabler-heart'" size="20" />
-                    </button>
-                  </div>
-
-                  <div class="car-body">
-                    <div class="car-title">
-                      {{ t(car.title) || `Car #${car.id}` }}
-                    </div>
-
-                    <div class="car-meta">
-                      <span>{{ t(car.brand?.name) }}</span>
-                      <span v-if="t(car.model?.name)">• {{ t(car.model?.name) }}</span>
-                      <span v-if="car.year">• {{ car.year }}</span>
-                    </div>
-
-                    <div class="car-footer">
-                      <div class="car-price">{{ formatPrice(car.price) }}</div>
-
-                      <!-- ✅ بدل approved -->
-                      <div class="car-badge">❤️ {{ car.favorites_count ?? 0 }}</div>
-                    </div>
-                  </div>
-                </RouterLink>
-              </VCol>
-            </VRow>
+            <!-- ✅ reuse CarsSection UI -->
+            <CarsSection
+              embedded
+              :showViewAll="false"
+              title=""
+              subtitle=""
+              :cars="cars"
+              :loading="loading"
+              :error="error"
+            />
 
             <div class="d-flex justify-center mt-6" v-if="total > perPage">
               <VPagination
@@ -894,56 +817,5 @@ onMounted(async () => {
   font-size: 13px;
   opacity: .85;
   margin-bottom: 12px;
-}
-
-.car-card{
-  display:block;
-  text-decoration:none;
-  border-radius:14px;
-  overflow:hidden;
-  background: rgba(255,255,255,.04);
-  transition: transform .15s ease;
-}
-.car-card:hover{ transform: translateY(-2px); }
-
-.car-img{
-  aspect-ratio: 16 / 10;
-  background: rgba(0,0,0,.12);
-  position: relative;
-}
-.car-img img{
-  width:100%;
-  height:100%;
-  object-fit: cover;
-  display:block;
-}
-
-.car-body{ padding: 12px; }
-.car-title{ font-weight: 800; line-height: 1.2; margin-bottom: 6px; }
-.car-meta{ opacity:.75; font-size: 13px; margin-bottom: 10px; }
-.car-footer{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.car-price{ font-weight: 900; }
-.car-badge{
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.08);
-}
-
-.fav-btn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  border:0;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: rgba(0,0,0,.40);
-  backdrop-filter: blur(6px);
-  color:#fff;
 }
 </style>

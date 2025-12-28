@@ -4,6 +4,9 @@ export default {
   login(payload) {
     return api.post('/user/auth/login', payload)
   },
+  register(payload) {
+    return api.post('/user/auth/register', payload)
+  },
   logout() {
     return api.post('/user/auth/logout')
   },

@@ -146,7 +146,7 @@ const handleLogin = async () => {
 
               <VCol cols="12" class="text-body-1 text-center">
                 <span>New seller?</span>
-                <a class="text-primary ms-1" href="javascript:void(0)">Create a seller account</a>
+                <RouterLink class="text-primary ms-1" to="/seller/register">Create a seller account</RouterLink>
               </VCol>
 
               <VCol cols="12" class="d-flex align-center">
