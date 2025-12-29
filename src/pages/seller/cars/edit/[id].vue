@@ -34,6 +34,7 @@ const form = ref({
   year: '',
   mileage: '',
 
+  type: '',
   transmission: '',
   fuel_type: '',
   drivetrain: '',
@@ -219,6 +220,7 @@ const loadCar = async () => {
   form.value.price = car.price ?? ''
   form.value.year = car.year ?? ''
   form.value.mileage = car.mileage ?? ''
+  form.value.type = car.type ?? ''
   form.value.transmission = car.transmission ?? ''
   form.value.fuel_type = car.fuel_type ?? ''
   form.value.drivetrain = car.drivetrain ?? ''
@@ -349,6 +351,10 @@ const handleSubmit = async () => {
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Basic Information</h3>
 
           <VRow dense>
+            <VCol cols="12" md="12">
+              <VSelect v-model="form.type" :items="['car','motorcycle']" label="Type" :error-messages="fieldError('type')"  />
+            </VCol>
+
             <VCol cols="12">
               <VSelect
                 v-model="form.seller_id"

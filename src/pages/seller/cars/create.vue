@@ -29,6 +29,7 @@ const form = ref({
   year: '',
   mileage: '',
 
+  type: '',
   transmission: '',
   fuel_type: '',
   drivetrain: '',
@@ -164,6 +165,10 @@ const handleSubmit = async () => {
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Basic Information</h3>
 
           <VRow dense>
+            <VCol cols="12" md="12">
+              <VSelect v-model="form.type" :items="['car','motorcycle']" label="Type" />
+            </VCol>
+
             <VCol cols="12" md="6">
               <VSelect
                 v-model="form.brand_id"

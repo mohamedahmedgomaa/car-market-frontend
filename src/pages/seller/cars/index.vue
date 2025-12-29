@@ -173,6 +173,7 @@ const getMainImageUrl = (car) => {
       <tr>
         <th style="width: 70px;">ID</th>
         <th style="width: 70px;">Image</th>
+        <th>Type</th>
         <th>Title</th>
         <th>Car</th>
         <th>Price</th>
@@ -193,6 +194,9 @@ const getMainImageUrl = (car) => {
             <VImg :src="getMainImageUrl(car)" cover />
           </VAvatar>
         </td>
+
+        <!-- Type -->
+        <td>{{ car.type || '-' }}</td>
 
         <!-- ✅ Title -->
         <td>

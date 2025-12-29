@@ -59,6 +59,31 @@ const toNumOrNull = (v) => {
 }
 
 // -------------------------
+// ✅ Between helpers (filter[xxx_between]=from.to)  <-- IMPORTANT
+// -------------------------
+const parseBetweenFromQuery = (qObj, key) => {
+  const v = firstQueryVal(qObj?.[`filter[${key}]`])
+  if (!v) return { from: null, to: null }
+
+  // ✅ separator is dot now
+  const [a, b] = String(v).split('.')
+  const from = (a !== undefined && a !== '') ? Number(a) : null
+  const to   = (b !== undefined && b !== '') ? Number(b) : null
+
+  return {
+    from: Number.isNaN(from) ? null : from,
+    to: Number.isNaN(to) ? null : to,
+  }
+}
+
+const putBetween = (obj, key, from, to) => {
+  const a = (from ?? '') === '' ? '' : from
+  const b = (to ?? '') === '' ? '' : to
+  // ✅ separator is dot now
+  if (a !== '' || b !== '') obj[`filter[${key}]`] = `${a}.${b}`
+}
+
+// -------------------------
 // State
 // -------------------------
 const loading = ref(false)
@@ -79,16 +104,21 @@ const cityId = ref(qGetNum('city_id'))
 const brandId = ref(qGetNum('brand_id'))
 const modelId = ref(qGetNum('model_id'))
 
-// ranges
-const yearFrom = ref(qGetNum('year_from'))
-const yearTo = ref(qGetNum('year_to'))
-const priceFrom = ref(qGetNum('price_from'))
-const priceTo = ref(qGetNum('price_to'))
-const mileageFrom = ref(qGetNum('mileage_from'))
-const mileageTo = ref(qGetNum('mileage_to'))
+// ✅ ranges (from filter[xxx_between])
+const y0 = parseBetweenFromQuery(route.query, 'year_between')
+const p0 = parseBetweenFromQuery(route.query, 'price_between')
+const m0 = parseBetweenFromQuery(route.query, 'mileage_between')
+
+const yearFrom = ref(y0.from)
+const yearTo = ref(y0.to)
+const priceFrom = ref(p0.from)
+const priceTo = ref(p0.to)
+const mileageFrom = ref(m0.from)
+const mileageTo = ref(m0.to)
 
 // enums
 const transmission = ref(qGetEnum('transmission'))
+const type = ref(qGetEnum('type'))
 const fuelType = ref(qGetEnum('fuel_type'))
 const drivetrain = ref(qGetEnum('drivetrain'))
 const condition = ref(qGetEnum('condition'))
@@ -131,6 +161,11 @@ const features = ref([])
 const transmissionOptions = [
   { title: 'Automatic', value: 'automatic' },
   { title: 'Manual', value: 'manual' },
+]
+
+const typeOptions = [
+  { title: 'Car', value: 'car' },
+  { title: 'Motorcycle', value: 'motorcycle' },
 ]
 
 const fuelOptions = [
@@ -261,14 +296,13 @@ const buildParams = () => {
   if (brandId.value) params['filter[brand_id]'] = brandId.value
   if (modelId.value) params['filter[model_id]'] = modelId.value
 
-  if (yearFrom.value) params['filter[year_from]'] = yearFrom.value
-  if (yearTo.value) params['filter[year_to]'] = yearTo.value
-  if (priceFrom.value) params['filter[price_from]'] = priceFrom.value
-  if (priceTo.value) params['filter[price_to]'] = priceTo.value
-  if (mileageFrom.value) params['filter[mileage_from]'] = mileageFrom.value
-  if (mileageTo.value) params['filter[mileage_to]'] = mileageTo.value
+  // ✅ ranges -> scopes (dot separator)
+  putBetween(params, 'year_between', yearFrom.value, yearTo.value)
+  putBetween(params, 'price_between', priceFrom.value, priceTo.value)
+  putBetween(params, 'mileage_between', mileageFrom.value, mileageTo.value)
 
   if (transmission.value) params['filter[transmission]'] = transmission.value
+  if (type.value) params['filter[type]'] = type.value
   if (fuelType.value) params['filter[fuel_type]'] = fuelType.value
   if (drivetrain.value) params['filter[drivetrain]'] = drivetrain.value
   if (condition.value) params['filter[condition]'] = condition.value
@@ -286,9 +320,8 @@ const fetchCars = async () => {
     const res = await carsUserApi.getAll(buildParams())
     const { items, total: tt } = normalizeCars(res.data)
 
-    // لو الـ API بيرجع approved بس، ممكن تشيل الفلتر ده
-    const approved = items.filter(c => c.status === 'approved')
-    cars.value = approved.map(normalizeFavFields)
+    // ✅ الباك إند أصلاً بيرجع approved بسبب filter[status]، فمش محتاج فلترة تاني
+    cars.value = items.map(normalizeFavFields)
     total.value = tt
   } catch (e) {
     console.error(e)
@@ -317,14 +350,13 @@ const syncQuery = () => {
   if (brandId.value) query['filter[brand_id]'] = String(brandId.value)
   if (modelId.value) query['filter[model_id]'] = String(modelId.value)
 
-  if (yearFrom.value) query['filter[year_from]'] = String(yearFrom.value)
-  if (yearTo.value) query['filter[year_to]'] = String(yearTo.value)
-  if (priceFrom.value) query['filter[price_from]'] = String(priceFrom.value)
-  if (priceTo.value) query['filter[price_to]'] = String(priceTo.value)
-  if (mileageFrom.value) query['filter[mileage_from]'] = String(mileageFrom.value)
-  if (mileageTo.value) query['filter[mileage_to]'] = String(mileageTo.value)
+  // ✅ ranges -> scopes (dot separator)
+  putBetween(query, 'year_between', yearFrom.value, yearTo.value)
+  putBetween(query, 'price_between', priceFrom.value, priceTo.value)
+  putBetween(query, 'mileage_between', mileageFrom.value, mileageTo.value)
 
   if (transmission.value) query['filter[transmission]'] = transmission.value
+  if (type.value) query['filter[type]'] = type.value
   if (fuelType.value) query['filter[fuel_type]'] = fuelType.value
   if (drivetrain.value) query['filter[drivetrain]'] = drivetrain.value
   if (condition.value) query['filter[condition]'] = condition.value
@@ -373,6 +405,7 @@ const resetFilters = () => {
   mileageFrom.value = null
   mileageTo.value = null
   transmission.value = null
+  type.value = null
   fuelType.value = null
   drivetrain.value = null
   condition.value = null
@@ -407,14 +440,21 @@ watch(
     brandId.value = newQ['filter[brand_id]'] ? Number(firstQueryVal(newQ['filter[brand_id]'])) : null
     modelId.value = newQ['filter[model_id]'] ? Number(firstQueryVal(newQ['filter[model_id]'])) : null
 
-    yearFrom.value = newQ['filter[year_from]'] ? Number(firstQueryVal(newQ['filter[year_from]'])) : null
-    yearTo.value = newQ['filter[year_to]'] ? Number(firstQueryVal(newQ['filter[year_to]'])) : null
-    priceFrom.value = newQ['filter[price_from]'] ? Number(firstQueryVal(newQ['filter[price_from]'])) : null
-    priceTo.value = newQ['filter[price_to]'] ? Number(firstQueryVal(newQ['filter[price_to]'])) : null
-    mileageFrom.value = newQ['filter[mileage_from]'] ? Number(firstQueryVal(newQ['filter[mileage_from]'])) : null
-    mileageTo.value = newQ['filter[mileage_to]'] ? Number(firstQueryVal(newQ['filter[mileage_to]'])) : null
+    // ✅ ranges from between scopes (dot separator)
+    const yy = parseBetweenFromQuery(newQ, 'year_between')
+    yearFrom.value = yy.from
+    yearTo.value = yy.to
+
+    const pp = parseBetweenFromQuery(newQ, 'price_between')
+    priceFrom.value = pp.from
+    priceTo.value = pp.to
+
+    const mm = parseBetweenFromQuery(newQ, 'mileage_between')
+    mileageFrom.value = mm.from
+    mileageTo.value = mm.to
 
     transmission.value = newQ['filter[transmission]'] ? String(firstQueryVal(newQ['filter[transmission]'])) : null
+    type.value = newQ['filter[type]'] ? String(firstQueryVal(newQ['filter[type]'])) : null
     fuelType.value = newQ['filter[fuel_type]'] ? String(firstQueryVal(newQ['filter[fuel_type]'])) : null
     drivetrain.value = newQ['filter[drivetrain]'] ? String(firstQueryVal(newQ['filter[drivetrain]'])) : null
     condition.value = newQ['filter[condition]'] ? String(firstQueryVal(newQ['filter[condition]'])) : null
@@ -462,7 +502,7 @@ watch(brandId, async () => {
 })
 
 watch(
-  [cityId, modelId, transmission, fuelType, drivetrain, condition, featureIds, perPage, sort],
+  [cityId, modelId, transmission, type, fuelType, drivetrain, condition, featureIds, perPage, sort],
   () => debouncedSync(),
   { deep: true }
 )
@@ -616,6 +656,17 @@ onMounted(async () => {
               <div class="filter-section__title">
                 Auto Filters (Instant)
               </div>
+
+              <VSelect
+                v-model="type"
+                :items="typeOptions"
+                label="Type"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="mb-3"
+                clearable
+              />
 
               <VSelect
                 v-model="countryId"
