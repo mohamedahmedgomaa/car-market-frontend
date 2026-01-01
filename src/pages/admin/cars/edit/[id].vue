@@ -14,7 +14,7 @@ const router = useRouter()
 const route = useRoute()
 const carId = route.params.id
 
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_BASE_URL
 
 /* ================= State ================= */
 const form = ref({

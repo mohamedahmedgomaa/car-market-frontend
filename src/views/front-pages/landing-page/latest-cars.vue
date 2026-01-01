@@ -11,7 +11,7 @@ const error = ref('')
 const cars = ref([])
 
 // ✅ base url للصور
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_BASE_URL
 
 // ✅ ترجمة object {ar,en} أو string
 const t = (val) => {

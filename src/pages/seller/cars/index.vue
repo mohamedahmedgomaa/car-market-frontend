@@ -5,8 +5,7 @@ import carSellerApi from '../../../api/seller/carSellerApi.js'
 
 const router = useRouter()
 
-// ✅ غيّره حسب الـ env بتاعك
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_BASE_URL
 
 const lists = ref([])
 const loading = ref(false)

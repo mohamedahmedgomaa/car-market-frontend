@@ -25,7 +25,7 @@ const localLoading = ref(false)
 const localError = ref('')
 const localCars = ref([])
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_BASE_URL
 
 const t = (val) => {
   if (!val) return ''
