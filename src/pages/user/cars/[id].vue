@@ -180,6 +180,21 @@ const whatsappLink = computed(() => {
   return `https://wa.me/${phone.replace('+', '')}?text=${encodeURIComponent(msg)}`
 })
 
+/* =========================
+   ✅ Seller profile link
+========================= */
+const sellerId = computed(() => car.value?.seller?.id ?? car.value?.seller_id ?? null)
+
+const sellerLink = computed(() => {
+  if (!sellerId.value) return null
+  return `/user/sellers/${sellerId.value}`
+})
+
+const goSeller = () => {
+  if (!sellerId.value) return
+  router.push(sellerLink.value)
+}
+
 onMounted(fetchCar)
 
 watch(
@@ -269,11 +284,28 @@ watch(
 
         <div class="specs">
           <div class="spec"><span>Mileage</span><b>{{ car.mileage ?? '—' }}</b></div>
+
           <div class="spec">
             <span>Color</span>
             <b><span class="color" :style="{ background: car.color || '#ccc' }" /></b>
           </div>
-          <div class="spec"><span>Seller</span><b>{{ car.seller?.store_name ? t(car.seller.store_name) : (car.seller?.name || '—') }}</b></div>
+
+          <!-- ✅ Seller clickable -->
+          <div class="spec">
+            <span>Seller</span>
+
+            <b
+              v-if="sellerLink"
+              class="seller-click"
+              @click="goSeller"
+              title="View seller profile"
+            >
+              {{ car.seller?.store_name ? t(car.seller.store_name) : (car.seller?.name || '—') }}
+              <VIcon icon="tabler-external-link" size="16" class="ms-1" />
+            </b>
+
+            <b v-else>—</b>
+          </div>
         </div>
 
         <div class="desc" v-if="t(car.description)">
@@ -291,6 +323,15 @@ watch(
         </div>
 
         <div class="actions">
+          <!-- ✅ Seller profile button -->
+          <RouterLink
+            v-if="sellerLink"
+            class="profile-btn"
+            :to="sellerLink"
+          >
+            View Seller Profile
+          </RouterLink>
+
           <a
             v-if="whatsappLink"
             class="wa-btn"
@@ -438,6 +479,20 @@ watch(
   border: 1px solid rgba(255,255,255,.25);
 }
 
+/* ✅ Seller link style */
+.seller-click{
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  opacity: .95;
+}
+.seller-click:hover{
+  opacity: 1;
+}
+
 .desc, .features{ margin-top: 18px; }
 .desc h3, .features h3{ margin: 0 0 8px; }
 .desc p{ margin:0; opacity:.85; line-height: 1.7; }
@@ -456,6 +511,8 @@ watch(
   gap:12px;
   flex-wrap: wrap;
 }
+
+/* existing wa btn */
 .wa-btn{
   display:inline-flex;
   align-items:center;
@@ -467,4 +524,17 @@ watch(
   background: rgba(255,255,255,.08);
 }
 .wa-btn:hover{ transform: translateY(-1px); }
+
+/* ✅ seller profile btn */
+.profile-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px 16px;
+  border-radius: 14px;
+  text-decoration:none;
+  font-weight:700;
+  background: rgba(255,255,255,.06);
+}
+.profile-btn:hover{ transform: translateY(-1px); }
 </style>
