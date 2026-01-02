@@ -236,7 +236,7 @@ const loadCar = async () => {
   // Existing images
   existingImages.value = (car.images || []).map(img => ({
     id: img.id,
-    url: `${BASE_URL}/storage/${img.path}`,
+    url: `${img.path}`,
     is_main: img.is_main === 1 || img.is_main === true,
   }))
 

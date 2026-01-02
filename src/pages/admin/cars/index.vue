@@ -133,11 +133,11 @@ const getMainImageUrl = (car) => {
 
   // لو بيرجع images array
   const main = car.images?.find(i => i.is_main === 1 || i.is_main === true)
-  if (main?.path) return `${BASE_URL}/storage/${main.path}`
+  if (main?.path) return `${main.path}`
 
   // fallback: أول صورة
   const first = car.images?.[0]
-  if (first?.path) return `${BASE_URL}/storage/${first.path}`
+  if (first?.path) return `${first.path}`
 
   return ''
 }

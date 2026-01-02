@@ -30,7 +30,7 @@ const t = (val) => {
 const buildImg = (path) => {
   if (!path) return 'https://via.placeholder.com/960x640?text=Car'
   const cleanPath = String(path).replaceAll('\\', '/')
-  return `${API_BASE}/storage/${cleanPath}`
+  return `${cleanPath}`
 }
 
 const images = computed(() => {

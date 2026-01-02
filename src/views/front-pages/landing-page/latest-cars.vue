@@ -29,8 +29,7 @@ const getMainImage = (car) => {
 
   const cleanPath = String(main.path).replaceAll('\\', '/')
 
-  // أغلب Laravel storage: /storage/...
-  return `${API_BASE}/storage/${cleanPath}`
+  return `${cleanPath}`
 }
 
 // ✅ response عندك: { status: 200, data: [...] }

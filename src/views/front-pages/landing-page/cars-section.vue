@@ -38,7 +38,7 @@ const getMainImage = (car) => {
   const main = imgs.find(i => Number(i.is_main) === 1) || imgs[0]
   if (!main?.path) return 'https://via.placeholder.com/640x420?text=Car'
   const cleanPath = String(main.path).replaceAll('\\', '/')
-  return `${API_BASE}/storage/${cleanPath}`
+  return `${cleanPath}`
 }
 
 const formatPrice = (price) => {
