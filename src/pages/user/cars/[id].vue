@@ -364,17 +364,38 @@ watch(
   .details{ grid-template-columns: 1fr; }
 }
 
+/* =========================
+   ✅ FIX: show full image + fixed size (NO CROP)
+========================= */
 .gallery .hero-img{
   border-radius: 16px;
   overflow: hidden;
-  background: rgba(0,0,0,.12);
-  aspect-ratio: 16/10;
+  background: rgba(0,0,0,.35); /* خلفية تظهر لو فيه فراغ */
   position: relative;
+
+  /* ✅ حجم ثابت (بدل aspect-ratio اللي كان بيكبرها) */
+  height: 420px;
+  max-height: 60vh;
+
+  /* ✅ توسيط الصورة لو contain عمل فراغ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+@media (max-width: 600px){
+  .gallery .hero-img{
+    height: 320px;
+    max-height: 55vh;
+  }
+}
+
 .gallery .hero-img img{
-  width:100%;
-  height:100%;
-  object-fit: cover;
+  width: 100%;
+  height: 100%;
+
+  /* ✅ هنا المهم: بدون قص */
+  object-fit: contain;
+
   display:block;
 }
 
