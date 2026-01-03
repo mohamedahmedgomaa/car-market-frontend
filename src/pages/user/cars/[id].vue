@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 
@@ -153,15 +153,14 @@ const fetchCar = async () => {
     }
 
     car.value = ensureFavFields(data)
-
-    // ✅ لو مفيش selected image لسه، سيبها null عشان active = main
-    // selectedImage.value = null
   } catch (e) {
     console.error(e)
     car.value = null
     error.value = 'Failed to load car details'
   } finally {
     loading.value = false
+    // بعد ما البيانات تيجي، حدّث أزرار السكروول
+    requestAnimationFrame(updateThumbNav)
   }
 }
 
@@ -205,7 +204,45 @@ const goSeller = () => {
   router.push(sellerLink.value)
 }
 
-onMounted(fetchCar)
+/* =========================
+   ✅ Thumbnails scroll controls (Best practice)
+========================= */
+const thumbsEl = ref(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+const updateThumbNav = () => {
+  const el = thumbsEl.value
+  if (!el) return
+  const maxScrollLeft = el.scrollWidth - el.clientWidth
+  canScrollLeft.value = el.scrollLeft > 2
+  canScrollRight.value = el.scrollLeft < maxScrollLeft - 2
+}
+
+const scrollThumbs = (dir) => {
+  const el = thumbsEl.value
+  if (!el) return
+
+  // خطوة محترمة: قد عرض 5 ثمبنيل تقريباً
+  const step = Math.max(260, el.clientWidth * 0.6)
+  el.scrollBy({ left: dir === 'left' ? -step : step, behavior: 'smooth' })
+
+  // بعد الحركة بوقت بسيط حدّث الحالات
+  setTimeout(updateThumbNav, 200)
+}
+
+const onThumbsScroll = () => updateThumbNav()
+
+const onResize = () => updateThumbNav()
+
+onMounted(() => {
+  fetchCar()
+  window.addEventListener('resize', onResize, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
+})
 
 watch(
   () => route.params.id,
@@ -256,16 +293,43 @@ watch(
           </button>
         </div>
 
-        <div v-if="images.length" class="thumbs">
+        <!-- ✅ Thumbnails with arrows -->
+        <div v-if="images.length" class="thumbs-wrap">
           <button
-            v-for="img in images"
-            :key="img.id"
-            class="thumb"
+            v-show="canScrollLeft"
+            class="thumb-nav left"
             type="button"
-            :class="{ active: img.url === activeImage }"
-            @click="selectImage(img.url)"
+            aria-label="Scroll thumbnails left"
+            @click="scrollThumbs('left')"
           >
-            <img :src="img.url" alt="">
+            <VIcon icon="tabler-chevron-left" size="20" />
+          </button>
+
+          <div
+            ref="thumbsEl"
+            class="thumbs"
+            @scroll.passive="onThumbsScroll"
+          >
+            <button
+              v-for="img in images"
+              :key="img.id"
+              class="thumb"
+              type="button"
+              :class="{ active: img.url === activeImage }"
+              @click="selectImage(img.url)"
+            >
+              <img :src="img.url" alt="">
+            </button>
+          </div>
+
+          <button
+            v-show="canScrollRight"
+            class="thumb-nav right"
+            type="button"
+            aria-label="Scroll thumbnails right"
+            @click="scrollThumbs('right')"
+          >
+            <VIcon icon="tabler-chevron-right" size="20" />
           </button>
         </div>
       </div>
@@ -276,7 +340,6 @@ watch(
           <div class="title-row">
             <h1 class="title">{{ t(car.title) || `Car #${car.id}` }}</h1>
 
-            <!-- ✅ Favorite inline -->
             <button
               class="fav-inline"
               type="button"
@@ -378,7 +441,7 @@ watch(
 ========================= */
 .details{
   display:grid;
-  grid-template-columns: 1.4fr 1fr; /* ✅ أفضل توازن */
+  grid-template-columns: 1.4fr 1fr;
   gap:24px;
 }
 @media (max-width: 1000px){
@@ -386,17 +449,14 @@ watch(
 }
 
 /* =========================
-   ✅ Gallery (Best Practice)
-   - Aspect ratio ثابت
-   - contain من غير قص
-   - خلفية gradient تخفف الفراغ
+   ✅ Hero image
 ========================= */
 .gallery .hero-img{
   border-radius: 16px;
   overflow: hidden;
   position: relative;
 
-  aspect-ratio: 16 / 9;   /* ✅ بدل height ثابت */
+  aspect-ratio: 16 / 9;
   max-height: 70vh;
 
   display: flex;
@@ -420,9 +480,8 @@ watch(
 .gallery .hero-img img{
   width: 100%;
   height: 100%;
-  object-fit: contain; /* ✅ بدون قص */
+  object-fit: contain;
   display:block;
-  transition: transform .25s ease;
 }
 
 /* =========================
@@ -460,16 +519,26 @@ watch(
 }
 
 /* =========================
-   ✅ Thumbnails
+   ✅ Thumbnails (FIX for many images)
 ========================= */
-.thumbs{
+.thumbs-wrap{
   margin-top: 12px;
+  position: relative;
+}
+
+/* السطر نفسه */
+.thumbs{
   display:flex;
   gap:10px;
-  overflow:auto;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 36px 8px; /* مساحة للأزرار */
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox hide */
+  scroll-snap-type: x mandatory;
 }
+.thumbs::-webkit-scrollbar{ display:none; } /* Chrome hide */
+
 .thumb{
   border:0;
   padding:0;
@@ -483,6 +552,7 @@ watch(
   outline: 2px solid transparent;
   transition: transform .15s ease, outline-color .15s ease, opacity .15s ease;
   opacity: .85;
+  scroll-snap-align: start;
 }
 .thumb:hover{ transform: translateY(-1px); opacity: 1; }
 .thumb.active{
@@ -494,6 +564,31 @@ watch(
   height:100%;
   object-fit: cover;
   display:block;
+}
+
+/* أزرار يمين/شمال */
+.thumb-nav{
+  position:absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  border: 0;
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+  z-index: 2;
+}
+.thumb-nav.left{ left: 6px; }
+.thumb-nav.right{ right: 6px; }
+
+.thumb-nav:hover{
+  background: rgba(0,0,0,.6);
 }
 
 /* =========================
@@ -518,7 +613,6 @@ watch(
   background: rgba(255,255,255,.08);
 }
 
-/* Specs */
 .specs{
   margin-top: 18px;
   display:grid;
@@ -544,7 +638,6 @@ watch(
   border: 1px solid rgba(255,255,255,.25);
 }
 
-/* Seller link */
 .seller-click{
   cursor:pointer;
   display:inline-flex;
@@ -568,7 +661,6 @@ watch(
   background: rgba(255,255,255,.06);
 }
 
-/* Actions */
 .actions{
   margin-top: 22px;
   display:flex;
@@ -590,34 +682,12 @@ watch(
 .profile-btn{ background: rgba(255,255,255,.06); }
 .wa-btn:hover, .profile-btn:hover{ transform: translateY(-1px); opacity: 1; }
 
-/* =========================
-   ✅ Skeleton Loader
-========================= */
-.skeleton{
-  display:grid;
-  gap:14px;
-}
-.sk-hero{
-  border-radius: 16px;
-  aspect-ratio: 16 / 9;
-  background: rgba(255,255,255,.06);
-  overflow:hidden;
-}
-.sk-line{
-  height: 14px;
-  border-radius: 10px;
-  background: rgba(255,255,255,.06);
-}
+/* Skeleton */
+.skeleton{ display:grid; gap:14px; }
+.sk-hero{ border-radius: 16px; aspect-ratio: 16 / 9; background: rgba(255,255,255,.06); }
+.sk-line{ height: 14px; border-radius: 10px; background: rgba(255,255,255,.06); }
 .sk-line.w60{ width: 60%; }
 .sk-line.w40{ width: 40%; }
-.sk-grid{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap:12px;
-}
-.sk-card{
-  height: 56px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.05);
-}
+.sk-grid{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:12px; }
+.sk-card{ height: 56px; border-radius: 14px; background: rgba(255,255,255,.05); }
 </style>
