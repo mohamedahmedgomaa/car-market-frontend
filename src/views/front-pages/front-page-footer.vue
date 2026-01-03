@@ -206,18 +206,21 @@ onMounted(fetchTopCars)
     <!-- 👉 Footer Line -->
     <div class="footer-line w-100">
       <VContainer>
-        <div class="d-flex justify-space-between flex-wrap gap-y-5 align-center">
-          <div class="text-body-1 text-white-variant text-wrap me-4">
-            &copy; {{ new Date().getFullYear() }}
-            <span class="font-weight-bold ms-1 text-white">
-              {{ themeConfig.app.title }}
-            </span>
-            — All rights reserved.
+        <div class="d-flex justify-space-between flex-wrap gap-y-4 align-center">
+          <div class="text-white-variant">
+            © {{ new Date().getFullYear() }} {{ themeConfig.app.title }} — All rights reserved.
           </div>
 
-          <div class="text-body-2 text-white-variant">
-            Browse:
-            <RouterLink class="text-white ms-1" to="/user/cars">Cars</RouterLink>
+          <div class="text-white-variant">
+            Developed by
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-white font-weight-medium ms-1"
+            >
+              Mohamed Gomaa
+            </a>
           </div>
         </div>
       </VContainer>
