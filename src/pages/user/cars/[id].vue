@@ -123,7 +123,6 @@ const toggleFavorite = async () => {
     const newFav = !!payload.is_favorited
     car.value.is_favorited = newFav
 
-    // count (prefer backend count)
     if (payload.favorites_count !== undefined && payload.favorites_count !== null) {
       car.value.favorites_count = Number(payload.favorites_count)
     } else {
@@ -159,7 +158,6 @@ const fetchCar = async () => {
     error.value = 'Failed to load car details'
   } finally {
     loading.value = false
-    // بعد ما البيانات تيجي، حدّث أزرار السكروول
     requestAnimationFrame(updateThumbNav)
   }
 }
@@ -205,7 +203,7 @@ const goSeller = () => {
 }
 
 /* =========================
-   ✅ Thumbnails scroll controls (Best practice)
+   ✅ Thumbnails scroll controls
 ========================= */
 const thumbsEl = ref(null)
 const canScrollLeft = ref(false)
@@ -222,17 +220,12 @@ const updateThumbNav = () => {
 const scrollThumbs = (dir) => {
   const el = thumbsEl.value
   if (!el) return
-
-  // خطوة محترمة: قد عرض 5 ثمبنيل تقريباً
-  const step = Math.max(260, el.clientWidth * 0.6)
+  const step = Math.max(260, el.clientWidth * 0.7)
   el.scrollBy({ left: dir === 'left' ? -step : step, behavior: 'smooth' })
-
-  // بعد الحركة بوقت بسيط حدّث الحالات
   setTimeout(updateThumbNav, 200)
 }
 
 const onThumbsScroll = () => updateThumbNav()
-
 const onResize = () => updateThumbNav()
 
 onMounted(() => {
@@ -281,7 +274,6 @@ watch(
         <div class="hero-img">
           <img :src="activeImage" :alt="t(car.title) || `Car #${car.id}`">
 
-          <!-- ✅ Favorite floating button -->
           <button
             class="fav-float"
             type="button"
@@ -293,8 +285,12 @@ watch(
           </button>
         </div>
 
-        <!-- ✅ Thumbnails with arrows -->
-        <div v-if="images.length" class="thumbs-wrap">
+        <!-- ✅ Thumbnails (limited width + centered + prettier) -->
+        <div v-if="images.length" class="thumbs-shell">
+          <!-- edges fade -->
+          <div class="fade fade-left" />
+          <div class="fade fade-right" />
+
           <button
             v-show="canScrollLeft"
             class="thumb-nav left"
@@ -484,9 +480,7 @@ watch(
   display:block;
 }
 
-/* =========================
-   ✅ Favorite buttons
-========================= */
+/* Favorite */
 .fav-float{
   position:absolute;
   top:12px;
@@ -519,25 +513,36 @@ watch(
 }
 
 /* =========================
-   ✅ Thumbnails (FIX for many images)
+   ✅ Thumbnails (the improved part)
+   - max-width + centered
+   - better look
 ========================= */
-.thumbs-wrap{
+.thumbs-shell{
   margin-top: 12px;
   position: relative;
+
+  /* ✅ أهم سطر: خليها زي عرض الجاليري */
+  max-width: 920px;
+  width: 100%;
+  margin-inline: auto;
+
+  border-radius: 16px;
+  padding: 8px 0;
 }
 
-/* السطر نفسه */
+/* sroll row */
 .thumbs{
   display:flex;
   gap:10px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 4px 36px 8px; /* مساحة للأزرار */
+
+  padding: 4px 44px 8px; /* مساحة للأزرار */
   scroll-behavior: smooth;
-  scrollbar-width: none; /* Firefox hide */
+  scrollbar-width: none;
   scroll-snap-type: x mandatory;
 }
-.thumbs::-webkit-scrollbar{ display:none; } /* Chrome hide */
+.thumbs::-webkit-scrollbar{ display:none; }
 
 .thumb{
   border:0;
@@ -545,7 +550,7 @@ watch(
   background:transparent;
   width: 92px;
   height: 64px;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow:hidden;
   cursor:pointer;
   flex: 0 0 auto;
@@ -566,14 +571,14 @@ watch(
   display:block;
 }
 
-/* أزرار يمين/شمال */
+/* navigation buttons */
 .thumb-nav{
   position:absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
   border: 0;
   cursor: pointer;
   display:flex;
@@ -582,13 +587,42 @@ watch(
   color:#fff;
   background: rgba(0,0,0,.45);
   backdrop-filter: blur(8px);
+  z-index: 3;
+}
+.thumb-nav.left{ left: 8px; }
+.thumb-nav.right{ right: 8px; }
+.thumb-nav:hover{ background: rgba(0,0,0,.6); }
+
+/* fades on edges (nice premium feel) */
+.fade{
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  pointer-events: none;
   z-index: 2;
 }
-.thumb-nav.left{ left: 6px; }
-.thumb-nav.right{ right: 6px; }
+.fade-left{
+  left: 0;
+  background: linear-gradient(to right, rgba(27,31,48,.95), rgba(27,31,48,0));
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
+.fade-right{
+  right: 0;
+  background: linear-gradient(to left, rgba(27,31,48,.95), rgba(27,31,48,0));
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
 
-.thumb-nav:hover{
-  background: rgba(0,0,0,.6);
+/* responsive tweaks */
+@media (max-width: 1100px){
+  .thumbs-shell{ max-width: 100%; }
+  .thumb{ width: 86px; height: 60px; }
+}
+@media (max-width: 600px){
+  .thumbs{ padding: 4px 40px 8px; }
+  .thumb{ width: 78px; height: 56px; border-radius: 12px; }
 }
 
 /* =========================
