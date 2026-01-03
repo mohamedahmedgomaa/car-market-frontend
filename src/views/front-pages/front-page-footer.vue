@@ -46,7 +46,7 @@ const fetchTopCars = async () => {
   try {
     const res = await carsUserApi.getAll({
       page: 1,
-      per_page: 5,
+      perPage: 3,
       'filter[status]': 'approved',
       sort: '-price', // ✅ الأفضل بدل top_expensive
     })

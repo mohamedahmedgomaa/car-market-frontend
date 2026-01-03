@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 
 definePage({
@@ -27,36 +27,43 @@ const t = (val) => {
   return val.en || val.ar || ''
 }
 
+/**
+ * ✅ IMPORTANT:
+ * أنت حالياً بتعمل:
+ * return `${cleanPath}`
+ * يعني بتتوقع الـ API يرجع URL كامل.
+ * لو عندك صور storage على باك اند، رجّعها هنا:
+ * return `${API_BASE}/storage/${cleanPath}`
+ */
 const buildImg = (path) => {
-  if (!path) return 'https://via.placeholder.com/960x640?text=Car'
+  if (!path) return 'https://via.placeholder.com/1200x675?text=Car'
   const cleanPath = String(path).replaceAll('\\', '/')
   return `${cleanPath}`
 }
 
 const images = computed(() => {
   const imgs = car.value?.images || []
-  return imgs.map(i => ({
-    ...i,
-    url: buildImg(i.path),
-  }))
+  return imgs
+    .filter(i => i?.path)
+    .map(i => ({ ...i, url: buildImg(i.path) }))
 })
 
 const mainImage = computed(() => {
   const imgs = images.value
   const main = imgs.find(i => Number(i.is_main) === 1) || imgs[0]
-  return main?.url || 'https://via.placeholder.com/960x640?text=Car'
+  return main?.url || 'https://via.placeholder.com/1200x675?text=Car'
 })
+
+// ✅ thumbnail selection
+const selectedImage = ref(null)
+const activeImage = computed(() => selectedImage.value || mainImage.value)
+const selectImage = (url) => { selectedImage.value = url }
 
 const formatPrice = (price) => {
   const n = Number(price)
   if (Number.isNaN(n)) return price ?? '—'
   return n.toLocaleString()
 }
-
-// لو حابب thumbnail selection
-const selectedImage = ref(null)
-const activeImage = computed(() => selectedImage.value || mainImage.value)
-const selectImage = (url) => { selectedImage.value = url }
 
 // -------------------------
 // ✅ Favorites (Details page)
@@ -146,6 +153,9 @@ const fetchCar = async () => {
     }
 
     car.value = ensureFavFields(data)
+
+    // ✅ لو مفيش selected image لسه، سيبها null عشان active = main
+    // selectedImage.value = null
   } catch (e) {
     console.error(e)
     car.value = null
@@ -209,17 +219,32 @@ watch(
 
 <template>
   <VContainer class="py-10">
-    <div v-if="loading" class="state">Loading...</div>
+    <!-- Loading -->
+    <div v-if="loading" class="state">
+      <div class="skeleton">
+        <div class="sk-hero" />
+        <div class="sk-line w60" />
+        <div class="sk-line w40" />
+        <div class="sk-grid">
+          <div class="sk-card" v-for="i in 6" :key="i" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Error -->
     <div v-else-if="error" class="state error">{{ error }}</div>
+
+    <!-- Empty -->
     <div v-else-if="!car" class="state">Car not found.</div>
 
+    <!-- Content -->
     <div v-else class="details">
       <!-- LEFT: Gallery -->
       <div class="gallery">
         <div class="hero-img">
           <img :src="activeImage" :alt="t(car.title) || `Car #${car.id}`">
 
-          <!-- ✅ Favorite floating button on main image -->
+          <!-- ✅ Favorite floating button -->
           <button
             class="fav-float"
             type="button"
@@ -237,6 +262,7 @@ watch(
             :key="img.id"
             class="thumb"
             type="button"
+            :class="{ active: img.url === activeImage }"
             @click="selectImage(img.url)"
           >
             <img :src="img.url" alt="">
@@ -250,7 +276,7 @@ watch(
           <div class="title-row">
             <h1 class="title">{{ t(car.title) || `Car #${car.id}` }}</h1>
 
-            <!-- ✅ Favorite button beside title (optional but nice) -->
+            <!-- ✅ Favorite inline -->
             <button
               class="fav-inline"
               type="button"
@@ -262,9 +288,7 @@ watch(
             </button>
           </div>
 
-          <div class="price">
-            {{ formatPrice(car.price) }}
-          </div>
+          <div class="price">{{ formatPrice(car.price) }}</div>
 
           <div class="meta">
             <span>{{ t(car.brand?.name) }}</span>
@@ -290,7 +314,6 @@ watch(
             <b><span class="color" :style="{ background: car.color || '#ccc' }" /></b>
           </div>
 
-          <!-- ✅ Seller clickable -->
           <div class="spec">
             <span>Seller</span>
 
@@ -323,12 +346,7 @@ watch(
         </div>
 
         <div class="actions">
-          <!-- ✅ Seller profile button -->
-          <RouterLink
-            v-if="sellerLink"
-            class="profile-btn"
-            :to="sellerLink"
-          >
+          <RouterLink v-if="sellerLink" class="profile-btn" :to="sellerLink">
             View Seller Profile
           </RouterLink>
 
@@ -355,9 +373,12 @@ watch(
 .state { padding: 24px 0; opacity: .85; }
 .state.error { opacity: 1; }
 
+/* =========================
+   ✅ Layout
+========================= */
 .details{
   display:grid;
-  grid-template-columns: 1.2fr .8fr;
+  grid-template-columns: 1.4fr 1fr; /* ✅ أفضل توازن */
   gap:24px;
 }
 @media (max-width: 1000px){
@@ -365,41 +386,48 @@ watch(
 }
 
 /* =========================
-   ✅ FIX: show full image + fixed size (NO CROP)
+   ✅ Gallery (Best Practice)
+   - Aspect ratio ثابت
+   - contain من غير قص
+   - خلفية gradient تخفف الفراغ
 ========================= */
 .gallery .hero-img{
   border-radius: 16px;
   overflow: hidden;
-  background: rgba(0,0,0,.35); /* خلفية تظهر لو فيه فراغ */
   position: relative;
 
-  /* ✅ حجم ثابت (بدل aspect-ratio اللي كان بيكبرها) */
-  height: 420px;
-  max-height: 60vh;
+  aspect-ratio: 16 / 9;   /* ✅ بدل height ثابت */
+  max-height: 70vh;
 
-  /* ✅ توسيط الصورة لو contain عمل فراغ */
   display: flex;
   align-items: center;
   justify-content: center;
+
+  background: radial-gradient(
+    circle,
+    rgba(255,255,255,.06),
+    rgba(0,0,0,.45)
+  );
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
 @media (max-width: 600px){
   .gallery .hero-img{
-    height: 320px;
-    max-height: 55vh;
+    aspect-ratio: 4 / 3;
+    max-height: 60vh;
   }
 }
 
 .gallery .hero-img img{
   width: 100%;
   height: 100%;
-
-  /* ✅ هنا المهم: بدون قص */
-  object-fit: contain;
-
+  object-fit: contain; /* ✅ بدون قص */
   display:block;
+  transition: transform .25s ease;
 }
 
-/* ✅ Favorite buttons */
+/* =========================
+   ✅ Favorite buttons
+========================= */
 .fav-float{
   position:absolute;
   top:12px;
@@ -412,7 +440,7 @@ watch(
   padding:10px 12px;
   border-radius: 14px;
   background: rgba(0,0,0,.45);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
   color:#fff;
 }
 .fav-inline{
@@ -431,12 +459,16 @@ watch(
   opacity: .95;
 }
 
+/* =========================
+   ✅ Thumbnails
+========================= */
 .thumbs{
   margin-top: 12px;
   display:flex;
   gap:10px;
   overflow:auto;
   padding-bottom: 4px;
+  scrollbar-width: thin;
 }
 .thumb{
   border:0;
@@ -448,6 +480,14 @@ watch(
   overflow:hidden;
   cursor:pointer;
   flex: 0 0 auto;
+  outline: 2px solid transparent;
+  transition: transform .15s ease, outline-color .15s ease, opacity .15s ease;
+  opacity: .85;
+}
+.thumb:hover{ transform: translateY(-1px); opacity: 1; }
+.thumb.active{
+  opacity: 1;
+  outline-color: rgba(255,255,255,.35);
 }
 .thumb img{
   width:100%;
@@ -456,7 +496,10 @@ watch(
   display:block;
 }
 
-.info .title{ margin:0; font-size:28px; }
+/* =========================
+   ✅ Info
+========================= */
+.info .title{ margin:0; font-size:28px; line-height: 1.2; }
 .title-row{
   display:flex;
   align-items:flex-start;
@@ -475,6 +518,7 @@ watch(
   background: rgba(255,255,255,.08);
 }
 
+/* Specs */
 .specs{
   margin-top: 18px;
   display:grid;
@@ -500,7 +544,7 @@ watch(
   border: 1px solid rgba(255,255,255,.25);
 }
 
-/* ✅ Seller link style */
+/* Seller link */
 .seller-click{
   cursor:pointer;
   display:inline-flex;
@@ -510,9 +554,7 @@ watch(
   text-underline-offset: 4px;
   opacity: .95;
 }
-.seller-click:hover{
-  opacity: 1;
-}
+.seller-click:hover{ opacity: 1; }
 
 .desc, .features{ margin-top: 18px; }
 .desc h3, .features h3{ margin: 0 0 8px; }
@@ -526,6 +568,7 @@ watch(
   background: rgba(255,255,255,.06);
 }
 
+/* Actions */
 .actions{
   margin-top: 22px;
   display:flex;
@@ -533,8 +576,7 @@ watch(
   flex-wrap: wrap;
 }
 
-/* existing wa btn */
-.wa-btn{
+.wa-btn, .profile-btn{
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -543,19 +585,39 @@ watch(
   text-decoration:none;
   font-weight:700;
   background: rgba(255,255,255,.08);
+  transition: transform .15s ease, opacity .15s ease;
 }
-.wa-btn:hover{ transform: translateY(-1px); }
+.profile-btn{ background: rgba(255,255,255,.06); }
+.wa-btn:hover, .profile-btn:hover{ transform: translateY(-1px); opacity: 1; }
 
-/* ✅ seller profile btn */
-.profile-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 12px 16px;
-  border-radius: 14px;
-  text-decoration:none;
-  font-weight:700;
+/* =========================
+   ✅ Skeleton Loader
+========================= */
+.skeleton{
+  display:grid;
+  gap:14px;
+}
+.sk-hero{
+  border-radius: 16px;
+  aspect-ratio: 16 / 9;
+  background: rgba(255,255,255,.06);
+  overflow:hidden;
+}
+.sk-line{
+  height: 14px;
+  border-radius: 10px;
   background: rgba(255,255,255,.06);
 }
-.profile-btn:hover{ transform: translateY(-1px); }
+.sk-line.w60{ width: 60%; }
+.sk-line.w40{ width: 40%; }
+.sk-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:12px;
+}
+.sk-card{
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.05);
+}
 </style>
