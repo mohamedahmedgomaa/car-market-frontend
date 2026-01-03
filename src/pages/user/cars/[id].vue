@@ -220,7 +220,7 @@ const updateThumbNav = () => {
 const scrollThumbs = (dir) => {
   const el = thumbsEl.value
   if (!el) return
-  const step = Math.max(260, el.clientWidth * 0.7)
+  const step = Math.max(220, el.clientWidth * 0.75)
   el.scrollBy({ left: dir === 'left' ? -step : step, behavior: 'smooth' })
   setTimeout(updateThumbNav, 200)
 }
@@ -285,9 +285,8 @@ watch(
           </button>
         </div>
 
-        <!-- ✅ Thumbnails (limited width + centered + prettier) -->
+        <!-- ✅ Thumbnails -->
         <div v-if="images.length" class="thumbs-shell">
-          <!-- edges fade -->
           <div class="fade fade-left" />
           <div class="fade fade-right" />
 
@@ -298,7 +297,7 @@ watch(
             aria-label="Scroll thumbnails left"
             @click="scrollThumbs('left')"
           >
-            <VIcon icon="tabler-chevron-left" size="20" />
+            <VIcon icon="tabler-chevron-left" size="18" />
           </button>
 
           <div
@@ -325,7 +324,7 @@ watch(
             aria-label="Scroll thumbnails right"
             @click="scrollThumbs('right')"
           >
-            <VIcon icon="tabler-chevron-right" size="20" />
+            <VIcon icon="tabler-chevron-right" size="18" />
           </button>
         </div>
       </div>
@@ -432,9 +431,7 @@ watch(
 .state { padding: 24px 0; opacity: .85; }
 .state.error { opacity: 1; }
 
-/* =========================
-   ✅ Layout
-========================= */
+/* Layout */
 .details{
   display:grid;
   grid-template-columns: 1.4fr 1fr;
@@ -444,26 +441,17 @@ watch(
   .details{ grid-template-columns: 1fr; }
 }
 
-/* =========================
-   ✅ Hero image
-========================= */
+/* Hero */
 .gallery .hero-img{
   border-radius: 16px;
   overflow: hidden;
   position: relative;
-
   aspect-ratio: 16 / 9;
   max-height: 70vh;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: radial-gradient(
-    circle,
-    rgba(255,255,255,.06),
-    rgba(0,0,0,.45)
-  );
+  background: radial-gradient(circle, rgba(255,255,255,.06), rgba(0,0,0,.45));
   box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
 @media (max-width: 600px){
@@ -472,7 +460,6 @@ watch(
     max-height: 60vh;
   }
 }
-
 .gallery .hero-img img{
   width: 100%;
   height: 100%;
@@ -512,35 +499,26 @@ watch(
   opacity: .95;
 }
 
-/* =========================
-   ✅ Thumbnails (the improved part)
-   - max-width + centered
-   - better look
-========================= */
+/* ✅ Thumbnails smaller */
 .thumbs-shell{
-  margin-top: 12px;
+  margin-top: 10px;
   position: relative;
-
-  /* ✅ أهم سطر: خليها زي عرض الجاليري */
-  max-width: 920px;
+  max-width: 820px;
   width: 100%;
   margin-inline: auto;
-
   border-radius: 16px;
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
-/* sroll row */
 .thumbs{
   display:flex;
-  gap:10px;
-  overflow-x: auto;
-  overflow-y: hidden;
-
-  padding: 4px 44px 8px; /* مساحة للأزرار */
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  scroll-snap-type: x mandatory;
+  gap:8px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding: 2px 40px 6px;
+  scroll-behavior:smooth;
+  scrollbar-width:none;
+  scroll-snap-type:x mandatory;
 }
 .thumbs::-webkit-scrollbar{ display:none; }
 
@@ -548,9 +526,9 @@ watch(
   border:0;
   padding:0;
   background:transparent;
-  width: 92px;
-  height: 64px;
-  border-radius: 14px;
+  width: 72px;
+  height: 50px;
+  border-radius: 12px;
   overflow:hidden;
   cursor:pointer;
   flex: 0 0 auto;
@@ -571,14 +549,14 @@ watch(
   display:block;
 }
 
-/* navigation buttons */
+/* arrows smaller */
 .thumb-nav{
   position:absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  border-radius: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
   border: 0;
   cursor: pointer;
   display:flex;
@@ -589,16 +567,16 @@ watch(
   backdrop-filter: blur(8px);
   z-index: 3;
 }
-.thumb-nav.left{ left: 8px; }
-.thumb-nav.right{ right: 8px; }
+.thumb-nav.left{ left: 6px; }
+.thumb-nav.right{ right: 6px; }
 .thumb-nav:hover{ background: rgba(0,0,0,.6); }
 
-/* fades on edges (nice premium feel) */
+/* fades thinner */
 .fade{
   position:absolute;
   top: 0;
   bottom: 0;
-  width: 56px;
+  width: 42px;
   pointer-events: none;
   z-index: 2;
 }
@@ -615,19 +593,13 @@ watch(
   border-bottom-right-radius: 16px;
 }
 
-/* responsive tweaks */
-@media (max-width: 1100px){
-  .thumbs-shell{ max-width: 100%; }
-  .thumb{ width: 86px; height: 60px; }
-}
+/* responsive */
 @media (max-width: 600px){
-  .thumbs{ padding: 4px 40px 8px; }
-  .thumb{ width: 78px; height: 56px; border-radius: 12px; }
+  .thumbs{ padding: 2px 36px 6px; gap: 7px; }
+  .thumb{ width: 64px; height: 46px; border-radius: 10px; }
 }
 
-/* =========================
-   ✅ Info
-========================= */
+/* Info */
 .info .title{ margin:0; font-size:28px; line-height: 1.2; }
 .title-row{
   display:flex;
