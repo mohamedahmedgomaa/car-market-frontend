@@ -44,7 +44,7 @@ const fetchCars = async () => {
 
   try {
     const res = await carsUserApi.getAll({
-      per_page: props.limit,
+      perPage: props.limit,
       status: 'approved',
     })
 

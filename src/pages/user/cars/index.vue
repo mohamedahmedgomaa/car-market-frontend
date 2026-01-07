@@ -91,7 +91,7 @@ const error = ref('')
 const cars = ref([])
 
 const page = ref(Number(firstQueryVal(route.query.page) || 1))
-const perPage = ref(Number(firstQueryVal(route.query.per_page) || 12))
+const perPage = ref(Number(firstQueryVal(route.query.perPage) || 12))
 const sort = ref(String(firstQueryVal(route.query.sort) || ''))
 const total = ref(0)
 
@@ -284,7 +284,7 @@ const normalizeCars = (payload) => {
 const buildParams = () => {
   const params = {
     page: page.value,
-    per_page: perPage.value,
+    perPage: perPage.value,
     'filter[status]': 'approved',
   }
 
@@ -339,7 +339,7 @@ const fetchCars = async () => {
 const syncQuery = () => {
   const query = {
     page: String(page.value),
-    per_page: String(perPage.value),
+    perPage: String(perPage.value),
   }
 
   if (q.value?.trim()) query['filter[global]'] = q.value.trim()
@@ -430,7 +430,7 @@ watch(
     lastQueryKey.value = key
 
     page.value = Number(firstQueryVal(newQ.page) || 1)
-    perPage.value = Number(firstQueryVal(newQ.per_page) || 12)
+    perPage.value = Number(firstQueryVal(newQ.perPage) || 12)
 
     q.value = String(firstQueryVal(newQ['filter[global]']) || '')
     sort.value = String(firstQueryVal(newQ.sort) || '')

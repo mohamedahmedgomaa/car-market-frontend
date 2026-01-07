@@ -29,7 +29,7 @@ const fetchSellers = async () => {
   error.value = ''
   try {
     const res = await sellerUserApi.getAll({
-      per_page: props.limit,
+      perPage: props.limit,
       sort: '-cars_count',
       ...props.params,
     })

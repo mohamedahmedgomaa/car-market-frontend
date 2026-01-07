@@ -132,7 +132,7 @@ const fetchCars = async () => {
 
   try {
     const res = await carsUserApi.getAll({
-      per_page: props.limit,
+      perPage: props.limit,
       ...(props.approvedOnly ? { 'filter[status]': 'approved' } : {}),
       ...props.params,
     })
