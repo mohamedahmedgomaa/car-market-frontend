@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
@@ -17,7 +17,6 @@ definePage({
 })
 
 const route = useRoute()
-const router = useRouter()
 
 // -------------------------
 // Helpers
@@ -30,28 +29,6 @@ const t = (val) => {
 
 const firstQueryVal = (v) => Array.isArray(v) ? v[0] : v
 
-// -------------------------
-// Query helpers (filter[...])
-// -------------------------
-const qKey = (key) => `filter[${key}]`
-const qGet = (key) => route.query[qKey(key)]
-const qGetStr = (key, fallback = '') => String(firstQueryVal(qGet(key)) ?? fallback ?? '')
-const qGetNum = (key) => {
-  const v = firstQueryVal(qGet(key))
-  if (v === undefined || v === null || v === '') return null
-  const n = Number(v)
-  return Number.isNaN(n) ? null : n
-}
-const qGetEnum = (key) => {
-  const v = firstQueryVal(qGet(key))
-  if (v === undefined || v === null || v === '') return null
-  return String(v)
-}
-const qGetCsvNums = (key) => {
-  const v = firstQueryVal(qGet(key))
-  if (!v) return []
-  return String(v).split(',').map(n => Number(n)).filter(Boolean)
-}
 const toNumOrNull = (v) => {
   if (v === '' || v === undefined || v === null) return null
   const n = Number(v)
@@ -59,7 +36,7 @@ const toNumOrNull = (v) => {
 }
 
 // -------------------------
-// ✅ Between helpers (filter[xxx_between]=from.to)  <-- IMPORTANT
+// ✅ Between helpers (filter[xxx_between]=from.to)
 // -------------------------
 const parseBetweenFromQuery = (qObj, key) => {
   const v = firstQueryVal(qObj?.[`filter[${key}]`])
@@ -79,7 +56,6 @@ const parseBetweenFromQuery = (qObj, key) => {
 const putBetween = (obj, key, from, to) => {
   const a = (from ?? '') === '' ? '' : from
   const b = (to ?? '') === '' ? '' : to
-  // ✅ separator is dot now
   if (a !== '' || b !== '') obj[`filter[${key}]`] = `${a}.${b}`
 }
 
@@ -87,22 +63,25 @@ const putBetween = (obj, key, from, to) => {
 // State
 // -------------------------
 const loading = ref(false)
+const loadingMore = ref(false)
 const error = ref('')
 const cars = ref([])
 
-const page = ref(Number(firstQueryVal(route.query.page) || 1))
+const page = ref(1)
 const perPage = ref(Number(firstQueryVal(route.query.perPage) || 12))
 const sort = ref(String(firstQueryVal(route.query.sort) || ''))
 const total = ref(0)
 
+const hasMore = computed(() => cars.value.length < total.value)
+
 // ✅ global search
-const q = ref(qGetStr('global', ''))
+const q = ref(String(firstQueryVal(route.query['filter[global]']) || ''))
 
 // IDs
-const countryId = ref(qGetNum('country_id'))
-const cityId = ref(qGetNum('city_id'))
-const brandId = ref(qGetNum('brand_id'))
-const modelId = ref(qGetNum('model_id'))
+const countryId = ref(route.query['filter[country_id]'] ? Number(firstQueryVal(route.query['filter[country_id]'])) : null)
+const cityId = ref(route.query['filter[city_id]'] ? Number(firstQueryVal(route.query['filter[city_id]'])) : null)
+const brandId = ref(route.query['filter[brand_id]'] ? Number(firstQueryVal(route.query['filter[brand_id]'])) : null)
+const modelId = ref(route.query['filter[model_id]'] ? Number(firstQueryVal(route.query['filter[model_id]'])) : null)
 
 // ✅ ranges (from filter[xxx_between])
 const y0 = parseBetweenFromQuery(route.query, 'year_between')
@@ -117,14 +96,18 @@ const mileageFrom = ref(m0.from)
 const mileageTo = ref(m0.to)
 
 // enums
-const transmission = ref(qGetEnum('transmission'))
-const type = ref(qGetEnum('type'))
-const fuelType = ref(qGetEnum('fuel_type'))
-const drivetrain = ref(qGetEnum('drivetrain'))
-const condition = ref(qGetEnum('condition'))
+const transmission = ref(route.query['filter[transmission]'] ? String(firstQueryVal(route.query['filter[transmission]'])) : null)
+const type = ref(route.query['filter[type]'] ? String(firstQueryVal(route.query['filter[type]'])) : null)
+const fuelType = ref(route.query['filter[fuel_type]'] ? String(firstQueryVal(route.query['filter[fuel_type]'])) : null)
+const drivetrain = ref(route.query['filter[drivetrain]'] ? String(firstQueryVal(route.query['filter[drivetrain]'])) : null)
+const condition = ref(route.query['filter[condition]'] ? String(firstQueryVal(route.query['filter[condition]'])) : null)
 
 // features multi
-const featureIds = ref(qGetCsvNums('feature_ids'))
+const featureIds = ref(
+  route.query['filter[feature_ids]']
+    ? String(firstQueryVal(route.query['filter[feature_ids]'])).split(',').map(n => Number(n)).filter(Boolean)
+    : []
+)
 
 // ✅ HYBRID inputs (Apply button)
 const draft = ref({
@@ -225,7 +208,7 @@ const loadModels = async () => {
 }
 
 // -------------------------
-// ✅ Favorites normalize (FIXED like CarsSection)
+// ✅ Favorites normalize (like CarsSection)
 // -------------------------
 const getAuth = () => {
   const token = localStorage.getItem('user_token')
@@ -256,10 +239,7 @@ const normalizeFavFields = (car) => {
     is_favorited = !!car.is_favorited
   } else if (userId && favArr.length) {
     is_favorited = favArr.some(f => {
-      const id =
-        Number(f?.id) ||
-        Number(f?.user_id) ||
-        Number(f?.pivot?.user_id)
+      const id = Number(f?.id) || Number(f?.user_id) || Number(f?.pivot?.user_id)
       return id === userId
     })
   }
@@ -296,7 +276,6 @@ const buildParams = () => {
   if (brandId.value) params['filter[brand_id]'] = brandId.value
   if (modelId.value) params['filter[model_id]'] = modelId.value
 
-  // ✅ ranges -> scopes (dot separator)
   putBetween(params, 'year_between', yearFrom.value, yearTo.value)
   putBetween(params, 'price_between', priceFrom.value, priceTo.value)
   putBetween(params, 'mileage_between', mileageFrom.value, mileageTo.value)
@@ -316,11 +295,14 @@ const fetchCars = async () => {
   loading.value = true
   error.value = ''
 
+  // ✅ reset page + items
+  page.value = 1
+  cars.value = []
+
   try {
     const res = await carsUserApi.getAll(buildParams())
     const { items, total: tt } = normalizeCars(res.data)
 
-    // ✅ الباك إند أصلاً بيرجع approved بسبب filter[status]، فمش محتاج فلترة تاني
     cars.value = items.map(normalizeFavFields)
     total.value = tt
   } catch (e) {
@@ -333,37 +315,22 @@ const fetchCars = async () => {
   }
 }
 
-// -------------------------
-// Sync filters -> URL query (ONLY)
-// -------------------------
-const syncQuery = () => {
-  const query = {
-    page: String(page.value),
-    perPage: String(perPage.value),
+const loadMore = async () => {
+  if (loadingMore.value || !hasMore.value) return
+
+  loadingMore.value = true
+  page.value += 1
+
+  try {
+    const res = await carsUserApi.getAll(buildParams())
+    const { items } = normalizeCars(res.data)
+
+    cars.value.push(...items.map(normalizeFavFields))
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loadingMore.value = false
   }
-
-  if (q.value?.trim()) query['filter[global]'] = q.value.trim()
-  if (sort.value) query.sort = sort.value
-
-  if (countryId.value) query['filter[country_id]'] = String(countryId.value)
-  if (cityId.value) query['filter[city_id]'] = String(cityId.value)
-  if (brandId.value) query['filter[brand_id]'] = String(brandId.value)
-  if (modelId.value) query['filter[model_id]'] = String(modelId.value)
-
-  // ✅ ranges -> scopes (dot separator)
-  putBetween(query, 'year_between', yearFrom.value, yearTo.value)
-  putBetween(query, 'price_between', priceFrom.value, priceTo.value)
-  putBetween(query, 'mileage_between', mileageFrom.value, mileageTo.value)
-
-  if (transmission.value) query['filter[transmission]'] = transmission.value
-  if (type.value) query['filter[type]'] = type.value
-  if (fuelType.value) query['filter[fuel_type]'] = fuelType.value
-  if (drivetrain.value) query['filter[drivetrain]'] = drivetrain.value
-  if (condition.value) query['filter[condition]'] = condition.value
-
-  if (featureIds.value?.length) query['filter[feature_ids]'] = featureIds.value.join(',')
-
-  router.replace({ path: '/user/cars', query })
 }
 
 // -------------------------
@@ -378,8 +345,7 @@ const applyFilters = () => {
   mileageFrom.value = toNumOrNull(draft.value.mileageFrom)
   mileageTo.value = toNumOrNull(draft.value.mileageTo)
 
-  page.value = 1
-  syncQuery()
+  fetchCars()
 }
 
 const resetFilters = () => {
@@ -411,110 +377,43 @@ const resetFilters = () => {
   condition.value = null
   sort.value = ''
   featureIds.value = []
-  page.value = 1
+  perPage.value = 12
 
-  syncQuery()
+  fetchCars()
 }
 
 // -------------------------
-// Route.query watcher هو الوحيد اللي بيعمل fetch
-// -------------------------
-const lastQueryKey = ref('')
-const makeQueryKey = (qObj) => JSON.stringify(qObj ?? {})
-
-watch(
-  () => route.query,
-  async (newQ) => {
-    const key = makeQueryKey(newQ)
-    if (key === lastQueryKey.value) return
-    lastQueryKey.value = key
-
-    page.value = Number(firstQueryVal(newQ.page) || 1)
-    perPage.value = Number(firstQueryVal(newQ.perPage) || 12)
-
-    q.value = String(firstQueryVal(newQ['filter[global]']) || '')
-    sort.value = String(firstQueryVal(newQ.sort) || '')
-
-    countryId.value = newQ['filter[country_id]'] ? Number(firstQueryVal(newQ['filter[country_id]'])) : null
-    cityId.value = newQ['filter[city_id]'] ? Number(firstQueryVal(newQ['filter[city_id]'])) : null
-    brandId.value = newQ['filter[brand_id]'] ? Number(firstQueryVal(newQ['filter[brand_id]'])) : null
-    modelId.value = newQ['filter[model_id]'] ? Number(firstQueryVal(newQ['filter[model_id]'])) : null
-
-    // ✅ ranges from between scopes (dot separator)
-    const yy = parseBetweenFromQuery(newQ, 'year_between')
-    yearFrom.value = yy.from
-    yearTo.value = yy.to
-
-    const pp = parseBetweenFromQuery(newQ, 'price_between')
-    priceFrom.value = pp.from
-    priceTo.value = pp.to
-
-    const mm = parseBetweenFromQuery(newQ, 'mileage_between')
-    mileageFrom.value = mm.from
-    mileageTo.value = mm.to
-
-    transmission.value = newQ['filter[transmission]'] ? String(firstQueryVal(newQ['filter[transmission]'])) : null
-    type.value = newQ['filter[type]'] ? String(firstQueryVal(newQ['filter[type]'])) : null
-    fuelType.value = newQ['filter[fuel_type]'] ? String(firstQueryVal(newQ['filter[fuel_type]'])) : null
-    drivetrain.value = newQ['filter[drivetrain]'] ? String(firstQueryVal(newQ['filter[drivetrain]'])) : null
-    condition.value = newQ['filter[condition]'] ? String(firstQueryVal(newQ['filter[condition]'])) : null
-
-    featureIds.value = newQ['filter[feature_ids]']
-      ? String(firstQueryVal(newQ['filter[feature_ids]'])).split(',').map(n => Number(n)).filter(Boolean)
-      : []
-
-    draft.value = {
-      q: q.value,
-      yearFrom: yearFrom.value,
-      yearTo: yearTo.value,
-      priceFrom: priceFrom.value,
-      priceTo: priceTo.value,
-      mileageFrom: mileageFrom.value,
-      mileageTo: mileageTo.value,
-    }
-
-    await Promise.all([loadCities(), loadModels()])
-    fetchCars()
-  },
-  { deep: true, immediate: true }
-)
-
-// -------------------------
-// Auto apply selects only
+// Auto apply selects only (debounced)
 // -------------------------
 let syncTimer = null
-const debouncedSync = () => {
+const debouncedFetch = () => {
   if (syncTimer) clearTimeout(syncTimer)
   syncTimer = setTimeout(() => {
-    page.value = 1
-    syncQuery()
+    fetchCars()
   }, 250)
 }
 
 watch(countryId, async () => {
   await loadCities()
-  debouncedSync()
+  debouncedFetch()
 })
 
 watch(brandId, async () => {
   await loadModels()
-  debouncedSync()
+  debouncedFetch()
 })
 
 watch(
   [cityId, modelId, transmission, type, fuelType, drivetrain, condition, featureIds, perPage, sort],
-  () => debouncedSync(),
+  () => debouncedFetch(),
   { deep: true }
 )
-
-watch(page, () => {
-  syncQuery()
-})
 
 // init
 onMounted(async () => {
   await Promise.all([loadCountries(), loadBrands(), loadFeatures()])
   await Promise.all([loadCities(), loadModels()])
+  fetchCars()
 })
 </script>
 
@@ -840,12 +739,19 @@ onMounted(async () => {
               :error="error"
             />
 
-            <div class="d-flex justify-center mt-6" v-if="total > perPage">
-              <VPagination
-                v-model="page"
-                :length="Math.ceil(total / perPage)"
-                rounded="circle"
-              />
+            <!-- ✅ Load More -->
+            <div class="d-flex justify-center mt-6" v-if="hasMore">
+              <VBtn
+                variant="tonal"
+                :loading="loadingMore"
+                @click="loadMore"
+              >
+                Load more
+              </VBtn>
+            </div>
+
+            <div class="text-center mt-4" v-else-if="!loading && cars.length">
+              No more results.
             </div>
           </VCard>
         </VCol>

@@ -1,27 +1,124 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
-import { useGenerateImageVariant } from '@/@core/composable/useGenerateImageVariant'
 
-import heroImgDark from '@images/front-pages/carbase2.png'
-import heroImgLight from '@images/front-pages/carbase2.png'
+// صور السلايدر
+import slide1 from '@images/front-pages/carbase2.png'
+import slide2 from '@images/front-pages/carbase2.png'
+import slide3 from '@images/front-pages/carbase2.png'
 
 const theme = useTheme()
 const router = useRouter()
 
-const heroImg = useGenerateImageVariant(heroImgLight, heroImgDark)
-const search = ref('')
+/* =========================
+   ✅ Helpers (Like Cars page)
+========================= */
+const toNumOrNull = (v) => {
+  if (v === '' || v === undefined || v === null) return null
+  const n = Number(v)
+  return Number.isNaN(n) ? null : n
+}
+
+// ✅ Between helper: filter[key]=from.to   (dot separator)
+const putBetween = (obj, key, from, to) => {
+  const a = (from ?? '') === '' ? '' : from
+  const b = (to ?? '') === '' ? '' : to
+  if (a !== '' || b !== '') obj[`filter[${key}]`] = `${a}.${b}`
+}
+
+/* =========================
+   ✅ Filters (Hero Form)
+========================= */
+const filters = ref({
+  type: 'car',          // car | motorcycle
+  condition: 'used',    // used | new
+  brand: '',
+  model: '',
+  priceFrom: null,
+  priceTo: null,
+  yearFrom: null,
+  yearTo: null,
+})
+
+const buildQuery = () => {
+  const q = {}
+  q['filter[status]'] = 'approved'
+
+  if (filters.value.type) q['filter[type]'] = filters.value.type
+  if (filters.value.condition) q['filter[condition]'] = filters.value.condition
+
+  if (filters.value.brand?.trim()) q['filter[brand]'] = filters.value.brand.trim()
+  if (filters.value.model?.trim()) q['filter[model]'] = filters.value.model.trim()
+
+  // ✅ IMPORTANT: match /user/cars page format (between scopes)
+  const pf = toNumOrNull(filters.value.priceFrom)
+  const pt = toNumOrNull(filters.value.priceTo)
+  putBetween(q, 'price_between', pf, pt)
+
+  const yf = toNumOrNull(filters.value.yearFrom)
+  const yt = toNumOrNull(filters.value.yearTo)
+  putBetween(q, 'year_between', yf, yt)
+
+  return q
+}
 
 const goSearch = () => {
-  const v = search.value.trim()
   router.push({
     path: '/user/cars',
-    query: v ? { 'filter[global]': v } : {},
+    query: buildQuery(),
   })
 }
 
-// Cards config
+const resetFilters = () => {
+  filters.value = {
+    type: 'car',
+    condition: 'used',
+    brand: '',
+    model: '',
+    priceFrom: null,
+    priceTo: null,
+    yearFrom: null,
+    yearTo: null,
+  }
+}
+
+/* =========================
+   ✅ Background Slider
+========================= */
+const slides = ref([
+  { light: slide1, dark: slide1 },
+  { light: slide2, dark: slide2 },
+  { light: slide3, dark: slide3 },
+])
+
+const slideIndex = ref(0)
+const slideDelayMs = 3000
+let timer = null
+
+const currentSlideSrc = computed(() => {
+  const s = slides.value[slideIndex.value]
+  return theme.current.value.dark ? s.dark : s.light
+})
+
+const nextSlide = () => {
+  const len = slides.value.length || 1
+  slideIndex.value = (slideIndex.value + 1) % len
+}
+
+onMounted(() => {
+  timer = window.setInterval(nextSlide, slideDelayMs)
+})
+
+onBeforeUnmount(() => {
+  if (timer) window.clearInterval(timer)
+})
+
+watch(() => theme.current.value.dark, () => {})
+
+/* =========================
+   ✅ Quick cards
+========================= */
 const quickCards = computed(() => ([
   {
     title: 'Latest',
@@ -51,317 +148,313 @@ const quickCards = computed(() => ([
 </script>
 
 <template>
-  <!-- HERO (Small) -->
   <section
     id="home"
-    class="hero"
+    class="hero hero--full"
     :class="theme.current.value.dark ? 'hero--dark' : 'hero--light'"
   >
+    <div class="heroBg">
+      <Transition name="bgfade" mode="out-in">
+        <div
+          :key="currentSlideSrc"
+          class="heroBg__img"
+          :style="{ backgroundImage: `url(${currentSlideSrc})` }"
+        />
+      </Transition>
+
+      <div class="heroBg__overlay" />
+      <div class="heroBg__glow" />
+
+      <div class="heroBg__dots" v-if="slides.length > 1">
+        <button
+          v-for="(_, i) in slides"
+          :key="i"
+          class="dot"
+          :class="{ active: i === slideIndex }"
+          type="button"
+          aria-label="Go to slide"
+          @click="slideIndex = i"
+        />
+      </div>
+    </div>
+
     <VContainer class="hero__container">
-      <div class="hero__grid">
-        <!-- Left -->
-        <div class="hero__left">
-          <div class="hero__badge">
-            ✅ Approved listings only
-          </div>
+      <div class="heroCenter">
+        <div class="heroTop">
+          <div class="hero__badge">✅ Approved listings only</div>
 
           <h1 class="hero__title">
-            Find your next car <span class="hero__accent">today</span>
+            Find your next <span class="hero__accent">vehicle</span>
           </h1>
 
           <p class="hero__subtitle">
-            Search, filter, and compare verified ads — the fastest way to find the right car.
+            Choose filters, then jump to search results instantly.
           </p>
+        </div>
 
-          <div class="hero__search">
-            <VTextField
-              v-model="search"
-              placeholder="Search by brand, model, year..."
-              density="comfortable"
+        <!-- ✅ Filters Form -->
+        <VCard class="filterCard" rounded="xl" elevation="0">
+          <div class="filterCard__grid">
+            <VSelect
+              v-model="filters.type"
+              label="Type"
+              :items="[
+                { title: 'Car', value: 'car' },
+                { title: 'Motorcycle', value: 'motorcycle' },
+              ]"
+              density="compact"
               variant="outlined"
-              prepend-inner-icon="tabler-search"
               hide-details
-              @keyup.enter="goSearch"
+              prepend-inner-icon="tabler-category"
             />
-            <VBtn color="primary" class="hero__btn" @click="goSearch">
-              Search
-            </VBtn>
+
+            <VSelect
+              v-model="filters.condition"
+              label="Condition"
+              :items="[
+                { title: 'Used', value: 'used' },
+                { title: 'New', value: 'new' },
+              ]"
+              density="compact"
+              variant="outlined"
+              hide-details
+              prepend-inner-icon="tabler-badge"
+            />
+
+            <VTextField
+              v-model="filters.brand"
+              label="Brand"
+              placeholder="Toyota, BMW..."
+              density="compact"
+              variant="outlined"
+              hide-details
+              prepend-inner-icon="tabler-car"
+            />
+
+            <VTextField
+              v-model="filters.model"
+              label="Model"
+              placeholder="Corolla, X5..."
+              density="compact"
+              variant="outlined"
+              hide-details
+              prepend-inner-icon="tabler-settings"
+            />
+
+            <!-- Price range -->
+            <div class="rangeRow">
+              <div class="rangeRow__label">Price Range</div>
+              <div class="rangeRow__grid">
+                <VTextField
+                  v-model="filters.priceFrom"
+                  type="number"
+                  placeholder="Min"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  prepend-inner-icon="tabler-currency-dollar"
+                />
+                <VTextField
+                  v-model="filters.priceTo"
+                  type="number"
+                  placeholder="Max"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  prepend-inner-icon="tabler-currency-dollar"
+                />
+              </div>
+            </div>
+
+            <!-- Year range -->
+            <div class="rangeRow">
+              <div class="rangeRow__label">Year</div>
+              <div class="rangeRow__grid">
+                <VTextField
+                  v-model="filters.yearFrom"
+                  type="number"
+                  placeholder="Min"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  prepend-inner-icon="tabler-calendar"
+                />
+                <VTextField
+                  v-model="filters.yearTo"
+                  type="number"
+                  placeholder="Max"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  prepend-inner-icon="tabler-calendar"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="hero__actions">
-            <VBtn color="primary" variant="elevated" @click="$router.push('/user/cars')">
+          <div class="filterCard__actions">
+            <VBtn color="primary" class="btnMain" @click="goSearch" prepend-icon="tabler-search">
+              Search
+            </VBtn>
+
+            <VBtn variant="tonal" class="btnGhost" @click="resetFilters" prepend-icon="tabler-rotate">
+              Reset
+            </VBtn>
+
+            <div class="filterCard__spacer" />
+
+            <VBtn color="primary" variant="elevated" class="btnSmall" @click="$router.push('/user/cars')">
               Browse Cars
             </VBtn>
-            <VBtn variant="tonal" @click="$router.push('/seller/register')">
+
+            <VBtn variant="tonal" class="btnSmall" @click="$router.push('/seller/register')">
               Sell Your Car
             </VBtn>
           </div>
-        </div>
-
-        <!-- Right -->
-        <div class="hero__right">
-          <div class="hero__media">
-            <img :src="heroImg" alt="Car preview" class="hero__img">
-            <div class="hero__glow" />
-          </div>
-        </div>
-      </div>
-    </VContainer>
-  </section>
-
-  <!-- 3 QUICK CARDS -->
-  <section class="quick">
-    <VContainer>
-      <div class="quick__grid">
-        <VCard
-          v-for="c in quickCards"
-          :key="c.title"
-          rounded="lg"
-          class="quick-card"
-          @click="$router.push(c.to)"
-        >
-          <div class="quick-card__top">
-            <div class="quick-card__icon">
-              <VIcon :icon="c.icon" size="20" />
-            </div>
-
-            <div class="quick-card__chip">
-              {{ c.chip }}
-            </div>
-          </div>
-
-          <div class="quick-card__body">
-            <div class="quick-card__title">{{ c.title }}</div>
-            <div class="quick-card__subtitle">{{ c.subtitle }}</div>
-          </div>
-
-          <div class="quick-card__footer">
-            <span class="quick-card__action">{{ c.actionText }}</span>
-            <VIcon icon="tabler-arrow-right" size="18" />
-          </div>
         </VCard>
+
+        <!-- ✅ QUICK CARDS -->
+        <div class="quickInHero">
+          <VCard
+            v-for="c in quickCards"
+            :key="c.title"
+            class="quickInHero__card"
+            rounded="xl"
+            elevation="0"
+            @click="$router.push(c.to)"
+          >
+            <div class="qTop">
+              <div class="qIcon">
+                <VIcon :icon="c.icon" size="18" />
+              </div>
+              <span class="qChip">{{ c.chip }}</span>
+            </div>
+
+            <div class="qBody">
+              <div class="qTitle">{{ c.title }}</div>
+              <div class="qSub">{{ c.subtitle }}</div>
+            </div>
+
+            <div class="qFoot">
+              <span class="qAction">{{ c.actionText }}</span>
+              <VIcon icon="tabler-arrow-right" size="16" />
+            </div>
+          </VCard>
+        </div>
       </div>
     </VContainer>
   </section>
 </template>
 
 <style scoped lang="scss">
-/* =========================
-   HERO (SMALL)
-   ========================= */
-.hero {
-  border-radius: 0 0 50px 50px;
-  overflow: hidden;
-  position: relative;
-}
+/* (نفس الـ CSS بتاعك زي ما هو بدون تغيير) */
+.hero{ border-radius: 0 0 50px 50px; overflow: hidden; position: relative; }
+.hero__container{ padding-top: 42px; padding-bottom: 42px; position: relative; z-index: 2; }
+.hero--dark{ background-color:#25293c; }
+.hero--light{ background: linear-gradient(138.18deg, #eae8fd 0%, #fce5e6 94.44%); }
 
-.hero__container {
-  padding-top: 36px;
-  padding-bottom: 36px;
-}
-
-.hero--dark {
-  background-color: #25293c;
-  background-image: url("@images/front-pages/backgrounds/hero-bg.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.hero--light {
+.heroBg{ position:absolute; inset:0; z-index: 1; }
+.heroBg__img{ position:absolute; inset:0; background-size: cover; background-position: center; transform: scale(1.04); filter: saturate(1.05) contrast(1.05); }
+.heroBg__overlay{
+  position:absolute; inset:0;
   background:
-    url("@images/front-pages/backgrounds/hero-bg.png") center no-repeat,
-    linear-gradient(138.18deg, #eae8fd 0%, #fce5e6 94.44%);
-  background-size: cover;
+    linear-gradient(90deg, rgba(10,12,22,.78), rgba(10,12,22,.55) 45%, rgba(10,12,22,.62)),
+    radial-gradient(circle at 15% 25%, rgba(90,74,255,.30), transparent 55%),
+    radial-gradient(circle at 85% 70%, rgba(40,199,111,.16), transparent 55%);
+  backdrop-filter: blur(6px);
 }
-
-.hero__grid {
-  min-height: 380px; /* ✅ المطلوب */
-  display: grid;
-  grid-template-columns: 1.1fr .9fr;
-  gap: 22px;
-  align-items: center;
+.heroBg__glow{
+  position:absolute; inset:-40px; pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(90,74,255,.18), transparent 45%),
+    radial-gradient(circle at 70% 85%, rgba(255,55,57,.12), transparent 50%);
 }
-
-.hero__badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 13px;
-  margin-bottom: 12px;
-  background: rgba(255,255,255,.08);
+.heroBg__dots{
+  position:absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  display:flex; gap:8px; padding: 8px 10px; border-radius: 999px;
+  background: rgba(0,0,0,.22); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.10);
 }
+.dot{ width: 8px; height: 8px; border-radius: 999px; border: 0; cursor: pointer; opacity: .55; background: #fff; }
+.dot.active{ opacity: 1; }
+.bgfade-enter-active, .bgfade-leave-active{ transition: opacity .45s ease; }
+.bgfade-enter-from, .bgfade-leave-to{ opacity: 0; }
 
-.hero__title {
-  font-size: 36px;
-  line-height: 42px;
-  font-weight: 900;
-  margin: 0;
+.heroCenter{ max-width: 980px; margin-inline: auto; }
+.heroTop{ max-width: 720px; }
+.hero__badge{
+  display:inline-flex; align-items:center; padding: 6px 12px; border-radius: 999px;
+  font-weight: 800; font-size: 13px; margin-bottom: 12px;
+  background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10);
 }
-
-.hero__accent {
+.hero__title{ font-size: 40px; line-height: 46px; font-weight: 950; margin: 0; }
+.hero__accent{
   background: linear-gradient(135deg, #28c76f 0%, #5a4aff 47.92%, #ff3739 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
+.hero__subtitle{ margin-top: 10px; opacity: .82; max-width: 560px; }
 
-.hero__subtitle {
-  margin-top: 10px;
-  opacity: .8;
-  max-width: 560px;
+.filterCard{
+  margin-top: 18px; padding: 16px; border-radius: 24px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(14px); box-shadow: 0 18px 60px rgba(0,0,0,.22);
 }
-
-.hero__search {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
+.filterCard__grid{ display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.rangeRow{
+  grid-column: span 2; padding: 10px; border-radius: 16px;
+  background: rgba(0,0,0,.14); border: 1px solid rgba(255,255,255,.10);
 }
+.rangeRow__label{ font-size: 12px; font-weight: 900; opacity: .78; margin-bottom: 8px; }
+.rangeRow__grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-.hero__btn {
-  height: 44px;
-  padding-inline: 18px;
+:deep(.v-field){ border-radius: 14px; background: rgba(0,0,0,.16); }
+:deep(.v-field__outline){ opacity: .35; }
+:deep(.v-field:hover .v-field__outline){ opacity: .55; }
+:deep(.v-label){ opacity: .82; font-weight: 800; }
+
+.filterCard__actions{ margin-top: 14px; display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+.filterCard__spacer{ flex: 1; }
+.btnMain, .btnGhost{ height: 44px; border-radius: 14px; padding-inline: 16px; }
+.btnSmall{ height: 44px; border-radius: 14px; padding-inline: 14px; }
+
+.quickInHero{ margin-top: 14px; display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.quickInHero__card{
+  cursor:pointer; padding: 14px; border-radius: 18px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(12px);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
 }
-
-.hero__actions {
-  margin-top: 12px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* media */
-.hero__right {
-  display: flex;
-  justify-content: center;
-}
-
-.hero__media {
-  position: relative;
-  width: 100%;
-  max-width: 520px;
-  border-radius: 22px;
-  overflow: hidden;
-  background: rgba(255,255,255,.04);
-}
-
-.hero__img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.hero__glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 30% 20%, rgba(90,74,255,.35), transparent 55%),
-  radial-gradient(circle at 80% 70%, rgba(40,199,111,.18), transparent 55%);
-  pointer-events: none;
-}
-
-/* Responsive */
-@media (max-width: 960px) {
-  .hero__grid {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-  .hero__title {
-    font-size: 30px;
-    line-height: 36px;
-  }
-  .hero__search {
-    grid-template-columns: 1fr;
-  }
-  .hero__btn {
-    width: 100%;
-  }
-}
-
-/* =========================
-   QUICK CARDS
-   ========================= */
-.quick {
-  margin-top: -18px; /* ✅ يخلي الكروت تدخل على الهيرو شوية */
-  padding-bottom: 18px;
-}
-
-.quick__grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.quick-card {
-  cursor: pointer;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  transition: transform .15s ease;
-}
-
-.quick-card:hover {
+.quickInHero__card:hover{
   transform: translateY(-2px);
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
 }
-
-.quick-card__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.qTop{ display:flex; align-items:center; justify-content:space-between; gap: 10px; }
+.qIcon{
+  width: 34px; height: 34px; border-radius: 12px;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.10);
 }
-
-.quick-card__icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,.06);
+.qChip{
+  font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 999px;
+  background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.10); opacity: .95;
 }
+.qBody{ margin-top: 12px; }
+.qTitle{ font-weight: 950; font-size: 15px; }
+.qSub{ margin-top: 4px; font-size: 12.5px; opacity: .78; line-height: 1.5; }
+.qFoot{ margin-top: 12px; display:flex; align-items:center; justify-content:space-between; opacity: .9; }
+.qAction{ font-weight: 900; font-size: 12.5px; }
 
-.quick-card__chip {
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.08);
-  font-weight: 800;
-  opacity: .9;
+@media (max-width: 1100px){
+  .filterCard__grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rangeRow{ grid-column: span 2; }
+  .quickInHero{ grid-template-columns: 1fr; }
 }
-
-.quick-card__body {
-  margin-top: 12px;
-}
-
-.quick-card__title {
-  font-weight: 900;
-  font-size: 16px;
-}
-
-.quick-card__subtitle {
-  opacity: .75;
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-.quick-card__footer {
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  opacity: .9;
-}
-
-.quick-card__action {
-  font-weight: 800;
-  font-size: 13px;
-}
-
-@media (max-width: 960px) {
-  .quick__grid {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 640px){
+  .hero__title{ font-size: 32px; line-height: 38px; }
+  .filterCard__grid{ grid-template-columns: 1fr; }
+  .rangeRow{ grid-column: span 1; }
+  .rangeRow__grid{ grid-template-columns: 1fr; }
+  .filterCard__spacer{ display:none; }
 }
 </style>
