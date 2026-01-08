@@ -62,8 +62,11 @@ const putBetween = (obj, key, from, to) => {
 // -------------------------
 // State
 // -------------------------
-const loading = ref(false)
+// ✅ FIX: نخليها تبدأ Loading علشان متظهرش Not Found أول لحظة
+const loading = ref(true)
 const loadingMore = ref(false)
+const initialized = ref(false)
+
 const error = ref('')
 const cars = ref([])
 
@@ -285,7 +288,6 @@ const buildParams = () => {
   if (fuelType.value) params['filter[fuel_type]'] = fuelType.value
   if (drivetrain.value) params['filter[drivetrain]'] = drivetrain.value
   if (condition.value) params['filter[condition]'] = condition.value
-
   if (featureIds.value?.length) params['filter[feature_ids]'] = featureIds.value.join(',')
 
   return params
@@ -312,6 +314,7 @@ const fetchCars = async () => {
     total.value = 0
   } finally {
     loading.value = false
+    initialized.value = true
   }
 }
 
@@ -728,7 +731,10 @@ onMounted(async () => {
               </div>
             </div>
 
-            <!-- ✅ reuse CarsSection UI -->
+            <!-- ✅ IMPORTANT:
+                 - CarsSection هيعرض Loading لما loading=true
+                 - لو cars فاضية قبل أول fetch، مش هتشوف Not found لأن loading يبدأ true
+            -->
             <CarsSection
               embedded
               :showViewAll="false"
@@ -739,8 +745,17 @@ onMounted(async () => {
               :error="error"
             />
 
+            <!-- ✅ لو خلص أول تحميل ومفيش نتائج -->
+            <div
+              v-if="initialized && !loading && !error && cars.length === 0"
+              class="text-center mt-6"
+              style="opacity:.75"
+            >
+              No cars found.
+            </div>
+
             <!-- ✅ Load More -->
-            <div class="d-flex justify-center mt-6" v-if="hasMore">
+            <div class="d-flex justify-center mt-6" v-if="hasMore && !loading">
               <VBtn
                 variant="tonal"
                 :loading="loadingMore"
@@ -750,7 +765,7 @@ onMounted(async () => {
               </VBtn>
             </div>
 
-            <div class="text-center mt-4" v-else-if="!loading && cars.length">
+            <div class="text-center mt-4" v-else-if="initialized && !loading && cars.length">
               No more results.
             </div>
           </VCard>
