@@ -386,3 +386,13 @@ const logout = async () => {
   inset-inline-end: 1rem;
 }
 </style>
+
+
+
+
+
+
+
+
+
+// دي الجزء بتاع التوب بار الي في الصفحه الاساسيه

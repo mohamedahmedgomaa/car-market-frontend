@@ -48,7 +48,7 @@ const buildUrl = (path, fallback) => {
 
 const getMainImage = (car) => {
   const imgs = Array.isArray(car?.images) ? car.images : []
-  const main = imgs.find(i => Number(i.is_main) === 1) || imgs[0]
+  const main = imgs.find((i) => Number(i.is_main) === 1) || imgs[0]
   return buildUrl(main?.path, 'https://via.placeholder.com/640x420?text=Car')
 }
 
@@ -132,15 +132,18 @@ const fetchCars = async () => {
 
   try {
     const res = await carsUserApi.getAll({
-      perPage: props.limit,
+      per_page: props.limit,
       ...(props.approvedOnly ? { 'filter[status]': 'approved' } : {}),
       ...props.params,
     })
 
     const all = normalizeCars(res.data)
-    const list = props.approvedOnly ? all.filter(c => c.status === 'approved') : all
+    const list = props.approvedOnly ? all.filter((c) => c.status === 'approved') : all
 
-    const normalized = list.map(c => {
+    // ✅ Limit to max 8 items for homepage display
+    const limitedList = list.slice(0, props.limit)
+
+    const normalized = limitedList.map((c) => {
       const favArr = Array.isArray(c.favorites) ? c.favorites : []
 
       let is_favorited = false
@@ -149,14 +152,14 @@ const fetchCars = async () => {
       } else if (c.is_favorited !== undefined && c.is_favorited !== null) {
         is_favorited = !!c.is_favorited
       } else if (userId && favArr.length) {
-        is_favorited = favArr.some(f => {
+        is_favorited = favArr.some((f) => {
           const id = Number(f?.id) || Number(f?.user_id) || Number(f?.pivot?.user_id)
           return id === userId
         })
       }
 
       const favorites_count =
-        (c.favorites_count !== undefined && c.favorites_count !== null)
+        c.favorites_count !== undefined && c.favorites_count !== null
           ? Number(c.favorites_count)
           : favArr.length
 
@@ -175,9 +178,19 @@ const fetchCars = async () => {
 
 onMounted(fetchCars)
 
-watch(() => props.params, () => fetchCars(), { deep: true })
-watch(() => props.limit, () => fetchCars())
-watch(() => props.approvedOnly, () => fetchCars())
+watch(
+  () => props.params,
+  () => fetchCars(),
+  { deep: true },
+)
+watch(
+  () => props.limit,
+  () => fetchCars(),
+)
+watch(
+  () => props.approvedOnly,
+  () => fetchCars(),
+)
 </script>
 
 <template>
@@ -207,7 +220,7 @@ watch(() => props.approvedOnly, () => fetchCars())
         >
           <!-- ✅ صورة العربية اختيارية -->
           <div v-if="showImage" class="car-card__image">
-            <img :src="getMainImage(car)" :alt="t(car.title) || `Car #${car.id}`" loading="lazy">
+            <img :src="getMainImage(car)" :alt="t(car.title) || `Car #${car.id}`" loading="lazy" />
 
             <button
               class="fav-btn"
@@ -260,84 +273,173 @@ watch(() => props.approvedOnly, () => fetchCars())
 </template>
 
 <style scoped>
-.cars-section { padding: 48px 0; }
-.cars-section--embedded { padding: 0; }
-.cars-section__container { width: 100%; }
+.cars-section {
+  padding: 48px 0;
+}
+.cars-section--embedded {
+  padding: 0;
+}
+.cars-section__container {
+  width: 100%;
+}
 
-.cars-section__header { display:flex; align-items:end; justify-content:space-between; gap:16px; margin-bottom:18px; }
-.cars-section__title { font-size:24px; margin:0; }
-.cars-section__subtitle { margin:6px 0 0; opacity:.75; }
-.cars-section__link { text-decoration:none; font-weight:600; }
-.cars-section__state { padding:18px 0; opacity:.8; }
-.cars-section__state.error { opacity:1; }
+.cars-section__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.cars-section__title {
+  font-size: 24px;
+  margin: 0;
+}
+.cars-section__subtitle {
+  margin: 6px 0 0;
+  opacity: 0.75;
+}
+.cars-section__link {
+  text-decoration: none;
+  font-weight: 600;
+}
+.cars-section__state {
+  padding: 18px 0;
+  opacity: 0.8;
+}
+.cars-section__state.error {
+  opacity: 1;
+}
 
 /* default: 4 columns */
-.cars-grid { display:grid; gap:16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width:1200px){ .cars-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); } }
-@media (max-width:900px){ .cars-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
-@media (max-width:560px){ .cars-grid{ grid-template-columns:1fr; } }
+.cars-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 1200px) {
+  .cars-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .cars-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .cars-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* embedded: 3 columns */
-.cars-section--embedded .cars-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (max-width:1200px){ .cars-section--embedded .cars-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
-@media (max-width:600px){ .cars-section--embedded .cars-grid{ grid-template-columns:1fr; } }
+.cars-section--embedded .cars-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 1200px) {
+  .cars-section--embedded .cars-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .cars-section--embedded .cars-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 .car-card {
-  display:block;
-  border-radius:14px;
-  overflow:hidden;
-  text-decoration:none;
-  background:rgba(255,255,255,.04);
-  transition:transform .15s ease;
+  display: block;
+  border-radius: 14px;
+  overflow: hidden;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.04);
+  transition: transform 0.15s ease;
 }
-.car-card:hover { transform:translateY(-2px); }
+.car-card:hover {
+  transform: translateY(-2px);
+}
 
-.car-card__image { aspect-ratio:16/10; background:rgba(0,0,0,.15); position:relative; }
-.car-card__image img { width:100%; height:100%; object-fit:cover; display:block; }
+.car-card__image {
+  aspect-ratio: 16/10;
+  background: rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+.car-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 /* لو مفيش صورة */
-.car-card__top { position:relative; padding:10px 10px 0; min-height:48px; }
+.car-card__top {
+  position: relative;
+  padding: 10px 10px 0;
+  min-height: 48px;
+}
 
-.car-card__body { padding:14px; }
-.car-card__title { margin:0 0 8px; font-size:16px; }
+.car-card__body {
+  padding: 14px;
+}
+.car-card__title {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
 
 /* ✅ seller name simple */
-.seller-name{
-  font-weight:600;
-  font-size:13px;
-  opacity:.85;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+.seller-name {
+  font-weight: 600;
+  font-size: 13px;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   max-width: 100%;
-  margin-bottom:10px;
+  margin-bottom: 10px;
 }
 
 /* ✅ footer: price + date */
-.car-card__footer{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+.car-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
-.car-card__price { font-weight:700; }
+.car-card__price {
+  font-weight: 700;
+}
 
-.car-card__date{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  opacity:.75;
-  font-size:12px;
-  white-space:nowrap;
+.car-card__date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.75;
+  font-size: 12px;
+  white-space: nowrap;
 }
-.car-card__dateIcon{ opacity:.9; }
+.car-card__dateIcon {
+  opacity: 0.9;
+}
 
 /* fav */
 .fav-btn {
-  position:absolute; top:10px; right:10px;
-  width:38px; height:38px; border-radius:12px; border:0;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  background:rgba(0,0,0,.40); backdrop-filter:blur(6px); color:#fff;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  color: #fff;
 }
-.fav-btn--static { position:static; margin-left:auto; }
+.fav-btn--static {
+  position: static;
+  margin-left: auto;
+}
 </style>

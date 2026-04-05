@@ -6,7 +6,7 @@ import TopSellersSection from '@/views/front-pages/landing-page/top-sellers-sect
 definePage({ meta: { layout: 'front', public: true } })
 
 const buildSection = (type, sort) => ({
-  limit: 20,
+  limit: 8,
   params: {
     'filter[type]': type,
     sort,
@@ -22,14 +22,37 @@ const buildSection = (type, sort) => ({
 
 const CARS = {
   latest: buildSection('car', '-created_at'),
-  topPrice: buildSection('car', '-price'),
-  mostFav: buildSection('car', '-favorites_count'),
 }
 
 const MOTOS = {
   latest: buildSection('motorcycle', '-created_at'),
-  topPrice: buildSection('motorcycle', '-price'),
-  mostFav: buildSection('motorcycle', '-favorites_count'),
+}
+
+const ALL_VEHICLES = {
+  topPrice: {
+    limit: 8,
+    params: {
+      sort: '-price',
+    },
+    viewAllTo: {
+      path: '/user/cars',
+      query: {
+        sort: '-price',
+      },
+    },
+  },
+  mostFav: {
+    limit: 8,
+    params: {
+      sort: '-favorites_count',
+    },
+    viewAllTo: {
+      path: '/user/cars',
+      query: {
+        sort: '-favorites_count',
+      },
+    },
+  },
 }
 </script>
 
@@ -38,95 +61,74 @@ const MOTOS = {
 
   <VContainer class="hero__container">
     <!-- ===================== -->
-    <!-- Cars Group -->
+    <!-- Cars Section -->
     <!-- ===================== -->
-    <div class="group-head">
-      <div>
-        <h2 class="group-title">Cars</h2>
-        <p class="group-subtitle">Explore car listings by newest, price, and favorites</p>
-      </div>
-      <VChip size="small" variant="tonal">Type: car</VChip>
-    </div>
-
-    <VDivider class="mb-6" />
-
     <CarsSection
-      title="Latest Cars"
+      title="Cars"
       subtitle="Browse our newest car listings"
       :limit="CARS.latest.limit"
       :params="CARS.latest.params"
       :viewAllTo="CARS.latest.viewAllTo"
     />
 
-    <CarsSection
-      title="Top Priced Cars"
-      subtitle="The most expensive car listings"
-      :limit="CARS.topPrice.limit"
-      :params="CARS.topPrice.params"
-      :viewAllTo="CARS.topPrice.viewAllTo"
-    />
-
-    <CarsSection
-      title="Most Favorite Cars"
-      subtitle="Most favorited car listings"
-      :limit="CARS.mostFav.limit"
-      :params="CARS.mostFav.params"
-      :viewAllTo="CARS.mostFav.viewAllTo"
-    />
-
     <!-- Spacer -->
     <div class="group-spacer"></div>
 
     <!-- ===================== -->
-    <!-- Motorcycles Group -->
+    <!-- Bikes Section -->
     <!-- ===================== -->
-    <div class="group-head">
-      <div>
-        <h2 class="group-title">Motorcycles</h2>
-        <p class="group-subtitle">Explore motorcycles by newest, price, and favorites</p>
-      </div>
-      <VChip size="small" variant="tonal">Type: motorcycle</VChip>
-    </div>
-
-    <VDivider class="mb-6" />
-
     <CarsSection
-      title="Latest Motorcycles"
+      title="Bikes"
       subtitle="Browse our newest motorcycle listings"
       :limit="MOTOS.latest.limit"
       :params="MOTOS.latest.params"
       :viewAllTo="MOTOS.latest.viewAllTo"
     />
 
-    <CarsSection
-      title="Top Priced Motorcycles"
-      subtitle="The most expensive motorcycle listings"
-      :limit="MOTOS.topPrice.limit"
-      :params="MOTOS.topPrice.params"
-      :viewAllTo="MOTOS.topPrice.viewAllTo"
-    />
+    <!-- Spacer -->
+    <div class="group-spacer"></div>
 
+    <!-- ===================== -->
+    <!-- Best Deals Section -->
+    <!-- ===================== -->
     <CarsSection
-      title="Most Favorite Motorcycles"
-      subtitle="Most favorited motorcycle listings"
-      :limit="MOTOS.mostFav.limit"
-      :params="MOTOS.mostFav.params"
-      :viewAllTo="MOTOS.mostFav.viewAllTo"
-    />
+      title="Best Deals"
+      subtitle="The most competitive prices on all vehicles"
+      :limit="ALL_VEHICLES.topPrice.limit"
+      :params="ALL_VEHICLES.topPrice.params"
+      :viewAllTo="ALL_VEHICLES.topPrice.viewAllTo"
+    >
+      <template #header-extra>
+        <VChip size="small" color="error" variant="flat" class="best-deal-badge"> أفضل صفقة </VChip>
+      </template>
+    </CarsSection>
 
-    <TopSellersSection
-      title="Top Sellers"
-      subtitle="Sellers with the most listings"
-      :limit="12"
-      :params="{ 'filter[cars.status]': 'approved' }"
-    />
+    <!-- Spacer -->
+    <div class="group-spacer"></div>
+
+    <!-- ===================== -->
+    <!-- Expat Auto Initiative Section -->
+    <!-- ===================== -->
+    <CarsSection
+      title="Expat Auto Initiative"
+      subtitle="Popular choices available for import"
+      :limit="ALL_VEHICLES.mostFav.limit"
+      :params="ALL_VEHICLES.mostFav.params"
+      :viewAllTo="ALL_VEHICLES.mostFav.viewAllTo"
+    >
+      <template #header-extra>
+        <VChip size="small" color="success" variant="flat" class="import-badge">
+          متاح للاستيراد
+        </VChip>
+      </template>
+    </CarsSection>
   </VContainer>
 </template>
 
 <style scoped>
 .hero__container {
-  padding-top: 18px;
-  padding-bottom: 32px;
+  padding-top: 0;
+  padding-bottom: 16px;
 }
 
 .group-head {
@@ -151,5 +153,17 @@ const MOTOS = {
 
 .group-spacer {
   height: 18px;
+}
+
+.best-deal-badge {
+  background-color: #ff0000 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.import-badge {
+  background-color: #4caf50 !important;
+  color: #ffffff !important;
+  font-weight: 600;
 }
 </style>
