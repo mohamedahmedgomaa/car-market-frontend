@@ -19,18 +19,22 @@ const router = useRouter()
 const sidebar = ref(false)
 
 // نفس سلوك Vuexy الأصلي
-watch(() => display, () => {
-  return display.mdAndUp ? (sidebar.value = false) : sidebar.value
-}, { deep: true })
+watch(
+  () => display,
+  () => {
+    return display.mdAndUp ? (sidebar.value = false) : sidebar.value
+  },
+  { deep: true },
+)
 
 // ✅ Search => filter[global]
 const search = ref(String(route.query['filter[global]'] || ''))
 
 watch(
   () => route.query['filter[global]'],
-  val => {
+  (val) => {
     search.value = String(val || '')
-  }
+  },
 )
 
 const goSearch = async () => {
@@ -46,7 +50,9 @@ const goSearch = async () => {
 
 // ✅ force reactive re-check for localStorage changes (login/logout)
 const authKey = ref(0)
-const syncAuth = () => { authKey.value++ }
+const syncAuth = () => {
+  authKey.value++
+}
 
 onMounted(() => {
   window.addEventListener('auth:changed', syncAuth)
@@ -74,16 +80,8 @@ const logout = async () => {
 
 <template>
   <!-- 👉 Navigation drawer for mobile devices -->
-  <VNavigationDrawer
-    v-model="sidebar"
-    width="275"
-    data-allow-mismatch
-    disable-resize-watcher
-  >
-    <PerfectScrollbar
-      :options="{ wheelPropagation: false }"
-      class="h-100"
-    >
+  <VNavigationDrawer v-model="sidebar" width="275" data-allow-mismatch disable-resize-watcher>
+    <PerfectScrollbar :options="{ wheelPropagation: false }" class="h-100">
       <div>
         <div class="d-flex flex-column gap-y-4 pa-4">
           <!-- ✅ Links -->
@@ -105,19 +103,41 @@ const logout = async () => {
             Cars
           </RouterLink>
 
-          <!-- ✅ Search (Mobile) -->
-          <VTextField
-            v-model="search"
-            label="Search cars..."
-            density="comfortable"
-            variant="outlined"
-            prepend-inner-icon="tabler-search"
-            hide-details
-            @keyup.enter="goSearch"
-          />
-          <VBtn color="primary" block @click="goSearch">
+          <RouterLink
+            to="/user/bikes"
+            class="nav-link font-weight-medium"
+            :class="route.path.startsWith('/user/bikes') ? 'active-link' : ''"
+            @click="sidebar = false"
+          >
+            Bikes
+          </RouterLink>
+
+          <RouterLink
+            to="/user/sell"
+            class="nav-link font-weight-medium"
+            :class="route.path.startsWith('/user/sell') ? 'active-link' : ''"
+            @click="sidebar = false"
+          >
+            Sell
+          </RouterLink>
+
+          <RouterLink
+            to="/user/favorites"
+            class="nav-link font-weight-medium"
+            :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
+            @click="sidebar = false"
+          >
+            Favorites
+          </RouterLink>
+
+          <RouterLink
+            to="/user/search"
+            class="nav-link font-weight-medium"
+            :class="route.path.startsWith('/user/search') ? 'active-link' : ''"
+            @click="sidebar = false"
+          >
             Search
-          </VBtn>
+          </RouterLink>
 
           <VDivider class="my-2" />
 
@@ -154,7 +174,7 @@ const logout = async () => {
 
             <div
               class="nav-link font-weight-medium cursor-pointer"
-              style="color: rgba(var(--v-theme-on-surface));"
+              style="color: rgba(var(--v-theme-on-surface))"
               @click="logout"
             >
               Logout
@@ -177,8 +197,16 @@ const logout = async () => {
   <div class="front-page-navbar">
     <div class="front-page-navbar">
       <VAppBar
-        :color="$vuetify.theme.current.dark ? 'rgba(var(--v-theme-surface),0.38)' : 'rgba(var(--v-theme-surface), 0.38)'"
-        :class="y > 10 ? 'app-bar-scrolled' : [$vuetify.theme.current.dark ? 'app-bar-dark' : 'app-bar-light', 'elevation-0']"
+        :color="
+          $vuetify.theme.current.dark
+            ? 'rgba(var(--v-theme-surface),0.38)'
+            : 'rgba(var(--v-theme-surface), 0.38)'
+        "
+        :class="
+          y > 10
+            ? 'app-bar-scrolled'
+            : [$vuetify.theme.current.dark ? 'app-bar-dark' : 'app-bar-light', 'elevation-0']
+        "
         class="navbar-blur"
       >
         <!-- toggle icon for mobile device -->
@@ -187,11 +215,7 @@ const logout = async () => {
           class="ms-n3 me-2 d-inline-block d-md-none"
           @click="sidebar = !sidebar"
         >
-          <VIcon
-            size="26"
-            icon="tabler-menu-2"
-            color="rgba(var(--v-theme-on-surface))"
-          />
+          <VIcon size="26" icon="tabler-menu-2" color="rgba(var(--v-theme-on-surface))" />
         </IconBtn>
 
         <!-- Title -->
@@ -200,14 +224,9 @@ const logout = async () => {
             <RouterLink
               to="/"
               class="d-flex gap-x-4"
-              :class="$vuetify.display.mdAndUp ? 'd-none' : 'd-block'"
+              :class="$vuetify.display.mdAndUp ? 'd-block' : 'd-block'"
             >
-              <div class="app-logo">
-                <VNodeRenderer :nodes="themeConfig.app.logo" />
-                <h1 class="app-logo-title">
-                  {{ themeConfig.app.title }}
-                </h1>
-              </div>
+              <h1 class="app-logo-title" style="font-size: 1.5rem; font-weight: 700">negm</h1>
             </RouterLink>
           </VAppBarTitle>
 
@@ -228,54 +247,54 @@ const logout = async () => {
             >
               Cars
             </RouterLink>
+
+            <RouterLink
+              to="/user/bikes"
+              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              :class="route.path.startsWith('/user/bikes') ? 'active-link' : ''"
+            >
+              Bikes
+            </RouterLink>
+
+            <RouterLink
+              to="/user/sell"
+              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              :class="route.path.startsWith('/user/sell') ? 'active-link' : ''"
+            >
+              Sell
+            </RouterLink>
+
+            <RouterLink
+              to="/user/favorites"
+              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
+            >
+              Favorites
+            </RouterLink>
+
+            <RouterLink
+              to="/user/search"
+              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              :class="route.path.startsWith('/user/search') ? 'active-link' : ''"
+            >
+              Search
+            </RouterLink>
           </div>
         </div>
 
         <VSpacer />
 
-        <!-- ✅ Search (Desktop) -->
-        <div class="d-none d-md-flex align-center me-3" style="max-width: 420px; width: 100%;">
-          <VTextField
-            v-model="search"
-            placeholder="Search cars..."
-            density="compact"
-            variant="outlined"
-            prepend-inner-icon="tabler-search"
-            hide-details
-            @keyup.enter="goSearch"
-          />
-        </div>
-
-        <VBtn
-          class="d-none d-md-inline-flex me-3"
-          color="primary"
-          variant="elevated"
-          @click="goSearch"
-        >
-          Search
-        </VBtn>
-
-        <NavbarThemeSwitcher />
-
         <!-- ✅ Auth buttons -->
         <template v-if="!isLoggedIn">
-          <VBtn class="ms-3" variant="tonal" to="/login">
-            Login
-          </VBtn>
+          <VBtn class="ms-3" variant="tonal" to="/login"> Login </VBtn>
 
-          <VBtn class="ms-2" color="primary" variant="elevated" to="/register">
-            Register
-          </VBtn>
+          <VBtn class="ms-2" color="primary" variant="elevated" to="/register"> Register </VBtn>
         </template>
 
         <template v-else>
-          <VBtn class="ms-3" variant="tonal" to="/user/profile">
-            Profile
-          </VBtn>
+          <VBtn class="ms-3" variant="tonal" to="/user/profile"> Profile </VBtn>
 
-          <VBtn class="ms-2" color="error" variant="elevated" @click="logout">
-            Logout
-          </VBtn>
+          <VBtn class="ms-2" color="error" variant="elevated" @click="logout"> Logout </VBtn>
         </template>
       </VAppBar>
     </div>
@@ -320,7 +339,7 @@ const logout = async () => {
   z-index: 2;
   backdrop-filter: saturate(100%) blur(6px);
   block-size: 5rem;
-  content: "";
+  content: '';
   inline-size: 100%;
 }
 </style>
@@ -386,13 +405,5 @@ const logout = async () => {
   inset-inline-end: 1rem;
 }
 </style>
-
-
-
-
-
-
-
-
 
 // دي الجزء بتاع التوب بار الي في الصفحه الاساسيه
