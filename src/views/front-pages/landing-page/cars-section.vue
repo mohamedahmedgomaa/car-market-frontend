@@ -283,31 +283,42 @@ watch(
             </button>
           </div>
 
-          <div class="car-card__body">
-            <h3 class="car-card__title">{{ t(car.title) || `Car #${car.id}` }}</h3>
+          <div class="car-card__body d-flex flex-column">
+            <div class="flex-grow-1">
+              <h3 class="car-card__title">{{ t(car.title) || `Car #${car.id}` }}</h3>
 
-            <!-- ✅ Brand & Model -->
-            <div class="car-card__meta mb-1">
-              <span class="font-weight-bold">{{ t(car.brand) }}</span>
-              <span class="mx-1">•</span>
-              <span>{{ t(car.model) }}</span>
+              <!-- ✅ Brand & Model -->
+              <div class="car-card__meta mb-1">
+                <span class="font-weight-bold">{{ t(car.brand) }}</span>
+                <span class="mx-1">•</span>
+                <span>{{ t(car.model) }}</span>
+              </div>
+
+              <!-- ✅ Year & Condition -->
+              <div class="car-card__info mb-2">
+                <span class="text-white opacity-90">{{ car.year }}</span>
+                <span class="mx-2">|</span>
+                <span :class="car.condition === 'new' ? 'text-primary' : 'text-grey-400'">
+                  {{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}
+                </span>
+                <template v-if="car.condition === 'used' && car.kilometers">
+                  <span class="mx-2">•</span>
+                  <span>{{ car.kilometers.toLocaleString() }} كم</span>
+                </template>
+              </div>
+
+              <!-- ✅ Price & Seller -->
+              <div class="d-flex align-center justify-space-between mb-3">
+                <div class="car-card__price">{{ formatPrice(car.price) }} <span class="text-caption">EG</span></div>
+                
+                <div class="d-flex align-center gap-1 opacity-80" style="font-size: 11px;">
+                  <VIcon icon="tabler-building-store" size="14" color="primary" />
+                  <span class="text-truncate" style="max-width: 80px;">
+                    {{ getSellerName(car) }}
+                  </span>
+                </div>
+              </div>
             </div>
-
-            <!-- ✅ Year & Condition -->
-            <div class="car-card__info mb-2">
-              <span class="text-white opacity-90">{{ car.year }}</span>
-              <span class="mx-2">|</span>
-              <span :class="car.condition === 'new' ? 'text-primary' : 'text-grey-400'">
-                {{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}
-              </span>
-              <template v-if="car.condition === 'used' && car.kilometers">
-                <span class="mx-2">•</span>
-                <span>{{ car.kilometers.toLocaleString() }} كم</span>
-              </template>
-            </div>
-
-            <!-- ✅ Price -->
-            <div class="car-card__price mb-3">{{ formatPrice(car.price) }}</div>
 
             <!-- ✅ Location & Time -->
             <div class="car-card__footer pt-2 border-t border-white-opacity-10">
@@ -404,7 +415,9 @@ watch(
 }
 
 .car-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border-radius: 14px;
   overflow: hidden;
   text-decoration: none;
@@ -419,6 +432,7 @@ watch(
   aspect-ratio: 16/10;
   background: rgba(0, 0, 0, 0.15);
   position: relative;
+  flex-shrink: 0;
 }
 .car-card__image img {
   width: 100%;
@@ -436,6 +450,7 @@ watch(
 
 .car-card__body {
   padding: 14px;
+  flex-grow: 1;
 }
 .car-card__title {
   margin: 0 0 8px;
