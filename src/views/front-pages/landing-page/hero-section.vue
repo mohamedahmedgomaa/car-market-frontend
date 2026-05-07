@@ -5,9 +5,10 @@ import { useRouter } from 'vue-router'
 import api from '@/api/index.js'
 
 // صور السلايدر الافتراضية في حالة عدم وجود إعلانات
-import slide1 from '@images/front-pages/carbase2.png'
-import slide2 from '@images/front-pages/carbase2.png'
-import slide3 from '@images/front-pages/carbase2.png'
+// صور السلايدر الافتراضية تم إلغاؤها بناءً على طلب المستخدم
+// import slide1 from '@images/front-pages/carbase2.png'
+const slide1 = null 
+
 
 const theme = useTheme()
 const router = useRouter()
@@ -110,8 +111,7 @@ const fetchBanners = async () => {
 
 const currentSlideSrc = computed(() => {
   const s = slides.value[slideIndex.value]
-  if (!s) return slide1 // fallback
-  return theme.current.value.dark ? s.dark : s.light
+  return s ? (theme.current.value.dark ? s.dark : s.light) : null
 })
 
 const nextSlide = () => {
@@ -290,10 +290,16 @@ watch(
             <div class="heroBg">
               <Transition name="bgfade" mode="out-in">
                 <div
+                  v-if="currentSlideSrc"
                   :key="currentSlideSrc"
                   class="heroBg__img heroBg__img--standalone"
                   :style="{ backgroundImage: `url(${currentSlideSrc})` }"
                 />
+                <div v-else class="d-flex align-center justify-center h-100 flex-column text-center pa-10" style="background: rgba(var(--v-theme-surface), 0.1); border: 2px dashed rgba(var(--v-theme-on-surface), 0.2); border-radius: 24px;">
+                   <VIcon icon="tabler-photo-plus" size="64" color="primary" class="mb-4 opacity-50" />
+                   <h3 class="text-h5 font-weight-bold mb-2">مساحة إعلانية شاغرة</h3>
+                   <p class="text-body-2 opacity-70">أضف إعلانك هنا ليصل لآلاف العملاء يومياً</p>
+                </div>
               </Transition>
               <div class="heroBg__overlay" />
 
