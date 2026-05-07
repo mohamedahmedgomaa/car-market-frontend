@@ -56,19 +56,58 @@ const getSellerName = (car) => {
   return t(car?.seller?.store_name) || car?.seller?.name || 'Unknown seller'
 }
 
-// ✅ تنسيق created_at بتاع الإعلان (car.created_at)
+// ✅ تنسيق "منذ متى" (Time Ago) باللغة العربية
 const formatDateTime = (val) => {
   if (!val) return '—'
   const iso = String(val).replace(' ', 'T')
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return val
-  return d.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return val
+
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+
+  if (diffInSeconds < 60) return 'الآن'
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
+  if (diffInMinutes < 60) {
+    if (diffInMinutes === 1) return 'منذ دقيقة'
+    if (diffInMinutes === 2) return 'منذ دقيقتين'
+    if (diffInMinutes <= 10) return `منذ ${diffInMinutes} دقائق`
+    return `منذ ${diffInMinutes} دقيقة`
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) {
+    if (diffInHours === 1) return 'منذ ساعة'
+    if (diffInHours === 2) return 'منذ ساعتين'
+    if (diffInHours <= 10) return `منذ ${diffInHours} ساعات`
+    return `منذ ${diffInHours} ساعة`
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays < 7) {
+    if (diffInDays === 1) return 'منذ يوم'
+    if (diffInDays === 2) return 'منذ يومين'
+    if (diffInDays <= 10) return `منذ ${diffInDays} أيام`
+    return `منذ ${diffInDays} يوم`
+  }
+
+  const diffInWeeks = Math.floor(diffInDays / 7)
+  if (diffInWeeks < 4) {
+    if (diffInWeeks === 1) return 'منذ أسبوع'
+    if (diffInWeeks === 2) return 'منذ أسبوعين'
+    return `منذ ${diffInWeeks} أسابيع`
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30)
+  if (diffInMonths < 12) {
+    if (diffInMonths === 1) return 'منذ شهر'
+    if (diffInMonths === 2) return 'منذ شهرين'
+    if (diffInMonths <= 10) return `منذ ${diffInMonths} أشهر`
+    return `منذ ${diffInMonths} شهر`
+  }
+
+  return 'منذ أكثر من سنة'
 }
 
 const formatPrice = (price) => {
@@ -247,23 +286,40 @@ watch(
           <div class="car-card__body">
             <h3 class="car-card__title">{{ t(car.title) || `Car #${car.id}` }}</h3>
 
-            <!-- ✅ مفيش brand/model/year -->
-
-            <!-- ✅ seller name فقط (مفيش صورة + مفيش خطوط) -->
-            <div class="seller-name">
-              {{ getSellerName(car) }}
+            <!-- ✅ Brand & Model -->
+            <div class="car-card__meta mb-1">
+              <span class="font-weight-bold">{{ t(car.brand) }}</span>
+              <span class="mx-1">•</span>
+              <span>{{ t(car.model) }}</span>
             </div>
 
-            <!-- ✅ السعر + التاريخ جنب بعض -->
-            <div class="car-card__footer">
-              <div class="car-card__price">{{ formatPrice(car.price) }}</div>
+            <!-- ✅ Year & Condition -->
+            <div class="car-card__info mb-2">
+              <span class="text-white opacity-90">{{ car.year }}</span>
+              <span class="mx-2">|</span>
+              <span :class="car.condition === 'new' ? 'text-primary' : 'text-grey-400'">
+                {{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}
+              </span>
+              <template v-if="car.condition === 'used' && car.kilometers">
+                <span class="mx-2">•</span>
+                <span>{{ car.kilometers.toLocaleString() }} كم</span>
+              </template>
+            </div>
 
-              <div class="car-card__date">
-                <VIcon icon="tabler-clock" size="14" class="car-card__dateIcon" />
-                <span>{{ formatDateTime(car.created_at) }}</span>
+            <!-- ✅ Price -->
+            <div class="car-card__price mb-3">{{ formatPrice(car.price) }}</div>
+
+            <!-- ✅ Location & Time -->
+            <div class="car-card__footer pt-2 border-t border-white-opacity-10">
+              <div class="car-card__location">
+                <VIcon icon="tabler-map-pin" size="14" class="me-1 opacity-70" />
+                <span>{{ t(car.city?.name) || 'القاهرة' }}</span>
               </div>
 
-              <!-- ✅ مفيش favorites_count -->
+              <div class="car-card__date">
+                <VIcon icon="tabler-clock" size="14" class="me-1 opacity-70" />
+                <span>{{ formatDateTime(car.created_at) }}</span>
+              </div>
             </div>
           </div>
         </RouterLink>
@@ -386,16 +442,27 @@ watch(
   font-size: 16px;
 }
 
-/* ✅ seller name simple */
-.seller-name {
-  font-weight: 600;
+.car-card__meta {
+  font-size: 14px;
+  color: #fff;
+  opacity: 0.9;
+}
+.car-card__info {
   font-size: 13px;
-  opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  margin-bottom: 10px;
+  color: #fff;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+}
+.border-t {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.car-card__location {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: #fff;
+  opacity: 0.7;
 }
 
 /* ✅ footer: price + date */
@@ -407,18 +474,20 @@ watch(
 }
 .car-card__price {
   font-weight: 700;
+  color: #28a745; /* Professional Green */
 }
 
 .car-card__date {
   display: flex;
   align-items: center;
   gap: 6px;
-  opacity: 0.75;
-  font-size: 12px;
+  color: #fff; /* Return to white */
+  opacity: 0.7;
+  font-size: 11px;
   white-space: nowrap;
 }
 .car-card__dateIcon {
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 /* fav */

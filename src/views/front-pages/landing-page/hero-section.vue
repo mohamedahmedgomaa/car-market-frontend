@@ -3,12 +3,13 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
 import api from '@/api/index.js'
+import brandUserApi from '@/api/user/brandUserApi.js'
+import modelUserApi from '@/api/user/modelUserApi.js'
 
 // صور السلايدر الافتراضية في حالة عدم وجود إعلانات
 // صور السلايدر الافتراضية تم إلغاؤها بناءً على طلب المستخدم
 // import slide1 from '@images/front-pages/carbase2.png'
-const slide1 = null 
-
+const slide1 = null
 
 const theme = useTheme()
 const router = useRouter()
@@ -72,10 +73,60 @@ const goSearch = () => {
   })
 }
 
+/* =========================
+   ✅ Static Data (Brands/Models)
+========================= */
+const brandsList = ref([
+  'Toyota',
+  'Mercedes-Benz',
+  'BMW',
+  'Hyundai',
+  'Kia',
+  'Nissan',
+  'Mitsubishi',
+  'Honda',
+  'Chevrolet',
+  'Ford',
+  'Lexus',
+  'Jeep',
+  'Land Rover',
+  'Audi',
+  'Volkswagen',
+  'Porsche',
+])
+
+const modelsByBrand = {
+  Toyota: ['Corolla', 'Camry', 'Land Cruiser', 'Hilux', 'Fortuner', 'Yaris'],
+  BMW: ['X1', 'X3', 'X5', 'X6', '3 Series', '5 Series', '7 Series'],
+  'Mercedes-Benz': ['C-Class', 'E-Class', 'S-Class', 'G-Class', 'GLE', 'GLC'],
+  Hyundai: ['Elantra', 'Accent', 'Tucson', 'Santa Fe', 'Sonata'],
+  Kia: ['Sportage', 'Cerato', 'Sorento', 'Rio', 'Picanto'],
+  Nissan: ['Sunny', 'Patrol', 'Altima', 'X-Trail', 'Sentra'],
+  Mitsubishi: ['Lancer', 'Pajero', 'Eclipse', 'Attrage'],
+  Chevrolet: ['Tahoe', 'Captiva', 'Malibu', 'Aveo'],
+  Ford: ['Explorer', 'Edge', 'Taurus', 'Mustang'],
+  Jeep: ['Grand Cherokee', 'Wrangler', 'Compass'],
+  'Land Rover': ['Range Rover', 'Defender', 'Discovery'],
+}
+
+const modelsList = computed(() => {
+  return filters.value.brand ? modelsByBrand[filters.value.brand] || [] : []
+})
+
+const yearsList = Array.from({ length: 2026 - 2000 + 1 }, (_, i) => 2026 - i)
+
+// ✅ Watch brand to clear model
+watch(
+  () => filters.value.brand,
+  () => {
+    filters.value.model = ''
+  },
+)
+
 const resetFilters = () => {
   filters.value = {
     type: 'car',
-    condition: 'used',
+    condition: '',
     brand: '',
     model: '',
     priceFrom: null,
@@ -99,7 +150,7 @@ const fetchBanners = async () => {
     const res = await api.get('/user/banners')
     if (res.data && res.data.data && res.data.data.length > 0) {
       // Limit to 3 banners only
-      slides.value = res.data.data.slice(0, 3).map(b => ({
+      slides.value = res.data.data.slice(0, 3).map((b) => ({
         light: b.image_path,
         dark: b.image_path,
       }))
@@ -146,130 +197,169 @@ watch(
       <div class="heroGrid">
         <!-- Left: Search Form -->
         <div class="heroLeft">
-          <div class="heroTop">
-            <h1 class="hero__title">Find your next <span class="hero__accent">vehicle</span></h1>
-          </div>
-
           <!-- ✅ Filters Form -->
-          <VCard class="filterCard" rounded="xl" elevation="0">
+          <VCard class="premium-card filterCard" elevation="0">
             <div class="filterCard__grid">
-              <VSelect
-                v-model="filters.type"
-                label="Type"
-                :items="[
-                  { title: 'Car', value: 'car' },
-                  { title: 'Motorcycle', value: 'motorcycle' },
-                ]"
-                density="compact"
-                variant="outlined"
-                hide-details
-                prepend-inner-icon="tabler-category"
-              />
-
-              <VSelect
-                v-model="filters.condition"
-                label="Condition"
-                :items="[
-                  { title: 'Used', value: 'used' },
-                  { title: 'New', value: 'new' },
-                ]"
-                density="compact"
-                variant="outlined"
-                hide-details
-                prepend-inner-icon="tabler-badge"
-              />
-
-              <VTextField
-                v-model="filters.brand"
-                label="Brand"
-                placeholder="Toyota, BMW..."
-                density="compact"
-                variant="outlined"
-                hide-details
-                prepend-inner-icon="tabler-car"
-              />
-
-              <VTextField
-                v-model="filters.model"
-                label="Model"
-                placeholder="Corolla, X5..."
-                density="compact"
-                variant="outlined"
-                hide-details
-                prepend-inner-icon="tabler-settings"
-              />
-
-              <!-- Price range -->
-              <div class="rangeRow">
-                <div class="rangeRow__label">Price Range</div>
-                <div class="rangeRow__grid">
-                  <VTextField
-                    v-model="filters.priceFrom"
-                    type="number"
-                    placeholder="Min"
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    prepend-inner-icon="tabler-currency-dollar"
-                  />
-                  <VTextField
-                    v-model="filters.priceTo"
-                    type="number"
-                    placeholder="Max"
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    prepend-inner-icon="tabler-currency-dollar"
-                  />
-                </div>
+              <!-- Row 1: Type & Condition -->
+              <div class="inputGroup">
+                <label class="inputLabel">Vehicle Type</label>
+                <VSelect
+                  v-model="filters.type"
+                  placeholder="Type"
+                  :items="[
+                    { title: 'Car', value: 'car' },
+                    { title: 'Motorcycle', value: 'motorcycle' },
+                  ]"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prepend-inner-icon="tabler-category"
+                  class="compactSelect"
+                />
               </div>
 
-              <!-- Year range -->
-              <div class="rangeRow">
-                <div class="rangeRow__label">Year</div>
-                <div class="rangeRow__grid">
-                  <VTextField
-                    v-model="filters.yearFrom"
-                    type="number"
-                    placeholder="Min"
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    prepend-inner-icon="tabler-calendar"
-                  />
-                  <VTextField
-                    v-model="filters.yearTo"
-                    type="number"
-                    placeholder="Max"
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    prepend-inner-icon="tabler-calendar"
-                  />
-                </div>
+              <div class="inputGroup">
+                <label class="inputLabel">Condition</label>
+                <VSelect
+                  v-model="filters.condition"
+                  placeholder="Condition"
+                  :items="[
+                    { title: 'All', value: '' },
+                    { title: 'Used', value: 'used' },
+                    { title: 'New', value: 'new' },
+                  ]"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prepend-inner-icon="tabler-badge"
+                  class="compactSelect"
+                />
+              </div>
+
+              <!-- Row 2: Brand & Model -->
+              <div class="inputGroup">
+                <label class="inputLabel">Brand</label>
+                <VSelect
+                  v-model="filters.brand"
+                  :items="brandsList"
+                  placeholder="Brand"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prepend-inner-icon="tabler-car"
+                  class="compactSelect"
+                />
+              </div>
+
+              <div class="inputGroup">
+                <label class="inputLabel">Model</label>
+                <VSelect
+                  v-model="filters.model"
+                  :items="modelsList"
+                  placeholder="Model"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prepend-inner-icon="tabler-settings"
+                  :disabled="!filters.brand"
+                  class="compactSelect"
+                />
+              </div>
+
+              <!-- Row 3: Price -->
+              <div class="inputGroup">
+                <label class="inputLabel">Min Price</label>
+                <VTextField
+                  v-model="filters.priceFrom"
+                  type="number"
+                  placeholder="0.00"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prefix="EG"
+                  class="compactSelect no-spin"
+                />
+              </div>
+              <div class="inputGroup">
+                <label class="inputLabel">Max Price</label>
+                <VTextField
+                  v-model="filters.priceTo"
+                  type="number"
+                  placeholder="0.00"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prefix="EG"
+                  class="compactSelect no-spin"
+                />
+              </div>
+
+              <!-- Row 4: Year -->
+              <div class="inputGroup">
+                <label class="inputLabel">Min Year</label>
+                <VSelect
+                  v-model="filters.yearFrom"
+                  :items="yearsList"
+                  placeholder="Min"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prepend-inner-icon="tabler-calendar"
+                  class="compactSelect"
+                />
+              </div>
+              <div class="inputGroup">
+                <label class="inputLabel">Max Year</label>
+                <VSelect
+                  v-model="filters.yearTo"
+                  :items="yearsList"
+                  placeholder="Max"
+                  density="compact"
+                  variant="solo"
+                  flat
+                  hide-details
+                  prepend-inner-icon="tabler-calendar"
+                  class="compactSelect"
+                />
               </div>
             </div>
 
             <div class="filterCard__actions">
-              <VBtn color="primary" class="btnMain" @click="goSearch" prepend-icon="tabler-search">
-                Search
-              </VBtn>
+              <div class="d-flex gap-2 w-100 mb-2">
+                <VBtn
+                  variant="tonal"
+                  class="flex-grow-1 actionBtn"
+                  @click="resetFilters"
+                  prepend-icon="tabler-rotate"
+                >
+                  Reset
+                </VBtn>
+
+                <VBtn
+                  variant="tonal"
+                  class="flex-grow-1 actionBtn"
+                  @click="$router.push('/seller/register')"
+                >
+                  Sell Vehicle
+                </VBtn>
+              </div>
 
               <VBtn
-                variant="tonal"
-                class="btnGhost"
-                @click="resetFilters"
-                prepend-icon="tabler-rotate"
+                color="primary"
+                height="44"
+                block
+                class="searchBtn"
+                @click="goSearch"
+                prepend-icon="tabler-search"
               >
-                Reset
-              </VBtn>
-
-              <div class="filterCard__spacer" />
-
-
-
-              <VBtn variant="tonal" class="btnSmall" @click="$router.push('/seller/register')">
-                Sell Your Car
+                Search Vehicles
               </VBtn>
             </div>
           </VCard>
@@ -277,37 +367,52 @@ watch(
 
         <!-- Right: Image/Visual -->
         <div class="heroRight">
-          <div class="heroImageWrapper">
-            <div class="heroBg">
-              <Transition name="bgfade" mode="out-in">
-                <div
-                  v-if="currentSlideSrc"
-                  :key="currentSlideSrc"
-                  class="heroBg__img heroBg__img--standalone"
-                  :style="{ backgroundImage: `url(${currentSlideSrc})` }"
-                />
-                <div v-else class="d-flex align-center justify-center h-100 flex-column text-center pa-10" style="background: rgba(var(--v-theme-surface), 0.1); border: 2px dashed rgba(var(--v-theme-on-surface), 0.2); border-radius: 24px;">
-                   <VIcon icon="tabler-photo-plus" size="64" color="primary" class="mb-4 opacity-50" />
-                   <h3 class="text-h5 font-weight-bold mb-2">مساحة إعلانية شاغرة</h3>
-                   <p class="text-body-2 opacity-70">أضف إعلانك هنا ليصل لآلاف العملاء يومياً</p>
-                </div>
-              </Transition>
-              <div class="heroBg__overlay" />
+          <VCard class="premium-card bannersCard" elevation="0">
+            <div class="heroImageWrapper">
+              <div class="heroBg">
+                <Transition name="bgfade" mode="out-in">
+                  <div
+                    v-if="currentSlideSrc"
+                    :key="currentSlideSrc"
+                    class="heroBg__img heroBg__img--standalone"
+                    :style="{ backgroundImage: `url(${currentSlideSrc})` }"
+                  />
+                  <div
+                    v-else
+                    class="d-flex align-center justify-center h-100 flex-column text-center pa-10"
+                    style="
+                      background: rgba(var(--v-theme-surface), 0.1);
+                      border: 2px dashed rgba(var(--v-theme-on-surface), 0.2);
+                      border-radius: 24px;
+                    "
+                  >
+                    <VIcon
+                      icon="tabler-photo-plus"
+                      size="64"
+                      color="primary"
+                      class="mb-4 opacity-50"
+                    />
+                    <h3 class="text-h5 font-weight-bold mb-2">مساحة إعلانية شاغرة</h3>
+                    <p class="text-body-2 opacity-70">أضف إعلانك هنا ليصل لآلاف العملاء يومياً</p>
+                  </div>
+                </Transition>
+                <div class="heroBg__overlay" />
 
-              <!-- Dots for standalone image -->
-              <div class="heroBg__dots heroBg__dots--inline" v-if="slides.length > 1">
-                <button
-                  v-for="(_, i) in slides"
-                  :key="i"
-                  class="dot"
-                  :class="{ active: i === slideIndex }"
-                  type="button"
-                  aria-label="Go to slide"
-                  @click="slideIndex = i"
-                />
+                <!-- Dots for standalone image -->
+                <div class="heroBg__dots heroBg__dots--inline" v-if="slides.length > 1">
+                  <button
+                    v-for="(_, i) in slides"
+                    :key="i"
+                    class="dot"
+                    :class="{ active: i === slideIndex }"
+                    type="button"
+                    aria-label="Go to slide"
+                    @click="slideIndex = i"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          </VCard>
         </div>
       </div>
     </VContainer>
@@ -322,8 +427,8 @@ watch(
   position: relative;
 }
 .hero__container {
-  padding-top: 4px;
-  padding-bottom: 24px;
+  padding-top: 20px;
+  padding-bottom: 20px;
   position: relative;
   z-index: 2;
 }
@@ -334,7 +439,7 @@ watch(
   grid-template-columns: 1fr 1fr;
   gap: 32px;
   align-items: center;
-  min-height: 500px;
+  min-height: 350px;
 }
 
 @media (max-width: 1024px) {
@@ -446,7 +551,8 @@ watch(
   margin-inline: auto;
 }
 .heroTop {
-  max-width: 720px;
+  max-width: 100%;
+  text-align: center;
 }
 .hero__badge {
   display: inline-flex;
@@ -466,7 +572,7 @@ watch(
   margin: 0;
 }
 .hero__accent {
-  color: #FF6B00;
+  color: #ff6b00;
 }
 .hero__subtitle {
   margin-top: 10px;
@@ -474,52 +580,108 @@ watch(
   max-width: 560px;
 }
 
-.filterCard {
-  margin-top: 18px;
-  padding: 16px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);
-}
-.filterCard__grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-.rangeRow {
-  grid-column: span 2;
-  padding: 10px;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.rangeRow__label {
-  font-size: 12px;
-  font-weight: 900;
-  opacity: 0.78;
-  margin-bottom: 8px;
-}
-.rangeRow__grid {
+.heroGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 32px;
+  align-items: stretch; /* Make items equal height */
 }
 
-:deep(.v-field) {
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.16);
+.premium-card {
+  width: 100%;
+  padding: 26px;
+  border-radius: 32px !important;
+  background: rgba(15, 20, 30, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
 }
-:deep(.v-field__outline) {
-  opacity: 0.35;
+
+.filterCard {
+  max-width: 520px;
 }
-:deep(.v-field:hover .v-field__outline) {
-  opacity: 0.55;
+
+.bannersCard {
+  width: 100%;
+  overflow: hidden;
+  padding: 0; /* Remove padding for edge-to-edge carousel if desired, or keep for consistency */
 }
-:deep(.v-label) {
-  opacity: 0.82;
+.bannersCard.premium-card {
+  padding: 12px; /* Smaller padding for the ad container */
+}
+
+.filterCard__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 20px;
+}
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.inputLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.5;
+  margin-left: 4px;
+  color: #fff;
+}
+
+:deep(.compactSelect .v-field) {
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  height: 40px !important;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+:deep(.compactSelect .v-field:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(var(--v-theme-primary), 0.3);
+}
+:deep(.compactSelect .v-field--focused) {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(var(--v-theme-primary), 0.6);
+}
+:deep(.compactSelect .v-field__input) {
+  min-height: 40px !important;
+  font-size: 14px !important;
+  font-weight: 500;
+  padding-inline: 14px !important;
+}
+:deep(.compactSelect .v-field__prepend-inner) {
+  opacity: 0.6;
+}
+:deep(.compactSelect .v-field__prefix) {
+  font-size: 12px;
   font-weight: 800;
+  opacity: 0.7;
+  padding-right: 6px;
+}
+
+.filterCard__actions {
+  margin-top: 24px;
+}
+.actionBtn {
+  height: 40px !important;
+  border-radius: 14px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+.searchBtn {
+  border-radius: 16px !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+  text-transform: none !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1) 0%, rgba(var(--v-theme-primary), 0.8) 100%) !important;
+  box-shadow: 0 12px 24px -6px rgba(var(--v-theme-primary), 0.5) !important;
 }
 
 .filterCard__actions {
