@@ -2,6 +2,14 @@
 import { ref, onMounted } from 'vue'
 import bannerAdminApi from '../../../api/admin/bannerAdminApi.js'
 
+definePage({
+  meta: {
+    layout: 'default',
+    action: 'manage',
+    subject: 'all',
+  },
+})
+
 const banners = ref([])
 const loading = ref(false)
 
