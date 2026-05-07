@@ -148,8 +148,6 @@ watch(
         <div class="heroLeft">
           <div class="heroTop">
             <h1 class="hero__title">Find your next <span class="hero__accent">vehicle</span></h1>
-
-            <p class="hero__subtitle">Choose filters, then jump to search results instantly.</p>
           </div>
 
           <!-- ✅ Filters Form -->
@@ -268,14 +266,7 @@ watch(
 
               <div class="filterCard__spacer" />
 
-              <VBtn
-                color="primary"
-                variant="elevated"
-                class="btnSmall"
-                @click="$router.push('/user/cars')"
-              >
-                Browse Cars
-              </VBtn>
+
 
               <VBtn variant="tonal" class="btnSmall" @click="$router.push('/seller/register')">
                 Sell Your Car
@@ -475,10 +466,7 @@ watch(
   margin: 0;
 }
 .hero__accent {
-  background: linear-gradient(135deg, #28c76f 0%, #5a4aff 47.92%, #ff3739 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #FF6B00;
 }
 .hero__subtitle {
   margin-top: 10px;
