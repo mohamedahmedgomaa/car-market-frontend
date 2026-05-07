@@ -288,6 +288,17 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
+// ✅ Auto-scroll thumbnails when active image changes
+const thumbRefs = ref([])
+watch(activeImage, () => {
+  nextTick(() => {
+    const activeEl = thumbRefs.value.find(el => el?.dataset?.url === activeImage.value)
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  })
+})
+
 watch(
   () => route.params.id,
   async () => {
@@ -329,6 +340,8 @@ watch(
             <div
               v-for="img in images"
               :key="img.id"
+              ref="thumbRefs"
+              :data-url="img.url"
               class="thumb-item"
               :class="{ active: img.url === activeImage }"
               @click="selectImage(img.url)"
