@@ -283,56 +283,56 @@ watch(
             </button>
           </div>
 
-          <div class="car-card__body d-flex flex-column">
-            <div class="flex-grow-1">
-              <h3 class="car-card__title">{{ t(car.title) || `Car #${car.id}` }}</h3>
+            <div class="car-card__body d-flex flex-column text-white">
+              <div class="flex-grow-1">
+                <h3 class="car-card__title text-white font-weight-bold">{{ t(car.title) || `Car #${car.id}` }}</h3>
 
-              <!-- ✅ Brand & Model -->
-              <div class="car-card__meta mb-1">
-                <span class="font-weight-bold">{{ t(car.brand) }}</span>
-                <span class="mx-1">•</span>
-                <span>{{ t(car.model) }}</span>
-              </div>
+                <!-- ✅ Brand & Model -->
+                <div class="car-card__meta mb-1 opacity-90">
+                  <span class="font-weight-bold">{{ t(car.brand?.name) }}</span>
+                  <span class="mx-1">•</span>
+                  <span>{{ t(car.model?.name) }}</span>
+                </div>
 
-              <!-- ✅ Year & Condition -->
-              <div class="car-card__info mb-2">
-                <span class="text-white opacity-90">{{ car.year }}</span>
-                <span class="mx-2">|</span>
-                <span :class="car.condition === 'new' ? 'text-primary' : 'text-grey-400'">
-                  {{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}
-                </span>
-                <template v-if="car.condition === 'used' && car.kilometers">
-                  <span class="mx-2">•</span>
-                  <span>{{ car.kilometers.toLocaleString() }} كم</span>
-                </template>
-              </div>
-
-              <!-- ✅ Price & Seller -->
-              <div class="d-flex align-center justify-space-between mb-3">
-                <div class="car-card__price">{{ formatPrice(car.price) }} <span class="text-caption">EG</span></div>
-                
-                <div class="d-flex align-center gap-1 opacity-80" style="font-size: 11px;">
-                  <VIcon icon="tabler-building-store" size="14" color="primary" />
-                  <span class="text-truncate" style="max-width: 80px;">
-                    {{ getSellerName(car) }}
+                <!-- ✅ Year & Condition -->
+                <div class="car-card__info mb-2 opacity-80">
+                  <span>{{ car.year }}</span>
+                  <span class="mx-2">|</span>
+                  <span :class="car.condition === 'new' ? 'text-primary' : 'text-white'">
+                    {{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}
                   </span>
+                  <template v-if="car.condition === 'used' && car.kilometers">
+                    <span class="mx-2">•</span>
+                    <span>{{ car.kilometers.toLocaleString() }} كم</span>
+                  </template>
+                </div>
+
+                <!-- ✅ Price & Seller -->
+                <div class="d-flex align-center justify-space-between mb-3">
+                  <div class="car-card__price">{{ formatPrice(car.price) }} <span class="text-caption text-white opacity-60">EG</span></div>
+                  
+                  <div class="d-flex align-center gap-1 opacity-90 text-white" style="font-size: 11px;">
+                    <VIcon icon="tabler-building-store" size="14" color="white" />
+                    <span class="text-truncate" style="max-width: 80px;">
+                      {{ getSellerName(car) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ✅ Location & Time -->
+              <div class="car-card__footer pt-2 border-t border-white-opacity-10 opacity-70">
+                <div class="car-card__location d-flex align-center">
+                  <VIcon icon="tabler-map-pin" size="14" class="me-1" />
+                  <span>{{ t(car.city?.name) || 'القاهرة' }}</span>
+                </div>
+
+                <div class="car-card__date d-flex align-center">
+                  <VIcon icon="tabler-clock" size="14" class="me-1" />
+                  <span>{{ formatDateTime(car.created_at) }}</span>
                 </div>
               </div>
             </div>
-
-            <!-- ✅ Location & Time -->
-            <div class="car-card__footer pt-2 border-t border-white-opacity-10">
-              <div class="car-card__location">
-                <VIcon icon="tabler-map-pin" size="14" class="me-1 opacity-70" />
-                <span>{{ t(car.city?.name) || 'القاهرة' }}</span>
-              </div>
-
-              <div class="car-card__date">
-                <VIcon icon="tabler-clock" size="14" class="me-1 opacity-70" />
-                <span>{{ formatDateTime(car.created_at) }}</span>
-              </div>
-            </div>
-          </div>
         </RouterLink>
       </div>
     </component>
@@ -488,7 +488,8 @@ watch(
   gap: 10px;
 }
 .car-card__price {
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 18px;
   color: #28a745; /* Professional Green */
 }
 
