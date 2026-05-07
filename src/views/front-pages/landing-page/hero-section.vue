@@ -92,14 +92,15 @@ const slides = ref([
 ])
 
 const slideIndex = ref(0)
-const slideDelayMs = 3000
+const slideDelayMs = 5000
 let timer = null
 
 const fetchBanners = async () => {
   try {
     const res = await api.get('/user/banners')
     if (res.data && res.data.data && res.data.data.length > 0) {
-      slides.value = res.data.data.map(b => ({
+      // Limit to 3 banners only
+      slides.value = res.data.data.slice(0, 3).map(b => ({
         light: b.image_path,
         dark: b.image_path,
       }))
