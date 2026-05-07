@@ -76,9 +76,10 @@ const contactInfo = [
 // ✅ Social
 const socialLinks = [
   { title: 'facebook', icon: 'tabler-brand-facebook-filled', href: 'https://facebook.com' },
-  { title: 'twitter', icon: 'tabler-brand-twitter-filled', href: 'https://twitter.com' },
   { title: 'instagram', icon: 'tabler-brand-instagram', href: 'https://instagram.com' },
+  { title: 'tiktok', icon: 'tabler-brand-tiktok', href: 'https://tiktok.com' },
   { title: 'youtube', icon: 'tabler-brand-youtube-filled', href: 'https://youtube.com' },
+  { title: 'linkedin', icon: 'tabler-brand-linkedin', href: 'https://linkedin.com' },
 ]
 
 onMounted(fetchTopCars)
@@ -118,20 +119,20 @@ onMounted(fetchTopCars)
             </div>
           </VCol>
 
-          <!-- 👉 Top 5 Cars -->
+          <!-- 👉 Top 3 Luxury -->
           <VCol md="2" sm="4" xs="6">
             <div class="footer-links">
               <h6 class="footer-title text-h6 mb-6">
-                Top 5 Expensive
+                Luxury Cars
               </h6>
 
-              <div v-if="topCarsLoading" :class="$vuetify.theme.current.dark ? 'text-body-1' : 'text-white-variant'">
+              <div v-if="topCarsLoading" class="text-white opacity-60">
                 Loading...
               </div>
 
               <div
                 v-else-if="!topCars.length"
-                :class="$vuetify.theme.current.dark ? 'text-body-1' : 'text-white-variant'"
+                class="text-white opacity-60"
               >
                 No cars found.
               </div>
@@ -140,15 +141,14 @@ onMounted(fetchTopCars)
                 <li v-for="car in topCars" :key="car.id" class="mb-4">
                   <RouterLink
                     :to="`/user/cars/${car.id}`"
-                    :class="$vuetify.theme.current.dark ? 'text-body-1' : 'text-white-variant'"
-                    class="d-inline-flex flex-column"
+                    class="d-inline-flex flex-column text-white"
                     style="text-decoration: none;"
                   >
-                    <span class="font-weight-medium">
+                    <span class="font-weight-medium opacity-90 hover-white">
                       {{ car?.title?.en || car?.title?.ar || `Car #${car.id}` }}
                     </span>
-                    <span style="opacity:.8; font-size: 12px;">
-                      {{ formatPrice(car.price) }}
+                    <span class="text-primary font-weight-bold" style="font-size: 12px;">
+                      {{ formatPrice(car.price) }} EG
                     </span>
                   </RouterLink>
                 </li>
@@ -176,25 +176,39 @@ onMounted(fetchTopCars)
             </div>
           </VCol>
 
-          <!-- 👉 Contact -->
+          <!-- 👉 Contact & Follow -->
           <VCol cols="12" md="3" sm="4">
             <div>
               <h6 class="footer-title text-h6 mb-6">
-                Contact
+                Contact Us
               </h6>
 
               <div class="d-flex flex-column gap-y-4">
                 <div v-for="(item, index) in contactInfo" :key="index" class="d-flex align-center gap-x-3">
-                  <VIcon :icon="item.icon" size="18" color="white" />
-                  <div :class="$vuetify.theme.current.dark ? 'text-body-1' : 'text-white-variant'">
+                  <div class="contact-icon-box">
+                    <VIcon :icon="item.icon" size="18" color="primary" />
+                  </div>
+                  <div class="text-white opacity-80">
                     {{ item.text }}
                   </div>
                 </div>
 
-                <div class="d-flex gap-x-6 mt-2">
-                  <a v-for="(item, index) in socialLinks" :key="index" :href="item.href" target="_blank" rel="noopener noreferrer">
-                    <VIcon :icon="item.icon" size="16" color="white" />
-                  </a>
+                <div class="mt-6">
+                  <h6 class="footer-title text-subtitle-1 mb-3">
+                    Follow Us
+                  </h6>
+                  <div class="d-flex gap-x-4">
+                    <a
+                      v-for="(item, index) in socialLinks"
+                      :key="index"
+                      :href="item.href"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="social-btn"
+                    >
+                      <VIcon :icon="item.icon" size="20" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -236,20 +250,58 @@ onMounted(fetchTopCars)
 .footer-top {
   border-radius: 60px 60px 0 0;
   background-size: cover;
+  background-color: #1a1e2e;
   color: #fff;
+  position: relative;
+}
+
+.contact-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-primary), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--v-primary-base);
+    color: #fff;
+    transform: translateY(-3px);
+  }
+}
+
+.hover-white:hover {
+  color: #fff !important;
+  opacity: 1 !important;
 }
 
 .footer-links {
   .text-white-variant,
   .text-body-1 {
+    transition: color 0.2s ease;
     &:hover {
-      color: #fff;
+      color: #fff !important;
     }
   }
 }
 
 .footer-line {
-  background: #282c3e;
+  background: #141724;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 </style>
 
