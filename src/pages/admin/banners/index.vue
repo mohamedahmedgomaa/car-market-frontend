@@ -57,14 +57,16 @@ const handleCreate = async () => {
   creating.value = true
   try {
     const fd = new FormData()
-    fd.append('image', selectedFile.value[0])
+    fd.append('image', selectedFile.value)
     
     await bannerAdminApi.create(fd)
     createDialog.value = false
     selectedFile.value = null
     fetchBanners()
+    alert('تم رفع الإعلان بنجاح!')
   } catch (err) {
     console.error('Create failed:', err.response?.data || err.message)
+    alert('فشل الرفع: تأكد من تشغيل الـ Migration أو تحقق من حجم الصورة')
   } finally {
     creating.value = false
   }

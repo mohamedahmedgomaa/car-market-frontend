@@ -87,9 +87,7 @@ const resetFilters = () => {
 /* =========================
    ✅ Background Slider
 ========================= */
-const slides = ref([
-  { light: slide1, dark: slide1 }
-])
+const slides = ref([])
 
 const slideIndex = ref(0)
 const slideDelayMs = 5000
@@ -402,16 +400,7 @@ watch(
 .heroBg__overlay {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(10, 12, 22, 0.78),
-      rgba(10, 12, 22, 0.55) 45%,
-      rgba(10, 12, 22, 0.62)
-    ),
-    radial-gradient(circle at 15% 25%, rgba(90, 74, 255, 0.3), transparent 55%),
-    radial-gradient(circle at 85% 70%, rgba(40, 199, 111, 0.16), transparent 55%);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.2); /* Very light overlay for text contrast */
 }
 .heroBg__glow {
   position: absolute;
