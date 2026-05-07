@@ -284,8 +284,11 @@ watch(
           </div>
 
             <div class="car-card__body d-flex flex-column text-white">
-              <div class="flex-grow-1">
-                <h3 class="car-card__title text-white font-weight-bold">{{ t(car.title) || `Car #${car.id}` }}</h3>
+              <!-- Top Section: Title, Brand, Year -->
+              <div>
+                <h3 class="car-card__title text-white font-weight-bold mb-1" style="min-height: 44px; line-height: 1.4;">
+                  {{ t(car.title) || `Car #${car.id}` }}
+                </h3>
 
                 <!-- ✅ Brand & Model -->
                 <div class="car-card__meta mb-1 opacity-90">
@@ -306,17 +309,20 @@ watch(
                     <span>{{ car.kilometers.toLocaleString() }} كم</span>
                   </template>
                 </div>
+              </div>
 
-                <!-- ✅ Price & Seller -->
-                <div class="d-flex align-center justify-space-between mb-3">
-                  <div class="car-card__price">{{ formatPrice(car.price) }} <span class="text-caption text-white opacity-60">EG</span></div>
-                  
-                  <div class="d-flex align-center gap-1 opacity-90 text-white" style="font-size: 11px;">
-                    <VIcon icon="tabler-building-store" size="14" color="white" />
-                    <span class="text-truncate" style="max-width: 80px;">
-                      {{ getSellerName(car) }}
-                    </span>
-                  </div>
+              <!-- ✅ Flexible Spacer to push price down -->
+              <div class="flex-grow-1"></div>
+
+              <!-- ✅ Bottom Section: Price & Seller (Fixed Position) -->
+              <div class="d-flex align-center justify-space-between mb-3 pt-2">
+                <div class="car-card__price">{{ formatPrice(car.price) }} <span class="text-caption text-white opacity-60">EG</span></div>
+                
+                <div class="d-flex align-center gap-1 opacity-90 text-white" style="font-size: 11px;">
+                  <VIcon icon="tabler-building-store" size="14" color="white" />
+                  <span class="text-truncate" style="max-width: 80px;">
+                    {{ getSellerName(car) }}
+                  </span>
                 </div>
               </div>
 
