@@ -168,15 +168,16 @@ const normalizePhone = (phone) => {
   if (p.startsWith('00')) p = p.slice(2)
 
   // Egypt (+20)
-  if (p.startsWith('01') && p.length === 11) p = '20' + p
-  if (p.startsWith('201') && p.length === 13) return '+' + p
+  if (p.startsWith('01') && p.length === 11) return '20' + p
+  if (p.startsWith('201') && p.length === 13) return p
 
   // Saudi (+966)
-  if (p.startsWith('05') && p.length === 10) p = '966' + p.slice(1)
-  if (p.startsWith('5') && p.length === 9) p = '966' + p
-  if (p.startsWith('9665') && p.length === 12) return '+' + p
+  if (p.startsWith('05') && p.length === 10) return '966' + p.slice(1)
+  if (p.startsWith('5') && p.length === 9) return '966' + p
+  if (p.startsWith('9665') && p.length === 12) return p
 
-  return ''
+  // Fallback: Just return numbers if they seem long enough for a phone
+  return p.length >= 8 ? p : ''
 }
 
 const whatsappLink = computed(() => {
@@ -255,6 +256,11 @@ const openLightbox = () => {
 const closeLightbox = () => {
   showLightbox.value = false
 }
+
+// ✅ Call Dialog
+const showCallDialog = ref(false)
+const openCallDialog = () => { showCallDialog.value = true }
+const closeCallDialog = () => { showCallDialog.value = false }
 
 const handleKeyDown = (e) => {
   if (showLightbox.value) {
@@ -413,26 +419,65 @@ watch(
 
           <!-- Specs Grid -->
           <div class="specs-grid mb-8">
+            <!-- Condition -->
+            <div class="spec-card">
+              <VIcon icon="tabler-award" class="mb-2" color="primary" />
+              <span class="label">{{ car.condition === 'new' ? 'الحالة' : 'Condition' }}</span>
+              <span class="val">{{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}</span>
+            </div>
+
+            <!-- Mileage -->
             <div class="spec-card">
               <VIcon icon="tabler-gauge" class="mb-2" color="primary" />
               <span class="label">Mileage</span>
-              <span class="val">{{ car.mileage ? car.mileage.toLocaleString() + ' Km' : '—' }}</span>
+              <span class="val">
+                {{ car.condition === 'new' ? '0 Km' : (car.mileage ? car.mileage.toLocaleString() + ' Km' : '—') }}
+              </span>
             </div>
+
+            <!-- Engine CC -->
             <div class="spec-card">
-              <VIcon icon="tabler-settings-automation" class="mb-2" color="primary" />
-              <span class="label">Transmission</span>
-              <span class="val">{{ car.transmission || '—' }}</span>
+              <VIcon icon="tabler-engine" class="mb-2" color="primary" />
+              <span class="label">Engine (CC)</span>
+              <span class="val">{{ car.engine_capacity || '—' }} CC</span>
             </div>
+
+            <!-- Horsepower -->
+            <div class="spec-card">
+              <VIcon icon="tabler-horse-toy" class="mb-2" color="primary" />
+              <span class="label">Horsepower</span>
+              <span class="val">{{ car.horsepower || '—' }} HP</span>
+            </div>
+
+            <!-- Cylinders -->
+            <div class="spec-card">
+              <VIcon icon="tabler-engine" class="mb-2" color="primary" />
+              <span class="label">Cylinders</span>
+              <span class="val">{{ car.cylinders || '—' }}</span>
+            </div>
+
+            <!-- Transmission -->
+            <div class="spec-card">
+              <VIcon icon="tabler-manual-gearbox" class="mb-2" color="primary" />
+              <span class="label">Transmission</span>
+              <span class="val text-capitalize">{{ car.transmission || '—' }}</span>
+            </div>
+
+            <!-- Fuel Type -->
             <div class="spec-card">
               <VIcon icon="tabler-gas-station" class="mb-2" color="primary" />
               <span class="label">Fuel Type</span>
-              <span class="val">{{ car.fuel_type || '—' }}</span>
+              <span class="val text-capitalize">{{ car.fuel_type || '—' }}</span>
             </div>
+
+            <!-- Drivetrain -->
             <div class="spec-card">
-              <VIcon icon="tabler-engine" class="mb-2" color="primary" />
+              <VIcon icon="tabler-circles-relation" class="mb-2" color="primary" />
               <span class="label">Drivetrain</span>
-              <span class="val">{{ car.drivetrain || '—' }}</span>
+              <span class="val text-uppercase">{{ car.drivetrain || '—' }}</span>
             </div>
+
+            <!-- Color -->
             <div class="spec-card">
               <VIcon icon="tabler-palette" class="mb-2" color="primary" />
               <span class="label">Color</span>
@@ -440,11 +485,6 @@ watch(
                 <div class="color-dot" :style="{ background: car.color || '#ccc' }" />
                 <span>{{ car.color || '—' }}</span>
               </div>
-            </div>
-            <div class="spec-card">
-              <VIcon icon="tabler-award" class="mb-2" color="primary" />
-              <span class="label">Condition</span>
-              <span class="val">{{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}</span>
             </div>
           </div>
 
@@ -475,42 +515,97 @@ watch(
         <!-- Sidebar Actions -->
         <div class="sidebar-content">
           <VCard class="seller-card pa-6 mb-6">
-            <h4 class="text-h6 mb-4">Contact Seller</h4>
-            <div class="d-flex align-center gap-4 mb-6">
-               <VAvatar color="primary" size="48" class="text-h5 font-weight-bold">
+            <div class="text-overline mb-4 opacity-60">Listing Owner</div>
+            
+            <!-- Seller Profile Link -->
+            <RouterLink 
+              v-if="sellerLink" 
+              :to="sellerLink" 
+              class="d-flex align-center gap-4 mb-8 text-decoration-none text-high-emphasis seller-profile-header"
+            >
+               <VAvatar color="primary" size="64" class="text-h4 font-weight-bold elevation-4">
                  {{ car.seller?.name?.charAt(0) }}
                </VAvatar>
                <div>
-                 <div class="font-weight-bold text-h6">{{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}</div>
-                 <div class="text-caption opacity-60">Verified Seller</div>
+                 <div class="font-weight-bold text-h5 mb-1">{{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}</div>
+                 <div class="d-flex align-center gap-1 text-success text-caption">
+                    <VIcon icon="tabler-circle-check-filled" size="14" />
+                    Verified Dealer
+                 </div>
                </div>
-            </div>
+            </RouterLink>
 
-            <div class="d-flex flex-column gap-3">
+            <div class="d-flex gap-2 w-100">
+              <!-- Phone Call -->
               <VBtn
-                v-if="whatsappLink"
+                v-if="car.seller?.phone"
+                variant="flat"
+                color="primary"
+                class="contact-btn flex-1-1-0"
+                height="54"
+                @click="openCallDialog"
+              >
+                <VIcon icon="tabler-phone" size="22" class="me-1" />
+                Call
+              </VBtn>
+
+              <!-- WhatsApp -->
+              <VBtn
+                v-if="car.seller?.phone"
                 color="#25D366"
-                block
-                height="48"
-                class="contact-btn"
+                class="contact-btn text-white flex-1-1-0"
+                height="54"
+                elevation="0"
                 :href="whatsappLink"
                 target="_blank"
               >
-                <VIcon icon="tabler-brand-whatsapp" class="me-2" />
+                <VIcon icon="tabler-brand-whatsapp" size="24" class="me-1" />
                 WhatsApp
-              </VBtn>
-
-              <VBtn
-                v-if="sellerLink"
-                variant="outlined"
-                block
-                height="48"
-                :to="sellerLink"
-              >
-                View Profile
               </VBtn>
             </div>
           </VCard>
+
+          <!-- ✅ Call Confirmation Dialog -->
+          <VDialog v-model="showCallDialog" max-width="400">
+            <VCard class="pa-6 text-center">
+              <VAvatar color="primary" variant="tonal" size="70" class="mb-4">
+                <VIcon icon="tabler-phone-calling" size="40" />
+              </VAvatar>
+              
+              <h3 class="text-h5 font-weight-bold mb-2">Call Seller</h3>
+              <p class="text-body-1 opacity-70 mb-6">
+                Contact <strong>{{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}</strong> directly at:
+              </p>
+
+              <div class="phone-display mb-8">
+                {{ car.seller?.phone }}
+              </div>
+
+              <div class="d-flex flex-column gap-3">
+                <VBtn
+                  color="primary"
+                  block
+                  height="50"
+                  size="large"
+                  class="font-weight-bold"
+                  :href="`tel:${car.seller?.phone}`"
+                  @click="closeCallDialog"
+                >
+                  <VIcon icon="tabler-phone" class="me-2" />
+                  Call Now
+                </VBtn>
+
+                <VBtn
+                  variant="text"
+                  block
+                  height="50"
+                  @click="closeCallDialog"
+                >
+                  Cancel
+                </VBtn>
+              </div>
+            </VCard>
+          </VDialog>
 
           <VCard variant="tonal" class="pa-4 text-center opacity-80">
             <div class="text-caption">Listing ID: #{{ car.id }}</div>
@@ -584,6 +679,35 @@ watch(
 
 .gallery-hero:hover .nav-arrow {
   opacity: 1;
+}
+
+.seller-profile-header {
+  transition: transform 0.2s;
+}
+
+.seller-profile-header:hover {
+  transform: translateX(4px);
+}
+
+.seller-profile-header:hover .text-h5 {
+  color: rgb(var(--v-theme-primary));
+}
+
+.contact-btn {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 14px;
+  text-transform: none;
+}
+
+.phone-display {
+  background: rgba(var(--v-theme-primary), 0.1);
+  color: rgb(var(--v-theme-primary));
+  font-size: 28px;
+  font-weight: 900;
+  padding: 16px;
+  border-radius: 16px;
+  letter-spacing: 1px;
 }
 
 .nav-arrow:hover {
