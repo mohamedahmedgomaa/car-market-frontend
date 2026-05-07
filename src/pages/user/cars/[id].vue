@@ -228,13 +228,58 @@ const scrollThumbs = (dir) => {
 const onThumbsScroll = () => updateThumbNav()
 const onResize = () => updateThumbNav()
 
+// ✅ Gallery Keyboard Navigation
+const nextImage = () => {
+  if (!images.value.length) return
+  const currentIndex = images.value.findIndex(img => img.url === activeImage.value)
+  const nextIdx = (currentIndex + 1) % images.value.length
+  selectImage(images.value[nextIdx].url)
+}
+
+const prevImage = () => {
+  if (!images.value.length) return
+  const currentIndex = images.value.findIndex(img => img.url === activeImage.value)
+  const prevIdx = (currentIndex - 1 + images.value.length) % images.value.length
+  selectImage(images.value[prevIdx].url)
+}
+
+// ✅ Lightbox
+const showLightbox = ref(false)
+const lightboxIndex = ref(0)
+
+const openLightbox = () => {
+  lightboxIndex.value = images.value.findIndex(img => img.url === activeImage.value)
+  showLightbox.value = true
+}
+
+const closeLightbox = () => {
+  showLightbox.value = false
+}
+
+const handleKeyDown = (e) => {
+  if (showLightbox.value) {
+    if (e.key === 'Escape') closeLightbox()
+    if (e.key === 'ArrowRight') {
+      lightboxIndex.value = (lightboxIndex.value + 1) % images.value.length
+    }
+    if (e.key === 'ArrowLeft') {
+      lightboxIndex.value = (lightboxIndex.value - 1 + images.value.length) % images.value.length
+    }
+  } else {
+    if (e.key === 'ArrowRight') nextImage()
+    if (e.key === 'ArrowLeft') prevImage()
+  }
+}
+
 onMounted(() => {
   fetchCar()
   window.addEventListener('resize', onResize, { passive: true })
+  window.addEventListener('keydown', handleKeyDown)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize)
+  window.removeEventListener('keydown', handleKeyDown)
 })
 
 watch(
@@ -268,159 +313,209 @@ watch(
     <div v-else-if="!car" class="state">Car not found.</div>
 
     <!-- Content -->
-    <div v-else class="details">
-      <!-- LEFT: Gallery -->
-      <div class="gallery">
-        <div class="hero-img">
-          <img :src="activeImage" :alt="t(car.title) || `Car #${car.id}`">
-
-          <button
-            class="fav-float"
-            type="button"
-            :aria-label="isFav ? 'Remove from favorites' : 'Add to favorites'"
-            @click.prevent.stop="toggleFavorite"
-          >
-            <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="20" />
-            <span class="fav-count">{{ car.favorites_count ?? 0 }}</span>
-          </button>
-        </div>
-
-        <!-- ✅ Thumbnails -->
-        <div v-if="images.length" class="thumbs-shell">
-          <div class="fade fade-left" />
-          <div class="fade fade-right" />
-
-          <button
-            v-show="canScrollLeft"
-            class="thumb-nav left"
-            type="button"
-            aria-label="Scroll thumbnails left"
-            @click="scrollThumbs('left')"
-          >
-            <VIcon icon="tabler-chevron-left" size="18" />
-          </button>
-
-          <div
-            ref="thumbsEl"
-            class="thumbs"
-            @scroll.passive="onThumbsScroll"
-          >
-            <button
+    <!-- Content -->
+    <div v-else class="details-layout">
+      <!-- TOP: Gallery Section -->
+      <section class="gallery-section mb-10">
+        <div class="gallery-container">
+          <!-- Thumbnails (Vertical on side) -->
+          <div v-if="images.length > 1" class="vertical-thumbs">
+            <div
               v-for="img in images"
               :key="img.id"
-              class="thumb"
-              type="button"
+              class="thumb-item"
               :class="{ active: img.url === activeImage }"
               @click="selectImage(img.url)"
             >
               <img :src="img.url" alt="">
-            </button>
+            </div>
           </div>
 
-          <button
-            v-show="canScrollRight"
-            class="thumb-nav right"
-            type="button"
-            aria-label="Scroll thumbnails right"
-            @click="scrollThumbs('right')"
-          >
-            <VIcon icon="tabler-chevron-right" size="18" />
-          </button>
-        </div>
-      </div>
+          <!-- Main Image -->
+          <div class="gallery-hero" @click="openLightbox">
+            <Transition name="fade" mode="out-in">
+              <img :key="activeImage" :src="activeImage" :alt="t(car.title)" class="main-img">
+            </Transition>
 
-      <!-- RIGHT: Info -->
-      <div class="info">
-        <div class="top">
-          <div class="title-row">
-            <h1 class="title">{{ t(car.title) || `Car #${car.id}` }}</h1>
+            <!-- Nav Arrows -->
+            <button class="nav-arrow left" @click.stop="prevImage">
+              <VIcon icon="tabler-chevron-left" />
+            </button>
+            <button class="nav-arrow right" @click.stop="nextImage">
+              <VIcon icon="tabler-chevron-right" />
+            </button>
+            
+            <div class="expand-hint">
+              <VIcon icon="tabler-arrows-maximize" size="18" />
+              <span>Click to enlarge</span>
+            </div>
 
             <button
-              class="fav-inline"
+              class="fav-float"
               type="button"
-              :aria-label="isFav ? 'Remove from favorites' : 'Add to favorites'"
               @click.prevent.stop="toggleFavorite"
             >
-              <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="20" />
+              <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="22" />
               <span class="fav-count">{{ car.favorites_count ?? 0 }}</span>
             </button>
           </div>
+        </div>
+      </section>
 
-          <div class="price">{{ formatPrice(car.price) }}</div>
+      <!-- ✅ Lightbox Overlay -->
+      <Teleport to="body">
+        <Transition name="fade">
+          <div v-if="showLightbox" class="lightbox-overlay" @click.self="closeLightbox">
+            <div class="lightbox-content">
+              <img :src="images[lightboxIndex]?.url" class="lightbox-img">
+              
+              <button class="lightbox-close" @click="closeLightbox">
+                <VIcon icon="tabler-x" size="24" />
+              </button>
 
-          <div class="meta">
-            <span>{{ t(car.brand?.name) }}</span>
-            <span v-if="t(car.model?.name)">• {{ t(car.model?.name) }}</span>
-            <span v-if="car.year">• {{ car.year }}</span>
-            <span v-if="t(car.city?.name)">• {{ t(car.city?.name) }}</span>
+              <button class="lightbox-nav left" @click="lightboxIndex = (lightboxIndex - 1 + images.length) % images.length">
+                <VIcon icon="tabler-chevron-left" size="32" />
+              </button>
+
+              <button class="lightbox-nav right" @click="lightboxIndex = (lightboxIndex + 1) % images.length">
+                <VIcon icon="tabler-chevron-right" size="32" />
+              </button>
+
+              <div class="lightbox-counter">
+                {{ lightboxIndex + 1 }} / {{ images.length }}
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <!-- BOTTOM: Detailed Info -->
+      <div class="content-section">
+        <div class="main-content">
+          <!-- Header Area -->
+          <div class="info-header mb-8">
+            <div class="d-flex justify-space-between align-center flex-wrap gap-4">
+              <div>
+                <h1 class="text-h3 font-weight-bold mb-2">{{ t(car.title) }}</h1>
+                <div class="text-h6 opacity-70">
+                  {{ t(car.brand?.name) }} <span class="mx-2">•</span> {{ t(car.model?.name) }} <span class="mx-2">•</span> {{ car.year }}
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-h3 font-weight-black text-primary mb-1">{{ formatPrice(car.price) }} EG</div>
+                <div class="d-flex align-center justify-end gap-2 opacity-60">
+                   <VIcon icon="tabler-map-pin" size="16" />
+                   <span>{{ t(car.city?.name) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="badges">
-            <span v-if="car.transmission" class="badge">{{ car.transmission }}</span>
-            <span v-if="car.fuel_type" class="badge">{{ car.fuel_type }}</span>
-            <span v-if="car.drivetrain" class="badge">{{ car.drivetrain }}</span>
-            <span v-if="car.condition" class="badge">{{ car.condition }}</span>
-            <span v-if="car.status" class="badge">{{ car.status }}</span>
+          <!-- Specs Grid -->
+          <div class="specs-grid mb-8">
+            <div class="spec-card">
+              <VIcon icon="tabler-gauge" class="mb-2" color="primary" />
+              <span class="label">Mileage</span>
+              <span class="val">{{ car.mileage ? car.mileage.toLocaleString() + ' Km' : '—' }}</span>
+            </div>
+            <div class="spec-card">
+              <VIcon icon="tabler-settings-automation" class="mb-2" color="primary" />
+              <span class="label">Transmission</span>
+              <span class="val">{{ car.transmission || '—' }}</span>
+            </div>
+            <div class="spec-card">
+              <VIcon icon="tabler-gas-station" class="mb-2" color="primary" />
+              <span class="label">Fuel Type</span>
+              <span class="val">{{ car.fuel_type || '—' }}</span>
+            </div>
+            <div class="spec-card">
+              <VIcon icon="tabler-engine" class="mb-2" color="primary" />
+              <span class="label">Drivetrain</span>
+              <span class="val">{{ car.drivetrain || '—' }}</span>
+            </div>
+            <div class="spec-card">
+              <VIcon icon="tabler-palette" class="mb-2" color="primary" />
+              <span class="label">Color</span>
+              <div class="d-flex align-center gap-2 val justify-center">
+                <div class="color-dot" :style="{ background: car.color || '#ccc' }" />
+                <span>{{ car.color || '—' }}</span>
+              </div>
+            </div>
+            <div class="spec-card">
+              <VIcon icon="tabler-award" class="mb-2" color="primary" />
+              <span class="label">Condition</span>
+              <span class="val">{{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <VCard variant="tonal" class="desc-card mb-8 pa-6" v-if="t(car.description)">
+            <h3 class="text-h5 font-weight-bold mb-4 d-flex align-center gap-2">
+              <VIcon icon="tabler-align-left" color="primary" />
+              Description
+            </h3>
+            <p class="text-body-1 opacity-80 leading-relaxed">{{ t(car.description) }}</p>
+          </VCard>
+
+          <!-- Features -->
+          <div class="features-section mb-8" v-if="car.features?.length">
+            <h3 class="text-h5 font-weight-bold mb-4 d-flex align-center gap-2">
+              <VIcon icon="tabler-list-check" color="primary" />
+              Features & Equipment
+            </h3>
+            <div class="features-grid">
+              <div v-for="f in car.features" :key="f.id" class="feature-item">
+                <VIcon icon="tabler-check" size="18" class="me-2 text-primary" />
+                {{ t(f.name) }}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="specs">
-          <div class="spec"><span>Mileage</span><b>{{ car.mileage ?? '—' }}</b></div>
+        <!-- Sidebar Actions -->
+        <div class="sidebar-content">
+          <VCard class="seller-card pa-6 mb-6">
+            <h4 class="text-h6 mb-4">Contact Seller</h4>
+            <div class="d-flex align-center gap-4 mb-6">
+               <VAvatar color="primary" size="48" class="text-h5 font-weight-bold">
+                 {{ car.seller?.name?.charAt(0) }}
+               </VAvatar>
+               <div>
+                 <div class="font-weight-bold text-h6">{{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}</div>
+                 <div class="text-caption opacity-60">Verified Seller</div>
+               </div>
+            </div>
 
-          <div class="spec">
-            <span>Color</span>
-            <b><span class="color" :style="{ background: car.color || '#ccc' }" /></b>
-          </div>
+            <div class="d-flex flex-column gap-3">
+              <VBtn
+                v-if="whatsappLink"
+                color="#25D366"
+                block
+                height="48"
+                class="contact-btn"
+                :href="whatsappLink"
+                target="_blank"
+              >
+                <VIcon icon="tabler-brand-whatsapp" class="me-2" />
+                WhatsApp
+              </VBtn>
 
-          <div class="spec">
-            <span>Seller</span>
+              <VBtn
+                v-if="sellerLink"
+                variant="outlined"
+                block
+                height="48"
+                :to="sellerLink"
+              >
+                View Profile
+              </VBtn>
+            </div>
+          </VCard>
 
-            <b
-              v-if="sellerLink"
-              class="seller-click"
-              @click="goSeller"
-              title="View seller profile"
-            >
-              {{ car.seller?.store_name ? t(car.seller.store_name) : (car.seller?.name || '—') }}
-              <VIcon icon="tabler-external-link" size="16" class="ms-1" />
-            </b>
-
-            <b v-else>—</b>
-          </div>
-        </div>
-
-        <div class="desc" v-if="t(car.description)">
-          <h3>Description</h3>
-          <p>{{ t(car.description) }}</p>
-        </div>
-
-        <div class="features" v-if="Array.isArray(car.features) && car.features.length">
-          <h3>Features</h3>
-          <div class="feature-list">
-            <span v-for="f in car.features" :key="f.id" class="feature">
-              {{ t(f.name) }}
-            </span>
-          </div>
-        </div>
-
-        <div class="actions">
-          <RouterLink v-if="sellerLink" class="profile-btn" :to="sellerLink">
-            View Seller Profile
-          </RouterLink>
-
-          <a
-            v-if="whatsappLink"
-            class="wa-btn"
-            :href="whatsappLink"
-            target="_blank"
-            rel="noopener"
-          >
-            Contact Seller on WhatsApp
-          </a>
-
-          <div v-else class="state">
-            Seller phone not available.
-          </div>
+          <VCard variant="tonal" class="pa-4 text-center opacity-80">
+            <div class="text-caption">Listing ID: #{{ car.id }}</div>
+            <div class="text-caption">Created: {{ new Date(car.created_at).toLocaleDateString() }}</div>
+          </VCard>
         </div>
       </div>
     </div>
@@ -428,272 +523,327 @@ watch(
 </template>
 
 <style scoped>
-.state { padding: 24px 0; opacity: .85; }
-.state.error { opacity: 1; }
-
-/* Layout */
-.details{
-  display:grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap:24px;
-}
-@media (max-width: 1000px){
-  .details{ grid-template-columns: 1fr; }
+.details-layout {
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-/* Hero */
-.gallery .hero-img{
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  aspect-ratio: 16 / 9;
-  max-height: 70vh;
+.gallery-section {
+  width: 100%;
+}
+
+.gallery-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle, rgba(255,255,255,.06), rgba(0,0,0,.45));
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  gap: 16px;
+  height: 480px; /* Smaller height to show content below */
 }
-@media (max-width: 600px){
-  .gallery .hero-img{
-    aspect-ratio: 4 / 3;
-    max-height: 60vh;
+
+@media (max-width: 900px) {
+  .gallery-container {
+    flex-direction: column-reverse;
+    height: auto;
   }
 }
-.gallery .hero-img img{
+
+.gallery-hero {
+  position: relative;
+  flex: 1;
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  cursor: pointer;
+}
+
+.main-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  display:block;
+  padding: 12px;
 }
 
-/* Favorite */
-.fav-float{
-  position:absolute;
-  top:12px;
-  right:12px;
-  border:0;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:10px 12px;
-  border-radius: 14px;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(8px);
-  color:#fff;
-}
-.fav-inline{
-  border:0;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.08);
-}
-.fav-count{
-  font-weight: 800;
-  font-size: 13px;
-  opacity: .95;
-}
-
-/* ✅ Thumbnails smaller */
-.thumbs-shell{
-  margin-top: 10px;
-  position: relative;
-  max-width: 820px;
-  width: 100%;
-  margin-inline: auto;
-  border-radius: 16px;
-  padding: 4px 0;
-}
-
-.thumbs{
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  padding: 2px 40px 6px;
-  scroll-behavior:smooth;
-  scrollbar-width:none;
-  scroll-snap-type:x mandatory;
-}
-.thumbs::-webkit-scrollbar{ display:none; }
-
-.thumb{
-  border:0;
-  padding:0;
-  background:transparent;
-  width: 72px;
-  height: 50px;
-  border-radius: 12px;
-  overflow:hidden;
-  cursor:pointer;
-  flex: 0 0 auto;
-  outline: 2px solid transparent;
-  transition: transform .15s ease, outline-color .15s ease, opacity .15s ease;
-  opacity: .85;
-  scroll-snap-align: start;
-}
-.thumb:hover{ transform: translateY(-1px); opacity: 1; }
-.thumb.active{
-  opacity: 1;
-  outline-color: rgba(255,255,255,.35);
-}
-.thumb img{
-  width:100%;
-  height:100%;
-  object-fit: cover;
-  display:block;
-}
-
-/* arrows smaller */
-.thumb-nav{
-  position:absolute;
+.nav-arrow {
+  position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
-  border-radius: 12px;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   cursor: pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(8px);
-  z-index: 3;
+  transition: all 0.2s;
+  opacity: 0;
+  z-index: 2;
 }
-.thumb-nav.left{ left: 6px; }
-.thumb-nav.right{ right: 6px; }
-.thumb-nav:hover{ background: rgba(0,0,0,.6); }
 
-/* fades thinner */
-.fade{
-  position:absolute;
-  top: 0;
-  bottom: 0;
-  width: 42px;
+.gallery-hero:hover .nav-arrow {
+  opacity: 1;
+}
+
+.nav-arrow:hover {
+  background: rgba(var(--v-theme-primary), 0.8);
+}
+
+.nav-arrow.left { left: 20px; }
+.nav-arrow.right { right: 20px; }
+
+.expand-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s;
   pointer-events: none;
   z-index: 2;
 }
-.fade-left{
-  left: 0;
-  background: linear-gradient(to right, rgba(27,31,48,.95), rgba(27,31,48,0));
-  border-top-left-radius: 16px;
-  border-bottom-left-radius: 16px;
-}
-.fade-right{
-  right: 0;
-  background: linear-gradient(to left, rgba(27,31,48,.95), rgba(27,31,48,0));
-  border-top-right-radius: 16px;
-  border-bottom-right-radius: 16px;
+
+.gallery-hero:hover .expand-hint {
+  opacity: 1;
 }
 
-/* responsive */
-@media (max-width: 600px){
-  .thumbs{ padding: 2px 36px 6px; gap: 7px; }
-  .thumb{ width: 64px; height: 46px; border-radius: 10px; }
+.fav-float {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  padding: 10px 16px;
+  border-radius: 16px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  cursor: pointer;
+  z-index: 3;
 }
 
-/* Info */
-.info .title{ margin:0; font-size:28px; line-height: 1.2; }
-.title-row{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
+/* Lightbox Styles */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
 }
 
-.price{ font-size:22px; font-weight:800; margin-top: 8px; }
-.meta{ opacity:.75; margin-top: 6px; display:flex; flex-wrap:wrap; gap:8px; }
-
-.badges{ margin-top: 12px; display:flex; flex-wrap:wrap; gap:8px; }
-.badge{
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.08);
+.lightbox-content {
+  position: relative;
+  width: 90vw;
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.specs{
-  margin-top: 18px;
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap:12px;
-}
-@media (max-width: 600px){
-  .specs{ grid-template-columns: 1fr; }
-}
-.spec{
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.04);
-}
-.spec span{ opacity:.7; font-size: 13px; }
-.spec b{ display:block; margin-top: 4px; font-size: 14px; }
-
-.color{
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  display:inline-block;
-  border: 1px solid rgba(255,255,255,.25);
+.lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 0 50px rgba(0,0,0,0.5);
 }
 
-.seller-click{
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  opacity: .95;
-}
-.seller-click:hover{ opacity: 1; }
-
-.desc, .features{ margin-top: 18px; }
-.desc h3, .features h3{ margin: 0 0 8px; }
-.desc p{ margin:0; opacity:.85; line-height: 1.7; }
-
-.feature-list{ display:flex; flex-wrap:wrap; gap:8px; }
-.feature{
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.06);
+.lightbox-close {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  color: #fff;
+  background: rgba(255,255,255,0.1);
+  border: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 100;
 }
 
-.actions{
-  margin-top: 22px;
-  display:flex;
-  gap:12px;
-  flex-wrap: wrap;
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  background: rgba(255,255,255,0.05);
+  border: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
 
-.wa-btn, .profile-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+.lightbox-nav:hover { background: rgba(255,255,255,0.15); }
+.lightbox-nav.left { left: 0; }
+.lightbox-nav.right { right: 0; }
+
+.lightbox-counter {
+  position: absolute;
+  bottom: -40px;
+  color: #fff;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.vertical-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar for vertical thumbs */
+.vertical-thumbs::-webkit-scrollbar {
+  width: 4px;
+}
+.vertical-thumbs::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+  .vertical-thumbs {
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    height: 70px;
+  }
+  .gallery-hero {
+     aspect-ratio: 16/9;
+  }
+}
+
+.thumb-item {
+  flex: 0 0 65px; /* Smaller thumb height */
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  opacity: 0.5;
+  transition: all 0.2s;
+}
+
+.vertical-thumbs .thumb-item {
+  height: 65px;
+}
+
+.thumb-item.active {
+  border-color: rgb(var(--v-theme-primary));
+  opacity: 1;
+  transform: scale(1.02);
+}
+
+.thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Content */
+.content-section {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+}
+
+@media (max-width: 900px) {
+  .content-section { grid-template-columns: 1fr; }
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.spec-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.spec-card:hover {
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-4px);
+}
+
+.spec-card .label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+
+.spec-card .val {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.feature-item {
+  background: rgba(255,255,255,0.03);
   padding: 12px 16px;
-  border-radius: 14px;
-  text-decoration:none;
-  font-weight:700;
-  background: rgba(255,255,255,.08);
-  transition: transform .15s ease, opacity .15s ease;
+  border-radius: 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
 }
-.profile-btn{ background: rgba(255,255,255,.06); }
-.wa-btn:hover, .profile-btn:hover{ transform: translateY(-1px); opacity: 1; }
 
-/* Skeleton */
-.skeleton{ display:grid; gap:14px; }
-.sk-hero{ border-radius: 16px; aspect-ratio: 16 / 9; background: rgba(255,255,255,.06); }
-.sk-line{ height: 14px; border-radius: 10px; background: rgba(255,255,255,.06); }
-.sk-line.w60{ width: 60%; }
-.sk-line.w40{ width: 40%; }
-.sk-grid{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:12px; }
-.sk-card{ height: 56px; border-radius: 14px; background: rgba(255,255,255,.05); }
+.seller-card {
+  position: sticky;
+  top: 100px;
+  background: rgba(255,255,255,0.03) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.05) !important;
+  border-radius: 20px !important;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.leading-relaxed { line-height: 1.8; }
 </style>
