@@ -2,8 +2,9 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
+import api from '@/api/index.js'
 
-// صور السلايدر
+// صور السلايدر الافتراضية في حالة عدم وجود إعلانات
 import slide1 from '@images/front-pages/carbase2.png'
 import slide2 from '@images/front-pages/carbase2.png'
 import slide3 from '@images/front-pages/carbase2.png'
@@ -87,17 +88,30 @@ const resetFilters = () => {
    ✅ Background Slider
 ========================= */
 const slides = ref([
-  { light: slide1, dark: slide1 },
-  { light: slide2, dark: slide2 },
-  { light: slide3, dark: slide3 },
+  { light: slide1, dark: slide1 }
 ])
 
 const slideIndex = ref(0)
 const slideDelayMs = 3000
 let timer = null
 
+const fetchBanners = async () => {
+  try {
+    const res = await api.get('/user/banners')
+    if (res.data && res.data.data && res.data.data.length > 0) {
+      slides.value = res.data.data.map(b => ({
+        light: b.image_path,
+        dark: b.image_path,
+      }))
+    }
+  } catch (err) {
+    console.error('Error fetching banners:', err)
+  }
+}
+
 const currentSlideSrc = computed(() => {
   const s = slides.value[slideIndex.value]
+  if (!s) return slide1 // fallback
   return theme.current.value.dark ? s.dark : s.light
 })
 
@@ -107,6 +121,7 @@ const nextSlide = () => {
 }
 
 onMounted(() => {
+  fetchBanners()
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
 

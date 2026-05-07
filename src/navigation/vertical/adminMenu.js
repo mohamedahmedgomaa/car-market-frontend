@@ -4,6 +4,7 @@ export default [
     to: { name: 'admin-dashboard' },
     icon: { icon: 'tabler-dashboard', size: 26 }
   },
+
   {
     title: 'Cars Management',
     to: { name: 'admin-cars' },
@@ -60,6 +61,11 @@ export default [
         title: 'Models',
         to: { name: 'admin-models' },
         icon: { icon: 'tabler-car-garage', size: 24 }
+      },
+      {
+        title: 'إعلانات الرئيسية',
+        to: { name: 'admin-banners' },
+        icon: { icon: 'tabler-photo', size: 24 },
       }
     ]
   }

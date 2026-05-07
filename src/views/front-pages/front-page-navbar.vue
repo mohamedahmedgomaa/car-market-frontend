@@ -130,14 +130,7 @@ const logout = async () => {
             Favorites
           </RouterLink>
 
-          <RouterLink
-            to="/user/search"
-            class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/search') ? 'active-link' : ''"
-            @click="sidebar = false"
-          >
-            Search
-          </RouterLink>
+
 
           <VDivider class="my-2" />
 
@@ -225,16 +218,17 @@ const logout = async () => {
               to="/"
               class="d-flex gap-x-4"
               :class="$vuetify.display.mdAndUp ? 'd-block' : 'd-block'"
+              style="text-decoration: none;"
             >
-              <h1 class="app-logo-title" style="font-size: 1.5rem; font-weight: 700">negm</h1>
+              <h1 class="app-logo-title" style="font-size: 1.75rem; font-weight: 800; letter-spacing: 0.5px; color: rgb(var(--v-theme-primary));">NegmCars</h1>
             </RouterLink>
           </VAppBarTitle>
 
           <!-- ✅ Links (Desktop) -->
-          <div class="text-base align-center d-none d-md-flex">
+          <div class="text-base align-center d-none d-md-flex gap-x-6 ms-8">
             <RouterLink
               to="/"
-              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              class="nav-link font-weight-bold py-2 px-3"
               :class="route.path === '/' ? 'active-link' : ''"
             >
               Home
@@ -242,7 +236,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/cars"
-              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              class="nav-link font-weight-bold py-2 px-3"
               :class="route.path.startsWith('/user/cars') ? 'active-link' : ''"
             >
               Cars
@@ -250,7 +244,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/bikes"
-              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              class="nav-link font-weight-bold py-2 px-3"
               :class="route.path.startsWith('/user/bikes') ? 'active-link' : ''"
             >
               Bikes
@@ -258,7 +252,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/sell"
-              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              class="nav-link font-weight-bold py-2 px-3"
               :class="route.path.startsWith('/user/sell') ? 'active-link' : ''"
             >
               Sell
@@ -266,18 +260,10 @@ const logout = async () => {
 
             <RouterLink
               to="/user/favorites"
-              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
+              class="nav-link font-weight-bold py-2 px-3"
               :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
             >
               Favorites
-            </RouterLink>
-
-            <RouterLink
-              to="/user/search"
-              class="nav-link font-weight-medium py-2 px-2 px-lg-4"
-              :class="route.path.startsWith('/user/search') ? 'active-link' : ''"
-            >
-              Search
             </RouterLink>
           </div>
         </div>
@@ -303,8 +289,16 @@ const logout = async () => {
 
 <style lang="scss" scoped>
 .nav-link {
+  font-size: 1.05rem;
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+
   &:not(:hover) {
     color: rgb(var(--v-theme-on-surface));
+  }
+
+  &:hover {
+    color: rgb(var(--v-theme-primary));
+    transform: translateY(-1px);
   }
 }
 
