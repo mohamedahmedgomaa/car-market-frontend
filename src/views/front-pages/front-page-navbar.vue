@@ -86,21 +86,30 @@ const logout = async () => {
         <div class="d-flex flex-column gap-y-4 pa-4">
           <!-- ✅ Links -->
           <RouterLink
-            to="/"
-            class="nav-link font-weight-medium"
-            :class="route.path === '/' ? 'active-link' : ''"
-            @click="sidebar = false"
-          >
-            Home
-          </RouterLink>
-
-          <RouterLink
             to="/user/cars"
             class="nav-link font-weight-medium"
             :class="route.path.startsWith('/user/cars') ? 'active-link' : ''"
             @click="sidebar = false"
           >
             Cars
+          </RouterLink>
+
+          <RouterLink
+            to="/user/best-deals"
+            class="nav-link font-weight-medium"
+            :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
+            @click="sidebar = false"
+          >
+            Best Deals
+          </RouterLink>
+
+          <RouterLink
+            to="/user/expat-initiative"
+            class="nav-link font-weight-medium"
+            :class="route.path.startsWith('/user/expat-initiative') ? 'active-link' : ''"
+            @click="sidebar = false"
+          >
+            Expat Initiative
           </RouterLink>
 
           <RouterLink
@@ -227,19 +236,27 @@ const logout = async () => {
           <!-- ✅ Links (Desktop) -->
           <div class="text-base align-center d-none d-md-flex gap-x-6 ms-8">
             <RouterLink
-              to="/"
-              class="nav-link font-weight-bold py-2 px-3"
-              :class="route.path === '/' ? 'active-link' : ''"
-            >
-              Home
-            </RouterLink>
-
-            <RouterLink
               to="/user/cars"
               class="nav-link font-weight-bold py-2 px-3"
               :class="route.path.startsWith('/user/cars') ? 'active-link' : ''"
             >
               Cars
+            </RouterLink>
+
+            <RouterLink
+              to="/user/best-deals"
+              class="nav-link font-weight-bold py-2 px-3"
+              :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
+            >
+              Best Deals
+            </RouterLink>
+
+            <RouterLink
+              to="/user/expat-initiative"
+              class="nav-link font-weight-bold py-2 px-3"
+              :class="route.path.startsWith('/user/expat-initiative') ? 'active-link' : ''"
+            >
+              Expat Initiative
             </RouterLink>
 
             <RouterLink
