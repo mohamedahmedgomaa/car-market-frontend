@@ -478,7 +478,6 @@ onMounted(async () => {
                   <VTextField
                     v-model="draft.mileageFrom"
                     placeholder="Min"
-                    type="number"
                     variant="outlined"
                     density="comfortable"
                     hide-details
@@ -489,7 +488,6 @@ onMounted(async () => {
                   <VTextField
                     v-model="draft.mileageTo"
                     placeholder="Max"
-                    type="number"
                     variant="outlined"
                     density="comfortable"
                     hide-details
@@ -676,5 +674,16 @@ onMounted(async () => {
 :deep(.v-chip) {
   font-weight: 700;
   font-size: 10px;
+}
+
+/* Hide number input spinners */
+:deep(input::-webkit-outer-spin-button),
+:deep(input::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+:deep(input[type=number]) {
+  -moz-appearance: textfield;
 }
 </style>
