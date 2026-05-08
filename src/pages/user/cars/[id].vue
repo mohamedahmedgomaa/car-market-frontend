@@ -620,9 +620,20 @@ watch(
             </VCard>
           </VDialog>
 
-          <VCard variant="tonal" class="pa-4 text-center opacity-80">
-            <div class="text-caption">Listing ID: #{{ car.id }}</div>
-            <div class="text-caption">Created: {{ new Date(car.created_at).toLocaleDateString() }}</div>
+          <VCard variant="flat" class="pa-5 text-center rounded-xl metadata-card mb-4" style="background: rgba(var(--v-theme-surface), 0.5); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="d-flex flex-column gap-3">
+              <div class="d-flex align-center justify-center gap-2">
+                <VIcon icon="tabler-hash" size="18" color="primary" />
+                <span class="text-subtitle-2 font-weight-black">Listing ID: #{{ car.id }}</span>
+              </div>
+              <VDivider opacity="0.1" />
+              <div class="d-flex align-center justify-center gap-2 opacity-70">
+                <VIcon icon="tabler-calendar-event" size="18" />
+                <span class="text-caption font-weight-medium">
+                  {{ car.created_at ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(car.created_at)) : '—' }}
+                </span>
+              </div>
+            </div>
           </VCard>
         </div>
       </div>
@@ -968,11 +979,13 @@ watch(
 
 .seller-card {
   position: sticky;
-  top: 100px;
-  background: rgba(255,255,255,0.03) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.05) !important;
-  border-radius: 20px !important;
+  top: 110px;
+  background-color: #25293c !important;
+  opacity: 1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  z-index: 100 !important;
 }
 
 .fade-enter-active, .fade-leave-active {
