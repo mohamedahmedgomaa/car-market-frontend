@@ -296,7 +296,6 @@ onMounted(async () => {
                   :class="{ active: draft.type === 'car' }"
                   @click="draft.type = 'car'"
                 >
-                  <VIcon icon="tabler-car" size="18" class="me-1" />
                   Cars
                 </button>
                 <button
@@ -305,7 +304,6 @@ onMounted(async () => {
                   :class="{ active: draft.type === 'motorcycle' }"
                   @click="draft.type = 'motorcycle'"
                 >
-                  <VIcon icon="tabler-motorbike" size="18" class="me-1" />
                   Bikes
                 </button>
               </div>
