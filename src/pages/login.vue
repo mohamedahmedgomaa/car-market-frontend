@@ -21,6 +21,8 @@ const activeTab = ref(route.query.tab === 'register' ? 'register' : 'login')
 const form = ref({
   email: '',
   password: '',
+  accountType: 'individual', // 'individual' | 'showroom'
+  showroomName: '',
   remember: false,
   agreeToTerms: false,
 })
@@ -32,6 +34,11 @@ const isPasswordVisible = ref(false)
 const handleAuth = async () => {
   if (activeTab.value === 'register' && !form.value.agreeToTerms) {
     errorMessage.value = 'Please agree to the terms and conditions.'
+    return
+  }
+
+  if (activeTab.value === 'register' && form.value.accountType === 'showroom' && !form.value.showroomName) {
+    errorMessage.value = 'Please enter your showroom name.'
     return
   }
 
@@ -49,6 +56,8 @@ const handleAuth = async () => {
       response = await userApi.register({
         email: form.value.email,
         password: form.value.password,
+        role: form.value.accountType === 'showroom' ? 'seller' : 'user',
+        showroom_name: form.value.showroomName,
       })
     }
 
@@ -111,7 +120,7 @@ const handleAuth = async () => {
           {{ activeTab === 'login' ? 'Hello! Welcome back!' : 'Create your account!' }}
         </h2>
 
-        <!-- Social Buttons (Only Apple & Google) -->
+        <!-- Social Buttons -->
         <div class="social-section mb-8">
           <VBtn
             block
@@ -129,7 +138,6 @@ const handleAuth = async () => {
             class="social-btn google-btn"
             height="52"
           >
-            <!-- Custom Google Icon Colors via CSS filter or multi-icon if available -->
             <VIcon icon="tabler-brand-google-filled" class="me-3 google-icon" size="24" />
             Sign in with Google
           </VBtn>
@@ -143,6 +151,45 @@ const handleAuth = async () => {
         <!-- Form -->
         <VForm @submit.prevent="handleAuth">
           <VRow>
+            <!-- Account Type Selection (Register Only) -->
+            <VCol v-if="activeTab === 'register'" cols="12" class="mb-4">
+              <label class="input-label">I am registering as:</label>
+              <div class="role-selector d-flex gap-2 p-1">
+                <VBtn
+                  variant="flat"
+                  :color="form.accountType === 'individual' ? 'primary' : 'secondary'"
+                  class="flex-grow-1"
+                  rounded="lg"
+                  @click="form.accountType = 'individual'"
+                >
+                  <VIcon icon="tabler-user" class="me-2" />
+                  Individual
+                </VBtn>
+                <VBtn
+                  variant="flat"
+                  :color="form.accountType === 'showroom' ? 'primary' : 'secondary'"
+                  class="flex-grow-1"
+                  rounded="lg"
+                  @click="form.accountType = 'showroom'"
+                >
+                  <VIcon icon="tabler-building-store" class="me-2" />
+                  Showroom
+                </VBtn>
+              </div>
+            </VCol>
+
+            <VCol v-if="activeTab === 'register' && form.accountType === 'showroom'" cols="12">
+              <label class="input-label">Showroom Name</label>
+              <VTextField
+                v-model="form.showroomName"
+                placeholder="Ex: Golden Motors"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input"
+              />
+            </VCol>
+
             <VCol cols="12">
               <label class="input-label">Email Address</label>
               <VTextField
@@ -297,13 +344,13 @@ const handleAuth = async () => {
 
   &:hover {
     background: rgba(255, 255, 255, 0.05) !important;
-    border-color: #a855f7 !important; /* Purple border like screenshot */
+    border-color: #a855f7 !important;
     transform: translateY(-2px);
   }
 }
 
 .google-icon {
-  color: #ea4335; /* Base red for Google */
+  color: #ea4335;
 }
 
 .input-label {
@@ -322,6 +369,12 @@ const handleAuth = async () => {
   &.v-field--focused {
     border-color: rgba(var(--v-theme-primary), 0.8);
   }
+}
+
+.role-selector {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .auth-submit-btn {

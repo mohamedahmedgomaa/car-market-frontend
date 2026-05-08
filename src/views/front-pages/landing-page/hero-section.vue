@@ -58,9 +58,9 @@ const putBetween = (obj, key, from, to) => {
 ========================= */
 const filters = ref({
   type: 'car', // car | motorcycle
-  condition: 'used', // used | new
-  brand: '',
-  model: '',
+  condition: '', // '' (All) | used | new
+  brandId: null,
+  modelId: null,
   priceFrom: null,
   priceTo: null,
   yearFrom: null,
@@ -74,8 +74,8 @@ const buildQuery = () => {
   if (filters.value.type) q['filter[type]'] = filters.value.type
   if (filters.value.condition) q['filter[condition]'] = filters.value.condition
 
-  if (filters.value.brand?.trim()) q['filter[brand]'] = filters.value.brand.trim()
-  if (filters.value.model?.trim()) q['filter[model]'] = filters.value.model.trim()
+  if (filters.value.brandId) q['filter[brand_id]'] = filters.value.brandId
+  if (filters.value.modelId) q['filter[model_id]'] = filters.value.modelId
 
   // ✅ IMPORTANT: match /user/cars page format (between scopes)
   const pf = toNumOrNull(filters.value.priceFrom)
@@ -99,42 +99,30 @@ const onSearch = () => {
 /* =========================
    ✅ Static Data (Brands/Models)
 ========================= */
-const brandsList = ref([
-  'Toyota',
-  'Mercedes-Benz',
-  'BMW',
-  'Hyundai',
-  'Kia',
-  'Nissan',
-  'Mitsubishi',
-  'Honda',
-  'Chevrolet',
-  'Ford',
-  'Lexus',
-  'Jeep',
-  'Land Rover',
-  'Audi',
-  'Volkswagen',
-  'Porsche',
-])
+const brandsList = ref([])
+const modelsList = ref([])
 
-const modelsByBrand = {
-  Toyota: ['Corolla', 'Camry', 'Land Cruiser', 'Hilux', 'Fortuner', 'Yaris'],
-  BMW: ['X1', 'X3', 'X5', 'X6', '3 Series', '5 Series', '7 Series'],
-  'Mercedes-Benz': ['C-Class', 'E-Class', 'S-Class', 'G-Class', 'GLE', 'GLC'],
-  Hyundai: ['Elantra', 'Accent', 'Tucson', 'Santa Fe', 'Sonata'],
-  Kia: ['Sportage', 'Cerato', 'Sorento', 'Rio', 'Picanto'],
-  Nissan: ['Sunny', 'Patrol', 'Altima', 'X-Trail', 'Sentra'],
-  Mitsubishi: ['Lancer', 'Pajero', 'Eclipse', 'Attrage'],
-  Chevrolet: ['Tahoe', 'Captiva', 'Malibu', 'Aveo'],
-  Ford: ['Explorer', 'Edge', 'Taurus', 'Mustang'],
-  Jeep: ['Grand Cherokee', 'Wrangler', 'Compass'],
-  'Land Rover': ['Range Rover', 'Defender', 'Discovery'],
+const fetchBrands = async () => {
+  try {
+    const res = await brandUserApi.getAll()
+    brandsList.value = res.data?.data || res.data || []
+  } catch (err) {
+    console.error('Error fetching brands:', err)
+  }
 }
 
-const modelsList = computed(() => {
-  return filters.value.brand ? modelsByBrand[filters.value.brand] || [] : []
-})
+const fetchModels = async (brandId) => {
+  if (!brandId) {
+    modelsList.value = []
+    return
+  }
+  try {
+    const res = await modelUserApi.getAll({ 'filter[brand_id]': brandId })
+    modelsList.value = res.data?.data || res.data || []
+  } catch (err) {
+    console.error('Error fetching models:', err)
+  }
+}
 
 const yearsList = Array.from({ length: 2026 - 2000 + 1 }, (_, i) => 2026 - i)
 
@@ -148,9 +136,10 @@ const modelSelect = ref(null)
 const isModelMenuOpen = ref(false)
 
 watch(
-  () => filters.value.brand,
+  () => filters.value.brandId,
   (val) => {
-    filters.value.model = ''
+    filters.value.modelId = null
+    fetchModels(val)
     if (val) {
       nextTick(() => {
         isModelMenuOpen.value = true
@@ -180,8 +169,8 @@ const resetFilters = () => {
   filters.value = {
     type: 'car',
     condition: '',
-    brand: '',
-    model: '',
+    brandId: null,
+    modelId: null,
     priceFrom: null,
     priceTo: null,
     yearFrom: null,
@@ -225,6 +214,7 @@ const nextSlide = () => {
 
 onMounted(() => {
   fetchBanners()
+  fetchBrands()
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
 
@@ -307,8 +297,10 @@ watch(
               <!-- Row 2: Brand & Model -->
               <div class="inputGroup">
                 <VSelect
-                  v-model="filters.brand"
+                  v-model="filters.brandId"
                   :items="brandsList"
+                  item-title="name"
+                  item-value="id"
                   label="Brand"
                   density="comfortable"
                   variant="outlined"
@@ -320,14 +312,16 @@ watch(
               <div class="inputGroup">
                 <VSelect
                   ref="modelSelect"
-                  v-model="filters.model"
+                  v-model="filters.modelId"
                   v-model:menu="isModelMenuOpen"
                   :items="modelsList"
+                  item-title="name"
+                  item-value="id"
                   label="Model"
                   density="comfortable"
                   variant="outlined"
                   hide-details
-                  :disabled="!filters.brand"
+                  :disabled="!filters.brandId"
                   class="premium-input"
                 />
               </div>

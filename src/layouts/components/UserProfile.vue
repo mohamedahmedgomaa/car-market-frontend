@@ -68,11 +68,18 @@ const handleLogout = async () => {
 
           <VDivider class="my-2" />
 
-          <VListItem link>
+          <VListItem to="/user/profile" link>
             <template #prepend>
               <VIcon class="me-2" icon="tabler-user" size="22" />
             </template>
             <VListItemTitle>Profile</VListItemTitle>
+          </VListItem>
+
+          <VListItem to="/user/cars" link>
+            <template #prepend>
+              <VIcon class="me-2" icon="tabler-car" size="22" />
+            </template>
+            <VListItemTitle>My Ads</VListItemTitle>
           </VListItem>
 
           <VListItem link>
