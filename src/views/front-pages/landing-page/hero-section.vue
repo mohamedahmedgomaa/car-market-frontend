@@ -89,7 +89,7 @@ const buildQuery = () => {
   return q
 }
 
-const goSearch = () => {
+const onSearch = () => {
   router.push({
     path: '/user/cars',
     query: buildQuery(),
