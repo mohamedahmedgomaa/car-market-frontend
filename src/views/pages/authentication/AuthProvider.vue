@@ -24,6 +24,16 @@ const authProviders = [
     color: '#dd4b39',
     colorInDark: '#db4437',
   },
+  {
+    icon: 'tabler-brand-apple-filled',
+    color: '#000000',
+    colorInDark: '#ffffff',
+  },
+  {
+    icon: 'tabler-phone-filled',
+    color: '#28a745',
+    colorInDark: '#28a745',
+  },
 ]
 </script>
 

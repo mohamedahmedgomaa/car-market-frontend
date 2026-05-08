@@ -145,23 +145,17 @@ const logout = async () => {
 
           <!-- ✅ Auth (User) -->
           <template v-if="!isLoggedIn">
-            <RouterLink
+            <VBtn
+              block
+              color="primary"
+              variant="elevated"
               to="/login"
-              class="nav-link font-weight-medium"
-              :class="route.path === '/login' ? 'active-link' : ''"
+              class="mt-2"
               @click="sidebar = false"
             >
+              <VIcon icon="tabler-login" class="me-2" />
               Login
-            </RouterLink>
-
-            <RouterLink
-              to="/register"
-              class="nav-link font-weight-medium"
-              :class="route.path === '/register' ? 'active-link' : ''"
-              @click="sidebar = false"
-            >
-              Register
-            </RouterLink>
+            </VBtn>
           </template>
 
           <template v-else>
@@ -287,17 +281,40 @@ const logout = async () => {
 
         <VSpacer />
 
-        <!-- ✅ Auth buttons -->
+        <!-- ✅ Unified Auth button -->
         <template v-if="!isLoggedIn">
-          <VBtn class="ms-3" variant="tonal" to="/login"> Login </VBtn>
-
-          <VBtn class="ms-2" color="primary" variant="elevated" to="/register"> Register </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            to="/login"
+            class="ms-3 auth-main-btn px-6"
+            rounded="xl"
+          >
+            <VIcon icon="tabler-user-circle" class="me-2" size="20" />
+            Login
+          </VBtn>
         </template>
 
         <template v-else>
-          <VBtn class="ms-3" variant="tonal" to="/user/profile"> Profile </VBtn>
+          <VBtn
+            variant="tonal"
+            to="/user/profile"
+            class="ms-3 px-6"
+            rounded="xl"
+          >
+            <VIcon icon="tabler-user" class="me-2" size="20" />
+            Profile
+          </VBtn>
 
-          <VBtn class="ms-2" color="error" variant="elevated" @click="logout"> Logout </VBtn>
+          <VBtn
+            icon
+            variant="text"
+            color="error"
+            class="ms-2"
+            @click="logout"
+          >
+            <VIcon icon="tabler-logout" size="22" />
+          </VBtn>
         </template>
       </VAppBar>
     </div>
@@ -406,6 +423,20 @@ const logout = async () => {
     .v-toolbar {
       max-inline-size: calc(100% - 32px);
     }
+  }
+}
+
+.auth-main-btn {
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: none !important;
+  height: 44px !important;
+  box-shadow: 0 8px 20px -6px rgba(var(--v-theme-primary), 0.4) !important;
+  transition: all 0.3s ease !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -6px rgba(var(--v-theme-primary), 0.5) !important;
   }
 }
 
