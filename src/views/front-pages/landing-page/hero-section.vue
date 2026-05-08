@@ -102,10 +102,20 @@ const onSearch = () => {
 const brandsList = ref([])
 const modelsList = ref([])
 
+const t = (val) => {
+  if (!val) return ''
+  if (typeof val === 'string') return val
+  return val.en || val.ar || ''
+}
+
 const fetchBrands = async () => {
   try {
     const res = await brandUserApi.getAll()
-    brandsList.value = res.data?.data || res.data || []
+    const data = res.data?.data || res.data || []
+    brandsList.value = data.map((b) => ({
+      id: b.id,
+      name: t(b.name),
+    }))
   } catch (err) {
     console.error('Error fetching brands:', err)
   }
@@ -118,7 +128,11 @@ const fetchModels = async (brandId) => {
   }
   try {
     const res = await modelUserApi.getAll({ 'filter[brand_id]': brandId })
-    modelsList.value = res.data?.data || res.data || []
+    const data = res.data?.data || res.data || []
+    modelsList.value = data.map((m) => ({
+      id: m.id,
+      name: t(m.name),
+    }))
   } catch (err) {
     console.error('Error fetching models:', err)
   }
