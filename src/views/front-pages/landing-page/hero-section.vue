@@ -17,12 +17,20 @@ const router = useRouter()
 /* =========================
    ✅ Helpers (Like Cars page)
 ========================= */
-const toNumOrNull = (v) => {
+const isNumberKey = (evt) => {
+  const charCode = (evt.which) ? evt.which : evt.keyCode
+  if (charCode > 31 && (charCode < 48 || charCode > 57) && (charCode < 1632 || charCode > 1641)) {
+    evt.preventDefault()
+  }
+}
+
+const toNumOrNull = (v, limit = 9) => {
   if (v === '' || v === undefined || v === null) return null
-  const raw = String(v).replace(/\D/g, '').slice(0, 9)
+  const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
+  let raw = String(v).replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
+  raw = raw.replace(/\D/g, '').slice(0, limit)
   let n = Number(raw)
-  if (n > 500000000) n = 500000000
-  return Number.isNaN(n) ? null : n
+  return Number.isNaN(n) || raw === '' ? null : n
 }
 
 const formatWithCommas = (v) => {
@@ -352,6 +360,8 @@ watch(
                     hide-details
                     class="premium-input no-spin"
                     inputmode="numeric"
+                    @keypress="isNumberKey"
+                    maxlength="11"
                   />
                   <VTextField
                     v-model="displayPriceTo"
@@ -362,6 +372,8 @@ watch(
                     hide-details
                     class="premium-input no-spin"
                     inputmode="numeric"
+                    @keypress="isNumberKey"
+                    maxlength="11"
                   />
                 </div>
               </div>
