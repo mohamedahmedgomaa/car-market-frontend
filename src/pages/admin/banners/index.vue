@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import bannerAdminApi from '../../../api/admin/bannerAdminApi.js'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
@@ -24,9 +24,9 @@ const creating = ref(false)
 const selectedFile = ref(null)
 
 // Cropper State
-const cropDialog = ref(false)
 const imageToCrop = ref(null)
 const cropperElement = ref(null)
+const isCropped = ref(false)
 let cropper = null
 
 const fetchBanners = async () => {
@@ -60,59 +60,63 @@ const handleDelete = async () => {
   }
 }
 
-// Watch selected file to open cropper
+// Watch selected file to init cropper inside the dialog
 watch(selectedFile, (file) => {
-  if (file && file instanceof File) {
+  if (file && file instanceof File && !isCropped.value) {
     const reader = new FileReader()
     reader.onload = (e) => {
       imageToCrop.value = e.target.result
-      cropDialog.value = true
       
-      // Initialize cropper after dialog opens
-      setTimeout(() => {
+      nextTick(() => {
         if (cropper) cropper.destroy()
-        cropper = new Cropper(cropperElement.value, {
-          aspectRatio: 16 / 10,
-          viewMode: 1,
-          dragMode: 'move',
-          autoCropArea: 1,
-          restore: false,
-          guides: true,
-          center: true,
-          highlight: false,
-          cropBoxMovable: true,
-          cropBoxResizable: true,
-          toggleDragModeOnDblclick: false,
-        })
-      }, 300)
+        if (cropperElement.value) {
+          cropper = new Cropper(cropperElement.value, {
+            aspectRatio: 16 / 10,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 1,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+          })
+        }
+      })
     }
     reader.readAsDataURL(file)
+  } else if (!file) {
+    imageToCrop.value = null
+    isCropped.value = false
+    if (cropper) cropper.destroy()
+    cropper = null
   }
 })
 
-const handleCropSave = () => {
-  if (!cropper) return
-  
-  cropper.getCroppedCanvas({
-    width: 1600, 
-    height: 1000,
-  }).toBlob((blob) => {
-    const croppedFile = new File([blob], selectedFile.value.name, { type: selectedFile.value.type })
-    selectedFile.value = croppedFile
-    cropDialog.value = false
-  }, selectedFile.value.type)
-}
-
 const handleCreate = async () => {
   if (!selectedFile.value) return
+  
   creating.value = true
   try {
+    let fileToUpload = selectedFile.value
+
+    // If cropper is active, get the cropped version first
+    if (cropper && !isCropped.value) {
+      const blob = await new Promise(resolve => {
+        cropper.getCroppedCanvas({ width: 1600, height: 1000 }).toBlob(resolve, selectedFile.value.type)
+      })
+      fileToUpload = new File([blob], selectedFile.value.name, { type: selectedFile.value.type })
+    }
+
     const fd = new FormData()
-    fd.append('image', selectedFile.value)
+    fd.append('image', fileToUpload)
     
     await bannerAdminApi.create(fd)
     createDialog.value = false
     selectedFile.value = null
+    isCropped.value = false
     fetchBanners()
   } catch (err) {
     console.error('Create failed:', err.response?.data || err.message)
@@ -148,7 +152,7 @@ onMounted(() => fetchBanners())
         variant="elevated"
         class="rounded-xl px-6"
         height="44"
-        @click="createDialog = true"
+        @click="createDialog = true; selectedFile = null"
       >
         <VIcon icon="tabler-plus" class="me-2" />
         إضافة إعلان
@@ -169,81 +173,49 @@ onMounted(() => fetchBanners())
         <tbody>
           <tr v-for="banner in banners" :key="banner.id">
             <td class="font-medium">#{{ banner.id }}</td>
-
             <td>
               <div class="py-3">
-                <VImg
-                  :src="banner.image_path"
-                  width="160"
-                  height="100"
-                  cover
-                  class="rounded-lg border shadow-sm"
-                />
+                <VImg :src="banner.image_path" width="160" height="100" cover class="rounded-lg border shadow-sm" />
               </div>
             </td>
-
             <td>
               <div class="flex items-center gap-2">
-                <VSwitch
-                  v-model="banner.is_active"
-                  color="success"
-                  hide-details
-                  density="compact"
-                  @change="toggleActive(banner)"
-                />
+                <VSwitch v-model="banner.is_active" color="success" hide-details density="compact" @change="toggleActive(banner)" />
                 <span :class="banner.is_active ? 'text-success' : 'text-gray-400'" class="text-sm font-medium">
                   {{ banner.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
             </td>
-
             <td class="text-center">
-              <VBtn
-                icon
-                variant="text"
-                color="error"
-                class="rounded-lg"
-                @click="confirmDelete(banner)"
-              >
+              <VBtn icon variant="text" color="error" class="rounded-lg" @click="confirmDelete(banner)">
                 <VIcon icon="tabler-trash" />
-                <VTooltip activator="parent" location="top">حذف الإعلان</VTooltip>
               </VBtn>
             </td>
           </tr>
-          
           <tr v-if="banners.length === 0 && !loading">
-            <td colspan="4" class="text-center py-12 text-gray-400">
-              <VIcon icon="tabler-photo-off" size="48" class="mb-2 opacity-20" />
-              <p>لا توجد إعلانات حالياً</p>
-            </td>
+            <td colspan="4" class="text-center py-12 text-gray-400">لا توجد إعلانات حالياً</td>
           </tr>
         </tbody>
       </VTable>
-      
       <div v-if="loading" class="flex justify-center items-center py-12">
         <VProgressCircular indeterminate color="primary" />
       </div>
     </VCard>
 
-    <!-- Create Dialog -->
-    <VDialog v-model="createDialog" max-width="550" persistent>
+    <!-- Create Dialog (Unified with Cropper) -->
+    <VDialog v-model="createDialog" max-width="700" persistent>
       <VCard rounded="xl">
-        <VCardTitle class="text-xl font-bold px-6 pt-6">
-          رفع إعلان جديد
+        <VCardTitle class="text-xl font-bold px-6 pt-6 flex justify-between items-center">
+          رفع وتعديل إعلان جديد
+          <VBtn icon variant="text" size="small" @click="createDialog = false">
+            <VIcon icon="tabler-x" />
+          </VBtn>
         </VCardTitle>
         
-        <VCardText class="px-6">
-          <div class="bg-primary-lighten-5 p-4 rounded-lg mb-6 border border-primary-lighten-4">
-            <div class="flex gap-3">
-              <VIcon icon="tabler-info-circle" color="primary" />
-              <div>
-                <p class="text-sm font-bold text-primary mb-1">نصيحة للمقاسات</p>
-                <p class="text-xs text-primary opacity-80 leading-relaxed">
-                  سيتم قص الصورة تلقائياً لتركيز العرض بنسبة 16:10. يمكنك التحكم في الجزء الذي تريد إظهاره بعد اختيار الصورة.
-                </p>
-              </div>
-            </div>
-          </div>
+        <VCardText class="px-6 pb-6">
+          <p v-if="!selectedFile" class="text-sm text-gray-500 mb-4 italic">
+            اختر صورة لتبدأ في ضبط حجمها ومكانها يدوياً لتناسب الموقع.
+          </p>
 
           <VFileInput
             v-model="selectedFile"
@@ -252,69 +224,57 @@ onMounted(() => fetchBanners())
             prepend-icon="tabler-camera"
             variant="outlined"
             density="comfortable"
-            class="mb-2"
+            class="mb-6"
           />
+
+          <!-- Cropper Interface -->
+          <div v-if="imageToCrop" class="mt-2">
+            <div class="text-xs font-bold text-primary text-uppercase mb-3 tracking-widest flex items-center gap-2">
+              <VIcon icon="tabler-crop" size="16" />
+              قم بضبط الصورة يدوياً أدناه
+            </div>
+            
+            <div class="cropper-wrapper bg-black rounded-xl overflow-hidden border shadow-inner mb-4">
+              <img ref="cropperElement" :src="imageToCrop" class="max-w-full block" />
+            </div>
+
+            <!-- Manual Controls -->
+            <div class="flex gap-2 justify-center mb-2">
+              <VBtn icon variant="tonal" size="small" @click="cropper.rotate(-90)" title="تدوير لليسار">
+                <VIcon icon="tabler-rotate-counter-clockwise" />
+              </VBtn>
+              <VBtn icon variant="tonal" size="small" @click="cropper.rotate(90)" title="تدوير لليمين">
+                <VIcon icon="tabler-rotate-clockwise" />
+              </VBtn>
+              <VBtn icon variant="tonal" size="small" @click="cropper.zoom(0.1)" title="تكبير">
+                <VIcon icon="tabler-zoom-in" />
+              </VBtn>
+              <VBtn icon variant="tonal" size="small" @click="cropper.zoom(-0.1)" title="تصغير">
+                <VIcon icon="tabler-zoom-out" />
+              </VBtn>
+              <VBtn icon variant="tonal" size="small" @click="cropper.scaleX(cropper.getData().scaleX === 1 ? -1 : 1)" title="قلب أفقي">
+                <VIcon icon="tabler-arrows-left-right" />
+              </VBtn>
+            </div>
+            <p class="text-center text-xs text-gray-500 italic">يمكنك تحريك الإطار أو الزووم بالماوس أيضاً</p>
+          </div>
         </VCardText>
 
-        <VCardActions class="p-6 pt-2 gap-3">
-          <VBtn variant="tonal" color="secondary" class="rounded-lg flex-1" @click="createDialog = false">
+        <VCardActions class="px-6 pb-6 gap-3">
+          <VBtn variant="tonal" color="secondary" class="rounded-lg px-6" @click="createDialog = false">
             إلغاء
           </VBtn>
+          <VSpacer />
           <VBtn
             color="primary"
             variant="elevated"
-            class="rounded-lg flex-1"
+            class="rounded-lg px-10"
+            height="44"
             :loading="creating"
             @click="handleCreate"
             :disabled="!selectedFile"
           >
-            حفظ النهائي
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <!-- Crop Dialog -->
-    <VDialog v-model="cropDialog" max-width="800" persistent>
-      <VCard rounded="xl">
-        <VCardTitle class="text-xl font-bold px-6 pt-6 flex justify-between items-center">
-          ضبط الصورة (Crop)
-          <VBtn icon variant="text" size="small" @click="cropDialog = false">
-            <VIcon icon="tabler-x" />
-          </VBtn>
-        </VCardTitle>
-
-        <VCardText class="px-6 py-4">
-          <div class="cropper-container bg-black rounded-lg overflow-hidden border">
-            <img ref="cropperElement" :src="imageToCrop" class="max-w-full block" />
-          </div>
-          
-          <div class="flex gap-2 mt-4 justify-center">
-            <VBtn icon variant="tonal" size="small" @click="cropper.rotate(-90)">
-              <VIcon icon="tabler-rotate-counter-clockwise" />
-            </VBtn>
-            <VBtn icon variant="tonal" size="small" @click="cropper.rotate(90)">
-              <VIcon icon="tabler-rotate-clockwise" />
-            </VBtn>
-            <VBtn icon variant="tonal" size="small" @click="cropper.zoom(0.1)">
-              <VIcon icon="tabler-zoom-in" />
-            </VBtn>
-            <VBtn icon variant="tonal" size="small" @click="cropper.zoom(-0.1)">
-              <VIcon icon="tabler-zoom-out" />
-            </VBtn>
-            <VBtn icon variant="tonal" size="small" @click="cropper.scaleX(cropper.getData().scaleX === 1 ? -1 : 1)">
-              <VIcon icon="tabler-arrows-left-right" />
-            </VBtn>
-          </div>
-        </VCardText>
-
-        <VCardActions class="p-6 pt-2 gap-3">
-          <VBtn variant="tonal" color="secondary" class="rounded-lg px-6" @click="cropDialog = false">
-            تراجع
-          </VBtn>
-          <VSpacer />
-          <VBtn color="primary" variant="elevated" class="rounded-lg px-8" @click="handleCropSave">
-            اعتماد وحفظ التعديل
+            حفظ ونشر الإعلان
           </VBtn>
         </VCardActions>
       </VCard>
@@ -322,20 +282,12 @@ onMounted(() => fetchBanners())
 
     <!-- Delete Confirm -->
     <VDialog v-model="deleteDialog" max-width="400">
-      <VCard rounded="xl" class="p-4 text-center">
-        <div class="p-4 bg-error-lighten-5 rounded-circle inline-flex mb-4">
-          <VIcon icon="tabler-trash" color="error" size="32" />
-        </div>
-        <h3 class="text-xl font-bold mb-2">تأكيد الحذف</h3>
-        <p class="text-gray-500 mb-6 px-4">هل أنت متأكد من رغبتك في حذف هذا الإعلان؟ لا يمكن التراجع عن هذا الإجراء.</p>
-        
+      <VCard rounded="xl" class="p-6 text-center">
+        <h3 class="text-xl font-bold mb-4">تأكيد الحذف</h3>
+        <p class="text-gray-500 mb-6">هل أنت متأكد من رغبتك في حذف هذا الإعلان؟</p>
         <div class="flex gap-3">
-          <VBtn variant="tonal" color="secondary" class="rounded-lg flex-1" @click="deleteDialog = false">
-            إلغاء
-          </VBtn>
-          <VBtn color="error" variant="elevated" class="rounded-lg flex-1" :loading="deleting" @click="handleDelete">
-            حذف الآن
-          </VBtn>
+          <VBtn variant="tonal" color="secondary" class="rounded-lg flex-1" @click="deleteDialog = false">إلغاء</VBtn>
+          <VBtn color="error" variant="elevated" class="rounded-lg flex-1" :loading="deleting" @click="handleDelete">حذف</VBtn>
         </div>
       </VCard>
     </VDialog>
@@ -343,20 +295,11 @@ onMounted(() => fetchBanners())
 </template>
 
 <style scoped>
-.cropper-container {
-  height: 450px;
+.cropper-wrapper {
+  height: 400px;
   width: 100%;
 }
 
-:deep(.v-table) {
-  background: transparent !important;
-}
-
-:deep(.v-table th) {
-  background: rgba(255, 255, 255, 0.05) !important;
-}
-
-:deep(.v-table td) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
+:deep(.v-table) { background: transparent !important; }
+:deep(.v-table th) { background: rgba(255, 255, 255, 0.05) !important; }
 </style>
