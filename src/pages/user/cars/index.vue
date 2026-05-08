@@ -31,9 +31,28 @@ const firstQueryVal = (v) => Array.isArray(v) ? v[0] : v
 
 const toNumOrNull = (v) => {
   if (v === '' || v === undefined || v === null) return null
-  const n = Number(v)
+  const raw = String(v).replace(/\D/g, '').slice(0, 9)
+  let n = Number(raw)
+  if (n > 500000000) n = 500000000
   return Number.isNaN(n) ? null : n
 }
+
+const formatWithCommas = (v) => {
+  if (!v && v !== 0) return ''
+  const s = String(v).replace(/\D/g, '')
+  if (!s) return ''
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+const displayDraftPriceFrom = computed({
+  get: () => formatWithCommas(draft.value.priceFrom),
+  set: (v) => { draft.value.priceFrom = toNumOrNull(v) }
+})
+
+const displayDraftPriceTo = computed({
+  get: () => formatWithCommas(draft.value.priceTo),
+  set: (v) => { draft.value.priceTo = toNumOrNull(v) }
+})
 
 // -------------------------
 // ✅ Between helpers (filter[xxx_between]=from.to)
@@ -471,55 +490,65 @@ onMounted(async () => {
                 @keyup.enter="applyFilters"
               />
 
-              <VRow class="mb-3" dense>
-                <VCol cols="6">
-                  <VTextField
-                    v-model="draft.yearFrom"
-                    type="number"
-                    label="Year from"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    @keyup.enter="applyFilters"
-                  />
-                </VCol>
-                <VCol cols="6">
-                  <VTextField
-                    v-model="draft.yearTo"
-                    type="number"
-                    label="Year to"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    @keyup.enter="applyFilters"
-                  />
-                </VCol>
-              </VRow>
+              <div class="mb-3">
+                <div class="text-caption font-weight-bold mb-1 opacity-70">Year</div>
+                <VRow dense>
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="draft.yearFrom"
+                      type="number"
+                      placeholder="Min"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      @keyup.enter="applyFilters"
+                    />
+                  </VCol>
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="draft.yearTo"
+                      type="number"
+                      placeholder="Max"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      @keyup.enter="applyFilters"
+                    />
+                  </VCol>
+                </VRow>
+              </div>
 
-              <VRow class="mb-3" dense>
-                <VCol cols="6">
-                  <VTextField
-                    v-model="draft.priceFrom"
-                    type="number"
-                    label="Price from"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    @keyup.enter="applyFilters"
-                  />
-                </VCol>
-                <VCol cols="6">
-                  <VTextField
-                    v-model="draft.priceTo"
-                    type="number"
-                    label="Price to"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    @keyup.enter="applyFilters"
-                  />
-                </VCol>
-              </VRow>
+              <div class="mb-3">
+                <div class="text-caption font-weight-bold mb-1 opacity-70">Price</div>
+                <VRow dense>
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="displayDraftPriceFrom"
+                      placeholder="Min"
+                      prefix="EG"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="no-spin"
+                      inputmode="numeric"
+                      @keyup.enter="applyFilters"
+                    />
+                  </VCol>
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="displayDraftPriceTo"
+                      placeholder="Max"
+                      prefix="EG"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="no-spin"
+                      inputmode="numeric"
+                      @keyup.enter="applyFilters"
+                    />
+                  </VCol>
+                </VRow>
+              </div>
 
               <VRow dense>
                 <VCol cols="6">
@@ -559,16 +588,29 @@ onMounted(async () => {
                 Auto Filters (Instant)
               </div>
 
-              <VSelect
-                v-model="type"
-                :items="typeOptions"
-                label="Type"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                class="mb-3"
-                clearable
-              />
+              <div class="mb-4">
+                <div class="text-caption font-weight-bold mb-1 opacity-70">Vehicle Type</div>
+                <div class="premium-toggle">
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: type === 'car' }"
+                    @click="type = 'car'"
+                  >
+                    <VIcon icon="tabler-car" size="18" class="me-1" />
+                    Car
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: type === 'motorcycle' }"
+                    @click="type = 'motorcycle'"
+                  >
+                    <VIcon icon="tabler-motorbike" size="18" class="me-1" />
+                    Bike
+                  </button>
+                </div>
+              </div>
 
               <VSelect
                 v-model="countryId"
@@ -677,16 +719,35 @@ onMounted(async () => {
                 clearable
               />
 
-              <VSelect
-                v-model="condition"
-                :items="conditionOptions"
-                label="Condition"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                class="mb-3"
-                clearable
-              />
+              <div class="mb-4">
+                <div class="text-caption font-weight-bold mb-1 opacity-70">Condition</div>
+                <div class="premium-toggle premium-toggle--three">
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: condition === '' }"
+                    @click="condition = ''"
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: condition === 'used' }"
+                    @click="condition = 'used'"
+                  >
+                    Used
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: condition === 'new' }"
+                    @click="condition = 'new'"
+                  >
+                    New
+                  </button>
+                </div>
+              </div>
 
               <VSelect
                 v-model="featureIds"
@@ -789,5 +850,52 @@ onMounted(async () => {
   font-size: 13px;
   opacity: .85;
   margin-bottom: 12px;
+}
+
+/* Hide number input spinners */
+:deep(.no-spin input::-webkit-outer-spin-button),
+:deep(.no-spin input::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+:deep(.no-spin input[type=number]) {
+  -moz-appearance: textfield;
+}
+
+/* Premium Toggle Buttons */
+.premium-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+  height: 38px;
+}
+.premium-toggle__btn {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+.premium-toggle__btn:hover {
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.05);
+}
+.premium-toggle__btn.active {
+  opacity: 1;
+  background: rgba(var(--v-theme-primary), 1);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(var(--v-theme-primary), 0.3);
 }
 </style>

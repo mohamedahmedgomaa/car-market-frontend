@@ -19,9 +19,32 @@ const router = useRouter()
 ========================= */
 const toNumOrNull = (v) => {
   if (v === '' || v === undefined || v === null) return null
-  const n = Number(v)
+  const raw = String(v).replace(/\D/g, '').slice(0, 9)
+  let n = Number(raw)
+  if (n > 500000000) n = 500000000
   return Number.isNaN(n) ? null : n
 }
+
+const formatWithCommas = (v) => {
+  if (!v && v !== 0) return ''
+  const s = String(v).replace(/\D/g, '')
+  if (!s) return ''
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+const displayPriceFrom = computed({
+  get: () => formatWithCommas(filters.value.priceFrom),
+  set: (v) => {
+    filters.value.priceFrom = toNumOrNull(v)
+  },
+})
+
+const displayPriceTo = computed({
+  get: () => formatWithCommas(filters.value.priceTo),
+  set: (v) => {
+    filters.value.priceTo = toNumOrNull(v)
+  },
+})
 
 // ✅ Between helper: filter[key]=from.to   (dot separator)
 const putBetween = (obj, key, from, to) => {
@@ -115,11 +138,19 @@ const modelsList = computed(() => {
 
 const yearsList = Array.from({ length: 2026 - 2000 + 1 }, (_, i) => 2026 - i)
 
-// ✅ Watch brand to clear model
+// ✅ Watch brand to clear model & auto-open
+const modelSelect = ref(null)
+
 watch(
   () => filters.value.brand,
-  () => {
+  (val) => {
     filters.value.model = ''
+    if (val) {
+      // Auto-open model select
+      setTimeout(() => {
+        modelSelect.value?.focus()
+      }, 100)
+    }
   },
 )
 
@@ -197,142 +228,140 @@ watch(
       <div class="heroGrid">
         <!-- Left: Search Form -->
         <div class="heroLeft">
-          <!-- ✅ Filters Form -->
           <VCard class="premium-card filterCard" elevation="0">
             <div class="filterCard__grid">
-              <!-- Row 1: Type & Condition -->
+              <!-- Vehicle Type Toggle -->
               <div class="inputGroup">
-                <label class="inputLabel">Vehicle Type</label>
-                <VSelect
-                  v-model="filters.type"
-                  placeholder="Type"
-                  :items="[
-                    { title: 'Car', value: 'car' },
-                    { title: 'Motorcycle', value: 'motorcycle' },
-                  ]"
-                  density="compact"
-                  variant="solo"
-                  flat
-                  hide-details
-                  prepend-inner-icon="tabler-category"
-                  class="compactSelect"
-                />
+                <div class="premium-toggle">
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: filters.type === 'car' }"
+                    @click="filters.type = 'car'"
+                  >
+                    Cars
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: filters.type === 'motorcycle' }"
+                    @click="filters.type = 'motorcycle'"
+                  >
+                    Bikes
+                  </button>
+                </div>
               </div>
 
+              <!-- Condition Toggle -->
               <div class="inputGroup">
-                <label class="inputLabel">Condition</label>
-                <VSelect
-                  v-model="filters.condition"
-                  placeholder="Condition"
-                  :items="[
-                    { title: 'All', value: '' },
-                    { title: 'Used', value: 'used' },
-                    { title: 'New', value: 'new' },
-                  ]"
-                  density="compact"
-                  variant="solo"
-                  flat
-                  hide-details
-                  prepend-inner-icon="tabler-badge"
-                  class="compactSelect"
-                />
+                <div class="premium-toggle premium-toggle--three">
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: filters.condition === '' }"
+                    @click="filters.condition = ''"
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: filters.condition === 'used' }"
+                    @click="filters.condition = 'used'"
+                  >
+                    Used
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: filters.condition === 'new' }"
+                    @click="filters.condition = 'new'"
+                  >
+                    New
+                  </button>
+                </div>
               </div>
 
               <!-- Row 2: Brand & Model -->
               <div class="inputGroup">
-                <label class="inputLabel">Brand</label>
                 <VSelect
                   v-model="filters.brand"
                   :items="brandsList"
-                  placeholder="Brand"
-                  density="compact"
-                  variant="solo"
-                  flat
+                  label="Brand"
+                  density="comfortable"
+                  variant="outlined"
                   hide-details
-                  prepend-inner-icon="tabler-car"
-                  class="compactSelect"
+                  class="premium-input"
                 />
               </div>
 
               <div class="inputGroup">
-                <label class="inputLabel">Model</label>
                 <VSelect
+                  ref="modelSelect"
                   v-model="filters.model"
                   :items="modelsList"
-                  placeholder="Model"
-                  density="compact"
-                  variant="solo"
-                  flat
+                  label="Model"
+                  density="comfortable"
+                  variant="outlined"
                   hide-details
-                  prepend-inner-icon="tabler-settings"
                   :disabled="!filters.brand"
-                  class="compactSelect"
+                  class="premium-input"
                 />
               </div>
 
-              <!-- Row 3: Price -->
-              <div class="inputGroup">
-                <label class="inputLabel">Min Price</label>
-                <VTextField
-                  v-model="filters.priceFrom"
-                  type="number"
-                  placeholder="0.00"
-                  density="compact"
-                  variant="solo"
-                  flat
-                  hide-details
-                  prefix="EG"
-                  class="compactSelect no-spin"
-                />
-              </div>
-              <div class="inputGroup">
-                <label class="inputLabel">Max Price</label>
-                <VTextField
-                  v-model="filters.priceTo"
-                  type="number"
-                  placeholder="0.00"
-                  density="compact"
-                  variant="solo"
-                  flat
-                  hide-details
-                  prefix="EG"
-                  class="compactSelect no-spin"
-                />
+              <!-- Price Row (Shared) -->
+              <div class="inputGroup rangeRow">
+                <div class="rangeRow__grid">
+                  <VTextField
+                    v-model="displayPriceFrom"
+                    label="Min Price"
+                    prefix="EG"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input no-spin"
+                    inputmode="numeric"
+                  />
+                  <VTextField
+                    v-model="displayPriceTo"
+                    label="Max Price"
+                    prefix="EG"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input no-spin"
+                    inputmode="numeric"
+                  />
+                </div>
               </div>
 
-              <!-- Row 4: Year -->
-              <div class="inputGroup">
-                <label class="inputLabel">Min Year</label>
-                <VSelect
-                  v-model="filters.yearFrom"
-                  :items="yearsList"
-                  placeholder="Min"
-                  density="compact"
-                  variant="solo"
-                  flat
-                  hide-details
-                  prepend-inner-icon="tabler-calendar"
-                  class="compactSelect"
-                />
-              </div>
-              <div class="inputGroup">
-                <label class="inputLabel">Max Year</label>
-                <VSelect
-                  v-model="filters.yearTo"
-                  :items="yearsList"
-                  placeholder="Max"
-                  density="compact"
-                  variant="solo"
-                  flat
-                  hide-details
-                  prepend-inner-icon="tabler-calendar"
-                  class="compactSelect"
-                />
+              <!-- Year Row (Shared) -->
+              <div class="inputGroup rangeRow">
+                <div class="rangeRow__grid">
+                  <VSelect
+                    v-model="filters.yearFrom"
+                    :items="yearsList"
+                    label="From Year"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input"
+                  />
+                  <VSelect
+                    v-model="filters.yearTo"
+                    :items="yearsList"
+                    label="To Year"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input"
+                  />
+                </div>
               </div>
             </div>
 
             <div class="filterCard__actions">
-              <div class="d-flex gap-2 w-100 mb-2">
+              <div class="d-flex gap-3 w-100 mb-3">
                 <VBtn
                   variant="tonal"
                   class="flex-grow-1 actionBtn"
@@ -344,22 +373,22 @@ watch(
 
                 <VBtn
                   variant="tonal"
+                  color="warning"
                   class="flex-grow-1 actionBtn"
-                  @click="$router.push('/seller/register')"
+                  to="/user/sell"
+                  prepend-icon="tabler-circle-plus"
                 >
-                  Sell Vehicle
+                  Sell
                 </VBtn>
               </div>
 
               <VBtn
                 color="primary"
-                height="44"
                 block
-                class="searchBtn"
-                @click="goSearch"
-                prepend-icon="tabler-search"
+                class="searchMainBtn"
+                @click="onSearch"
               >
-                Search Vehicles
+                Search
               </VBtn>
             </div>
           </VCard>
@@ -619,6 +648,14 @@ watch(
   grid-template-columns: repeat(2, 1fr);
   gap: 14px 20px;
 }
+.rangeRow {
+  grid-column: span 2;
+}
+.rangeRow__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 .inputGroup {
   display: flex;
   flex-direction: column;
@@ -632,37 +669,67 @@ watch(
   opacity: 0.5;
   margin-left: 4px;
   color: #fff;
+  margin-bottom: 2px;
 }
 
-:deep(.compactSelect .v-field) {
-  border-radius: 14px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  height: 40px !important;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.premium-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  height: 48px;
 }
-:deep(.compactSelect .v-field:hover) {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(var(--v-theme-primary), 0.3);
-}
-:deep(.compactSelect .v-field--focused) {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(var(--v-theme-primary), 0.6);
-}
-:deep(.compactSelect .v-field__input) {
-  min-height: 40px !important;
-  font-size: 14px !important;
-  font-weight: 500;
-  padding-inline: 14px !important;
-}
-:deep(.compactSelect .v-field__prepend-inner) {
+.premium-toggle__btn {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
   opacity: 0.6;
 }
-:deep(.compactSelect .v-field__prefix) {
-  font-size: 12px;
-  font-weight: 800;
-  opacity: 0.7;
-  padding-right: 6px;
+.premium-toggle__btn:hover {
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.04);
+}
+.premium-toggle__btn.active {
+  opacity: 1;
+  background: rgba(var(--v-theme-primary), 1);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.3);
+}
+
+.premium-input :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.15;
+}
+.premium-input :deep(.v-label) {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.searchMainBtn {
+  height: 48px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  font-size: 15px !important;
+  text-transform: none !important;
+}
+
+.actionBtn {
+  height: 38px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
 }
 
 .filterCard__actions {
@@ -680,7 +747,11 @@ watch(
   font-weight: 800 !important;
   font-size: 16px !important;
   text-transform: none !important;
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1) 0%, rgba(var(--v-theme-primary), 0.8) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--v-theme-primary), 1) 0%,
+    rgba(var(--v-theme-primary), 0.8) 100%
+  ) !important;
   box-shadow: 0 12px 24px -6px rgba(var(--v-theme-primary), 0.5) !important;
 }
 
@@ -807,6 +878,17 @@ watch(
   .filterCard__spacer {
     display: none;
   }
+}
+
+/* Hide number input spinners */
+:deep(.no-spin input::-webkit-outer-spin-button),
+:deep(.no-spin input::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+:deep(.no-spin input[type='number']) {
+  -moz-appearance: textfield;
 }
 </style>
 
