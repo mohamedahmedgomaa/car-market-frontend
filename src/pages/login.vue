@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import userApi from '@/api/userApi.js'
 import { themeConfig } from '@themeConfig'
+import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 
 definePage({
   meta: {
@@ -27,13 +28,6 @@ const form = ref({
 const loading = ref(false)
 const errorMessage = ref('')
 const isPasswordVisible = ref(false)
-
-const socialProviders = [
-  { name: 'Apple', icon: 'tabler-brand-apple-filled', color: '#000000', textColor: '#FFFFFF' },
-  { name: 'Google', icon: 'tabler-brand-google-filled', color: '#DB4437', textColor: '#FFFFFF' },
-  { name: 'Facebook', icon: 'tabler-brand-facebook-filled', color: '#1877F2', textColor: '#FFFFFF' },
-  { name: 'Phone', icon: 'tabler-phone-filled', color: '#28A745', textColor: '#FFFFFF' },
-]
 
 const handleAuth = async () => {
   if (activeTab.value === 'register' && !form.value.agreeToTerms) {
@@ -66,9 +60,7 @@ const handleAuth = async () => {
     localStorage.setItem('user_token', data.token)
     localStorage.setItem('user_data', JSON.stringify(data.user))
     
-    // Dispatch event to sync navbar
     window.dispatchEvent(new Event('auth:changed'))
-    
     router.push('/')
   } catch (err) {
     console.error('Auth error:', err)
@@ -84,7 +76,13 @@ const handleAuth = async () => {
 </script>
 
 <template>
-  <div class="auth-wrapper d-flex align-center justify-center pa-4">
+  <div class="auth-wrapper d-flex flex-column align-center justify-center pa-4">
+    <!-- App Logo -->
+    <div class="auth-logo mb-6 d-flex align-center gap-x-3">
+      <VNodeRenderer :nodes="themeConfig.app.logo" />
+      <h1 class="auth-title text-white text-h4 font-weight-bold">{{ themeConfig.app.title }}</h1>
+    </div>
+
     <VCard class="auth-card" elevation="24">
       <!-- Tabs Header -->
       <div class="auth-tabs">
@@ -93,7 +91,7 @@ const handleAuth = async () => {
           :class="{ active: activeTab === 'login' }"
           @click="activeTab = 'login'"
         >
-          Login
+          Sign In
         </button>
         <button
           class="auth-tab"
@@ -104,38 +102,46 @@ const handleAuth = async () => {
         </button>
       </div>
 
-      <VCardText class="pa-8">
+      <VCardText class="pa-10">
         <!-- Title -->
-        <h2 class="text-h4 font-weight-bold mb-6 text-center text-white">
-          {{ activeTab === 'login' ? 'Hello! Welcome back!' : 'Erstelle Dein NegmCars Konto!' }}
+        <h2 class="text-h4 font-weight-bold mb-8 text-center text-white">
+          {{ activeTab === 'login' ? 'Hello! Welcome back!' : 'Create your account!' }}
         </h2>
 
-        <!-- Social Buttons (Full Professional Layout) -->
-        <div class="social-grid mb-6">
+        <!-- Social Buttons (Only Apple & Google) -->
+        <div class="social-section mb-8">
           <VBtn
-            v-for="provider in socialProviders"
-            :key="provider.name"
             block
-            variant="flat"
-            class="social-btn"
-            :style="{ backgroundColor: provider.color, color: provider.textColor }"
-            height="50"
+            variant="outlined"
+            class="social-btn apple-btn mb-4"
+            height="52"
           >
-            <VIcon :icon="provider.icon" class="me-2" size="22" />
-            <span class="font-weight-bold">{{ activeTab === 'login' ? 'Mit' : 'Mit' }} {{ provider.name }} {{ activeTab === 'login' ? 'anmelden' : 'registrieren' }}</span>
+            <VIcon icon="tabler-brand-apple-filled" class="me-3" size="24" />
+            Sign in with Apple
+          </VBtn>
+
+          <VBtn
+            block
+            variant="outlined"
+            class="social-btn google-btn"
+            height="52"
+          >
+            <!-- Custom Google Icon Colors via CSS filter or multi-icon if available -->
+            <VIcon icon="tabler-brand-google-filled" class="me-3 google-icon" size="24" />
+            Sign in with Google
           </VBtn>
         </div>
 
         <!-- Divider -->
         <div class="d-flex align-center my-8 text-disabled">
-          <VDivider /><span class="mx-4 text-lowercase font-weight-bold opacity-60">oder</span><VDivider />
+          <VDivider /><span class="mx-4 font-weight-bold opacity-60">or</span><VDivider />
         </div>
 
         <!-- Form -->
         <VForm @submit.prevent="handleAuth">
           <VRow>
             <VCol cols="12">
-              <label class="input-label">E-Mail-Adresse</label>
+              <label class="input-label">Email Address</label>
               <VTextField
                 v-model="form.email"
                 placeholder="name@example.com"
@@ -147,7 +153,7 @@ const handleAuth = async () => {
             </VCol>
 
             <VCol cols="12">
-              <label class="input-label">Passwort</label>
+              <label class="input-label">Password</label>
               <VTextField
                 v-model="form.password"
                 :type="isPasswordVisible ? 'text' : 'password'"
@@ -160,25 +166,25 @@ const handleAuth = async () => {
                 @click:append-inner="isPasswordVisible = !isPasswordVisible"
               />
 
-              <div v-if="activeTab === 'login'" class="mt-3">
-                <a href="javascript:void(0)" class="text-body-2 text-disabled text-decoration-underline hover-white">Passwort vergessen?</a>
+              <div v-if="activeTab === 'login'" class="mt-4 text-end">
+                <a href="javascript:void(0)" class="text-body-2 text-disabled text-decoration-underline hover-white">Forgot password?</a>
               </div>
             </VCol>
 
             <!-- Register Requirements -->
             <VCol v-if="activeTab === 'register'" cols="12">
-              <div class="password-requirements d-flex flex-column gap-y-2 mt-3">
+              <div class="password-requirements d-flex flex-column gap-y-2 mt-4">
                 <div class="req-item d-flex align-center text-disabled">
-                  <VIcon icon="tabler-circle-check" size="16" class="me-2" />
-                  Min. 8 Zeichen
+                  <VIcon icon="tabler-circle-check" size="16" class="me-2 text-success" />
+                  Min. 8 characters
                 </div>
                 <div class="req-item d-flex align-center text-disabled">
-                  <VIcon icon="tabler-circle-check" size="16" class="me-2" />
-                  Buchstaben
+                  <VIcon icon="tabler-circle-check" size="16" class="me-2 text-success" />
+                  Includes letters
                 </div>
                 <div class="req-item d-flex align-center text-disabled">
-                  <VIcon icon="tabler-circle-check" size="16" class="me-2" />
-                  Zahlen oder Sonderzeichen
+                  <VIcon icon="tabler-circle-check" size="16" class="me-2 text-success" />
+                  Numbers or symbols
                 </div>
               </div>
 
@@ -189,14 +195,14 @@ const handleAuth = async () => {
               >
                 <template #label>
                   <div class="text-body-2 text-disabled line-height-1-6">
-                    Ich stimme der Verarbeitung meiner Daten wie in der
-                    <a href="#" class="text-white text-decoration-underline font-weight-bold">Einwilligungserklärung</a> beschrieben zu.
+                    I agree to the processing of my data as described in the 
+                    <a href="#" class="text-white text-decoration-underline font-weight-bold">privacy policy</a>.
                   </div>
                 </template>
               </VCheckbox>
             </VCol>
 
-            <VCol cols="12" class="mt-6">
+            <VCol cols="12" class="mt-8">
               <div v-if="errorMessage" class="text-error mb-4 text-center text-body-2 font-weight-bold">{{ errorMessage }}</div>
               <VBtn
                 block
@@ -206,7 +212,7 @@ const handleAuth = async () => {
                 :loading="loading"
                 class="auth-submit-btn"
               >
-                {{ activeTab === 'login' ? 'Anmelden' : 'Registrieren' }}
+                {{ activeTab === 'login' ? 'Login' : 'Register' }}
               </VBtn>
             </VCol>
           </VRow>
@@ -214,8 +220,8 @@ const handleAuth = async () => {
 
         <!-- Terms Footer -->
         <div v-if="activeTab === 'register'" class="mt-8 text-center text-caption text-disabled px-4 line-height-1-6">
-          Es gelten die NegmCars <a href="#" class="text-white font-weight-bold">AGB</a>. Informationen zur Verarbeitung aller Daten werden in der
-          <a href="#" class="text-white font-weight-bold">Datenschutzerklärung</a> beschrieben.
+          The <a href="#" class="text-white font-weight-bold">AGB</a> of NegmCars apply. Information on data processing is described in the
+          <a href="#" class="text-white font-weight-bold">Privacy Policy</a>.
         </div>
       </VCardText>
     </VCard>
@@ -226,39 +232,39 @@ const handleAuth = async () => {
 .auth-wrapper {
   min-height: 100vh;
   background-color: #0f111a;
-  background-image: radial-gradient(circle at 50% 50%, rgba(var(--v-theme-primary), 0.08) 0%, transparent 70%);
+  background-image: radial-gradient(circle at 50% 50%, rgba(var(--v-theme-primary), 0.12) 0%, transparent 80%);
 }
 
 .auth-card {
   width: 100%;
   max-width: 500px;
   background-color: #1c1f2e !important;
-  border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
 .auth-tabs {
   display: flex;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .auth-tab {
   flex: 1;
-  padding: 20px;
+  padding: 22px;
   border: 0;
   background: transparent;
   color: #fff;
   font-weight: 800;
-  font-size: 17px;
+  font-size: 18px;
   cursor: pointer;
   opacity: 0.4;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   position: relative;
 
   &:hover {
     opacity: 0.7;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
   }
 
   &.active {
@@ -273,26 +279,28 @@ const handleAuth = async () => {
       width: 100%;
       height: 3px;
       background-color: rgb(var(--v-theme-primary));
-      box-shadow: 0 -2px 10px rgba(var(--v-theme-primary), 0.5);
+      box-shadow: 0 -2px 12px rgba(var(--v-theme-primary), 0.6);
     }
   }
-}
-
-.social-grid {
-  display: grid;
-  gap: 12px;
 }
 
 .social-btn {
   text-transform: none !important;
   font-weight: 700 !important;
-  border-radius: 12px !important;
-  transition: transform 0.2s ease, filter 0.2s ease !important;
+  border-radius: 14px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+  transition: all 0.3s ease !important;
 
   &:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: #a855f7 !important; /* Purple border like screenshot */
     transform: translateY(-2px);
-    filter: brightness(1.1);
   }
+}
+
+.google-icon {
+  color: #ea4335; /* Base red for Google */
 }
 
 .input-label {
@@ -300,44 +308,30 @@ const handleAuth = async () => {
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 10px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #fff;
 }
 
 .premium-input :deep(.v-field) {
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   background: rgba(0, 0, 0, 0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: border-color 0.3s ease;
-
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-  }
 
   &.v-field--focused {
-    border-color: rgba(var(--v-theme-primary), 0.6);
+    border-color: rgba(var(--v-theme-primary), 0.8);
   }
 }
 
 .auth-submit-btn {
-  border-radius: 14px !important;
+  border-radius: 16px !important;
   font-weight: 800 !important;
   font-size: 18px !important;
   text-transform: none !important;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.85) 100%) !important;
-  box-shadow: 0 10px 25px -8px rgba(var(--v-theme-primary), 0.6) !important;
-
-  &:hover {
-    box-shadow: 0 15px 30px -8px rgba(var(--v-theme-primary), 0.7) !important;
-  }
-}
-
-.password-requirements {
-  padding-left: 4px;
+  box-shadow: 0 10px 30px -10px rgba(var(--v-theme-primary), 0.6) !important;
 }
 
 .req-item {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .line-height-1-6 {
@@ -350,5 +344,9 @@ const handleAuth = async () => {
 
 .opacity-60 {
   opacity: 0.6;
+}
+
+.auth-title {
+  letter-spacing: 1px;
 }
 </style>
