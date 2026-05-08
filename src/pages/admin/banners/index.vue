@@ -120,7 +120,8 @@ const handleCreate = async () => {
     fetchBanners()
   } catch (err) {
     console.error('Create failed:', err.response?.data || err.message)
-    alert('فشل الرفع: تأكد من حجم الصورة (بحد أقصى 10 ميجا)')
+    const errorMsg = err.response?.data?.message || err.message || 'فشل الرفع'
+    alert(`فشل الرفع: ${errorMsg}`)
   } finally {
     creating.value = false
   }
