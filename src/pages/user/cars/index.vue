@@ -424,7 +424,7 @@ onMounted(async () => {
             <div class="mb-4">
               <div class="input-label-mini">Price (EG)</div>
               <VRow dense>
-                <VCol cols="6">
+                <VCol cols="12" class="mb-2">
                   <VTextField
                     v-model="displayDraftPriceFrom"
                     placeholder="Min"
@@ -433,9 +433,10 @@ onMounted(async () => {
                     hide-details
                     class="premium-input"
                     @keypress="isNumberKey"
+                    maxlength="11"
                   />
                 </VCol>
-                <VCol cols="6">
+                <VCol cols="12">
                   <VTextField
                     v-model="displayDraftPriceTo"
                     placeholder="Max"
@@ -444,6 +445,7 @@ onMounted(async () => {
                     hide-details
                     class="premium-input"
                     @keypress="isNumberKey"
+                    maxlength="11"
                   />
                 </VCol>
               </VRow>

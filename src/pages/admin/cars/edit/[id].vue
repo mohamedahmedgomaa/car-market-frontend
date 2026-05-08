@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 import carAdminApi from '../../../../api/admin/carAdminApi.js'
@@ -74,6 +74,43 @@ const errors = ref({})
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('success')
+
+/* ================= Numeric Helpers ================= */
+const isNumberKey = (evt) => {
+  const charCode = (evt.which) ? evt.which : evt.keyCode
+  if (charCode > 31 && (charCode < 48 || charCode > 57) && (charCode < 1632 || charCode > 1641)) {
+    evt.preventDefault()
+  }
+}
+
+const formatWithCommas = (v) => {
+  if (!v && v !== 0) return ''
+  return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+const toNumOrNull = (v, limit = 9) => {
+  if (v === '' || v === undefined || v === null) return null
+  const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
+  let raw = String(v).replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
+  raw = raw.replace(/\D/g, '').slice(0, limit)
+  let n = Number(raw)
+  return Number.isNaN(n) || raw === '' ? null : n
+}
+
+const displayPrice = computed({
+  get: () => formatWithCommas(form.value.price),
+  set: (v) => { form.value.price = toNumOrNull(v) }
+})
+
+const displayMileage = computed({
+  get: () => formatWithCommas(form.value.mileage),
+  set: (v) => { form.value.mileage = toNumOrNull(v, 6) }
+})
+
+const displayYear = computed({
+  get: () => form.value.year,
+  set: (v) => { form.value.year = toNumOrNull(v, 4) }
+})
 
 /* ================= Helpers ================= */
 const fieldError = field => errors.value?.[field] || []
@@ -496,15 +533,33 @@ const handleSubmit = async () => {
 
           <VRow dense>
             <VCol cols="12" md="4">
-              <VTextField v-model="form.price" label="Price" type="number" :error-messages="fieldError('price')" />
+              <VTextField
+                v-model="displayPrice"
+                label="Price"
+                :error-messages="fieldError('price')"
+                @keypress="isNumberKey"
+                maxlength="11"
+              />
             </VCol>
 
             <VCol cols="12" md="4">
-              <VTextField v-model="form.year" label="Year" :error-messages="fieldError('year')" />
+              <VTextField
+                v-model="displayYear"
+                label="Year"
+                :error-messages="fieldError('year')"
+                @keypress="isNumberKey"
+                maxlength="4"
+              />
             </VCol>
 
             <VCol cols="12" md="4">
-              <VTextField v-model="form.mileage" label="Mileage" :error-messages="fieldError('mileage')" />
+              <VTextField
+                v-model="displayMileage"
+                label="Mileage"
+                :error-messages="fieldError('mileage')"
+                @keypress="isNumberKey"
+                maxlength="7"
+              />
             </VCol>
 
             <VCol cols="12" md="3">
