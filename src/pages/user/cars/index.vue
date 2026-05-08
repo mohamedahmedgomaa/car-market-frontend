@@ -17,6 +17,14 @@ const router = useRouter()
 // -------------------------
 // Helpers
 // -------------------------
+const isNumberKey = (evt) => {
+  const charCode = (evt.which) ? evt.which : evt.keyCode
+  // Allow numbers 0-9 and Arabic/Hindi numbers 0-9
+  if (charCode > 31 && (charCode < 48 || charCode > 57) && (charCode < 1632 || charCode > 1641)) {
+    evt.preventDefault()
+  }
+}
+
 const t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
@@ -25,11 +33,13 @@ const t = (val) => {
 
 const firstQueryVal = (v) => (Array.isArray(v) ? v[0] : v)
 
-const toNumOrNull = (v) => {
+const toNumOrNull = (v, limit = 9) => {
   if (v === '' || v === undefined || v === null) return null
-  const raw = String(v).replace(/\D/g, '').slice(0, 9)
+  const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
+  let raw = String(v).replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
+  raw = raw.replace(/\D/g, '').slice(0, limit)
   let n = Number(raw)
-  return Number.isNaN(n) ? null : n
+  return Number.isNaN(n) || raw === '' ? null : n
 }
 
 const formatWithCommas = (v) => {
@@ -141,6 +151,16 @@ const displayDraftPriceTo = computed({
   set: (v) => { draft.value.priceTo = toNumOrNull(v) }
 })
 
+const displayDraftMileageFrom = computed({
+  get: () => formatWithCommas(draft.value.mileageFrom),
+  set: (v) => { draft.value.mileageFrom = toNumOrNull(v, 6) }
+})
+
+const displayDraftMileageTo = computed({
+  get: () => formatWithCommas(draft.value.mileageTo),
+  set: (v) => { draft.value.mileageTo = toNumOrNull(v, 6) }
+})
+
 const hasMore = computed(() => cars.value.length < total.value)
 
 // -------------------------
@@ -214,6 +234,27 @@ const fetchCars = async () => {
     loading.value = false
     initialized.value = true
   }
+}
+
+const onMileageInput = (val, key) => {
+  if (!val) {
+    draft.value[key] = ''
+    return
+  }
+
+  // Convert Arabic/Hindi digits to English digits
+  const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
+  let clean = val.toString().replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
+  
+  // Remove any non-numeric characters
+  clean = clean.replace(/[^0-9]/g, '')
+  
+  // Limit to 6 digits
+  if (clean.length > 6) {
+    clean = clean.substring(0, 6)
+  }
+  
+  draft.value[key] = clean
 }
 
 const applyFilters = () => {
@@ -391,6 +432,7 @@ onMounted(async () => {
                     density="comfortable"
                     hide-details
                     class="premium-input"
+                    @keypress="isNumberKey"
                   />
                 </VCol>
                 <VCol cols="6">
@@ -401,6 +443,7 @@ onMounted(async () => {
                     density="comfortable"
                     hide-details
                     class="premium-input"
+                    @keypress="isNumberKey"
                   />
                 </VCol>
               </VRow>
@@ -476,22 +519,26 @@ onMounted(async () => {
               <VRow dense class="mb-3">
                 <VCol cols="6">
                   <VTextField
-                    v-model="draft.mileageFrom"
+                    v-model="displayDraftMileageFrom"
                     placeholder="Min"
                     variant="outlined"
                     density="comfortable"
                     hide-details
                     class="premium-input"
+                    maxlength="7"
+                    @keypress="isNumberKey"
                   />
                 </VCol>
                 <VCol cols="6">
                   <VTextField
-                    v-model="draft.mileageTo"
+                    v-model="displayDraftMileageTo"
                     placeholder="Max"
                     variant="outlined"
                     density="comfortable"
                     hide-details
                     class="premium-input"
+                    maxlength="7"
+                    @keypress="isNumberKey"
                   />
                 </VCol>
               </VRow>
