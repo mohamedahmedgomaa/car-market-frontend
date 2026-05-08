@@ -345,7 +345,7 @@ const handleSubmit = async () => {
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Car Specs</h3>
 
           <VRow dense>
-            <VCol cols="12" md="4">
+            <VCol cols="12" md="6">
               <VTextField
                 v-model="displayPrice"
                 label="Price"
@@ -355,7 +355,7 @@ const handleSubmit = async () => {
               />
             </VCol>
 
-            <VCol cols="12" md="4">
+            <VCol cols="12" md="3">
               <VTextField
                 v-model="displayYear"
                 label="Year"
@@ -365,7 +365,7 @@ const handleSubmit = async () => {
               />
             </VCol>
 
-            <VCol cols="12" md="4">
+            <VCol cols="12" md="3">
               <VTextField
                 v-model="displayMileage"
                 label="Mileage"

@@ -281,6 +281,23 @@ const applyFilters = () => {
 }
 
 const resetAll = () => {
+  draft.value = {
+    q: '',
+    type: 'car',
+    condition: '',
+    brandId: null,
+    modelId: null,
+    yearFrom: null,
+    yearTo: null,
+    priceFrom: null,
+    priceTo: null,
+    mileageFrom: null,
+    mileageTo: null,
+    transmission: null,
+    fuelType: null,
+    drivetrain: null,
+    featureIds: [],
+  }
   router.push({ path: '/user/cars', query: {} })
 }
 
@@ -424,7 +441,7 @@ onMounted(async () => {
             <div class="mb-4">
               <div class="input-label-mini">Price (EG)</div>
               <VRow dense>
-                <VCol cols="12" class="mb-2">
+                <VCol cols="6">
                   <VTextField
                     v-model="displayDraftPriceFrom"
                     placeholder="Min"
@@ -436,7 +453,7 @@ onMounted(async () => {
                     maxlength="11"
                   />
                 </VCol>
-                <VCol cols="12">
+                <VCol cols="6">
                   <VTextField
                     v-model="displayDraftPriceTo"
                     placeholder="Max"
