@@ -129,7 +129,7 @@ const draft = ref({
 })
 
 const sort = ref(String(firstQueryVal(route.query.sort) || ''))
-const perPage = ref(Number(firstQueryVal(route.query.perPage) || 12))
+const perPage = ref(Number(firstQueryVal(route.query.perPage) || 50))
 
 const displayDraftPriceFrom = computed({
   get: () => formatWithCommas(draft.value.priceFrom),
@@ -198,37 +198,30 @@ const buildParams = (p = 1) => {
   return params
 }
 
-const fetchCars = async (reset = true) => {
-  if (reset) {
-    loading.value = true
-    page.value = 1
-    cars.value = []
-  } else {
-    loadingMore.value = true
-  }
+const fetchCars = async () => {
+  loading.value = true
+  cars.value = []
 
   try {
     const res = await carsUserApi.getAll(buildParams(page.value))
     const { items, total: tt } = normalizeCars(res.data)
 
-    if (reset) cars.value = items.map(normalizeFavFields)
-    else cars.value.push(...items.map(normalizeFavFields))
-    
+    cars.value = items.map(normalizeFavFields)
     total.value = tt
   } catch (err) {
     console.error('Fetch error:', err)
   } finally {
     loading.value = false
-    loadingMore.value = false
     initialized.value = true
   }
 }
 
 const applyFilters = () => {
   const query = { ...route.query }
-  delete query.page
+  delete query.page // Reset to first page on filter change
 
   const d = draft.value
+  // ... rest same ...
   if (d.q) query['filter[global]'] = d.q; else delete query['filter[global]']
   if (d.type) query['filter[type]'] = d.type; else delete query['filter[type]']
   if (d.condition) query['filter[condition]'] = d.condition; else delete query['filter[condition]']
@@ -250,9 +243,9 @@ const resetAll = () => {
   router.push({ path: '/user/cars', query: {} })
 }
 
-const loadMore = () => {
-  page.value++
-  fetchCars(false)
+const onPageChange = (p) => {
+  const query = { ...route.query, page: p }
+  router.push({ query })
 }
 
 // -------------------------
@@ -260,7 +253,8 @@ const loadMore = () => {
 // -------------------------
 watch(() => route.query, () => {
   syncDraftFromQuery()
-  fetchCars(true)
+  page.value = Number(firstQueryVal(route.query.page) || 1)
+  fetchCars()
 }, { deep: true })
 
 watch(() => draft.value.brandId, async (val) => {
@@ -318,7 +312,7 @@ onMounted(async () => {
             </div>
 
             <!-- Condition Toggle -->
-            <div class="mb-4">
+            <div class="mb-3">
               <div class="premium-toggle premium-toggle--three">
                 <button
                   type="button"
@@ -348,7 +342,7 @@ onMounted(async () => {
             </div>
 
             <!-- Brand & Model -->
-            <div class="mb-4">
+            <div class="mb-3">
               <VSelect
                 v-model="draft.brandId"
                 :items="brands"
@@ -577,10 +571,13 @@ onMounted(async () => {
               <VBtn variant="flat" color="primary" @click="resetAll">Clear All Filters</VBtn>
             </div>
 
-            <div class="d-flex justify-center mt-12" v-if="hasMore && !loading">
-              <VBtn variant="tonal" height="50" px="8" :loading="loadingMore" @click="loadMore">
-                Load more results
-              </VBtn>
+            <div class="d-flex justify-center mt-12" v-if="total > perPage && !loading">
+              <VPagination
+                v-model="page"
+                :length="Math.ceil(total / perPage)"
+                :total-visible="7"
+                @update:model-value="onPageChange"
+              />
             </div>
           </VCard>
         </VCol>
@@ -595,8 +592,8 @@ onMounted(async () => {
 .premium-search-box {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 28px;
-  padding: 24px;
+  border-radius: 24px;
+  padding: 16px; /* Reduced from 24px */
   position: sticky;
   top: 100px;
   max-height: calc(100vh - 120px);
@@ -647,10 +644,10 @@ onMounted(async () => {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 4px;
-  gap: 4px;
-  height: 50px;
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+  height: 42px; /* Reduced from 50px */
 }
 
 .premium-toggle__btn {
