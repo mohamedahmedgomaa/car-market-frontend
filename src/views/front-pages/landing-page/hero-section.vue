@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
 import api from '@/api/index.js'
@@ -138,18 +138,40 @@ const modelsList = computed(() => {
 
 const yearsList = Array.from({ length: 2026 - 2000 + 1 }, (_, i) => 2026 - i)
 
+const yearsToList = computed(() => {
+  if (!filters.value.yearFrom) return yearsList
+  return yearsList.filter((y) => y >= filters.value.yearFrom)
+})
+
 // ✅ Watch brand to clear model & auto-open
 const modelSelect = ref(null)
+const isModelMenuOpen = ref(false)
 
 watch(
   () => filters.value.brand,
   (val) => {
     filters.value.model = ''
     if (val) {
-      // Auto-open model select
-      setTimeout(() => {
-        modelSelect.value?.focus()
-      }, 100)
+      nextTick(() => {
+        isModelMenuOpen.value = true
+      })
+    }
+  },
+)
+
+// ✅ Watch Year From to auto-open Year To & validate
+const isYearToMenuOpen = ref(false)
+
+watch(
+  () => filters.value.yearFrom,
+  (val) => {
+    if (val && filters.value.yearTo && filters.value.yearTo < val) {
+      filters.value.yearTo = null
+    }
+    if (val) {
+      nextTick(() => {
+        isYearToMenuOpen.value = true
+      })
     }
   },
 )
@@ -299,6 +321,7 @@ watch(
                 <VSelect
                   ref="modelSelect"
                   v-model="filters.model"
+                  v-model:menu="isModelMenuOpen"
                   :items="modelsList"
                   label="Model"
                   density="comfortable"
@@ -349,7 +372,8 @@ watch(
                   />
                   <VSelect
                     v-model="filters.yearTo"
-                    :items="yearsList"
+                    v-model:menu="isYearToMenuOpen"
+                    :items="yearsToList"
                     label="To Year"
                     density="comfortable"
                     variant="outlined"
