@@ -292,8 +292,8 @@ onBeforeUnmount(() => {
             <div class="d-flex align-start justify-space-between mb-6">
               <div class="card-header">
                 <h1 class="text-h6 font-weight-black mb-0 d-flex align-center flex-wrap gap-x-2">
-                  <span>Discover Your <span class="text-primary">Perfect Car</span></span>
-                  <span class="text-body-2 opacity-60 font-weight-medium"
+                  <span>Discover Your <span class="text-white">Perfect Car</span></span>
+                  <span class="text-body-2 text-white opacity-90 font-weight-medium"
                     >at the Best Prices in Egypt</span
                   >
                 </h1>
@@ -599,9 +599,9 @@ onBeforeUnmount(() => {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  opacity: 0.6;
+  opacity: 0.9;
   margin-left: 4px;
-  color: rgba(var(--v-theme-primary), 1);
+  color: #fff;
 }
 
 .premium-toggle-group {

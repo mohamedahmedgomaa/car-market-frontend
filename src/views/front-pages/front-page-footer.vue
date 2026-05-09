@@ -59,18 +59,11 @@ const fetchTopCars = async () => {
   }
 }
 
-// ✅ Account
-const accountLinks = [
-  { name: 'Login', to: '/login' },
-  { name: 'Register', to: '/register' },
-  { name: 'Profile', to: '/profile' },
-]
-
 // ✅ Contact
 const contactInfo = [
-  { icon: 'tabler-mail', text: 'support@yourdomain.com' },
-  { icon: 'tabler-phone', text: '+966 5X XXX XXXX' },
-  { icon: 'tabler-map-pin', text: 'Saudi Arabia' },
+  { icon: 'tabler-mail', text: 'info@negmcars.com' },
+  { icon: 'tabler-phone', text: '+20 155 155 2993' },
+  { icon: 'tabler-map-pin', text: 'Cairo, Egypt' },
 ]
 
 // ✅ Social
@@ -79,7 +72,6 @@ const socialLinks = [
   { title: 'instagram', icon: 'tabler-brand-instagram', href: 'https://instagram.com' },
   { title: 'tiktok', icon: 'tabler-brand-tiktok', href: 'https://tiktok.com' },
   { title: 'youtube', icon: 'tabler-brand-youtube-filled', href: 'https://youtube.com' },
-  { title: 'linkedin', icon: 'tabler-brand-linkedin', href: 'https://linkedin.com' },
 ]
 
 onMounted(fetchTopCars)
@@ -91,8 +83,8 @@ onMounted(fetchTopCars)
       <VContainer>
         <VRow>
           <!-- 👉 Brand / About -->
-          <VCol cols="12" md="5">
-            <div class="mb-4" :class="$vuetify.display.smAndDown ? 'w-100' : 'w-75'">
+          <VCol cols="12" md="4">
+            <div class="mb-4">
               <div class="app-logo mb-6">
                 <VNodeRenderer :nodes="themeConfig.app.logo" />
                 <h1 class="app-logo-title text-white">
@@ -100,114 +92,73 @@ onMounted(fetchTopCars)
                 </h1>
               </div>
 
-              <div class="mb-6" :class="$vuetify.theme.current.dark ? 'text-body-1' : 'text-white-variant'">
-                Find your next car بسهولة — ابحث، فلتر، وقارن بين الإعلانات المعتمدة.
-              </div>
-
-              <!-- ✅ Quick Search -->
-              <VForm class="subscribe-form d-flex align-center" @submit.prevent="goQuick">
-                <AppTextField
-                  v-model="quick"
-                  label="Quick search"
-                  placeholder="Search cars..."
-                  @keyup.enter="goQuick"
-                />
-                <VBtn class="align-self-end rounded-s-0" @click="goQuick">
-                  Browse
-                </VBtn>
-              </VForm>
-            </div>
-          </VCol>
-
-          <!-- 👉 Top 3 Luxury -->
-          <VCol md="2" sm="4" xs="6">
-            <div class="footer-links">
-              <h6 class="footer-title text-h6 mb-6">
-                Luxury Cars
-              </h6>
-
-              <div v-if="topCarsLoading" class="text-white opacity-60">
-                Loading...
-              </div>
-
-              <div
-                v-else-if="!topCars.length"
-                class="text-white opacity-60"
-              >
-                No cars found.
-              </div>
-
-              <ul v-else style="list-style: none; padding: 0; margin: 0;">
-                <li v-for="car in topCars" :key="car.id" class="mb-4">
-                  <RouterLink
-                    :to="`/user/cars/${car.id}`"
-                    class="d-inline-flex flex-column text-white"
-                    style="text-decoration: none;"
+              <!-- ✅ Follow Us (Moved here) -->
+              <div class="mb-8">
+                <h6 class="footer-title text-subtitle-2 font-weight-bold mb-4 opacity-60">
+                  Follow Our Updates
+                </h6>
+                <div class="d-flex gap-x-3">
+                  <a
+                    v-for="(item, index) in socialLinks"
+                    :key="index"
+                    :href="item.href"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="social-btn social-btn--small"
                   >
-                    <span class="font-weight-medium opacity-90 hover-white">
-                      {{ car?.title?.en || car?.title?.ar || `Car #${car.id}` }}
-                    </span>
-                    <span class="text-primary font-weight-bold" style="font-size: 12px;">
-                      {{ formatPrice(car.price) }} EG
-                    </span>
-                  </RouterLink>
-                </li>
-              </ul>
+                    <VIcon :icon="item.icon" size="18" />
+                  </a>
+                </div>
+              </div>
+
             </div>
           </VCol>
 
-          <!-- 👉 Account -->
-          <VCol md="2" sm="4" xs="6">
+          <!-- 👉 Legal Info -->
+          <VCol md="4" sm="6" cols="12">
             <div class="footer-links">
-              <h6 class="footer-title text-h6 mb-6">
-                Account
+              <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+                <VIcon icon="tabler-info-circle" size="20" color="primary" />
+                <span>Official Information</span>
               </h6>
 
-              <ul style="list-style: none; padding: 0; margin: 0;">
-                <li v-for="(item, index) in accountLinks" :key="index" class="mb-4">
-                  <RouterLink
-                    :to="item.to"
-                    :class="$vuetify.theme.current.dark ? 'text-body-1' : 'text-white-variant'"
-                  >
-                    {{ item.name }}
-                  </RouterLink>
-                </li>
-              </ul>
-            </div>
-          </VCol>
-
-          <!-- 👉 Contact & Follow -->
-          <VCol cols="12" md="3" sm="4">
-            <div>
-              <h6 class="footer-title text-h6 mb-6">
-                Contact Us
-              </h6>
-
-              <div class="d-flex flex-column gap-y-4">
-                <div v-for="(item, index) in contactInfo" :key="index" class="d-flex align-center gap-x-3">
-                  <div class="contact-icon-box">
-                    <VIcon :icon="item.icon" size="18" color="primary" />
+              <div class="registration-box pa-6 rounded-xl glass-panel-dark border border-white-opacity-10">
+                <div class="d-flex align-center gap-x-3 mb-4">
+                  <div class="status-indicator"></div>
+                  <span class="text-white font-weight-bold text-subtitle-1">Registered Platform</span>
+                </div>
+                <p class="text-body-2 opacity-60 mb-5 leading-relaxed">
+                  NegmCars is a legally registered company and platform in the Arab Republic of Egypt, ensuring safe and trusted transactions.
+                </p>
+                <div class="tax-info-grid">
+                  <div class="tax-item">
+                    <span class="tax-label">Tax ID</span>
+                    <span class="tax-value">725-463-524</span>
                   </div>
-                  <div class="text-white opacity-80">
-                    {{ item.text }}
+                  <div class="tax-item">
+                    <span class="tax-label">Comm. Reg</span>
+                    <span class="tax-value">215486</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </VCol>
 
-                <div class="mt-6">
-                  <h6 class="footer-title text-subtitle-1 mb-3">
-                    Follow Us
-                  </h6>
-                  <div class="d-flex gap-x-4">
-                    <a
-                      v-for="(item, index) in socialLinks"
-                      :key="index"
-                      :href="item.href"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="social-btn"
-                    >
-                      <VIcon :icon="item.icon" size="20" />
-                    </a>
+          <!-- 👉 Contact Info -->
+          <VCol cols="12" md="4" sm="6">
+            <div class="ps-md-12">
+              <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+                <VIcon icon="tabler-headset" size="20" color="primary" />
+                <span>Get in Touch</span>
+              </h6>
+
+              <div class="d-flex flex-column gap-y-6">
+                <div v-for="(item, index) in contactInfo" :key="index" class="contact-item-v2">
+                  <div class="contact-icon-v2">
+                    <VIcon :icon="item.icon" size="20" />
+                  </div>
+                  <div class="contact-text-v2">
+                    {{ item.text }}
                   </div>
                 </div>
               </div>
@@ -218,23 +169,17 @@ onMounted(fetchTopCars)
     </div>
 
     <!-- 👉 Footer Line -->
-    <div class="footer-line w-100">
+    <div class="footer-line w-100 py-6">
       <VContainer>
         <div class="d-flex justify-space-between flex-wrap gap-y-4 align-center">
-          <div class="text-white-variant">
-            © {{ new Date().getFullYear() }} {{ themeConfig.app.title }} — All rights reserved.
+          <div class="text-white opacity-40 text-caption">
+            © {{ new Date().getFullYear() }} <span class="text-white opacity-100 font-weight-bold">{{ themeConfig.app.title }}</span>. All rights reserved.
           </div>
 
-          <div class="text-white-variant">
-            Developed by
-            <a
-              href="https://portfolio-gomaa.onrender.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-white font-weight-medium ms-1"
-            >
-              Mohamed Gomaa
-            </a>
+          <div class="footer-bottom-links d-flex gap-x-6">
+            <RouterLink to="/" class="bottom-link">Privacy Policy</RouterLink>
+            <RouterLink to="/" class="bottom-link">Terms of Service</RouterLink>
+            <RouterLink to="/" class="bottom-link">Sitemap</RouterLink>
           </div>
         </div>
       </VContainer>
@@ -244,7 +189,8 @@ onMounted(fetchTopCars)
 
 <style lang="scss" scoped>
 .footer-title {
-  color: rgba(255, 255, 255, 92%);
+  color: #fff;
+  letter-spacing: 0.5px;
 }
 
 .footer-top {
@@ -253,91 +199,132 @@ onMounted(fetchTopCars)
   background-color: #1a1d2e;
   color: #fff;
   position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.contact-icon-box {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(var(--v-theme-primary), 0.1);
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  background: #28a745;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #28a745;
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.tax-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 20px;
+}
+
+.tax-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tax-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.4;
+  font-weight: 800;
+}
+
+.tax-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(var(--v-theme-primary), 1);
+}
+
+.contact-item-v2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateX(5px);
+    .contact-icon-v2 {
+      background: rgba(var(--v-theme-primary), 1);
+      color: #fff;
+    }
+  }
+}
+
+.contact-icon-v2 {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: rgba(var(--v-theme-primary), 1);
+  transition: all 0.3s ease;
+}
+
+.contact-text-v2 {
+  font-size: 15px;
+  opacity: 0.8;
+  color: #fff;
+}
+
+.bottom-link {
+  color: #fff;
+  opacity: 0.4;
+  text-decoration: none;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  &:hover {
+    opacity: 1;
+    color: rgba(var(--v-theme-primary), 1);
+  }
 }
 
 .social-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
 
   &:hover {
-    background: var(--v-primary-base);
+    background: rgba(var(--v-theme-primary), 1);
+    border-color: rgba(var(--v-theme-primary), 1);
     color: #fff;
-    transform: translateY(-3px);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(var(--v-theme-primary), 0.3);
   }
 }
 
-.hover-white:hover {
-  color: #fff !important;
-  opacity: 1 !important;
-}
-
-.footer-links {
-  .text-white-variant,
-  .text-body-1 {
-    transition: color 0.2s ease;
-    &:hover {
-      color: #fff !important;
-    }
-  }
+.social-btn--small {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
 }
 
 .footer-line {
   background: #141724;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
-</style>
-
-<style lang="scss">
-.subscribe-form {
-  .v-label {
-    color: rgba(225, 222, 245, 90%) !important;
-  }
-
-  .v-field {
-    border-end-end-radius: 0;
-    border-end-start-radius: 10px;
-    border-start-end-radius: 0;
-    border-start-start-radius: 10px;
-
-    input.v-field__input::placeholder {
-      color: rgba(225, 222, 245, 40%) !important;
-    }
-
-    input.v-field__input {
-      color: rgba(255, 255, 255, 78%);
-    }
-  }
-}
 
 .footer {
-  border-radius: 50%;
-
-  @media (min-width: 600px) and (max-width: 960px) {
-    .v-container {
-      padding-inline: 2rem !important;
-    }
-
-    .footer-logo-buttons {
-      gap: 0.75rem;
-    }
-  }
+  position: relative;
+  z-index: 10;
 }
 </style>
