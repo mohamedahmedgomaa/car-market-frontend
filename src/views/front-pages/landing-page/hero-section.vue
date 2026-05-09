@@ -6,16 +6,21 @@ import api from '@/api/index.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
 
-// صور السلايدر الافتراضية في حالة عدم وجود إعلانات
-// صور السلايدر الافتراضية تم إلغاؤها بناءً على طلب المستخدم
-// import slide1 from '@images/front-pages/carbase2.png'
-const slide1 = null
-
 const theme = useTheme()
 const router = useRouter()
 
 /* =========================
-   ✅ Helpers (Like Cars page)
+   ✅ Refs for Auto-Navigation
+========================= */
+const modelSelect = ref(null)
+const isModelMenuOpen = ref(false)
+
+const yearFromSelect = ref(null)
+const yearToSelect = ref(null)
+const isYearToMenuOpen = ref(false)
+
+/* =========================
+   ✅ Helpers
 ========================= */
 const isNumberKey = (evt) => {
   const charCode = (evt.which) ? evt.which : evt.keyCode
@@ -24,7 +29,7 @@ const isNumberKey = (evt) => {
   }
 }
 
-const toNumOrNull = (v, limit = 9) => {
+const toNumOrNull = (v, limit = 11) => {
   if (v === '' || v === undefined || v === null) return null
   const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
   let raw = String(v).replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
@@ -54,7 +59,6 @@ const displayPriceTo = computed({
   },
 })
 
-// ✅ Between helper: filter[key]=from.to   (dot separator)
 const putBetween = (obj, key, from, to) => {
   const a = (from ?? '') === '' ? '' : from
   const b = (to ?? '') === '' ? '' : to
@@ -62,11 +66,11 @@ const putBetween = (obj, key, from, to) => {
 }
 
 /* =========================
-   ✅ Filters (Hero Form)
+   ✅ Filters
 ========================= */
 const filters = ref({
-  type: 'car', // car | motorcycle
-  condition: '', // '' (All) | used | new
+  type: 'car',
+  condition: '',
   brandId: null,
   modelId: null,
   priceFrom: null,
@@ -78,14 +82,11 @@ const filters = ref({
 const buildQuery = () => {
   const q = {}
   q['filter[status]'] = 'approved'
-
   if (filters.value.type) q['filter[type]'] = filters.value.type
   if (filters.value.condition) q['filter[condition]'] = filters.value.condition
-
   if (filters.value.brandId) q['filter[brand_id]'] = filters.value.brandId
   if (filters.value.modelId) q['filter[model_id]'] = filters.value.modelId
 
-  // ✅ IMPORTANT: match /user/cars page format (between scopes)
   const pf = toNumOrNull(filters.value.priceFrom)
   const pt = toNumOrNull(filters.value.priceTo)
   putBetween(q, 'price_between', pf, pt)
@@ -104,89 +105,6 @@ const onSearch = () => {
   })
 }
 
-/* =========================
-   ✅ Static Data (Brands/Models)
-========================= */
-const brandsList = ref([])
-const modelsList = ref([])
-
-const t = (val) => {
-  if (!val) return ''
-  if (typeof val === 'string') return val
-  return val.en || val.ar || ''
-}
-
-const fetchBrands = async () => {
-  try {
-    const res = await brandUserApi.getAll()
-    const data = res.data?.data || res.data || []
-    brandsList.value = data.map((b) => ({
-      id: b.id,
-      name: t(b.name),
-    }))
-  } catch (err) {
-    console.error('Error fetching brands:', err)
-  }
-}
-
-const fetchModels = async (brandId) => {
-  if (!brandId) {
-    modelsList.value = []
-    return
-  }
-  try {
-    const res = await modelUserApi.getAll({ 'filter[brand_id]': brandId })
-    const data = res.data?.data || res.data || []
-    modelsList.value = data.map((m) => ({
-      id: m.id,
-      name: t(m.name),
-    }))
-  } catch (err) {
-    console.error('Error fetching models:', err)
-  }
-}
-
-const yearsList = Array.from({ length: 2026 - 2000 + 1 }, (_, i) => 2026 - i)
-
-const yearsToList = computed(() => {
-  if (!filters.value.yearFrom) return yearsList
-  return yearsList.filter((y) => y >= filters.value.yearFrom)
-})
-
-// ✅ Watch brand to clear model & auto-open
-const modelSelect = ref(null)
-const isModelMenuOpen = ref(false)
-
-watch(
-  () => filters.value.brandId,
-  (val) => {
-    filters.value.modelId = null
-    fetchModels(val)
-    if (val) {
-      nextTick(() => {
-        isModelMenuOpen.value = true
-      })
-    }
-  },
-)
-
-// ✅ Watch Year From to auto-open Year To & validate
-const isYearToMenuOpen = ref(false)
-
-watch(
-  () => filters.value.yearFrom,
-  (val) => {
-    if (val && filters.value.yearTo && filters.value.yearTo < val) {
-      filters.value.yearTo = null
-    }
-    if (val) {
-      nextTick(() => {
-        isYearToMenuOpen.value = true
-      })
-    }
-  },
-)
-
 const resetFilters = () => {
   filters.value = {
     type: 'car',
@@ -201,10 +119,75 @@ const resetFilters = () => {
 }
 
 /* =========================
-   ✅ Background Slider
+   ✅ Data Fetching
+========================= */
+const brandsList = ref([])
+const modelsList = ref([])
+const yearsList = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i)
+const yearsToList = computed(() => {
+  if (!filters.value.yearFrom) return yearsList
+  return yearsList.filter(y => y >= filters.value.yearFrom || y <= filters.value.yearFrom).sort((a,b) => b - a)
+})
+
+const t = (val) => {
+  if (!val) return ''
+  if (typeof val === 'string') return val
+  return val.en || val.ar || ''
+}
+
+const fetchBrands = async () => {
+  try {
+    const res = await brandUserApi.getAll()
+    const data = res.data?.data || res.data || []
+    brandsList.value = data.map((b) => ({ id: b.id, name: t(b.name) }))
+  } catch (err) {
+    console.error('Error fetching brands:', err)
+  }
+}
+
+const fetchModels = async (brandId) => {
+  if (!brandId) {
+    modelsList.value = []
+    return
+  }
+  try {
+    const res = await modelUserApi.getAll({ 'filter[brand_id]': brandId })
+    const data = res.data?.data || res.data || []
+    modelsList.value = data.map((m) => ({ id: m.id, name: t(m.name) }))
+  } catch (err) {
+    console.error('Error fetching models:', err)
+  }
+}
+
+watch(() => filters.value.brandId, (val) => {
+  filters.value.modelId = null
+  if (val) {
+    fetchModels(val).then(() => {
+      nextTick(() => {
+        if (modelSelect.value) {
+          modelSelect.value.focus()
+          isModelMenuOpen.value = true
+        }
+      })
+    })
+  }
+})
+
+watch(() => filters.value.yearFrom, (val) => {
+  if (val) {
+    nextTick(() => {
+      if (yearToSelect.value) {
+        yearToSelect.value.focus()
+        isYearToMenuOpen.value = true
+      }
+    })
+  }
+})
+
+/* =========================
+   ✅ Background Slider (Ad Space)
 ========================= */
 const slides = ref([])
-
 const slideIndex = ref(0)
 const slideDelayMs = 5000
 let timer = null
@@ -213,21 +196,15 @@ const fetchBanners = async () => {
   try {
     const res = await api.get('/user/banners')
     if (res.data && res.data.data && res.data.data.length > 0) {
-      // Limit to 3 banners only
       slides.value = res.data.data.slice(0, 3).map((b) => ({
-        light: b.image_path,
-        dark: b.image_path,
+        image: b.image_path,
+        link: b.link || '#',
       }))
     }
   } catch (err) {
     console.error('Error fetching banners:', err)
   }
 }
-
-const currentSlideSrc = computed(() => {
-  const s = slides.value[slideIndex.value]
-  return s ? (theme.current.value.dark ? s.dark : s.light) : null
-})
 
 const nextSlide = () => {
   const len = slides.value.length || 1
@@ -243,87 +220,77 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (timer) window.clearInterval(timer)
 })
-
-watch(
-  () => theme.current.value.dark,
-  () => {},
-)
 </script>
 
 <template>
-  <section
-    id="home"
-    class="hero hero--full"
-    :class="theme.current.value.dark ? 'hero--dark' : 'hero--light'"
-  >
-    <!-- Background removed - image now in right column -->
-
+  <section id="home" class="hero" :class="theme.current.value.dark ? 'hero--dark' : 'hero--light'">
     <VContainer class="hero__container">
-      <div class="heroGrid">
-        <!-- Left: Search Form -->
-        <div class="heroLeft">
-          <VCard class="premium-card filterCard" elevation="0">
-            <div class="filterCard__grid">
-              <!-- Vehicle Type Toggle -->
-              <div class="inputGroup">
-                <div class="premium-toggle">
+      <!-- Main Content Grid -->
+      <div class="hero-main-grid">
+        <!-- Left: Search Card -->
+        <div class="hero-search-area">
+          <VCard class="premium-search-card" elevation="10">
+            <!-- Chip moved inside card -->
+            <div class="card-intro mb-4">
+               <VChip
+                label
+                color="primary"
+                class="font-weight-bold mb-4"
+                size="small"
+                variant="flat"
+              >
+                Welcome to NegmCars
+              </VChip>
+            </div>
+
+            <div class="card-header mb-8">
+              <h1 class="text-h4 font-weight-black mb-1">
+                Discover Your <span class="text-primary">Perfect Car</span>
+              </h1>
+              <p class="text-h6 opacity-70 font-weight-medium">at the Best Prices in Egypt</p>
+            </div>
+
+            <div class="search-form-grid">
+              <!-- Type Toggle -->
+              <div class="form-group">
+                <label class="group-label">Vehicle Type</label>
+                <div class="premium-toggle-group">
                   <button
-                    type="button"
-                    class="premium-toggle__btn"
-                    :class="{ active: filters.type === 'car' }"
-                    @click="filters.type = 'car'"
+                    v-for="t in ['car', 'motorcycle']"
+                    :key="t"
+                    class="toggle-btn"
+                    :class="{ active: filters.type === t }"
+                    @click="filters.type = t"
                   >
-                    Cars
-                  </button>
-                  <button
-                    type="button"
-                    class="premium-toggle__btn"
-                    :class="{ active: filters.type === 'motorcycle' }"
-                    @click="filters.type = 'motorcycle'"
-                  >
-                    Bikes
+                    {{ t === 'car' ? 'Cars' : 'Bikes' }}
                   </button>
                 </div>
               </div>
 
               <!-- Condition Toggle -->
-              <div class="inputGroup">
-                <div class="premium-toggle premium-toggle--three">
+              <div class="form-group">
+                <label class="group-label">Condition</label>
+                <div class="premium-toggle-group">
                   <button
-                    type="button"
-                    class="premium-toggle__btn"
-                    :class="{ active: filters.condition === '' }"
-                    @click="filters.condition = ''"
+                    v-for="c in ['', 'used', 'new']"
+                    :key="c"
+                    class="toggle-btn toggle-btn--small"
+                    :class="{ active: filters.condition === c }"
+                    @click="filters.condition = c"
                   >
-                    All
-                  </button>
-                  <button
-                    type="button"
-                    class="premium-toggle__btn"
-                    :class="{ active: filters.condition === 'used' }"
-                    @click="filters.condition = 'used'"
-                  >
-                    Used
-                  </button>
-                  <button
-                    type="button"
-                    class="premium-toggle__btn"
-                    :class="{ active: filters.condition === 'new' }"
-                    @click="filters.condition = 'new'"
-                  >
-                    New
+                    {{ c === '' ? 'All' : c.charAt(0).toUpperCase() + c.slice(1) }}
                   </button>
                 </div>
               </div>
 
-              <!-- Row 2: Brand & Model -->
-              <div class="inputGroup">
+              <!-- Brand & Model -->
+              <div class="form-group">
                 <VSelect
                   v-model="filters.brandId"
                   :items="brandsList"
                   item-title="name"
                   item-value="id"
-                  label="Brand"
+                  label="Select Brand"
                   density="comfortable"
                   variant="outlined"
                   hide-details
@@ -331,7 +298,7 @@ watch(
                 />
               </div>
 
-              <div class="inputGroup">
+              <div class="form-group">
                 <VSelect
                   ref="modelSelect"
                   v-model="filters.modelId"
@@ -339,7 +306,7 @@ watch(
                   :items="modelsList"
                   item-title="name"
                   item-value="id"
-                  label="Model"
+                  label="Select Model"
                   density="comfortable"
                   variant="outlined"
                   hide-details
@@ -348,142 +315,117 @@ watch(
                 />
               </div>
 
-              <!-- Price Row (Shared) -->
-              <div class="inputGroup rangeRow">
-                <div class="rangeRow__grid">
-                  <VTextField
-                    v-model="displayPriceFrom"
-                    label="Min Price"
-                    prefix="EG"
-                    density="comfortable"
-                    variant="outlined"
-                    hide-details
-                    class="premium-input no-spin"
-                    inputmode="numeric"
-                    @keypress="isNumberKey"
-                    maxlength="11"
-                  />
-                  <VTextField
-                    v-model="displayPriceTo"
-                    label="Max Price"
-                    prefix="EG"
-                    density="comfortable"
-                    variant="outlined"
-                    hide-details
-                    class="premium-input no-spin"
-                    inputmode="numeric"
-                    @keypress="isNumberKey"
-                    maxlength="11"
-                  />
-                </div>
+              <!-- Price Range -->
+              <div class="form-group">
+                <VTextField
+                  v-model="displayPriceFrom"
+                  label="Min Price"
+                  prefix="EG"
+                  density="comfortable"
+                  variant="outlined"
+                  hide-details
+                  class="premium-input no-spin"
+                  inputmode="numeric"
+                  @keypress="isNumberKey"
+                  maxlength="11"
+                />
               </div>
 
-              <!-- Year Row (Shared) -->
-              <div class="inputGroup rangeRow">
-                <div class="rangeRow__grid">
-                  <VSelect
-                    v-model="filters.yearFrom"
-                    :items="yearsList"
-                    label="From Year"
-                    density="comfortable"
-                    variant="outlined"
-                    hide-details
-                    class="premium-input"
-                  />
-                  <VSelect
-                    v-model="filters.yearTo"
-                    v-model:menu="isYearToMenuOpen"
-                    :items="yearsToList"
-                    label="To Year"
-                    density="comfortable"
-                    variant="outlined"
-                    hide-details
-                    class="premium-input"
-                  />
-                </div>
+              <div class="form-group">
+                <VTextField
+                  v-model="displayPriceTo"
+                  label="Max Price"
+                  prefix="EG"
+                  density="comfortable"
+                  variant="outlined"
+                  hide-details
+                  class="premium-input no-spin"
+                  inputmode="numeric"
+                  @keypress="isNumberKey"
+                  maxlength="11"
+                />
+              </div>
+
+              <!-- Year Range -->
+              <div class="form-group">
+                <VSelect
+                  ref="yearFromSelect"
+                  v-model="filters.yearFrom"
+                  :items="yearsList"
+                  label="From Year"
+                  density="comfortable"
+                  variant="outlined"
+                  hide-details
+                  class="premium-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <VSelect
+                  ref="yearToSelect"
+                  v-model="filters.yearTo"
+                  v-model:menu="isYearToMenuOpen"
+                  :items="yearsToList"
+                  label="To Year"
+                  density="comfortable"
+                  variant="outlined"
+                  hide-details
+                  class="premium-input"
+                />
               </div>
             </div>
 
-            <div class="filterCard__actions">
-              <div class="d-flex gap-3 w-100 mb-3">
-                <VBtn
-                  variant="tonal"
-                  class="flex-grow-1 actionBtn"
-                  @click="resetFilters"
-                  prepend-icon="tabler-rotate"
-                >
-                  Reset
-                </VBtn>
-
-                <VBtn
-                  variant="tonal"
-                  color="warning"
-                  class="flex-grow-1 actionBtn"
-                  to="/user/sell"
-                  prepend-icon="tabler-circle-plus"
-                >
-                  Sell
-                </VBtn>
-              </div>
-
+            <!-- Action Buttons -->
+            <div class="search-actions mt-10">
               <VBtn
                 color="primary"
+                height="64"
                 block
-                class="searchMainBtn"
+                class="search-btn mb-4"
                 @click="onSearch"
+                prepend-icon="tabler-search"
+                elevation="8"
               >
                 Search
               </VBtn>
+              <div class="d-flex gap-4">
+                <VBtn variant="tonal" class="flex-grow-1" @click="resetFilters" height="48" prepend-icon="tabler-rotate">
+                  Reset
+                </VBtn>
+                <VBtn variant="tonal" color="warning" class="flex-grow-1" to="/user/sell" height="48" prepend-icon="tabler-circle-plus">
+                  Sell
+                </VBtn>
+              </div>
             </div>
           </VCard>
         </div>
 
-        <!-- Right: Image/Visual -->
-        <div class="heroRight">
-          <VCard class="premium-card bannersCard" elevation="0">
-            <div class="heroImageWrapper">
-              <div class="heroBg">
-                <Transition name="bgfade" mode="out-in">
-                  <div
-                    v-if="currentSlideSrc"
-                    :key="currentSlideSrc"
-                    class="heroBg__img heroBg__img--standalone"
-                    :style="{ backgroundImage: `url(${currentSlideSrc})` }"
-                  />
-                  <div
-                    v-else
-                    class="d-flex align-center justify-center h-100 flex-column text-center pa-10"
-                    style="
-                      background: rgba(var(--v-theme-surface), 0.1);
-                      border: 2px dashed rgba(var(--v-theme-on-surface), 0.2);
-                      border-radius: 24px;
-                    "
-                  >
-                    <VIcon
-                      icon="tabler-photo-plus"
-                      size="64"
-                      color="primary"
-                      class="mb-4 opacity-50"
-                    />
-                    <h3 class="text-h5 font-weight-bold mb-2">مساحة إعلانية شاغرة</h3>
-                    <p class="text-body-2 opacity-70">أضف إعلانك هنا ليصل لآلاف العملاء يومياً</p>
+        <!-- Right: Ad Area -->
+        <div class="hero-ad-area">
+          <VCard class="premium-ad-card" elevation="10">
+            <div class="ad-label">SPONSORED</div>
+            <div class="ad-carousel-wrapper">
+              <Transition name="fade" mode="out-in">
+                <div
+                  v-if="slides.length > 0"
+                  :key="slideIndex"
+                  class="ad-slide"
+                  :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
+                >
+                  <div class="ad-overlay" />
+                  <div class="ad-content p-8">
+                    <h4 class="text-h3 font-weight-black mb-4 text-white">Featured Offer</h4>
+                    <p class="text-h6 opacity-90 text-white mb-8">Drive your business forward with premium ad placements.</p>
+                    <VBtn color="primary" size="large" class="px-10">Explore Now</VBtn>
                   </div>
-                </Transition>
-                <div class="heroBg__overlay" />
-
-                <!-- Dots for standalone image -->
-                <div class="heroBg__dots heroBg__dots--inline" v-if="slides.length > 1">
-                  <button
-                    v-for="(_, i) in slides"
-                    :key="i"
-                    class="dot"
-                    :class="{ active: i === slideIndex }"
-                    type="button"
-                    aria-label="Go to slide"
-                    @click="slideIndex = i"
-                  />
                 </div>
-              </div>
+                <div v-else class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-12 h-100">
+                  <VIcon icon="tabler-photo-spark" size="120" color="primary" class="opacity-10 mb-6" />
+                  <h4 class="text-h4 font-weight-bold mb-4">Ad Space Available</h4>
+                  <p class="text-h6 opacity-50 max-w-400">Reach thousands of active car buyers and sellers in Egypt every day.</p>
+                  <VBtn variant="outlined" color="primary" size="large" class="mt-10" to="/user/sell">Contact Us</VBtn>
+                </div>
+              </Transition>
             </div>
           </VCard>
         </div>
@@ -492,436 +434,169 @@ watch(
   </section>
 </template>
 
-<style scoped lang="scss">
-/* (نفس الـ CSS بتاعك زي ما هو بدون تغيير) */
+<style lang="scss" scoped>
 .hero {
-  border-radius: 0 0 50px 50px;
-  overflow: hidden;
-  position: relative;
-}
-.hero__container {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  position: relative;
-  z-index: 2;
-}
-
-/* ✅ Grid Layout: Left (search) + Right (image) */
-.heroGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: center;
-  min-height: 350px;
-}
-
-@media (max-width: 1024px) {
-  .heroGrid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .heroRight {
-    order: -1; /* Image on top for mobile */
-  }
-}
-
-.heroLeft {
+  padding-block: 40px;
+  min-height: 85vh;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.heroRight {
-  display: flex;
-  justify-content: center;
   align-items: center;
 }
 
-.heroImageWrapper {
-  width: 100%;
-  max-width: 550px;
-  aspect-ratio: 16/10;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  position: relative;
-}
-
-.heroBg__img--standalone {
-  transform: scale(1);
-  border-radius: 24px;
-}
 .hero--dark {
-  background-color: #25293c;
-}
-.hero--light {
-  background: linear-gradient(138.18deg, #eae8fd 0%, #fce5e6 94.44%);
+  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.1), transparent 50%), #1a1d2e;
 }
 
-.heroBg {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-.heroBg__img {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.04);
-  filter: saturate(1.05) contrast(1.05);
-}
-.heroBg__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.2); /* Very light overlay for text contrast */
-}
-.heroBg__glow {
-  position: absolute;
-  inset: -40px;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 15%, rgba(90, 74, 255, 0.18), transparent 45%),
-    radial-gradient(circle at 70% 85%, rgba(255, 55, 57, 0.12), transparent 50%);
-}
-.heroBg__dots {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  border: 0;
-  cursor: pointer;
-  opacity: 0.55;
-  background: #fff;
-}
-.dot.active {
-  opacity: 1;
-}
-.bgfade-enter-active,
-.bgfade-leave-active {
-  transition: opacity 0.45s ease;
-}
-.bgfade-enter-from,
-.bgfade-leave-to {
-  opacity: 0;
-}
-
-.heroCenter {
-  max-width: 980px;
-  margin-inline: auto;
-}
-.heroTop {
-  max-width: 100%;
-  text-align: center;
-}
-.hero__badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 13px;
-  margin-bottom: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.hero__title {
-  font-size: 40px;
-  line-height: 46px;
-  font-weight: 950;
-  margin: 0;
-}
-.hero__accent {
-  color: #ff6b00;
-}
-.hero__subtitle {
-  margin-top: 10px;
-  opacity: 0.82;
-  max-width: 560px;
-}
-
-.heroGrid {
+/* Main Grid */
+.hero-main-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: stretch; /* Make items equal height */
+  grid-template-columns: 520px 1fr;
+  gap: 40px;
+  align-items: stretch;
 }
 
-.premium-card {
-  width: 100%;
-  padding: 26px;
-  border-radius: 32px !important;
-  background: rgba(15, 20, 30, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(24px);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-}
-
-.filterCard {
-  max-width: 520px;
-}
-
-.bannersCard {
-  width: 100%;
-  overflow: hidden;
-  padding: 0; /* Remove padding for edge-to-edge carousel if desired, or keep for consistency */
-}
-.bannersCard.premium-card {
-  padding: 12px; /* Smaller padding for the ad container */
-}
-
-.filterCard__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px 20px;
-}
-.rangeRow {
-  grid-column: span 2;
-}
-.rangeRow__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.inputLabel {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  opacity: 0.5;
-  margin-left: 4px;
-  color: #fff;
-  margin-bottom: 2px;
-}
-
-.premium-toggle {
-  display: flex;
+/* Search Card */
+.premium-search-card {
   background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 40px !important;
+  padding: 40px;
+  height: 100%;
+}
+
+.search-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.4;
+  margin-left: 4px;
+}
+
+.premium-toggle-group {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   padding: 4px;
   gap: 4px;
-  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
-.premium-toggle__btn {
+
+.toggle-btn {
   flex: 1;
   border: 0;
   background: transparent;
   color: #fff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: 12px;
+  height: 48px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.6;
 }
-.premium-toggle__btn:hover {
-  opacity: 0.9;
-  background: rgba(255, 255, 255, 0.04);
-}
-.premium-toggle__btn.active {
-  opacity: 1;
+
+.toggle-btn.active {
   background: rgba(var(--v-theme-primary), 1);
+  opacity: 1;
+  box-shadow: 0 4px 20px rgba(var(--v-theme-primary), 0.5);
   color: #fff;
-  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.3);
 }
 
-.premium-input :deep(.v-field__outline) {
-  --v-field-border-opacity: 0.15;
-}
-.premium-input :deep(.v-label) {
-  font-size: 13px;
-  font-weight: 600;
+.toggle-btn--small {
+  height: 40px;
+  font-size: 12px;
 }
 
-.searchMainBtn {
-  height: 48px !important;
-  border-radius: 12px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.5px !important;
-  font-size: 15px !important;
+.premium-input :deep(.v-field) {
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.premium-input :deep(.v-field--focused) {
+  border-color: rgba(var(--v-theme-primary), 1) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.2);
+}
+
+.search-btn {
+  border-radius: 20px !important;
+  font-weight: 950 !important;
   text-transform: none !important;
+  font-size: 20px !important;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px -5px rgba(var(--v-theme-primary), 0.6) !important;
+  }
 }
 
-.actionBtn {
-  height: 38px !important;
-  border-radius: 10px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  text-transform: none !important;
+/* Ad Area */
+.premium-ad-card {
+  height: 100%;
+  min-height: 600px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 40px !important;
+  position: relative;
+  overflow: hidden;
 }
 
-.filterCard__actions {
-  margin-top: 24px;
-}
-.actionBtn {
-  height: 40px !important;
-  border-radius: 14px !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  text-transform: none !important;
-}
-.searchBtn {
-  border-radius: 16px !important;
-  font-weight: 800 !important;
-  font-size: 16px !important;
-  text-transform: none !important;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 1) 0%,
-    rgba(var(--v-theme-primary), 0.8) 100%
-  ) !important;
-  box-shadow: 0 12px 24px -6px rgba(var(--v-theme-primary), 0.5) !important;
-}
-
-.filterCard__actions {
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.filterCard__spacer {
-  flex: 1;
-}
-.btnMain,
-.btnGhost {
-  height: 44px;
-  border-radius: 14px;
-  padding-inline: 16px;
-}
-.btnSmall {
-  height: 44px;
-  border-radius: 14px;
-  padding-inline: 14px;
-}
-
-.quickInHero {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-.quickInHero__card {
-  cursor: pointer;
-  padding: 14px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease,
-    border-color 0.15s ease;
-}
-.quickInHero__card:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.16);
-}
-.qTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.qIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.qChip {
+.ad-label {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background: rgba(var(--v-theme-primary), 0.9);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 99px;
   font-size: 11px;
   font-weight: 900;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  opacity: 0.95;
-}
-.qBody {
-  margin-top: 12px;
-}
-.qTitle {
-  font-weight: 950;
-  font-size: 15px;
-}
-.qSub {
-  margin-top: 4px;
-  font-size: 12.5px;
-  opacity: 0.78;
-  line-height: 1.5;
-}
-.qFoot {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  opacity: 0.9;
-}
-.qAction {
-  font-weight: 900;
-  font-size: 12.5px;
+  letter-spacing: 2px;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-@media (max-width: 1100px) {
-  .filterCard__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .rangeRow {
-    grid-column: span 2;
-  }
-  .quickInHero {
-    grid-template-columns: 1fr;
-  }
+.ad-carousel-wrapper {
+  height: 100%;
 }
-@media (max-width: 640px) {
-  .hero__title {
-    font-size: 32px;
-    line-height: 38px;
-  }
-  .filterCard__grid {
-    grid-template-columns: 1fr;
-  }
-  .rangeRow {
-    grid-column: span 1;
-  }
-  .rangeRow__grid {
-    grid-template-columns: 1fr;
-  }
-  .filterCard__spacer {
-    display: none;
-  }
+
+.ad-slide {
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+}
+
+.ad-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+}
+
+.ad-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 60px !important;
 }
 
 /* Hide number input spinners */
@@ -930,10 +605,35 @@ watch(
   -webkit-appearance: none;
   margin: 0;
 }
-
 :deep(.no-spin input[type='number']) {
   -moz-appearance: textfield;
 }
-</style>
 
-// الجزء العلوي في صفحه الاساسيه
+@media (max-width: 1200px) {
+  .hero-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .premium-ad-card {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 600px) {
+  .search-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .premium-search-card {
+    padding: 24px;
+  }
+  .ad-content {
+    padding: 30px !important;
+  }
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.6s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>

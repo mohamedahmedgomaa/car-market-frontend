@@ -44,19 +44,10 @@ const featuresData = [
   <VContainer id="features">
     <div class="feature-cards">
       <div class="headers d-flex justify-center flex-column align-center mb-12">
-        <VChip
-          label
-          color="primary"
-          class="mb-4"
-          size="small"
-        >
-          Useful Features
-        </VChip>
+        <VChip label color="primary" class="mb-4" size="small"> Useful Features </VChip>
         <div class="d-flex text-h4 mb-1 align-center flex-wrap justify-center">
           <div class="position-relative me-2">
-            <div class="section-title">
-              Everything you need
-            </div>
+            <div class="section-title">Everything you need</div>
           </div>
           to start your next project
         </div>
@@ -65,27 +56,14 @@ const featuresData = [
         </p>
       </div>
       <VRow>
-        <VCol
-          v-for="(data, index) in featuresData"
-          :key="index"
-          cols="12"
-          md="4"
-          sm="6"
-        >
+        <VCol v-for="(data, index) in featuresData" :key="index" cols="12" md="4" sm="6">
           <div class="d-flex flex-column align-center justify-center gap-4 mx-auto">
-            <VIcon
-              :icon="data.icon"
-              size="64"
-              color="primary"
-            />
+            <VIcon :icon="data.icon" size="64" color="primary" />
             <div class="text-center">
               <h5 class="text-h5 mb-2">
                 {{ data.title }}
               </h5>
-              <p
-                class="text-body-1 mb-6"
-                style="max-inline-size: 310px;"
-              >
+              <p class="text-body-1 mb-6" style="max-inline-size: 310px">
                 {{ data.desc }}
               </p>
             </div>
@@ -103,10 +81,11 @@ const featuresData = [
 
 .section-title::after {
   position: absolute;
-  background: url("../../../assets/images/front-pages/icons/section-title-icon.png") no-repeat left bottom;
+  background: url('../../../assets/images/front-pages/icons/section-title-icon.png') no-repeat left
+    bottom;
   background-size: contain;
   block-size: 100%;
-  content: "";
+  content: '';
   inline-size: 120%;
   inset-block-end: 0;
   inset-inline-start: -12%;
