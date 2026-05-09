@@ -1,112 +1,107 @@
 <script setup>
-import check from '@images/svg/Check.svg'
-import keyboard from '@images/svg/keyboard.svg'
-import laptop from '@images/svg/laptop.svg'
-import paper from '@images/svg/paper-send.svg'
-import rocket from '@images/svg/rocket.svg'
-import user from '@images/svg/user.svg'
-
-const featuresData = [
+const features = [
   {
-    title: 'Quality Code',
-    desc: 'Code structure that all developers will easily understand and fall in love with.',
-    icon: laptop,
+    title: 'Trusted Sellers',
+    desc: 'We ensure all sellers are verified to guarantee a safe and reliable buying experience.',
+    icon: 'tabler-shield-check',
   },
   {
-    title: 'Continuous Updates',
-    desc: 'Free updates for the next 12 months, including new demos and features.',
-    icon: rocket,
+    title: 'Best Prices',
+    desc: 'Compare thousands of cars and find the best deals that fit your budget perfectly.',
+    icon: 'tabler-currency-dollar',
   },
   {
-    title: 'Starter Kit',
-    desc: 'Start your project quickly without having to remove unnecessary features.',
-    icon: paper,
+    title: 'Wide Variety',
+    desc: 'From luxury sedans to economy hatchbacks, we have every type of vehicle in one place.',
+    icon: 'tabler-car',
   },
   {
-    title: 'API Ready',
-    desc: 'Just change the endpoint and see your own data loaded within seconds.',
-    icon: check,
+    title: 'Easy Viewing',
+    desc: 'Schedule a viewing directly through the platform with ease and convenience.',
+    icon: 'tabler-calendar-event',
   },
   {
-    title: 'Excellent Support',
-    desc: 'An easy-to-follow doc with lots of references and code examples.',
-    icon: user,
+    title: '24/7 Support',
+    desc: 'Our team is always available to help you with any inquiries or issues you may have.',
+    icon: 'tabler-headset',
   },
   {
-    title: 'Well Documented',
-    desc: 'An easy-to-follow doc with lots of references and code examples.',
-    icon: keyboard,
+    title: 'Smart Search',
+    desc: 'Use our advanced filtering tools to find your perfect car in seconds.',
+    icon: 'tabler-search',
   },
 ]
 </script>
 
 <template>
-  <VContainer id="features">
-    <div class="feature-cards">
-      <div class="headers d-flex justify-center flex-column align-center mb-12">
-        <VChip label color="primary" class="mb-4" size="small"> Useful Features </VChip>
-        <div class="d-flex text-h4 mb-1 align-center flex-wrap justify-center">
-          <div class="position-relative me-2">
-            <div class="section-title">Everything you need</div>
-          </div>
-          to start your next project
-        </div>
-        <p class="text-body-1 mb-0">
-          Not just a set of tools, the package includes ready-to-deploy conceptual application.
+  <section id="features" class="features-section py-16">
+    <VContainer>
+      <div class="text-center mb-16">
+        <h2 class="text-h3 font-weight-black mb-4">
+          Everything You Need to <span class="text-primary">Buy & Sell</span> Easily
+        </h2>
+        <p class="text-h6 opacity-60 max-w-700 mx-auto">
+          We provide the best tools and services to ensure a seamless and safe experience in the car market.
         </p>
       </div>
+
       <VRow>
-        <VCol v-for="(data, index) in featuresData" :key="index" cols="12" md="4" sm="6">
-          <div class="d-flex flex-column align-center justify-center gap-4 mx-auto">
-            <VIcon :icon="data.icon" size="64" color="primary" />
-            <div class="text-center">
-              <h5 class="text-h5 mb-2">
-                {{ data.title }}
-              </h5>
-              <p class="text-body-1 mb-6" style="max-inline-size: 310px">
-                {{ data.desc }}
-              </p>
+        <VCol
+          v-for="(feature, index) in features"
+          :key="index"
+          cols="12"
+          sm="6"
+          md="4"
+        >
+          <VCard class="feature-card pa-8" elevation="0">
+            <div class="feature-icon-wrapper mb-6">
+              <VIcon :icon="feature.icon" size="32" color="primary" />
             </div>
-          </div>
+            <h3 class="text-h5 font-weight-bold mb-3">{{ feature.title }}</h3>
+            <p class="text-body-1 opacity-60 leading-relaxed">{{ feature.desc }}</p>
+          </VCard>
         </VCol>
       </VRow>
-    </div>
-  </VContainer>
+    </VContainer>
+  </section>
 </template>
 
 <style lang="scss" scoped>
-.feature-cards {
-  margin-block: 3.75rem;
+.features-section {
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.section-title::after {
-  position: absolute;
-  background: url('../../../assets/images/front-pages/icons/section-title-icon.png') no-repeat left
-    bottom;
-  background-size: contain;
-  block-size: 100%;
-  content: '';
-  inline-size: 120%;
-  inset-block-end: 0;
-  inset-inline-start: -12%;
+.max-w-700 {
+  max-width: 700px;
 }
 
-.section-title {
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 36px;
-}
+.feature-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 32px;
+  height: 100%;
+  transition: all 0.3s ease;
 
-.feature {
-  .v-avatar {
-    &.v-avatar--variant-outlined {
-      border: 2px solid rgba(var(--v-theme-primary), 0.32);
-
-      &:hover {
-        background: rgba(var(--v-theme-primary), 0.16);
-        cursor: pointer;
-      }
-    }
+  &:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(var(--v-theme-primary), 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   }
+}
+
+.feature-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--v-theme-primary), 0.1);
+  border: 1px solid rgba(var(--v-theme-primary), 0.1);
+}
+
+.leading-relaxed {
+  line-height: 1.7;
 }
 </style>
