@@ -15,9 +15,11 @@ const router = useRouter()
 const modelSelect = ref(null)
 const isModelMenuOpen = ref(false)
 
-const yearFromSelect = ref(null)
 const yearToSelect = ref(null)
 const isYearToMenuOpen = ref(false)
+
+const kmMinInput = ref(null)
+const kmMaxInput = ref(null)
 
 /* =========================
    ✅ Helpers
@@ -59,6 +61,20 @@ const displayPriceTo = computed({
   },
 })
 
+const displayKmMin = computed({
+  get: () => formatWithCommas(filters.value.kmMin),
+  set: (v) => {
+    filters.value.kmMin = toNumOrNull(v, 6)
+  },
+})
+
+const displayKmMax = computed({
+  get: () => formatWithCommas(filters.value.kmMax),
+  set: (v) => {
+    filters.value.kmMax = toNumOrNull(v, 6)
+  },
+})
+
 const putBetween = (obj, key, from, to) => {
   const a = (from ?? '') === '' ? '' : from
   const b = (to ?? '') === '' ? '' : to
@@ -77,6 +93,8 @@ const filters = ref({
   priceTo: null,
   yearFrom: null,
   yearTo: null,
+  kmMin: null,
+  kmMax: null,
 })
 
 const buildQuery = () => {
@@ -86,6 +104,8 @@ const buildQuery = () => {
   if (filters.value.condition) q['filter[condition]'] = filters.value.condition
   if (filters.value.brandId) q['filter[brand_id]'] = filters.value.brandId
   if (filters.value.modelId) q['filter[model_id]'] = filters.value.modelId
+  
+  putBetween(q, 'km_between', filters.value.kmMin, filters.value.kmMax)
 
   const pf = toNumOrNull(filters.value.priceFrom)
   const pt = toNumOrNull(filters.value.priceTo)
@@ -115,6 +135,8 @@ const resetFilters = () => {
     priceTo: null,
     yearFrom: null,
     yearTo: null,
+    kmMin: null,
+    kmMax: null,
   }
 }
 
@@ -184,6 +206,22 @@ watch(() => filters.value.yearFrom, (val) => {
   }
 })
 
+watch(() => filters.value.yearTo, (val) => {
+  if (val) {
+    nextTick(() => {
+      if (kmMinInput.value) {
+        kmMinInput.value.focus()
+      }
+    })
+  }
+})
+
+watch(() => filters.value.kmMin, (val) => {
+  if (val && String(val).length >= 1) { // Simple trigger
+    // Optional: add logic if needed
+  }
+})
+
 /* =========================
    ✅ Background Slider (Ad Space)
 ========================= */
@@ -230,11 +268,12 @@ onBeforeUnmount(() => {
         <!-- Left: Search Card -->
         <div class="hero-search-area">
           <VCard class="premium-search-card" elevation="10">
-            <div class="card-intro mb-2">
+            <!-- Top Chip -->
+            <div class="mb-4">
                <VChip
                 label
                 color="primary"
-                class="font-weight-bold mb-3"
+                class="font-weight-bold"
                 size="x-small"
                 variant="flat"
               >
@@ -242,11 +281,23 @@ onBeforeUnmount(() => {
               </VChip>
             </div>
 
-            <div class="card-header mb-6">
-              <h1 class="text-h5 font-weight-black mb-0">
-                Discover Your <span class="text-primary">Perfect Car</span>
-              </h1>
-              <p class="text-body-2 opacity-70 font-weight-medium">at the Best Prices in Egypt</p>
+            <!-- Header Row with Title and Reset -->
+            <div class="d-flex align-start justify-space-between mb-6">
+              <div class="card-header">
+                <h1 class="text-h5 font-weight-black mb-0">
+                  Discover Your <span class="text-primary">Perfect Car</span>
+                </h1>
+                <p class="text-body-2 opacity-70 font-weight-medium">at the Best Prices in Egypt</p>
+              </div>
+              
+              <VBtn
+                variant="tonal"
+                color="primary"
+                size="small"
+                class="reset-btn-v2"
+                @click="resetFilters"
+                icon="tabler-rotate"
+              />
             </div>
 
             <div class="search-form-grid">
@@ -348,7 +399,6 @@ onBeforeUnmount(() => {
               <!-- Year Range -->
               <div class="form-group">
                 <VSelect
-                  ref="yearFromSelect"
                   v-model="filters.yearFrom"
                   :items="yearsList"
                   label="From Year"
@@ -372,29 +422,61 @@ onBeforeUnmount(() => {
                   class="premium-input"
                 />
               </div>
+
+               <!-- Kilometers Range (FIXED) -->
+               <div class="form-group">
+                <VTextField
+                  ref="kmMinInput"
+                  v-model="displayKmMin"
+                  label="Min KM"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="premium-input no-spin"
+                  inputmode="numeric"
+                  @keypress="isNumberKey"
+                  maxlength="6"
+                />
+              </div>
+              <div class="form-group">
+                <VTextField
+                  ref="kmMaxInput"
+                  v-model="displayKmMax"
+                  label="Max KM"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="premium-input no-spin"
+                  inputmode="numeric"
+                  @keypress="isNumberKey"
+                  maxlength="6"
+                />
+              </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="search-actions mt-6">
+            <!-- Action Buttons Row -->
+            <div class="search-actions-row mt-6 d-flex gap-3">
               <VBtn
                 color="primary"
                 height="48"
-                block
-                class="search-btn mb-3"
+                class="search-main-btn flex-grow-1"
                 @click="onSearch"
                 prepend-icon="tabler-search"
                 elevation="4"
               >
                 Search
               </VBtn>
-              <div class="d-flex gap-3">
-                <VBtn variant="tonal" class="flex-grow-1" @click="resetFilters" height="40" prepend-icon="tabler-rotate" size="small">
-                  Reset
-                </VBtn>
-                <VBtn variant="tonal" color="warning" class="flex-grow-1" to="/user/sell" height="40" prepend-icon="tabler-circle-plus" size="small">
-                  Sell
-                </VBtn>
-              </div>
+              <VBtn
+                variant="tonal"
+                color="warning"
+                class="sell-side-btn"
+                width="100"
+                height="48"
+                to="/user/sell"
+                prepend-icon="tabler-circle-plus"
+              >
+                Sell
+              </VBtn>
             </div>
           </VCard>
         </div>
@@ -538,7 +620,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.2);
 }
 
-.search-btn {
+.search-main-btn {
   border-radius: 16px !important;
   font-weight: 900 !important;
   text-transform: none !important;
@@ -546,7 +628,27 @@ onBeforeUnmount(() => {
   letter-spacing: 0.5px;
 }
 
-/* Ad Area - FIXED */
+.sell-side-btn {
+  border-radius: 16px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+.reset-btn-v2 {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 12px !important;
+  background: rgba(var(--v-theme-primary), 0.1) !important;
+  transition: all 0.3s ease;
+  &:hover {
+    background: rgba(var(--v-theme-primary), 1) !important;
+    color: white !important;
+    transform: rotate(180deg);
+  }
+}
+
+/* Ad Area */
 .premium-ad-card {
   height: 100%;
   min-height: 460px;
@@ -586,7 +688,7 @@ onBeforeUnmount(() => {
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* Align content to bottom */
+  justify-content: flex-end;
 }
 
 .ad-image {
