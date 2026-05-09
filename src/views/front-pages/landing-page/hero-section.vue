@@ -230,24 +230,23 @@ onBeforeUnmount(() => {
         <!-- Left: Search Card -->
         <div class="hero-search-area">
           <VCard class="premium-search-card" elevation="10">
-            <!-- Chip moved inside card -->
-            <div class="card-intro mb-4">
+            <div class="card-intro mb-2">
                <VChip
                 label
                 color="primary"
-                class="font-weight-bold mb-4"
-                size="small"
+                class="font-weight-bold mb-3"
+                size="x-small"
                 variant="flat"
               >
                 Welcome to NegmCars
               </VChip>
             </div>
 
-            <div class="card-header mb-8">
-              <h1 class="text-h4 font-weight-black mb-1">
+            <div class="card-header mb-6">
+              <h1 class="text-h5 font-weight-black mb-0">
                 Discover Your <span class="text-primary">Perfect Car</span>
               </h1>
-              <p class="text-h6 opacity-70 font-weight-medium">at the Best Prices in Egypt</p>
+              <p class="text-body-2 opacity-70 font-weight-medium">at the Best Prices in Egypt</p>
             </div>
 
             <div class="search-form-grid">
@@ -291,7 +290,7 @@ onBeforeUnmount(() => {
                   item-title="name"
                   item-value="id"
                   label="Select Brand"
-                  density="comfortable"
+                  density="compact"
                   variant="outlined"
                   hide-details
                   class="premium-input"
@@ -307,7 +306,7 @@ onBeforeUnmount(() => {
                   item-title="name"
                   item-value="id"
                   label="Select Model"
-                  density="comfortable"
+                  density="compact"
                   variant="outlined"
                   hide-details
                   :disabled="!filters.brandId"
@@ -321,7 +320,7 @@ onBeforeUnmount(() => {
                   v-model="displayPriceFrom"
                   label="Min Price"
                   prefix="EG"
-                  density="comfortable"
+                  density="compact"
                   variant="outlined"
                   hide-details
                   class="premium-input no-spin"
@@ -336,7 +335,7 @@ onBeforeUnmount(() => {
                   v-model="displayPriceTo"
                   label="Max Price"
                   prefix="EG"
-                  density="comfortable"
+                  density="compact"
                   variant="outlined"
                   hide-details
                   class="premium-input no-spin"
@@ -353,7 +352,7 @@ onBeforeUnmount(() => {
                   v-model="filters.yearFrom"
                   :items="yearsList"
                   label="From Year"
-                  density="comfortable"
+                  density="compact"
                   variant="outlined"
                   hide-details
                   class="premium-input"
@@ -367,7 +366,7 @@ onBeforeUnmount(() => {
                   v-model:menu="isYearToMenuOpen"
                   :items="yearsToList"
                   label="To Year"
-                  density="comfortable"
+                  density="compact"
                   variant="outlined"
                   hide-details
                   class="premium-input"
@@ -376,23 +375,23 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Action Buttons -->
-            <div class="search-actions mt-10">
+            <div class="search-actions mt-6">
               <VBtn
                 color="primary"
-                height="64"
+                height="48"
                 block
-                class="search-btn mb-4"
+                class="search-btn mb-3"
                 @click="onSearch"
                 prepend-icon="tabler-search"
-                elevation="8"
+                elevation="4"
               >
                 Search
               </VBtn>
-              <div class="d-flex gap-4">
-                <VBtn variant="tonal" class="flex-grow-1" @click="resetFilters" height="48" prepend-icon="tabler-rotate">
+              <div class="d-flex gap-3">
+                <VBtn variant="tonal" class="flex-grow-1" @click="resetFilters" height="40" prepend-icon="tabler-rotate" size="small">
                   Reset
                 </VBtn>
-                <VBtn variant="tonal" color="warning" class="flex-grow-1" to="/user/sell" height="48" prepend-icon="tabler-circle-plus">
+                <VBtn variant="tonal" color="warning" class="flex-grow-1" to="/user/sell" height="40" prepend-icon="tabler-circle-plus" size="small">
                   Sell
                 </VBtn>
               </div>
@@ -410,20 +409,20 @@ onBeforeUnmount(() => {
                   v-if="slides.length > 0"
                   :key="slideIndex"
                   class="ad-slide"
-                  :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
                 >
+                  <div class="ad-image" :style="{ backgroundImage: `url(${slides[slideIndex].image})` }" />
                   <div class="ad-overlay" />
-                  <div class="ad-content p-8">
-                    <h4 class="text-h3 font-weight-black mb-4 text-white">Featured Offer</h4>
-                    <p class="text-h6 opacity-90 text-white mb-8">Drive your business forward with premium ad placements.</p>
-                    <VBtn color="primary" size="large" class="px-10">Explore Now</VBtn>
+                  <div class="ad-content">
+                    <h4 class="text-h4 font-weight-black mb-2 text-white">Featured Offer</h4>
+                    <p class="text-body-1 opacity-90 text-white mb-6">Drive your business forward with NegmCars.</p>
+                    <VBtn color="primary" size="small" class="px-8">Explore Now</VBtn>
                   </div>
                 </div>
-                <div v-else class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-12 h-100">
-                  <VIcon icon="tabler-photo-spark" size="120" color="primary" class="opacity-10 mb-6" />
-                  <h4 class="text-h4 font-weight-bold mb-4">Ad Space Available</h4>
-                  <p class="text-h6 opacity-50 max-w-400">Reach thousands of active car buyers and sellers in Egypt every day.</p>
-                  <VBtn variant="outlined" color="primary" size="large" class="mt-10" to="/user/sell">Contact Us</VBtn>
+                <div v-else class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-8 h-100">
+                  <VIcon icon="tabler-photo-spark" size="80" color="primary" class="opacity-10 mb-4" />
+                  <h4 class="text-h5 font-weight-bold mb-2">Ad Space</h4>
+                  <p class="text-body-2 opacity-50 max-w-400">Reach car buyers in Egypt.</p>
+                  <VBtn variant="outlined" color="primary" size="small" class="mt-6" to="/user/sell">Contact Us</VBtn>
                 </div>
               </Transition>
             </div>
@@ -436,8 +435,8 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .hero {
-  padding-block: 40px;
-  min-height: 85vh;
+  padding-block: 20px;
+  min-height: auto;
   display: flex;
   align-items: center;
 }
@@ -449,8 +448,8 @@ onBeforeUnmount(() => {
 /* Main Grid */
 .hero-main-grid {
   display: grid;
-  grid-template-columns: 520px 1fr;
-  gap: 40px;
+  grid-template-columns: 500px 1fr;
+  gap: 30px;
   align-items: stretch;
 }
 
@@ -459,28 +458,28 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 40px !important;
-  padding: 40px;
+  border-radius: 32px !important;
+  padding: 24px;
   height: 100%;
 }
 
 .search-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 12px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .group-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   opacity: 0.4;
   margin-left: 4px;
 }
@@ -488,9 +487,9 @@ onBeforeUnmount(() => {
 .premium-toggle-group {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 4px;
-  gap: 4px;
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -499,10 +498,10 @@ onBeforeUnmount(() => {
   border: 0;
   background: transparent;
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  border-radius: 12px;
-  height: 48px;
+  border-radius: 9px;
+  height: 38px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.6;
@@ -511,20 +510,26 @@ onBeforeUnmount(() => {
 .toggle-btn.active {
   background: rgba(var(--v-theme-primary), 1);
   opacity: 1;
-  box-shadow: 0 4px 20px rgba(var(--v-theme-primary), 0.5);
+  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.4);
   color: #fff;
 }
 
 .toggle-btn--small {
-  height: 40px;
-  font-size: 12px;
+  height: 32px;
+  font-size: 11px;
 }
 
 .premium-input :deep(.v-field) {
-  border-radius: 18px !important;
+  border-radius: 14px !important;
   background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.3s ease;
+  height: 40px !important;
+}
+
+.premium-input :deep(.v-field__input) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: 40px !important;
 }
 
 .premium-input :deep(.v-field--focused) {
@@ -534,69 +539,75 @@ onBeforeUnmount(() => {
 }
 
 .search-btn {
-  border-radius: 20px !important;
-  font-weight: 950 !important;
+  border-radius: 16px !important;
+  font-weight: 900 !important;
   text-transform: none !important;
-  font-size: 20px !important;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 35px -5px rgba(var(--v-theme-primary), 0.6) !important;
-  }
+  font-size: 18px !important;
+  letter-spacing: 0.5px;
 }
 
-/* Ad Area */
+/* Ad Area - FIXED */
 .premium-ad-card {
   height: 100%;
-  min-height: 600px;
+  min-height: 460px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 40px !important;
+  border-radius: 32px !important;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .ad-label {
   position: absolute;
-  top: 30px;
-  right: 30px;
+  top: 20px;
+  right: 20px;
   background: rgba(var(--v-theme-primary), 0.9);
   color: white;
-  padding: 8px 18px;
+  padding: 6px 14px;
   border-radius: 99px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 2px;
   z-index: 10;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 .ad-carousel-wrapper {
+  flex: 1;
+  position: relative;
   height: 100%;
 }
 
 .ad-slide {
+  position: absolute;
+  inset: 0;
   height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Align content to bottom */
+}
+
+.ad-image {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
-  display: flex;
-  align-items: flex-end;
-  position: relative;
+  z-index: 1;
 }
 
 .ad-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  z-index: 2;
 }
 
 .ad-content {
   position: relative;
-  z-index: 2;
-  width: 100%;
-  padding: 60px !important;
+  z-index: 3;
+  padding: 32px !important;
 }
 
 /* Hide number input spinners */
@@ -613,20 +624,11 @@ onBeforeUnmount(() => {
   .hero-main-grid {
     grid-template-columns: 1fr;
   }
-  .premium-ad-card {
-    min-height: 400px;
-  }
 }
 
 @media (max-width: 600px) {
   .search-form-grid {
     grid-template-columns: 1fr;
-  }
-  .premium-search-card {
-    padding: 24px;
-  }
-  .ad-content {
-    padding: 30px !important;
   }
 }
 
