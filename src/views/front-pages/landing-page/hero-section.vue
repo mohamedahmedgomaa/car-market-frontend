@@ -281,23 +281,11 @@ onBeforeUnmount(() => {
         <!-- Left: Search Card -->
         <div class="hero-search-area animate-fade-in-up">
           <VCard class="premium-search-card" elevation="10" style="animation-delay: 0.1s">
-            <!-- Top Chip -->
-            <div class="mb-4">
+            <!-- Top Chip & Reset -->
+            <div class="d-flex align-center justify-space-between mb-4">
               <VChip label color="primary" class="font-weight-bold" size="x-small" variant="flat">
                 Welcome to NegmCars
               </VChip>
-            </div>
-
-            <!-- Header Row with Title and Reset -->
-            <div class="d-flex align-start justify-space-between mb-6">
-              <div class="card-header">
-                <h1 class="text-h6 font-weight-black mb-0 d-flex align-center flex-wrap gap-x-2">
-                  <span>Discover Your <span class="text-white">Perfect Car</span></span>
-                  <span class="text-body-2 text-white opacity-90 font-weight-medium"
-                    >at the Best Prices in Egypt</span
-                  >
-                </h1>
-              </div>
 
               <VBtn
                 variant="tonal"
@@ -308,6 +296,8 @@ onBeforeUnmount(() => {
                 icon="tabler-rotate"
               />
             </div>
+
+            <!-- Header Row with Title and Reset -->
 
             <div class="search-form-grid">
               <!-- Type Toggle -->
@@ -599,9 +589,8 @@ onBeforeUnmount(() => {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  opacity: 0.9;
   margin-left: 4px;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .premium-toggle-group {
@@ -664,7 +653,7 @@ onBeforeUnmount(() => {
   text-transform: none !important;
   font-size: 18px !important;
   letter-spacing: 0.5px;
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1), #64ffda) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1), #ff5722) !important;
   transition: all 0.3s ease !important;
   &:hover {
     transform: translateY(-2px);
