@@ -402,7 +402,7 @@ onBeforeUnmount(() => {
         <!-- Right: Ad Area -->
         <div class="hero-ad-area">
           <VCard class="premium-ad-card" elevation="10">
-            <div class="ad-label">SPONSORED</div>
+            <div class="ad-label">AD</div>
             <div class="ad-carousel-wrapper">
               <Transition name="fade" mode="out-in">
                 <div
