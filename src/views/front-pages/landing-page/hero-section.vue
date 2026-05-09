@@ -290,10 +290,12 @@ onBeforeUnmount(() => {
             <!-- Header Row with Title and Reset -->
             <div class="d-flex align-start justify-space-between mb-6">
               <div class="card-header">
-                <h1 class="text-h5 font-weight-black mb-0">
-                  Discover Your <span class="text-primary">Perfect Car</span>
+                <h1 class="text-h6 font-weight-black mb-0 d-flex align-center flex-wrap gap-x-2">
+                  <span>Discover Your <span class="text-primary">Perfect Car</span></span>
+                  <span class="text-body-2 opacity-60 font-weight-medium"
+                    >at the Best Prices in Egypt</span
+                  >
                 </h1>
-                <p class="text-body-2 opacity-70 font-weight-medium">at the Best Prices in Egypt</p>
               </div>
 
               <VBtn
@@ -545,9 +547,7 @@ onBeforeUnmount(() => {
 }
 
 .hero--dark {
-  background:
-    radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.1), transparent 50%),
-    #1a1d2e;
+  background: transparent;
 }
 
 /* Main Grid */
@@ -571,13 +571,13 @@ onBeforeUnmount(() => {
 .search-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 20px 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .group-label {

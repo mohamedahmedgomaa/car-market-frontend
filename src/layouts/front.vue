@@ -22,6 +22,12 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
 </template>
 
 <style lang="scss">
+.landing-page-wrapper {
+  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.1), transparent 50%),
+    #1a1d2e;
+  min-height: 100vh;
+}
+
 @media (max-width: 960px) and (min-width: 600px) {
   .landing-page-wrapper {
     .v-container {

@@ -250,7 +250,7 @@ onMounted(fetchTopCars)
 .footer-top {
   border-radius: 60px 60px 0 0;
   background-size: cover;
-  background-color: #1a1e2e;
+  background-color: #1a1d2e;
   color: #fff;
   position: relative;
 }
