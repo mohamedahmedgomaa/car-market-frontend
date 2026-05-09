@@ -41,18 +41,13 @@ const features = [
           Everything You Need to <span class="text-primary">Buy & Sell</span> Easily
         </h2>
         <p class="text-h6 opacity-60 max-w-700 mx-auto">
-          We provide the best tools and services to ensure a seamless and safe experience in the car market.
+          We provide the best tools and services to ensure a seamless and safe experience in the car
+          market.
         </p>
       </div>
 
       <VRow>
-        <VCol
-          v-for="(feature, index) in features"
-          :key="index"
-          cols="12"
-          sm="6"
-          md="4"
-        >
+        <VCol v-for="(feature, index) in features" :key="index" cols="12" sm="6" md="4">
           <VCard class="feature-card pa-8" elevation="0">
             <div class="feature-icon-wrapper mb-6">
               <VIcon :icon="feature.icon" size="32" color="primary" />

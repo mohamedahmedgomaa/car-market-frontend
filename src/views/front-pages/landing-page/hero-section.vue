@@ -18,6 +18,7 @@ const isModelMenuOpen = ref(false)
 const yearToSelect = ref(null)
 const isYearToMenuOpen = ref(false)
 
+const priceToInput = ref(null)
 const kmMinInput = ref(null)
 const kmMaxInput = ref(null)
 
@@ -25,7 +26,7 @@ const kmMaxInput = ref(null)
    ✅ Helpers
 ========================= */
 const isNumberKey = (evt) => {
-  const charCode = (evt.which) ? evt.which : evt.keyCode
+  const charCode = evt.which ? evt.which : evt.keyCode
   if (charCode > 31 && (charCode < 48 || charCode > 57) && (charCode < 1632 || charCode > 1641)) {
     evt.preventDefault()
   }
@@ -34,7 +35,7 @@ const isNumberKey = (evt) => {
 const toNumOrNull = (v, limit = 11) => {
   if (v === '' || v === undefined || v === null) return null
   const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
-  let raw = String(v).replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
+  let raw = String(v).replace(/[٠-٩]/g, (d) => arabicDigits.indexOf(d))
   raw = raw.replace(/\D/g, '').slice(0, limit)
   let n = Number(raw)
   return Number.isNaN(n) || raw === '' ? null : n
@@ -75,6 +76,12 @@ const displayKmMax = computed({
   },
 })
 
+const focusNext = (refTarget) => {
+  if (refTarget && refTarget.value) {
+    refTarget.value.focus()
+  }
+}
+
 const putBetween = (obj, key, from, to) => {
   const a = (from ?? '') === '' ? '' : from
   const b = (to ?? '') === '' ? '' : to
@@ -104,7 +111,7 @@ const buildQuery = () => {
   if (filters.value.condition) q['filter[condition]'] = filters.value.condition
   if (filters.value.brandId) q['filter[brand_id]'] = filters.value.brandId
   if (filters.value.modelId) q['filter[model_id]'] = filters.value.modelId
-  
+
   putBetween(q, 'km_between', filters.value.kmMin, filters.value.kmMax)
 
   const pf = toNumOrNull(filters.value.priceFrom)
@@ -148,7 +155,9 @@ const modelsList = ref([])
 const yearsList = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i)
 const yearsToList = computed(() => {
   if (!filters.value.yearFrom) return yearsList
-  return yearsList.filter(y => y >= filters.value.yearFrom || y <= filters.value.yearFrom).sort((a,b) => b - a)
+  return yearsList
+    .filter((y) => y >= filters.value.yearFrom || y <= filters.value.yearFrom)
+    .sort((a, b) => b - a)
 })
 
 const t = (val) => {
@@ -181,46 +190,49 @@ const fetchModels = async (brandId) => {
   }
 }
 
-watch(() => filters.value.brandId, (val) => {
-  filters.value.modelId = null
-  if (val) {
-    fetchModels(val).then(() => {
+watch(
+  () => filters.value.brandId,
+  (val) => {
+    filters.value.modelId = null
+    if (val) {
+      fetchModels(val).then(() => {
+        nextTick(() => {
+          if (modelSelect.value) {
+            modelSelect.value.focus()
+            isModelMenuOpen.value = true
+          }
+        })
+      })
+    }
+  },
+)
+
+watch(
+  () => filters.value.yearFrom,
+  (val) => {
+    if (val) {
       nextTick(() => {
-        if (modelSelect.value) {
-          modelSelect.value.focus()
-          isModelMenuOpen.value = true
+        if (yearToSelect.value) {
+          yearToSelect.value.focus()
+          isYearToMenuOpen.value = true
         }
       })
-    })
-  }
-})
+    }
+  },
+)
 
-watch(() => filters.value.yearFrom, (val) => {
-  if (val) {
-    nextTick(() => {
-      if (yearToSelect.value) {
-        yearToSelect.value.focus()
-        isYearToMenuOpen.value = true
-      }
-    })
-  }
-})
-
-watch(() => filters.value.yearTo, (val) => {
-  if (val) {
-    nextTick(() => {
-      if (kmMinInput.value) {
-        kmMinInput.value.focus()
-      }
-    })
-  }
-})
-
-watch(() => filters.value.kmMin, (val) => {
-  if (val && String(val).length >= 1) { // Simple trigger
-    // Optional: add logic if needed
-  }
-})
+watch(
+  () => filters.value.yearTo,
+  (val) => {
+    if (val) {
+      nextTick(() => {
+        if (kmMinInput.value) {
+          kmMinInput.value.focus()
+        }
+      })
+    }
+  },
+)
 
 /* =========================
    ✅ Background Slider (Ad Space)
@@ -270,13 +282,7 @@ onBeforeUnmount(() => {
           <VCard class="premium-search-card" elevation="10">
             <!-- Top Chip -->
             <div class="mb-4">
-               <VChip
-                label
-                color="primary"
-                class="font-weight-bold"
-                size="x-small"
-                variant="flat"
-              >
+              <VChip label color="primary" class="font-weight-bold" size="x-small" variant="flat">
                 Welcome to NegmCars
               </VChip>
             </div>
@@ -289,7 +295,7 @@ onBeforeUnmount(() => {
                 </h1>
                 <p class="text-body-2 opacity-70 font-weight-medium">at the Best Prices in Egypt</p>
               </div>
-              
+
               <VBtn
                 variant="tonal"
                 color="primary"
@@ -377,12 +383,14 @@ onBeforeUnmount(() => {
                   class="premium-input no-spin"
                   inputmode="numeric"
                   @keypress="isNumberKey"
+                  @keyup.enter="focusNext(priceToInput)"
                   maxlength="11"
                 />
               </div>
 
               <div class="form-group">
                 <VTextField
+                  ref="priceToInput"
                   v-model="displayPriceTo"
                   label="Max Price"
                   prefix="EG"
@@ -423,8 +431,8 @@ onBeforeUnmount(() => {
                 />
               </div>
 
-               <!-- Kilometers Range (FIXED) -->
-               <div class="form-group">
+              <!-- Kilometers Range -->
+              <div class="form-group">
                 <VTextField
                   ref="kmMinInput"
                   v-model="displayKmMin"
@@ -435,6 +443,7 @@ onBeforeUnmount(() => {
                   class="premium-input no-spin"
                   inputmode="numeric"
                   @keypress="isNumberKey"
+                  @keyup.enter="focusNext(kmMaxInput)"
                   maxlength="6"
                 />
               </div>
@@ -449,6 +458,7 @@ onBeforeUnmount(() => {
                   class="premium-input no-spin"
                   inputmode="numeric"
                   @keypress="isNumberKey"
+                  @keyup.enter="onSearch"
                   maxlength="6"
                 />
               </div>
@@ -487,24 +497,35 @@ onBeforeUnmount(() => {
             <div class="ad-label">AD</div>
             <div class="ad-carousel-wrapper">
               <Transition name="fade" mode="out-in">
-                <div
-                  v-if="slides.length > 0"
-                  :key="slideIndex"
-                  class="ad-slide"
-                >
-                  <div class="ad-image" :style="{ backgroundImage: `url(${slides[slideIndex].image})` }" />
+                <div v-if="slides.length > 0" :key="slideIndex" class="ad-slide">
+                  <div
+                    class="ad-image"
+                    :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
+                  />
                   <div class="ad-overlay" />
                   <div class="ad-content">
                     <h4 class="text-h4 font-weight-black mb-2 text-white">Featured Offer</h4>
-                    <p class="text-body-1 opacity-90 text-white mb-6">Drive your business forward with NegmCars.</p>
+                    <p class="text-body-1 opacity-90 text-white mb-6">
+                      Drive your business forward with NegmCars.
+                    </p>
                     <VBtn color="primary" size="small" class="px-8">Explore Now</VBtn>
                   </div>
                 </div>
-                <div v-else class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-8 h-100">
-                  <VIcon icon="tabler-photo-spark" size="80" color="primary" class="opacity-10 mb-4" />
+                <div
+                  v-else
+                  class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-8 h-100"
+                >
+                  <VIcon
+                    icon="tabler-photo-spark"
+                    size="80"
+                    color="primary"
+                    class="opacity-10 mb-4"
+                  />
                   <h4 class="text-h5 font-weight-bold mb-2">Ad Space</h4>
                   <p class="text-body-2 opacity-50 max-w-400">Reach car buyers in Egypt.</p>
-                  <VBtn variant="outlined" color="primary" size="small" class="mt-6" to="/user/sell">Contact Us</VBtn>
+                  <VBtn variant="outlined" color="primary" size="small" class="mt-6" to="/user/sell"
+                    >Contact Us</VBtn
+                  >
                 </div>
               </Transition>
             </div>
@@ -524,7 +545,9 @@ onBeforeUnmount(() => {
 }
 
 .hero--dark {
-  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.1), transparent 50%), #1a1d2e;
+  background:
+    radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.1), transparent 50%),
+    #1a1d2e;
 }
 
 /* Main Grid */
@@ -702,7 +725,12 @@ onBeforeUnmount(() => {
 .ad-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.2) 60%,
+    transparent 100%
+  );
   z-index: 2;
 }
 
@@ -723,6 +751,9 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1200px) {
+  .hero__container {
+    padding-inline: 16px;
+  }
   .hero-main-grid {
     grid-template-columns: 1fr;
   }
@@ -734,10 +765,12 @@ onBeforeUnmount(() => {
   }
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.6s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

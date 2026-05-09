@@ -91,9 +91,7 @@ const ALL_VEHICLES = {
       :viewAllTo="ALL_VEHICLES.topPrice.viewAllTo"
     >
       <template #header-extra>
-        <VChip size="small" color="error" variant="flat" class="best-deal-badge">
-          Best Deal
-        </VChip>
+        <VChip size="small" color="error" variant="flat" class="best-deal-badge"> Best Deal </VChip>
       </template>
     </CarsSection>
 
@@ -126,7 +124,8 @@ const ALL_VEHICLES = {
           Ready to <span class="text-primary">Sell Your Car?</span>
         </h2>
         <p class="text-h6 opacity-70 mb-10 max-w-700 mx-auto">
-          Join thousands of successful sellers on our platform. List your car today and reach thousands of interested buyers in seconds.
+          Join thousands of successful sellers on our platform. List your car today and reach
+          thousands of interested buyers in seconds.
         </p>
         <div class="d-flex flex-wrap justify-center gap-6">
           <VBtn
@@ -166,7 +165,11 @@ const ALL_VEHICLES = {
       >
         <div class="text-h6 font-weight-bold mb-2">Important Notice & Disclaimer</div>
         <div class="text-body-2 opacity-80">
-          NegmCars is an advertising platform that acts as a bridge between buyers and sellers. We are NOT responsible for any transactions, payments, or the condition of the vehicles listed. We strongly advise users to inspect vehicles thoroughly and meet in safe public locations for transactions. Use of this platform constitutes agreement that NegmCars is not liable for any financial or legal issues arising from deals made between users.
+          NegmCars is an advertising platform that acts as a bridge between buyers and sellers. We
+          are NOT responsible for any transactions, payments, or the condition of the vehicles
+          listed. We strongly advise users to inspect vehicles thoroughly and meet in safe public
+          locations for transactions. Use of this platform constitutes agreement that NegmCars is
+          not liable for any financial or legal issues arising from deals made between users.
         </div>
       </VAlert>
     </VContainer>
@@ -183,14 +186,19 @@ const ALL_VEHICLES = {
   height: 40px;
 }
 
-.best-deal-badge, .import-badge {
+.best-deal-badge,
+.import-badge {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .cta-section {
-  background: radial-gradient(circle at center, rgba(var(--v-theme-primary), 0.05), transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--v-theme-primary), 0.05),
+    transparent 70%
+  );
 }
 
 .cta-card {
