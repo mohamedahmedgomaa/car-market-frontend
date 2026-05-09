@@ -240,6 +240,7 @@ watch(
 const slides = ref([])
 const slideIndex = ref(0)
 const slideDelayMs = 5000
+const showAdPhone = ref(false)
 let timer = null
 
 const fetchBanners = async () => {
@@ -446,7 +447,7 @@ onBeforeUnmount(() => {
                   inputmode="numeric"
                   @keypress="isNumberKey"
                   @keyup.enter="focusNext(kmMaxInput)"
-                  maxlength="6"
+                  maxlength="7"
                 />
               </div>
               <div class="form-group">
@@ -461,7 +462,7 @@ onBeforeUnmount(() => {
                   inputmode="numeric"
                   @keypress="isNumberKey"
                   @keyup.enter="onSearch"
-                  maxlength="6"
+                  maxlength="7"
                 />
               </div>
             </div>
@@ -484,7 +485,7 @@ onBeforeUnmount(() => {
                 class="sell-side-btn"
                 width="100"
                 height="48"
-                to="/user/sell"
+                @click="showAdPhone = true"
                 prepend-icon="tabler-circle-plus"
               >
                 Sell
@@ -524,10 +525,23 @@ onBeforeUnmount(() => {
                     class="opacity-10 mb-4"
                   />
                   <h4 class="text-h5 font-weight-bold mb-2">Ad Space</h4>
-                  <p class="text-body-2 opacity-50 max-w-400">Reach car buyers in Egypt.</p>
-                  <VBtn variant="outlined" color="primary" size="small" class="mt-6" to="/user/sell"
-                    >Contact Us</VBtn
-                  >
+                  <p class="text-body-2 opacity-50 max-w-400">أضف إعلانك هنا ليصل لآلاف المهتمين</p>
+                  <Transition name="fade" mode="out-in">
+                    <div v-if="showAdPhone" class="phone-display-box mt-6">
+                      <VIcon icon="tabler-phone-call" size="20" class="me-2 text-primary" />
+                      <span class="text-h6 font-weight-black">01551552993</span>
+                    </div>
+                    <VBtn 
+                      v-else 
+                      variant="outlined" 
+                      color="primary" 
+                      size="small" 
+                      class="mt-6 contact-btn-pulse" 
+                      @click="showAdPhone = true"
+                    >
+                      Contact Us
+                    </VBtn>
+                  </Transition>
                 </div>
               </Transition>
             </div>
@@ -682,6 +696,29 @@ onBeforeUnmount(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.phone-display-box {
+  background: rgba(var(--v-theme-primary), 0.1);
+  border: 1px solid rgba(var(--v-theme-primary), 0.3);
+  padding: 12px 24px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.1);
+}
+
+.contact-btn-pulse {
+  animation: pulse-border 2s infinite;
+  border-radius: 12px !important;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(var(--v-theme-primary), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0); }
 }
 
 .ad-label {
