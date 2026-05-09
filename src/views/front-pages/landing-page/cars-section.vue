@@ -434,10 +434,13 @@ watch(
   overflow: hidden;
   text-decoration: none;
   background: rgba(255, 255, 255, 0.04);
-  transition: transform 0.15s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 .car-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-8px) scale(1.02);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .car-card__image {
@@ -500,9 +503,12 @@ watch(
   gap: 10px;
 }
 .car-card__price {
-  font-weight: 800;
-  font-size: 18px;
-  color: #28a745; /* Professional Green */
+  font-weight: 900;
+  font-size: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #28a745, #51cf66);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .car-card__date {

@@ -54,6 +54,21 @@ const ALL_VEHICLES = {
     },
   },
 }
+
+/* --- Scroll Reveal Logic --- */
+onMounted(() => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible')
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+    observer.observe(el)
+  })
+})
 </script>
 
 <template>
@@ -61,107 +76,121 @@ const ALL_VEHICLES = {
 
   <VContainer class="hero__container">
     <!-- Cars Section -->
-    <CarsSection
-      title="Cars"
-      subtitle="Browse our newest car listings"
-      :limit="CARS.latest.limit"
-      :params="CARS.latest.params"
-      :viewAllTo="CARS.latest.viewAllTo"
-    />
+    <div class="reveal-on-scroll">
+      <CarsSection
+        title="Cars"
+        subtitle="Browse our newest car listings"
+        :limit="CARS.latest.limit"
+        :params="CARS.latest.params"
+        :viewAllTo="CARS.latest.viewAllTo"
+      />
+    </div>
 
     <div class="group-spacer"></div>
 
     <!-- Bikes Section -->
-    <CarsSection
-      title="Bikes"
-      subtitle="Browse our newest motorcycle listings"
-      :limit="MOTOS.latest.limit"
-      :params="MOTOS.latest.params"
-      :viewAllTo="MOTOS.latest.viewAllTo"
-    />
+    <div class="reveal-on-scroll">
+      <CarsSection
+        title="Bikes"
+        subtitle="Browse our newest motorcycle listings"
+        :limit="MOTOS.latest.limit"
+        :params="MOTOS.latest.params"
+        :viewAllTo="MOTOS.latest.viewAllTo"
+      />
+    </div>
 
     <div class="group-spacer"></div>
 
     <!-- Best Deals Section -->
-    <CarsSection
-      title="Best Deals"
-      subtitle="The most competitive prices on all vehicles"
-      :limit="ALL_VEHICLES.topPrice.limit"
-      :params="ALL_VEHICLES.topPrice.params"
-      :viewAllTo="ALL_VEHICLES.topPrice.viewAllTo"
-    >
-      <template #header-extra>
-        <VChip size="small" color="error" variant="flat" class="best-deal-badge"> Best Deal </VChip>
-      </template>
-    </CarsSection>
+    <div class="reveal-on-scroll">
+      <CarsSection
+        title="Best Deals"
+        subtitle="The most competitive prices on all vehicles"
+        :limit="ALL_VEHICLES.topPrice.limit"
+        :params="ALL_VEHICLES.topPrice.params"
+        :viewAllTo="ALL_VEHICLES.topPrice.viewAllTo"
+      >
+        <template #header-extra>
+          <VChip size="small" color="error" variant="flat" class="best-deal-badge"> Best Deal </VChip>
+        </template>
+      </CarsSection>
+    </div>
 
     <div class="group-spacer"></div>
 
     <!-- Expat Auto Initiative Section -->
-    <CarsSection
-      title="Expat Auto Initiative"
-      subtitle="Popular choices available for import"
-      :limit="ALL_VEHICLES.mostFav.limit"
-      :params="ALL_VEHICLES.mostFav.params"
-      :viewAllTo="ALL_VEHICLES.mostFav.viewAllTo"
-    >
-      <template #header-extra>
-        <VChip size="small" color="success" variant="flat" class="import-badge">
-          Import Available
-        </VChip>
-      </template>
-    </CarsSection>
+    <div class="reveal-on-scroll">
+      <CarsSection
+        title="Expat Auto Initiative"
+        subtitle="Popular choices available for import"
+        :limit="ALL_VEHICLES.mostFav.limit"
+        :params="ALL_VEHICLES.mostFav.params"
+        :viewAllTo="ALL_VEHICLES.mostFav.viewAllTo"
+      >
+        <template #header-extra>
+          <VChip size="small" color="success" variant="flat" class="import-badge">
+            Import Available
+          </VChip>
+        </template>
+      </CarsSection>
+    </div>
   </VContainer>
 
   <!-- Features Section -->
-  <FeaturesSection />
+  <div class="reveal-on-scroll">
+    <FeaturesSection />
+  </div>
 
   <!-- CTA Section -->
-  <section class="cta-section py-16">
+  <section class="cta-section py-16 reveal-on-scroll">
     <VContainer>
-      <VCard class="cta-card pa-12 text-center" elevation="10">
-        <h2 class="text-h3 font-weight-black mb-4">
-          Ready to <span class="text-primary">Sell Your Car?</span>
-        </h2>
-        <p class="text-h6 opacity-70 mb-10 max-w-700 mx-auto">
-          Join thousands of successful sellers on our platform. List your car today and reach
-          thousands of interested buyers in seconds.
-        </p>
-        <div class="d-flex flex-wrap justify-center gap-6">
-          <VBtn
-            color="primary"
-            size="large"
-            height="56"
-            class="px-10 font-weight-bold"
-            to="/user/sell"
-            prepend-icon="tabler-circle-plus"
-          >
-            Add Your Ad Now
-          </VBtn>
-          <VBtn
-            variant="outlined"
-            color="white"
-            size="large"
-            height="56"
-            class="px-10 font-weight-bold"
-            to="/user/cars"
-          >
-            Browse Cars
-          </VBtn>
+      <VCard class="cta-card pa-12 text-center overflow-hidden" elevation="0">
+        <div class="cta-glow"></div>
+        <div class="cta-content relative-z">
+          <h2 class="text-h3 font-weight-black mb-4">
+            Ready to <span class="text-primary-gradient">Sell Your Car?</span>
+          </h2>
+          <p class="text-h6 opacity-70 mb-10 max-w-700 mx-auto">
+            Join thousands of successful sellers on our platform. List your car today and reach
+            thousands of interested buyers in seconds.
+          </p>
+          <div class="d-flex flex-wrap justify-center gap-6">
+            <VBtn
+              color="primary"
+              size="large"
+              height="60"
+              class="px-10 font-weight-bold premium-btn"
+              to="/user/sell"
+              prepend-icon="tabler-circle-plus"
+              elevation="8"
+            >
+              Add Your Ad Now
+            </VBtn>
+            <VBtn
+              variant="outlined"
+              color="white"
+              size="large"
+              height="60"
+              class="px-10 font-weight-bold premium-btn-outline"
+              to="/user/cars"
+            >
+              Browse Cars
+            </VBtn>
+          </div>
         </div>
       </VCard>
     </VContainer>
   </section>
 
   <!-- Disclaimer Footer -->
-  <section class="disclaimer-section py-8">
+  <section class="disclaimer-section py-8 reveal-on-scroll">
     <VContainer>
       <VAlert
         type="info"
         variant="tonal"
         color="warning"
         border="start"
-        class="disclaimer-alert pa-6"
+        class="disclaimer-alert pa-6 glass-panel"
       >
         <div class="text-h6 font-weight-bold mb-2">Important Notice & Disclaimer</div>
         <div class="text-body-2 opacity-80">
@@ -206,6 +235,51 @@ const ALL_VEHICLES = {
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 48px !important;
+  position: relative;
+}
+
+.cta-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--v-theme-primary), 0.15) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.relative-z {
+  position: relative;
+  z-index: 2;
+}
+
+.text-primary-gradient {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1), #64ffda);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.premium-btn {
+  border-radius: 18px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(var(--v-theme-primary), 0.4) !important;
+  }
+}
+
+.premium-btn-outline {
+  border-radius: 18px !important;
+  border-width: 2px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  &:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-4px);
+  }
 }
 
 .max-w-700 {
@@ -213,7 +287,7 @@ const ALL_VEHICLES = {
 }
 
 .disclaimer-section {
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
 }
 
 .disclaimer-alert {

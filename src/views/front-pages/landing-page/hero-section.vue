@@ -156,7 +156,7 @@ const yearsList = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() 
 const yearsToList = computed(() => {
   if (!filters.value.yearFrom) return yearsList
   return yearsList
-    .filter((y) => y >= filters.value.yearFrom || y <= filters.value.yearFrom)
+    .filter((y) => y >= filters.value.yearFrom)
     .sort((a, b) => b - a)
 })
 
@@ -279,8 +279,8 @@ onBeforeUnmount(() => {
       <!-- Main Content Grid -->
       <div class="hero-main-grid">
         <!-- Left: Search Card -->
-        <div class="hero-search-area">
-          <VCard class="premium-search-card" elevation="10">
+        <div class="hero-search-area animate-fade-in-up">
+          <VCard class="premium-search-card" elevation="10" style="animation-delay: 0.1s">
             <!-- Top Chip -->
             <div class="mb-4">
               <VChip label color="primary" class="font-weight-bold" size="x-small" variant="flat">
@@ -495,8 +495,8 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Right: Ad Area -->
-        <div class="hero-ad-area">
-          <VCard class="premium-ad-card" elevation="10">
+        <div class="hero-ad-area animate-fade-in-up" style="animation-delay: 0.3s">
+          <VCard class="premium-ad-card animate-float" elevation="10">
             <div class="ad-label">AD</div>
             <div class="ad-carousel-wrapper">
               <Transition name="fade" mode="out-in">
@@ -531,12 +531,12 @@ onBeforeUnmount(() => {
                       <VIcon icon="tabler-phone-call" size="20" class="me-2 text-primary" />
                       <span class="text-h6 font-weight-black">01551552993</span>
                     </div>
-                    <VBtn 
-                      v-else 
-                      variant="outlined" 
-                      color="primary" 
-                      size="small" 
-                      class="mt-6 contact-btn-pulse" 
+                    <VBtn
+                      v-else
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      class="mt-6 contact-btn-pulse"
                       @click="showAdPhone = true"
                     >
                       Contact Us
@@ -595,12 +595,13 @@ onBeforeUnmount(() => {
 }
 
 .group-label {
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
-  opacity: 0.4;
+  letter-spacing: 1.5px;
+  opacity: 0.6;
   margin-left: 4px;
+  color: rgba(var(--v-theme-primary), 1);
 }
 
 .premium-toggle-group {
@@ -663,6 +664,12 @@ onBeforeUnmount(() => {
   text-transform: none !important;
   font-size: 18px !important;
   letter-spacing: 0.5px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1), #64ffda) !important;
+  transition: all 0.3s ease !important;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.5) !important;
+  }
 }
 
 .sell-side-btn {
@@ -716,9 +723,15 @@ onBeforeUnmount(() => {
 }
 
 @keyframes pulse-border {
-  0% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(var(--v-theme-primary), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--v-theme-primary), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0);
+  }
 }
 
 .ad-label {
