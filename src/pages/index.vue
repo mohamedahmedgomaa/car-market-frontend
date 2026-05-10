@@ -47,7 +47,7 @@ const ALL_VEHICLES = {
       sort: '-favorites_count',
     },
     viewAllTo: {
-      path: '/user/cars',
+      path: '/user/negm-sooq',
       query: {
         sort: '-favorites_count',
       },
@@ -118,18 +118,18 @@ onMounted(() => {
 
     <div class="group-spacer"></div>
 
-    <!-- Expat Auto Initiative Section -->
+    <!-- NegmSooq Section -->
     <div class="reveal-on-scroll">
       <CarsSection
-        title="Expat Auto Initiative"
-        subtitle="Popular choices available for import"
+        title="NegmSooq"
+        subtitle="Our most popular and highly rated vehicles"
         :limit="ALL_VEHICLES.mostFav.limit"
         :params="ALL_VEHICLES.mostFav.params"
         :viewAllTo="ALL_VEHICLES.mostFav.viewAllTo"
       >
         <template #header-extra>
           <VChip size="small" color="success" variant="flat" class="import-badge">
-            Import Available
+            Featured
           </VChip>
         </template>
       </CarsSection>

@@ -95,27 +95,27 @@ const logout = async () => {
           </RouterLink>
 
           <RouterLink
-            to="/user/best-deals"
+            :to="{ path: '/user/cars', query: { sort: '-price' } }"
             class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
+            :class="route.path === '/user/cars' && route.query.sort === '-price' ? 'active-link' : ''"
             @click="sidebar = false"
           >
             Best Deals
           </RouterLink>
 
           <RouterLink
-            to="/user/expat-initiative"
+            to="/user/negm-sooq"
             class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/expat-initiative') ? 'active-link' : ''"
+            :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
             @click="sidebar = false"
           >
-            Expat Initiative
+            NegmSooq
           </RouterLink>
 
           <RouterLink
-            to="/user/bikes"
+            :to="{ path: '/user/cars', query: { 'filter[type]': 'motorcycle', sort: '-created_at' } }"
             class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/bikes') ? 'active-link' : ''"
+            :class="route.path === '/user/cars' && route.query['filter[type]'] === 'motorcycle' ? 'active-link' : ''"
             @click="sidebar = false"
           >
             Bikes
@@ -238,25 +238,25 @@ const logout = async () => {
             </RouterLink>
 
             <RouterLink
-              to="/user/best-deals"
+              :to="{ path: '/user/cars', query: { sort: '-price' } }"
               class="nav-link font-weight-bold py-2 px-3"
-              :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
+              :class="route.path === '/user/cars' && route.query.sort === '-price' ? 'active-link' : ''"
             >
               Best Deals
             </RouterLink>
 
             <RouterLink
-              to="/user/expat-initiative"
+              to="/user/negm-sooq"
               class="nav-link font-weight-bold py-2 px-3"
-              :class="route.path.startsWith('/user/expat-initiative') ? 'active-link' : ''"
+              :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
             >
-              Expat Initiative
+              NegmSooq
             </RouterLink>
 
             <RouterLink
-              to="/user/bikes"
+              :to="{ path: '/user/cars', query: { 'filter[type]': 'motorcycle', sort: '-created_at' } }"
               class="nav-link font-weight-bold py-2 px-3"
-              :class="route.path.startsWith('/user/bikes') ? 'active-link' : ''"
+              :class="route.path === '/user/cars' && route.query['filter[type]'] === 'motorcycle' ? 'active-link' : ''"
             >
               Bikes
             </RouterLink>
