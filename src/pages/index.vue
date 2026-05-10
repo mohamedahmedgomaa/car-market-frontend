@@ -5,6 +5,9 @@ import FeaturesSection from '@/views/front-pages/landing-page/features.vue'
 
 definePage({ meta: { layout: 'front', public: true } })
 
+const props = defineProps(['activeSectionId'])
+const emit = defineEmits(['update:activeSectionId'])
+
 const buildSection = (type, sort) => ({
   limit: 8,
   params: {

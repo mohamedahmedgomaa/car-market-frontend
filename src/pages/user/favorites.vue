@@ -7,6 +7,9 @@ definePage({
   meta: { layout: 'front', public: false },
 })
 
+const props = defineProps(['activeSectionId'])
+const emit = defineEmits(['update:activeSectionId'])
+
 const router = useRouter()
 const userId = ref(null)
 const isLoaded = ref(false)
