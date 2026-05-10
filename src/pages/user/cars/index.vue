@@ -163,6 +163,10 @@ const displayDraftMileageTo = computed({
 
 const hasMore = computed(() => cars.value.length < total.value)
 
+const sectionTitle = computed(() => {
+  return draft.value.type === 'motorcycle' ? 'Bikes' : 'Cars'
+})
+
 // -------------------------
 // Logic
 // -------------------------
@@ -599,8 +603,10 @@ onMounted(async () => {
           <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05)">
             <div class="d-flex align-center justify-space-between mb-8">
               <div>
-                <h2 class="text-h4 font-weight-bold text-white mb-1">Search Results</h2>
-                <div class="text-body-1 opacity-60">{{ total }} cars available</div>
+                <h2 class="text-h4 font-weight-bold text-white mb-1">
+                  {{ draft.type === 'motorcycle' ? 'Bikes' : (draft.type === 'car' ? 'Cars' : 'Search Results') }}
+                </h2>
+                <div class="text-body-1 opacity-60">{{ total }} {{ draft.type === 'motorcycle' ? 'bikes' : 'cars' }} available</div>
               </div>
               
               <VSelect
@@ -624,6 +630,7 @@ onMounted(async () => {
               :showViewAll="false"
               :cars="cars"
               :loading="loading"
+              title=""
             />
 
             <div v-if="initialized && !loading && cars.length === 0" class="text-center py-16">
