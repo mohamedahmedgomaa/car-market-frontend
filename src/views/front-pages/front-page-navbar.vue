@@ -95,9 +95,9 @@ const logout = async () => {
           </RouterLink>
 
           <RouterLink
-            :to="{ path: '/user/cars', query: { sort: '-price' } }"
+            to="/user/best-deals"
             class="nav-link font-weight-medium"
-            :class="route.path === '/user/cars' && route.query.sort === '-price' ? 'active-link' : ''"
+            :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
             @click="sidebar = false"
           >
             Best Deals
@@ -238,9 +238,9 @@ const logout = async () => {
             </RouterLink>
 
             <RouterLink
-              :to="{ path: '/user/cars', query: { sort: '-price' } }"
+              to="/user/best-deals"
               class="nav-link font-weight-bold py-2 px-3"
-              :class="route.path === '/user/cars' && route.query.sort === '-price' ? 'active-link' : ''"
+              :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
             >
               Best Deals
             </RouterLink>
