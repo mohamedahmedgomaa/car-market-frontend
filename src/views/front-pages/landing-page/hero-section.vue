@@ -495,14 +495,6 @@ onBeforeUnmount(() => {
                     class="ad-image"
                     :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
                   />
-                  <div class="ad-overlay" />
-                  <div class="ad-content">
-                    <h4 class="text-h4 font-weight-black mb-2 text-white">Featured Offer</h4>
-                    <p class="text-body-1 opacity-90 text-white mb-6">
-                      Drive your business forward with NegmCars.
-                    </p>
-                    <VBtn color="primary" size="small" class="px-8">Explore Now</VBtn>
-                  </div>
                 </div>
                 <div
                   v-else

@@ -105,16 +105,16 @@ const handleCreate = async () => {
     // If cropper is active, get the cropped version first
     if (cropper && !isCropped.value) {
       const canvas = cropper.getCroppedCanvas({ 
-        width: 1600, 
-        height: 1000,
+        width: 2560, // مقاس 2K لضمان أعلى جودة
+        height: 1600,
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high',
       })
       
       const blob = await new Promise((resolve) => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.9)
+        canvas.toBlob(resolve, 'image/jpeg', 0.95) // جودة عالية جداً مع حجم ملف معقول
       })
-      fileToUpload = new File([blob], 'banner.jpg', { type: 'image/jpeg' })
+      fileToUpload = new File([blob], 'banner_2k.jpg', { type: 'image/jpeg' })
     }
 
     const fd = new FormData()
@@ -152,7 +152,7 @@ onMounted(() => fetchBanners())
     <div class="flex items-center justify-between mb-8">
       <div>
         <h2 class="text-2xl font-bold text-white mb-1">إعلانات الصفحة الرئيسية</h2>
-        <p class="text-sm text-gray-400">إدارة البانرات التي تظهر في الواجهة الرئيسية للموقع (المقاس الإجباري: 1600×1000)</p>
+        <p class="text-sm text-gray-400">إدارة البانرات التي تظهر في الواجهة الرئيسية للموقع (المقاس الإجباري بجودة 2K: 2560×1600)</p>
       </div>
 
       <VBtn
