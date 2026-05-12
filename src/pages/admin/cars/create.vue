@@ -88,6 +88,19 @@ const toNumOrNull = (v, limit = 9) => {
   return Number.isNaN(n) || raw === '' ? null : n
 }
 
+const toDecimalOrNull = (v, limit = 9) => {
+  if (v === '' || v === undefined || v === null) return null
+  const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
+  let raw = String(v).replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
+  // Allow digits and one dot
+  raw = raw.replace(/[^0-9.]/g, '')
+  // Keep only the first dot
+  const parts = raw.split('.')
+  if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('')
+  raw = raw.slice(0, limit)
+  return raw === '' ? null : raw
+}
+
 const displayPrice = computed({
   get: () => formatWithCommas(form.value.price),
   set: (v) => { form.value.price = toNumOrNull(v) }
@@ -115,7 +128,7 @@ const displayTorque = computed({
 
 const displayEngineCapacity = computed({
   get: () => form.value.engine_capacity,
-  set: (v) => { form.value.engine_capacity = toNumOrNull(v, 4) }
+  set: (v) => { form.value.engine_capacity = toDecimalOrNull(v, 5) } // 5 to allow e.g. 1.600 or 1.6L
 })
 
 /* ================= Helpers ================= */
@@ -427,11 +440,10 @@ const handleSubmit = async () => {
             <VCol cols="12" md="4">
               <VTextField
                 v-model="displayEngineCapacity"
-                label="Engine Capacity (CC)"
+                label="Engine Capacity (CC / Liters)"
                 prepend-inner-icon="tabler-piston"
                 :error-messages="fieldError('engine_capacity')"
-                @keypress="isNumberKey"
-                maxlength="4"
+                maxlength="5"
               />
             </VCol>
 
