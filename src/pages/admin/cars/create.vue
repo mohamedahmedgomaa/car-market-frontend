@@ -226,6 +226,8 @@ const handleSubmit = async () => {
         value.forEach(file => formData.append('images[]', file))
       } else if (Array.isArray(value)) {
         value.forEach(v => formData.append(`${key}[]`, v))
+      } else if (typeof value === 'boolean') {
+        formData.append(key, value ? '1' : '0')
       } else if (value !== null && value !== '') {
         formData.append(key, value)
       }
@@ -243,7 +245,7 @@ const handleSubmit = async () => {
       errors.value = err.response.data.errors || {}
     }
 
-    snackbarMessage.value = 'Failed to create car'
+    snackbarMessage.value = err.response?.data?.message || 'Failed to create car'
     snackbarColor.value = 'error'
     snackbar.value = true
   } finally {

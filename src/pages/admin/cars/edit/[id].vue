@@ -421,6 +421,11 @@ const handleSubmit = async () => {
         return
       }
 
+      if (typeof value === 'boolean') {
+        fd.append(key, value ? '1' : '0')
+        return
+      }
+
       if (value !== null && value !== '') fd.append(key, value)
     })
 
@@ -445,7 +450,7 @@ const handleSubmit = async () => {
     if (err.response?.status === 422) {
       errors.value = err.response.data.errors || {}
     }
-    snackbarMessage.value = 'Failed to update car'
+    snackbarMessage.value = err.response?.data?.message || 'Failed to update car'
     snackbarColor.value = 'error'
     snackbar.value = true
   } finally {

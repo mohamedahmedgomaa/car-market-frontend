@@ -48,7 +48,6 @@ const fetchLists = async (page = 1) => {
       page,
       'filter[global]': search.value || undefined,
       perPage,
-      include: 'seller,brand,model'
     })
 
     lists.value = res.data.data
@@ -92,6 +91,7 @@ const handleUpdatePromotion = async () => {
 
     promotionDialog.value = false
   } catch (err) {
+    alert(err.response?.data?.message || 'Update promotion failed')
     console.error('Update promotion failed:', err.response?.data || err.message)
   } finally {
     promotionUpdating.value = false
