@@ -154,7 +154,6 @@ onMounted(() => {
 <style scoped>
 .negm-sooq-page {
   min-height: 100vh;
-  background: #0f111a;
 }
 
 .premium-type-toggle {

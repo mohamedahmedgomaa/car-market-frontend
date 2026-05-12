@@ -24,7 +24,7 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
 
 <style lang="scss">
 .landing-page-wrapper {
-  background: #1a1d2e;
+  background: #090a11;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
@@ -37,16 +37,17 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
   width: 100%;
   height: 100%;
   background: 
-    radial-gradient(circle at 80% 20%, rgba(var(--v-theme-primary), 0.2) 0%, transparent 50%),
-    radial-gradient(circle at 20% 80%, rgba(var(--v-theme-primary), 0.15) 0%, transparent 50%);
+    radial-gradient(circle at 80% 20%, rgba(var(--v-theme-primary), 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 20% 80%, rgba(100, 255, 218, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(var(--v-theme-primary), 0.05) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
-  animation: bgPulse 10s ease-in-out infinite alternate;
+  animation: bgPulse 15s ease-in-out infinite alternate;
 }
 
 @keyframes bgPulse {
-  0% { opacity: 0.5; transform: scale(1); }
-  100% { opacity: 1; transform: scale(1.1); }
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.05); }
 }
 
 @media (max-width: 960px) and (min-width: 600px) {

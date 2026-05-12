@@ -109,7 +109,6 @@ onMounted(async () => {
 <style scoped>
 .favorites-page {
   min-height: 100vh;
-  background: #0f111a;
 }
 
 .favorites-header {

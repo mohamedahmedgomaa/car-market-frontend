@@ -152,7 +152,6 @@ onMounted(() => {
 <style scoped>
 .best-deals-page {
   min-height: 100vh;
-  background: #0f111a;
 }
 
 .premium-type-toggle {

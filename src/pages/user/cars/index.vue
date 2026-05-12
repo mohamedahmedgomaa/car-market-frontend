@@ -656,7 +656,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.cars-page { padding: 40px 0; min-height: 100vh; background: #0f111a; }
+.cars-page { padding: 40px 0; min-height: 100vh; }
 
 .premium-search-box {
   background: rgba(255, 255, 255, 0.03);
