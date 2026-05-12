@@ -181,6 +181,32 @@ const handleColorChange = (hex) => {
   form.value.color = parseInt(hex.replace('#', ''), 16)
 }
 
+const setAsMain = (index) => {
+  if (index === 0) {
+    form.value.main_image = 0
+    return
+  }
+
+  // 1. Move file in form.images
+  const files = [...form.value.images]
+  const selectedFile = files[index]
+  files.splice(index, 1)
+  files.unshift(selectedFile)
+  form.value.images = files
+
+  // 2. Move preview in imagePreviews
+  const previews = [...imagePreviews.value]
+  const selectedPreview = previews[index]
+  previews.splice(index, 1)
+  previews.unshift(selectedPreview)
+  
+  // 3. Update indexes in previews to match new positions
+  imagePreviews.value = previews.map((p, i) => ({ ...p, index: i }))
+
+  // 4. Main image is now at index 0
+  form.value.main_image = 0
+}
+
 /* ================= Submit ================= */
 const handleSubmit = async () => {
   loading.value = true
@@ -594,7 +620,7 @@ const handleSubmit = async () => {
               <VCard
                 class="cursor-pointer"
                 :class="{ 'border-primary border-2': form.main_image === img.index }"
-                @click="form.main_image = img.index"
+                @click="setAsMain(img.index)"
               >
                 <VImg :src="img.url" aspect-ratio="1" cover />
 

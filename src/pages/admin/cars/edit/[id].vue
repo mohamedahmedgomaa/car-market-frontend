@@ -211,12 +211,41 @@ const normalizeFeaturesSelection = () => {
 
 /* ================= Images ================= */
 const setMainOld = (id) => {
+  const index = existingImages.value.findIndex(i => i.id === id)
+  if (index === -1) return
+
+  // Move to front of existingImages
+  const selected = existingImages.value[index]
+  existingImages.value.splice(index, 1)
+  existingImages.value.unshift(selected)
+
   mainSelection.value = { type: 'old', id }
   existingImages.value.forEach(img => (img.is_main = img.id === id))
 }
 
 const setMainNew = (index) => {
-  mainSelection.value = { type: 'new', index }
+  if (index === 0 && mainSelection.value?.type === 'new') {
+    mainSelection.value = { type: 'new', index: 0 }
+    return
+  }
+
+  // 1. Move file in form.images
+  const files = [...form.value.images]
+  const selectedFile = files[index]
+  files.splice(index, 1)
+  files.unshift(selectedFile)
+  form.value.images = files
+
+  // 2. Move preview in newImagePreviews
+  const previews = [...newImagePreviews.value]
+  const selectedPreview = previews[index]
+  previews.splice(index, 1)
+  previews.unshift(selectedPreview)
+  
+  // 3. Update indexes
+  newImagePreviews.value = previews.map((p, i) => ({ ...p, index: i }))
+
+  mainSelection.value = { type: 'new', index: 0 }
   existingImages.value.forEach(img => (img.is_main = false))
 }
 
