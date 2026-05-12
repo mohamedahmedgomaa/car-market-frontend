@@ -37,6 +37,14 @@ const form = ref({
   color: '',
   condition: 'used',
 
+  horsepower: '',
+  torque: '',
+  engine_capacity: '',
+
+  phone_number: '',
+  whatsapp_number: '',
+  is_whatsapp_same: false,
+
   features: [],
   images: [],
   main_image: null
@@ -340,55 +348,128 @@ const handleSubmit = async () => {
           </VRow>
         </section>
 
-        <!-- ================= Specs ================= -->
+        <!-- ================= Specs & Technical ================= -->
         <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Car Specs</h3>
+          <h3 class="text-subtitle-1 font-weight-medium mb-4">Specifications & Technical Details</h3>
 
           <VRow dense>
-            <VCol cols="12" md="6">
+            <VCol cols="12" md="4">
               <VTextField
                 v-model="displayPrice"
-                label="Price"
+                label="Price (EG)"
+                prepend-inner-icon="tabler-currency-pound"
                 :error-messages="fieldError('price')"
                 @keypress="isNumberKey"
                 maxlength="11"
               />
             </VCol>
 
-            <VCol cols="12" md="3">
+            <VCol cols="12" md="4">
               <VTextField
                 v-model="displayYear"
                 label="Year"
+                prepend-inner-icon="tabler-calendar"
                 :error-messages="fieldError('year')"
                 @keypress="isNumberKey"
                 maxlength="4"
               />
             </VCol>
 
-            <VCol cols="12" md="3">
+            <VCol cols="12" md="4">
               <VTextField
                 v-model="displayMileage"
-                label="Mileage"
+                label="Mileage (km)"
+                prepend-inner-icon="tabler-road"
                 :error-messages="fieldError('mileage')"
                 @keypress="isNumberKey"
                 maxlength="7"
               />
             </VCol>
 
+            <!-- Technical Specs -->
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.horsepower"
+                label="Horsepower (HP)"
+                prepend-inner-icon="tabler-engine"
+                :error-messages="fieldError('horsepower')"
+                @keypress="isNumberKey"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.torque"
+                label="Torque (Nm)"
+                prepend-inner-icon="tabler-settings-automation"
+                :error-messages="fieldError('torque')"
+                @keypress="isNumberKey"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.engine_capacity"
+                label="Engine Capacity (CC)"
+                prepend-inner-icon="tabler-piston"
+                :error-messages="fieldError('engine_capacity')"
+                @keypress="isNumberKey"
+              />
+            </VCol>
+
+            <!-- Mechanical Options -->
             <VCol cols="12" md="3">
-              <VSelect v-model="form.transmission" :items="['manual','automatic']" label="Transmission" />
+              <VSelect 
+                v-model="form.transmission" 
+                :items="[
+                  { title: 'Automatic', value: 'automatic' },
+                  { title: 'Manual', value: 'manual' }
+                ]" 
+                label="Transmission" 
+                prepend-inner-icon="tabler-manual-gearbox"
+              />
             </VCol>
 
             <VCol cols="12" md="3">
-              <VSelect v-model="form.fuel_type" :items="['petrol','diesel','electric','hybrid']" label="Fuel Type" />
+              <VSelect 
+                v-model="form.fuel_type" 
+                :items="[
+                  { title: 'Petrol', value: 'petrol' },
+                  { title: 'Diesel', value: 'diesel' },
+                  { title: 'Electric', value: 'electric' },
+                  { title: 'Hybrid', value: 'hybrid' },
+                  { title: 'Mild Hybrid', value: 'mild_hybrid' },
+                  { title: 'REEV (Plug-in)', value: 'reev' }
+                ]" 
+                label="Fuel Type" 
+                prepend-inner-icon="tabler-gas-station"
+              />
             </VCol>
 
             <VCol cols="12" md="3">
-              <VSelect v-model="form.drivetrain" :items="['fwd','rwd','awd','4wd']" label="Drivetrain" />
+              <VSelect 
+                v-model="form.drivetrain" 
+                :items="[
+                  { title: 'FWD (Front Wheel)', value: 'fwd' },
+                  { title: 'RWD (Rear Wheel)', value: 'rwd' },
+                  { title: 'AWD (All Wheel)', value: 'awd' },
+                  { title: '4WD (4x4)', value: '4wd' }
+                ]" 
+                label="Drivetrain" 
+                prepend-inner-icon="tabler-binary-tree"
+              />
             </VCol>
 
             <VCol cols="12" md="3">
-              <VSelect v-model="form.condition" :items="['new','used']" label="Condition" />
+              <VSelect 
+                v-model="form.condition" 
+                :items="[
+                  { title: 'New', value: 'new' },
+                  { title: 'Used', value: 'used' }
+                ]" 
+                label="Condition" 
+                prepend-inner-icon="tabler-refresh"
+              />
             </VCol>
           </VRow>
         </section>
@@ -418,6 +499,44 @@ const handleSubmit = async () => {
             :error-messages="fieldError('color')"
             @input="handleColorChange"
           />
+        </section>
+
+        <!-- ================= Contact Information ================= -->
+        <section class="mb-10">
+          <h3 class="text-subtitle-1 font-weight-medium mb-4">Contact Information</h3>
+
+          <VRow dense>
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.phone_number"
+                label="Phone Number for Calls"
+                prepend-inner-icon="tabler-phone"
+                :error-messages="fieldError('phone_number')"
+                maxlength="20"
+                @input="() => { if(form.is_whatsapp_same) form.whatsapp_number = form.phone_number }"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.whatsapp_number"
+                label="WhatsApp Number"
+                prepend-inner-icon="tabler-brand-whatsapp"
+                :error-messages="fieldError('whatsapp_number')"
+                maxlength="20"
+                :disabled="form.is_whatsapp_same"
+              />
+            </VCol>
+
+            <VCol cols="12">
+              <VCheckbox
+                v-model="form.is_whatsapp_same"
+                label="WhatsApp number is the same as call number"
+                hide-details
+                @change="() => { if(form.is_whatsapp_same) form.whatsapp_number = form.phone_number }"
+              />
+            </VCol>
+          </VRow>
         </section>
 
         <!-- ================= Images ================= -->
