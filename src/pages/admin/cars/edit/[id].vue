@@ -49,6 +49,12 @@ const form = ref({
   whatsapp_number: '',
   is_whatsapp_same: false,
 
+  is_best_deal: false,
+  is_import: false,
+  is_featured: false,
+  show_on_home: false,
+  featured_fee: '',
+
   features: [],
 
   // صور جديدة فقط (Files)
@@ -335,6 +341,12 @@ const loadCar = async () => {
   form.value.phone_number = car.phone_number ?? ''
   form.value.whatsapp_number = car.whatsapp_number ?? ''
   form.value.is_whatsapp_same = car.phone_number && car.phone_number === car.whatsapp_number
+
+  form.value.is_best_deal = !!car.is_best_deal
+  form.value.is_import = !!car.is_import
+  form.value.is_featured = !!car.is_featured
+  form.value.show_on_home = !!car.show_on_home
+  form.value.featured_fee = car.featured_fee ?? ''
 
   // Color (عندك بيرجع string #xxxxxx)
   form.value.color = car.color || '#000000'
@@ -791,6 +803,60 @@ const handleSubmit = async () => {
                 hide-details
                 @change="() => { if(form.is_whatsapp_same) form.whatsapp_number = form.phone_number }"
               />
+            </VCol>
+          </VRow>
+        </section>
+
+        <!-- ================= Ad Placement & Promotion ================= -->
+        <section class="mb-10">
+          <h3 class="text-subtitle-1 font-weight-medium mb-4">Ad Placement & Promotion</h3>
+
+          <VRow>
+            <VCol cols="12" md="6">
+              <VCard variant="outlined" class="pa-4">
+                <div class="text-subtitle-2 mb-2">Sections</div>
+                <VCheckbox
+                  v-model="form.is_import"
+                  label="Show in 'Import Cars' Section"
+                  hide-details
+                  class="mb-2"
+                />
+                <VCheckbox
+                  v-model="form.is_best_deal"
+                  label="Show in 'Best Deals' Section"
+                  hide-details
+                />
+              </VCard>
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <VCard variant="outlined" class="pa-4">
+                <div class="text-subtitle-2 mb-2">Promotion</div>
+                <VCheckbox
+                  v-model="form.show_on_home"
+                  label="Feature on Home Page Hero/Section"
+                  hide-details
+                  class="mb-2"
+                />
+                <VCheckbox
+                  v-model="form.is_featured"
+                  label="Mark as 'Featured Ad'"
+                  hide-details
+                  class="mb-2"
+                />
+                
+                <VExpandTransition>
+                  <div v-if="form.is_featured" class="mt-4">
+                    <VTextField
+                      v-model="form.featured_fee"
+                      label="Featured Ad Fee (EG)"
+                      prepend-inner-icon="tabler-coin"
+                      density="compact"
+                      @keypress="isNumberKey"
+                    />
+                  </div>
+                </VExpandTransition>
+              </VCard>
             </VCol>
           </VRow>
         </section>
