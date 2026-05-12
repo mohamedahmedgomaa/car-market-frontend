@@ -103,6 +103,21 @@ const displayYear = computed({
   set: (v) => { form.value.year = toNumOrNull(v, 4) }
 })
 
+const displayHorsepower = computed({
+  get: () => form.value.horsepower,
+  set: (v) => { form.value.horsepower = toNumOrNull(v, 4) }
+})
+
+const displayTorque = computed({
+  get: () => form.value.torque,
+  set: (v) => { form.value.torque = toNumOrNull(v, 5) }
+})
+
+const displayEngineCapacity = computed({
+  get: () => form.value.engine_capacity,
+  set: (v) => { form.value.engine_capacity = toNumOrNull(v, 4) }
+})
+
 /* ================= Helpers ================= */
 const fieldError = field => errors.value?.[field] || []
 
@@ -389,31 +404,34 @@ const handleSubmit = async () => {
             <!-- Technical Specs -->
             <VCol cols="12" md="4">
               <VTextField
-                v-model="form.horsepower"
+                v-model="displayHorsepower"
                 label="Horsepower (HP)"
                 prepend-inner-icon="tabler-engine"
                 :error-messages="fieldError('horsepower')"
                 @keypress="isNumberKey"
+                maxlength="4"
               />
             </VCol>
 
             <VCol cols="12" md="4">
               <VTextField
-                v-model="form.torque"
+                v-model="displayTorque"
                 label="Torque (Nm)"
                 prepend-inner-icon="tabler-settings-automation"
                 :error-messages="fieldError('torque')"
                 @keypress="isNumberKey"
+                maxlength="5"
               />
             </VCol>
 
             <VCol cols="12" md="4">
               <VTextField
-                v-model="form.engine_capacity"
+                v-model="displayEngineCapacity"
                 label="Engine Capacity (CC)"
                 prepend-inner-icon="tabler-piston"
                 :error-messages="fieldError('engine_capacity')"
                 @keypress="isNumberKey"
+                maxlength="4"
               />
             </VCol>
 
