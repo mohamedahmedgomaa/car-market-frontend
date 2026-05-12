@@ -47,8 +47,8 @@ const form = ref({
 
   is_best_deal: false,
   is_import: false,
-  is_featured: false,
-  show_on_home: false,
+  is_global_ad: false,
+  ad_expiry: null,
   featured_fee: '',
 
   features: [],
@@ -184,7 +184,7 @@ const handleImagesChange = files => {
 }
 
 const handleColorChange = (hex) => {
-  form.value.color = parseInt(hex.replace('#', ''), 16)
+  form.value.color = hex
 }
 
 const setAsMain = (index) => {
@@ -601,58 +601,36 @@ const handleSubmit = async () => {
           </VRow>
         </section>
 
-        <!-- ================= Ad Placement & Promotion ================= -->
         <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Ad Placement & Promotion</h3>
+          <h3 class="text-subtitle-1 font-weight-bold mb-4 d-flex align-center">
+            <VIcon icon="tabler-bolt" class="me-2" color="primary" />
+            Ad Placement & Promotion
+          </h3>
 
-          <VRow>
-            <VCol cols="12" md="6">
-              <VCard variant="outlined" class="pa-4">
-                <div class="text-subtitle-2 mb-2">Sections</div>
-                <VCheckbox
-                  v-model="form.is_import"
-                  label="Show in 'Import Cars' Section"
-                  hide-details
-                  class="mb-2"
-                />
-                <VCheckbox
-                  v-model="form.is_best_deal"
-                  label="Show in 'Best Deals' Section"
-                  hide-details
-                />
-              </VCard>
-            </VCol>
+          <VCard variant="outlined" class="pa-6 rounded-lg bg-surface-variant-opacity">
+            <VRow>
+              <VCol cols="12" md="6">
+                <div class="text-subtitle-2 font-weight-bold mb-3">Visibility Toggles</div>
+                <VSwitch v-model="form.show_on_home" label="Show on Homepage Hero" color="primary" inset />
+                <VSwitch v-model="form.is_featured" label="Mark as Featured" color="warning" inset />
+                <VSwitch v-model="form.is_best_deal" label="Best Deal Badge" color="error" inset />
+                <VSwitch v-model="form.is_import" label="Import Cars Section" color="info" inset />
+                <VSwitch v-model="form.is_global_ad" label="Global Ad (All Pages)" color="secondary" inset />
+              </VCol>
 
-            <VCol cols="12" md="6">
-              <VCard variant="outlined" class="pa-4">
-                <div class="text-subtitle-2 mb-2">Promotion</div>
-                <VCheckbox
-                  v-model="form.show_on_home"
-                  label="Feature on Home Page Hero/Section"
-                  hide-details
-                  class="mb-2"
+              <VCol cols="12" v-if="form.is_featured || form.is_global_ad">
+                <div class="text-subtitle-2 font-weight-bold mb-3">Ad Details</div>
+                <VTextField
+                  v-model="form.ad_expiry"
+                  label="Ad Expiry Date"
+                  type="date"
+                  prepend-inner-icon="tabler-calendar-off"
+                  variant="outlined"
+                  class="mb-4"
                 />
-                <VCheckbox
-                  v-model="form.is_featured"
-                  label="Mark as 'Featured Ad'"
-                  hide-details
-                  class="mb-2"
-                />
-                
-                <VExpandTransition>
-                  <div v-if="form.is_featured" class="mt-4">
-                    <VTextField
-                      v-model="form.featured_fee"
-                      label="Featured Ad Fee (EG)"
-                      prepend-inner-icon="tabler-coin"
-                      density="compact"
-                      @keypress="isNumberKey"
-                    />
-                  </div>
-                </VExpandTransition>
-              </VCard>
-            </VCol>
-          </VRow>
+              </VCol>
+            </VRow>
+          </VCard>
         </section>
 
         <!-- ================= Images ================= -->
