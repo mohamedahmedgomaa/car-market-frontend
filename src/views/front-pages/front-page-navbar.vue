@@ -109,7 +109,7 @@ const logout = async () => {
             :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
             @click="sidebar = false"
           >
-            NegmSooq
+            Import Cars
           </RouterLink>
 
           <RouterLink
@@ -250,7 +250,7 @@ const logout = async () => {
               class="nav-link font-weight-bold py-2 px-3"
               :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
             >
-              NegmSooq
+              Import Cars
             </RouterLink>
 
             <RouterLink

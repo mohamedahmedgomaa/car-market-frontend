@@ -18,7 +18,7 @@ const page = ref(1)
 const perPage = ref(50)
 
 const sort = ref(String(route.query.sort || '-favorites_count'))
-const selectedType = ref(String(route.query['filter[type]'] || ''))
+const selectedCondition = ref(String(route.query['filter[condition]'] || ''))
 
 const fetchCars = async () => {
   loading.value = true
@@ -30,8 +30,8 @@ const fetchCars = async () => {
       sort: sort.value,
     }
 
-    if (selectedType.value) {
-      params['filter[type]'] = selectedType.value
+    if (selectedCondition.value) {
+      params['filter[condition]'] = selectedCondition.value
     }
 
     const res = await carsUserApi.getAll(params)
@@ -59,7 +59,7 @@ const onPageChange = (p) => {
 watch(() => route.query, () => {
   page.value = Number(route.query.page || 1)
   sort.value = String(route.query.sort || '-favorites_count')
-  selectedType.value = String(route.query['filter[type]'] || '')
+  selectedCondition.value = String(route.query['filter[condition]'] || '')
   fetchCars()
 }, { deep: true })
 
@@ -72,32 +72,34 @@ onMounted(() => {
   <section class="negm-sooq-page py-12">
     <VContainer>
       <div class="mb-8">
-        <h1 class="text-h3 font-weight-black text-white mb-2">NegmSooq</h1>
-        <p class="text-h6 opacity-70 font-weight-medium">جميع المركبات المعروضة متوفرة حصرياً من خلال معرضنا بالمنصورة، المتخصص في خدمة البيع لحساب الغير. نتشرف بزيارتكم في موقعنا المميز: <span class="text-primary">المنصورة - بنزينة مصر (أسفل كوبري المرور وبجوار إدارة المرور)</span></p>
-        
-        <!-- ✅ Vehicle Type Toggle -->
-        <div class="mt-6 d-flex justify-start">
+        <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-4">
+          <div>
+            <h1 class="text-h3 font-weight-black text-white mb-2">Import Cars</h1>
+            <p class="text-h6 opacity-70 font-weight-medium mb-0">اكتشف أفضل السيارات المتاحة للاستيراد بأعلى جودة وأفضل الأسعار. نحن نسهل لك كافة إجراءات الاستيراد لضمان تجربة شراء مريحة وآمنة.</p>
+          </div>
+
+          <!-- ✅ Condition Toggle (Used, New, All) -->
           <div class="premium-type-toggle">
             <button 
               class="type-btn" 
-              :class="{ active: selectedType === '' }"
-              @click="router.push({ query: { ...route.query, 'filter[type]': undefined, page: 1 } })"
+              :class="{ active: selectedCondition === '' }"
+              @click="router.push({ query: { ...route.query, 'filter[condition]': undefined, page: 1 } })"
             >
               All
             </button>
             <button 
               class="type-btn" 
-              :class="{ active: selectedType === 'car' }"
-              @click="router.push({ query: { ...route.query, 'filter[type]': 'car', page: 1 } })"
+              :class="{ active: selectedCondition === 'used' }"
+              @click="router.push({ query: { ...route.query, 'filter[condition]': 'used', page: 1 } })"
             >
-              Cars
+              Used
             </button>
             <button 
               class="type-btn" 
-              :class="{ active: selectedType === 'motorcycle' }"
-              @click="router.push({ query: { ...route.query, 'filter[type]': 'motorcycle', page: 1 } })"
+              :class="{ active: selectedCondition === 'new' }"
+              @click="router.push({ query: { ...route.query, 'filter[condition]': 'new', page: 1 } })"
             >
-              Bikes
+              New
             </button>
           </div>
         </div>
@@ -133,7 +135,7 @@ onMounted(() => {
 
         <div v-if="!loading && cars.length === 0" class="text-center py-16">
           <VIcon icon="tabler-car-off" size="80" class="mb-4 opacity-10" />
-          <h3 class="text-h5 opacity-50">No vehicles found in NegmSooq</h3>
+          <h3 class="text-h5 opacity-50">No vehicles found in Import Cars</h3>
         </div>
 
         <div class="d-flex justify-center mt-12" v-if="total > perPage && !loading">

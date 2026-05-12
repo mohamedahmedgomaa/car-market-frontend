@@ -121,11 +121,11 @@ onMounted(() => {
 
     <div class="group-spacer"></div>
 
-    <!-- NegmSooq Section -->
+    <!-- Import Cars Section -->
     <div class="reveal-on-scroll">
       <CarsSection
-        title="NegmSooq"
-        subtitle="Our most popular and highly rated vehicles"
+        title="Import Cars"
+        subtitle="Our most popular and highly rated vehicles available for import"
         :limit="ALL_VEHICLES.mostFav.limit"
         :params="ALL_VEHICLES.mostFav.params"
         :viewAllTo="ALL_VEHICLES.mostFav.viewAllTo"
