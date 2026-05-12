@@ -23,6 +23,7 @@ const selectedType = ref(String(route.query['filter[type]'] || ''))
 
 const fetchCars = async () => {
   loading.value = true
+  cars.value = [] // Clear list for visual feedback
   try {
     const params = {
       page: page.value,
@@ -36,14 +37,17 @@ const fetchCars = async () => {
     }
 
     const res = await carsUserApi.getAll(params)
-    const data = res.data?.data || res.data || []
+    const payload = res.data?.data || res.data || {}
     
-    if (Array.isArray(data)) {
-      cars.value = data
-      total.value = data.length
-    } else if (data.data) {
-      cars.value = data.data
-      total.value = data.total || data.data.length
+    if (Array.isArray(payload)) {
+      cars.value = payload
+      total.value = payload.length
+    } else if (payload.data) {
+      cars.value = payload.data
+      total.value = payload.total || payload.data.length
+    } else {
+      cars.value = []
+      total.value = 0
     }
   } catch (err) {
     console.error('Fetch error:', err)

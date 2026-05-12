@@ -281,6 +281,8 @@ const applyFilters = () => {
   putBetween(query, 'price_between', d.priceFrom, d.priceTo)
   putBetween(query, 'mileage_between', d.mileageFrom, d.mileageTo)
 
+  if (sort.value) query.sort = sort.value; else delete query.sort
+
   router.push({ query })
 }
 
