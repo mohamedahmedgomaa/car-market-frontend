@@ -3,7 +3,7 @@ import adminApi from '@/api/adminApi'
 
 export const useAdminAuth = defineStore('adminAuth', {
   state: () => ({
-    user: null,
+    admin: JSON.parse(localStorage.getItem('admin_data')) || null,
     token: localStorage.getItem('admin_token') || null,
   }),
 
@@ -23,7 +23,7 @@ export const useAdminAuth = defineStore('adminAuth', {
       } catch (e) {
       } finally {
         this.token = null
-        this.user = null
+        this.admin = null
         localStorage.removeItem('admin_token')
         localStorage.removeItem('admin_data')
       }

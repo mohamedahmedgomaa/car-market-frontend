@@ -47,8 +47,8 @@ const handleLogin = async () => {
   errorMessage.value = ''
   loading.value = true
 
-  try {
-    // ✅ استدعاء API الخاص بالسيلر
+    try {
+    // ✅ استدعاء API الخاص بالأدمن
     const response = await adminApi.login({
       email: form.value.email,
       password: form.value.password,
@@ -61,7 +61,7 @@ const handleLogin = async () => {
 
     const { token, admin } = data
 
-    // ✅ تخزين بيانات السيلر والتوكن بمفاتيح خاصة
+    // ✅ تخزين بيانات الأدمن والتوكن بمفاتيح خاصة
     localStorage.setItem('admin_token', token)
     localStorage.setItem('admin_data', JSON.stringify(admin))
 
@@ -86,7 +86,7 @@ const handleLogin = async () => {
   <a href="javascript:void(0)">
     <div class="auth-logo d-flex align-center gap-x-3">
       <VNodeRenderer :nodes="themeConfig.app.logo" />
-      <h1 class="auth-title">Admin Portal</h1>
+      <h1 class="auth-title">NegmCars Admin</h1>
     </div>
   </a>
 
@@ -105,7 +105,7 @@ const handleLogin = async () => {
       <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-6">
         <VCardText>
           <h4 class="text-h4 mb-1">Welcome Admin 👋🏻</h4>
-          <p class="mb-0">Sign in to manage your store and products</p>
+          <p class="mb-0">Sign in to the central management system</p>
         </VCardText>
 
         <VCardText>
@@ -117,7 +117,7 @@ const handleLogin = async () => {
                   autofocus
                   label="Email"
                   type="email"
-                  placeholder="admin@email.com"
+                  placeholder="admin@negmcars.com"
                   required
                 />
               </VCol>
@@ -141,8 +141,9 @@ const handleLogin = async () => {
 
                 <div v-if="errorMessage" class="text-error mb-4">{{ errorMessage }}</div>
 
-                <VBtn block type="submit" :loading="loading">Login as Admin</VBtn>
+                <VBtn block type="submit" :loading="loading" class="elevation-4">Login to Dashboard</VBtn>
               </VCol>
+
 
               <VCol cols="12" class="text-body-1 text-center">
                 <span>New admin?</span>

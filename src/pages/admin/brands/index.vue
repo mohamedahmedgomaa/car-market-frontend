@@ -13,7 +13,7 @@ const total = ref(0)
 const perPage = 10
 
 const deleteDialog = ref(false)
-const selectedSeller = ref(null)
+const selectedItem = ref(null)
 const deleting = ref(false)
 
 const fetchBrands = async (page = 1) => {
@@ -36,16 +36,16 @@ const fetchBrands = async (page = 1) => {
 }
 
 const confirmDelete = (brand) => {
-  selectedSeller.value = brand
+  selectedItem.value = brand
   deleteDialog.value = true
 }
 
 const handleDelete = async () => {
-  if (!selectedSeller.value) return
+  if (!selectedItem.value) return
   deleting.value = true
   try {
-    await brandAdminApi.delete(selectedSeller.value.id)
-    brands.value = brands.value.filter(s => s.id !== selectedSeller.value.id)
+    await brandAdminApi.delete(selectedItem.value.id)
+    brands.value = brands.value.filter(s => s.id !== selectedItem.value.id)
     total.value -= 1
     deleteDialog.value = false
   } catch (err) {
@@ -57,144 +57,124 @@ const handleDelete = async () => {
 
 const handleEdit = (id) => router.push(`/admin/brands/edit/${id}`)
 
-const toggleActive = async (brand) => {
-  try {
-    brand.is_active = brand.is_active ? 0 : 1
-    await brandAdminApi.update(brand.id, { is_active: brand.is_active })
-  } catch (err) {
-    console.error('Toggle failed:', err.response?.data || err.message)
-  }
-}
-
 watch(search, () => fetchBrands(1))
 onMounted(() => fetchBrands())
-
-const showingText = computed(() => {
-  const start = (currentPage.value - 1) * perPage + 1
-  const end = Math.min(currentPage.value * perPage, total.value)
-  return total.value
-    ? `Showing ${start} to ${end} of ${total.value} entries`
-    : 'Showing 0 to 0 of 0 entries'
-})
 </script>
 
 <template>
-  <div class="p-4">
-    <div class="flex items-center justify-between mb-6 gap-4">
-      <h2 class="text-2xl font-semibold text-gray-100">Brands List</h2>
-
+  <div class="admin-brands-page pa-6">
+    <div class="d-flex align-center justify-space-between mb-8">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Brands Inventory</h1>
+        <p class="text-subtitle-1 text-medium-emphasis">Configure automobile manufacturers and their logos</p>
+      </div>
       <VBtn
         color="primary"
-        class="rounded-lg font-medium text-white px-5 py-2 flex items-center gap-2"
+        prepend-icon="tabler-plus"
+        size="large"
         @click="$router.push('/admin/brands/create')"
       >
-        <VIcon icon="tabler-plus" start />
         Add New Brand
       </VBtn>
     </div>
 
-    <div class="mb-6">
-      <VTextField
-        v-model="search"
-        placeholder="Search by name ..."
-        density="comfortable"
-        variant="outlined"
-        color="primary"
-        hide-details
-        prepend-inner-icon="tabler-search"
-        class="w-full max-w-sm"
-      />
-    </div>
+    <VCard class="main-card elevation-2 overflow-hidden">
+      <VCardTitle class="px-6 py-4 d-flex align-center gap-4">
+        <VTextField
+          v-model="search"
+          placeholder="Search brands..."
+          variant="solo-filled"
+          density="comfortable"
+          prepend-inner-icon="tabler-search"
+          class="max-width-400"
+          hide-details
+          flat
+        />
+        <VSpacer />
+        <VBtn icon variant="text" @click="fetchBrands(currentPage)">
+          <VIcon icon="tabler-refresh" />
+        </VBtn>
+      </VCardTitle>
 
-    <VTable v-if="!loading">
-      <!-- إضافة رأس العمود -->
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name Ar</th>
-        <th>Name En</th>
-        <th class="text-center">Actions</th>
-      </tr>
-      </thead>
+      <VDivider />
 
-      <tbody>
-      <tr v-for="brand in brands" :key="brand.id">
-        <td>{{ brand.id }}</td>
+      <VTable class="modern-table">
+        <thead>
+          <tr>
+            <th class="text-uppercase text-caption font-weight-bold">ID</th>
+            <th class="text-uppercase text-caption font-weight-bold">Brand Name (AR)</th>
+            <th class="text-uppercase text-caption font-weight-bold">Brand Name (EN)</th>
+            <th class="text-uppercase text-caption font-weight-bold text-end px-6">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="loading" v-for="i in 5" :key="i">
+            <td colspan="4"><VSkeletonLoader type="table-row" /></td>
+          </tr>
+          <tr v-else v-for="brand in brands" :key="brand.id" class="table-row-hover">
+            <td><span class="text-body-2 font-weight-bold">#{{ brand.id }}</span></td>
+            <td><div class="text-body-1">{{ brand.name?.ar || brand.name || '-' }}</div></td>
+            <td><div class="text-body-1 font-weight-medium text-primary">{{ brand.name?.en || brand.name || '-' }}</div></td>
+            <td class="text-end px-6">
+              <div class="d-flex justify-end gap-1">
+                <VBtn icon variant="tonal" color="primary" size="small" @click="handleEdit(brand.id)">
+                  <VIcon icon="tabler-edit" />
+                </VBtn>
+                <VBtn icon variant="tonal" color="error" size="small" @click="confirmDelete(brand)">
+                  <VIcon icon="tabler-trash" />
+                </VBtn>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
 
-        <td>{{ brand.name?.ar || brand.name || '-' }}</td>
-        <td>{{ brand.name?.en || brand.name || '-' }}</td>
+      <VDivider />
 
-        <td class="text-center">
-          <VBtn icon @click="handleEdit(brand.id)">
-            <VIcon icon="tabler-edit" />
-          </VBtn>
-          <VBtn icon color="error" @click="confirmDelete(brand)">
-            <VIcon icon="tabler-trash" />
-          </VBtn>
-        </td>
-      </tr>
-      </tbody>
+      <div class="pa-4 d-flex align-center justify-space-between">
+        <div class="text-caption text-medium-emphasis">
+          Total of {{ total }} brands registered
+        </div>
+        <VPagination
+          v-model="currentPage"
+          :length="lastPage"
+          :total-visible="5"
+          rounded="lg"
+          size="small"
+          @update:model-value="fetchBrands"
+        />
+      </div>
+    </VCard>
 
-    </VTable>
-
-    <div v-else class="text-center py-4">Loading...</div>
-
-    <!-- Confirm Delete -->
     <VDialog v-model="deleteDialog" max-width="400">
-      <VCard>
-        <VCardTitle class="text-lg font-semibold text-center text-gray-800">
-          Confirm Delete
-        </VCardTitle>
-        <VCardText class="text-center text-gray-600">
-          Are you sure you want to delete
-          <strong>{{ selectedSeller?.name }}</strong>?
+      <VCard class="pa-4 rounded-xl text-center">
+        <VCardText>
+          <VAvatar color="error" variant="tonal" size="72" class="mb-4">
+            <VIcon icon="tabler-trash-x" size="40" />
+          </VAvatar>
+          <h3 class="text-h5 font-weight-bold mb-2">Delete Brand?</h3>
+          <p class="text-medium-emphasis">Are you sure you want to delete <strong>{{ selectedItem?.name?.en || selectedItem?.name }}</strong>? This might affect associated models.</p>
         </VCardText>
-
-        <VCardActions class="justify-center gap-2 pb-4">
-          <VBtn variant="tonal" color="grey" @click="deleteDialog = false">
-            Cancel
-          </VBtn>
-          <VBtn color="error" :loading="deleting" @click="handleDelete">
-            Delete
-          </VBtn>
+        <VCardActions class="justify-center gap-4">
+          <VBtn variant="text" @click="deleteDialog = false">Cancel</VBtn>
+          <VBtn color="error" variant="elevated" :loading="deleting" @click="handleDelete" class="px-8">Confirm</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
-
-    <!-- Pagination -->
-    <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
-      <div class="text-sm text-gray-500">{{ showingText }}</div>
-
-      <div class="flex items-center gap-1">
-        <VBtn
-          icon
-          size="small"
-          :disabled="currentPage === 1"
-          @click="fetchBrands(currentPage - 1)"
-        >
-          <VIcon icon="tabler-chevron-left" />
-        </VBtn>
-
-        <template v-for="page in lastPage" :key="page">
-          <VBtn
-            size="small"
-            :color="page === currentPage ? 'primary' : ''"
-            variant="outlined"
-            @click="fetchBrands(page)"
-          >
-            {{ page }}
-          </VBtn>
-        </template>
-
-        <VBtn
-          icon
-          size="small"
-          :disabled="currentPage === lastPage"
-          @click="fetchBrands(currentPage + 1)"
-        >
-          <VIcon icon="tabler-chevron-right" />
-        </VBtn>
-      </div>
-    </div>
   </div>
 </template>
+
+<style scoped>
+.gradient-text {
+  background: linear-gradient(135deg, #1867c0 0%, #5cbbf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.main-card { border-radius: 20px !important; }
+.max-width-400 { max-width: 400px; }
+.modern-table :deep(th) {
+  height: 56px !important;
+  background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+.table-row-hover:hover { background-color: rgba(var(--v-theme-primary), 0.03); }
+</style>

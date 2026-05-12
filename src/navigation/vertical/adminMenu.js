@@ -63,7 +63,7 @@ export default [
         icon: { icon: 'tabler-car-garage', size: 24 }
       },
       {
-        title: 'إعلانات الرئيسية',
+        title: 'Hero Banners',
         to: { name: 'admin-banners' },
         icon: { icon: 'tabler-photo', size: 24 },
       }
