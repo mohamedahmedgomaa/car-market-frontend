@@ -32,28 +32,24 @@ const MOTOS = {
 }
 
 const ALL_VEHICLES = {
-  topPrice: {
+  bestDeals: {
     limit: 8,
     params: {
-      sort: '-price',
+      'filter[is_best_deal]': 1,
+      sort: 'price',
     },
     viewAllTo: {
-      path: '/user/cars',
-      query: {
-        sort: '-price',
-      },
+      path: '/user/best-deals',
     },
   },
-  mostFav: {
+  importCars: {
     limit: 8,
     params: {
-      sort: '-favorites_count',
+      'filter[is_import]': 1,
+      sort: '-created_at',
     },
     viewAllTo: {
       path: '/user/negm-sooq',
-      query: {
-        sort: '-favorites_count',
-      },
     },
   },
 }
@@ -109,9 +105,9 @@ onMounted(() => {
       <CarsSection
         title="Best Deals"
         subtitle="The most competitive prices on all vehicles"
-        :limit="ALL_VEHICLES.topPrice.limit"
-        :params="ALL_VEHICLES.topPrice.params"
-        :viewAllTo="ALL_VEHICLES.topPrice.viewAllTo"
+        :limit="ALL_VEHICLES.bestDeals.limit"
+        :params="ALL_VEHICLES.bestDeals.params"
+        :viewAllTo="ALL_VEHICLES.bestDeals.viewAllTo"
       >
         <template #header-extra>
           <VChip size="small" color="error" variant="flat" class="best-deal-badge"> Best Deal </VChip>
@@ -126,9 +122,9 @@ onMounted(() => {
       <CarsSection
         title="Import Cars"
         subtitle="Our most popular and highly rated vehicles available for import"
-        :limit="ALL_VEHICLES.mostFav.limit"
-        :params="ALL_VEHICLES.mostFav.params"
-        :viewAllTo="ALL_VEHICLES.mostFav.viewAllTo"
+        :limit="ALL_VEHICLES.importCars.limit"
+        :params="ALL_VEHICLES.importCars.params"
+        :viewAllTo="ALL_VEHICLES.importCars.viewAllTo"
       >
         <template #header-extra>
           <VChip size="small" color="success" variant="flat" class="import-badge">

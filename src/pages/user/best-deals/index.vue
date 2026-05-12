@@ -29,6 +29,7 @@ const fetchCars = async () => {
       page: page.value,
       perPage: perPage.value,
       'filter[status]': 'approved',
+      'filter[is_best_deal]': 1,
       sort: sort.value,
     }
 
