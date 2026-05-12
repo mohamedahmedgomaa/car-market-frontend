@@ -24,7 +24,7 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
 
 <style lang="scss">
 .landing-page-wrapper {
-  background: #090a11;
+  background: #0f111a; /* Deep indigo-tinted dark */
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
@@ -37,17 +37,17 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
   width: 100%;
   height: 100%;
   background: 
-    radial-gradient(circle at 80% 20%, rgba(var(--v-theme-primary), 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 20% 80%, rgba(100, 255, 218, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(var(--v-theme-primary), 0.05) 0%, transparent 70%);
+    radial-gradient(circle at 85% 15%, rgba(255, 107, 0, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(0, 242, 255, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
-  animation: bgPulse 15s ease-in-out infinite alternate;
+  animation: bgPulse 12s ease-in-out infinite alternate;
 }
 
 @keyframes bgPulse {
-  0% { opacity: 0.6; transform: scale(1); }
-  100% { opacity: 1; transform: scale(1.05); }
+  0% { opacity: 0.7; transform: scale(1) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1.1) rotate(2deg); }
 }
 
 @media (max-width: 960px) and (min-width: 600px) {
