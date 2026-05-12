@@ -325,7 +325,7 @@ const stats = computed(() => {
 
     <!-- Promotion / Status Dialog -->
     <VDialog v-model="promotionDialog" max-width="600" persistent transition="dialog-bottom-transition">
-      <VCard class="promotion-dialog-card overflow-visible">
+      <VCard class="promotion-dialog-card">
         <div class="dialog-header-accent"></div>
         
         <VCardTitle class="d-flex align-center pa-6">
@@ -339,7 +339,7 @@ const stats = computed(() => {
 
         <VDivider />
 
-        <VCardText class="pa-6">
+        <VCardText class="pa-6 scrollable-content">
           <!-- Car Preview Mini -->
           <div class="d-flex align-center mb-6 pa-4 rounded-lg bg-surface-variant elevation-1">
             <VAvatar size="60" rounded="lg" class="me-4">
@@ -417,6 +417,17 @@ const stats = computed(() => {
                       <div class="ms-2">
                         <div class="font-weight-bold">Show on Homepage</div>
                         <div class="text-caption">Include in home slider/grids</div>
+                      </div>
+                    </template>
+                  </VSwitch>
+                </div>
+
+                <div class="promotion-item" :class="{ active: promotionForm.is_import }">
+                  <VSwitch v-model="promotionForm.is_import" color="success" hide-details inset>
+                    <template v-slot:label>
+                      <div class="ms-2">
+                        <div class="font-weight-bold">Import Cars Section</div>
+                        <div class="text-caption">Show in specialized import list</div>
                       </div>
                     </template>
                   </VSwitch>
@@ -539,6 +550,32 @@ const stats = computed(() => {
 
 .promotion-dialog-card {
   border-radius: 24px !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.scrollable-content {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+/* Custom Scrollbar for better aesthetics */
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-primary), 0.2);
+  border-radius: 10px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-primary), 0.4);
 }
 
 .dialog-header-accent {

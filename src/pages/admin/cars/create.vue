@@ -142,10 +142,31 @@ const fieldError = field => errors.value?.[field] || []
 
 /* ================= Lifecycle ================= */
 onMounted(async () => {
-  sellers.value = (await sellerAdminApi.getAll()).data.data
-  brands.value = (await brandAdminApi.getAll()).data.data
-  features.value = (await featureAdminApi.getAll()).data.data
-  countries.value = (await countryAdminApi.getAll()).data.data
+  loading.value = true
+  try {
+    const results = await Promise.allSettled([
+      sellerAdminApi.getAll(),
+      brandAdminApi.getAll(),
+      featureAdminApi.getAll(),
+      countryAdminApi.getAll()
+    ])
+
+    if (results[0].status === 'fulfilled') sellers.value = results[0].value.data.data
+    if (results[1].status === 'fulfilled') brands.value = results[1].value.data.data
+    if (results[2].status === 'fulfilled') features.value = results[2].value.data.data
+    if (results[3].status === 'fulfilled') countries.value = results[3].value.data.data
+
+    // Log errors for failed requests
+    results.forEach((res, i) => {
+      if (res.status === 'rejected') {
+        console.error(`Request ${i} failed:`, res.reason)
+      }
+    })
+  } catch (err) {
+    console.error('Initial data load failed:', err)
+  } finally {
+    loading.value = false
+  }
 })
 
 /* ================= Loaders ================= */
