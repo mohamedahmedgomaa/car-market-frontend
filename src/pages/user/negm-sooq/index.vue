@@ -78,7 +78,7 @@ onMounted(() => {
         <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-4">
           <div>
             <h1 class="text-h3 font-weight-black text-white mb-2">Import Cars</h1>
-            <p class="text-h6 opacity-70 font-weight-medium mb-0">سيارات متاحة للاستيراد (استيراد شخصي - مبادرة) بأعلى المواصفات وأفضل الأسعار.</p>
+            <p class="text-h6 opacity-70 font-weight-medium mb-0">Vehicles available for import (Personal Import - Initiative) with the highest specifications and best prices.</p>
           </div>
 
           <!-- ✅ Condition Toggle (Used, New, All) -->
