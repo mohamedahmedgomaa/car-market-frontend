@@ -12,6 +12,7 @@ const buildSection = (type, sort) => ({
   limit: 8,
   params: {
     'filter[type]': type,
+    'filter[show_on_home]': 1,
     sort,
   },
   viewAllTo: {
