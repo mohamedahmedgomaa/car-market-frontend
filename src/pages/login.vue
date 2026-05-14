@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import userApi from '@/api/userApi.js'
+import sellerApi from '@/api/sellerApi.js'
 import { themeConfig } from '@themeConfig'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 
@@ -19,8 +20,11 @@ const route = useRoute()
 const activeTab = ref(route.query.tab === 'register' ? 'register' : 'login')
 
 const form = ref({
+  name: '',
+  phone: '',
   email: '',
   password: '',
+  password_confirmation: '',
   accountType: 'individual', // 'individual' | 'showroom'
   showroomName: '',
   remember: false,
@@ -30,35 +34,75 @@ const form = ref({
 const loading = ref(false)
 const errorMessage = ref('')
 const isPasswordVisible = ref(false)
+const isConfirmPasswordVisible = ref(false)
 
 const handleAuth = async () => {
-  if (activeTab.value === 'register' && !form.value.agreeToTerms) {
-    errorMessage.value = 'Please agree to the terms and conditions.'
-    return
-  }
-
-  if (activeTab.value === 'register' && form.value.accountType === 'showroom' && !form.value.showroomName) {
-    errorMessage.value = 'Please enter your showroom name.'
-    return
+  if (activeTab.value === 'register') {
+    if (!form.value.name || !form.value.email || !form.value.password || !form.value.phone) {
+      errorMessage.value = 'Please fill in all required fields.'
+      return
+    }
+    if (form.value.password !== form.value.password_confirmation) {
+      errorMessage.value = 'Passwords do not match.'
+      return
+    }
+    if (!form.value.agreeToTerms) {
+      errorMessage.value = 'Please agree to the terms and conditions.'
+      return
+    }
+    if (form.value.accountType === 'showroom' && !form.value.showroomName) {
+      errorMessage.value = 'Please enter your showroom name.'
+      return
+    }
   }
 
   errorMessage.value = ''
   loading.value = true
 
+  let userType = 'user'
   try {
     let response
     if (activeTab.value === 'login') {
-      response = await userApi.login({
-        email: form.value.email,
-        password: form.value.password,
-      })
+      try {
+        response = await userApi.login({
+          email: form.value.email,
+          password: form.value.password,
+        })
+        userType = 'user'
+      } catch (userErr) {
+        // If user login fails, try seller login
+        try {
+          response = await sellerApi.login({
+            email: form.value.email,
+            password: form.value.password,
+          })
+          userType = 'seller'
+        } catch (sellerErr) {
+          // If both fail, throw the error
+          throw userErr
+        }
+      }
     } else {
-      response = await userApi.register({
-        email: form.value.email,
-        password: form.value.password,
-        role: form.value.accountType === 'showroom' ? 'seller' : 'user',
-        showroom_name: form.value.showroomName,
-      })
+      userType = form.value.accountType === 'showroom' ? 'seller' : 'user'
+      if (userType === 'seller') {
+        response = await sellerApi.register({
+          name: form.value.name,
+          email: form.value.email,
+          phone: form.value.phone,
+          password: form.value.password,
+          password_confirmation: form.value.password_confirmation,
+          store_name_en: form.value.showroomName,
+          store_name_ar: form.value.showroomName, // Using same for both for simplicity
+        })
+      } else {
+        response = await userApi.register({
+          name: form.value.name,
+          email: form.value.email,
+          phone: form.value.phone,
+          password: form.value.password,
+          password_confirmation: form.value.password_confirmation,
+        })
+      }
     }
 
     const data = response?.data?.data
@@ -66,15 +110,27 @@ const handleAuth = async () => {
       throw new Error('Invalid response from server')
     }
 
-    localStorage.setItem('user_token', data.token)
-    localStorage.setItem('user_data', JSON.stringify(data.user))
+    const tokenKey = `${userType}_token`
+    localStorage.setItem(tokenKey, data.token)
+    localStorage.setItem('user_token', data.token) // Fallback
+    
+    // Handle both 'user' and 'seller' keys in response
+    const userData = data.user || data.seller
+    localStorage.setItem('user_data', JSON.stringify(userData))
+    localStorage.setItem('user_type', userType)
     
     window.dispatchEvent(new Event('auth:changed'))
     router.push('/')
   } catch (err) {
     console.error('Auth error:', err)
     if (err.response && err.response.data) {
-      errorMessage.value = err.response.data.message || err.response.data.error || 'Authentication failed'
+      // Handle Laravel validation errors
+      if (err.response.data.errors) {
+        const firstError = Object.values(err.response.data.errors)[0][0]
+        errorMessage.value = firstError
+      } else {
+        errorMessage.value = err.response.data.message || err.response.data.error || 'Authentication failed'
+      }
     } else {
       errorMessage.value = err.message || 'Something went wrong. Please try again.'
     }
@@ -127,6 +183,7 @@ const handleAuth = async () => {
             variant="outlined"
             class="social-btn apple-btn mb-4"
             height="52"
+            @click="errorMessage = 'Apple Sign-in is coming soon! Please use Email/Password for now.'"
           >
             <VIcon icon="tabler-brand-apple-filled" class="me-3" size="24" />
             Sign in with Apple
@@ -137,6 +194,7 @@ const handleAuth = async () => {
             variant="outlined"
             class="social-btn google-btn"
             height="52"
+            @click="errorMessage = 'Google Sign-in is coming soon! Please use Email/Password for now.'"
           >
             <VIcon icon="tabler-brand-google-filled" class="me-3 google-icon" size="24" />
             Sign in with Google
@@ -178,6 +236,18 @@ const handleAuth = async () => {
               </div>
             </VCol>
 
+            <VCol v-if="activeTab === 'register'" cols="12">
+              <label class="input-label">Full Name</label>
+              <VTextField
+                v-model="form.name"
+                placeholder="Your full name"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input"
+              />
+            </VCol>
+
             <VCol v-if="activeTab === 'register' && form.accountType === 'showroom'" cols="12">
               <label class="input-label">Showroom Name</label>
               <VTextField
@@ -202,6 +272,18 @@ const handleAuth = async () => {
               />
             </VCol>
 
+            <VCol v-if="activeTab === 'register'" cols="12">
+              <label class="input-label">Phone Number</label>
+              <VTextField
+                v-model="form.phone"
+                placeholder="+20 123 456 7890"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input"
+              />
+            </VCol>
+
             <VCol cols="12">
               <label class="input-label">Password</label>
               <VTextField
@@ -219,6 +301,21 @@ const handleAuth = async () => {
               <div v-if="activeTab === 'login'" class="mt-4 text-end">
                 <a href="javascript:void(0)" class="text-body-2 text-disabled text-decoration-underline hover-white">Forgot password?</a>
               </div>
+            </VCol>
+
+            <VCol v-if="activeTab === 'register'" cols="12">
+              <label class="input-label">Confirm Password</label>
+              <VTextField
+                v-model="form.password_confirmation"
+                :type="isConfirmPasswordVisible ? 'text' : 'password'"
+                placeholder="••••••••"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input"
+                :append-inner-icon="isConfirmPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
+              />
             </VCol>
 
             <!-- Register Requirements -->
