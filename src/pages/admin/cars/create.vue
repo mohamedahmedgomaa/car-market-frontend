@@ -351,7 +351,7 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12">
-              <VSelect
+              <VAutocomplete
                 ref="refSeller"
                 v-model="form.seller_id"
                 :items="sellers"
@@ -367,7 +367,7 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12" md="6">
-              <VSelect
+              <VAutocomplete
                 ref="refBrand"
                 v-model="form.brand_id"
                 :items="brands"
@@ -383,7 +383,7 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12" md="6">
-              <VSelect
+              <VAutocomplete
                 ref="refModel"
                 v-model="form.model_id"
                 :items="models"
@@ -406,7 +406,7 @@ const handleSubmit = async () => {
 
           <VRow dense>
             <VCol cols="12" md="6">
-              <VSelect
+              <VAutocomplete
                 ref="refCountry"
                 v-model="form.country_id"
                 :items="countries"
@@ -422,7 +422,7 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12" md="6">
-              <VSelect
+              <VAutocomplete
                 ref="refCity"
                 v-model="form.city_id"
                 :items="cities"
