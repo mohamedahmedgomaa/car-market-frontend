@@ -35,6 +35,7 @@ const form = ref({
   drivetrain: '',
   color: '',
   condition: 'used',
+  cylinders: null,
 
   features: [],
   images: [],
@@ -374,6 +375,17 @@ const handleSubmit = async () => {
                 v-model="form.mileage"
                 label="Mileage"
                 :error-messages="fieldError('mileage')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VSelect
+                v-model="form.cylinders"
+                :items="['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']"
+                label="Cylinders"
+                prepend-inner-icon="tabler-engine-off"
+                variant="outlined"
+                :error-messages="fieldError('cylinders')"
               />
             </VCol>
 

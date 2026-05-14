@@ -40,6 +40,7 @@ const form = ref({
   horsepower: '',
   torque: '',
   engine_capacity: '',
+  cylinders: null,
 
   phone_number: '',
   whatsapp_number: '',
@@ -560,13 +561,25 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12" md="4">
-              <VTextField
+              <VSelect
                 ref="refEngineCapacity"
-                v-model="displayEngineCapacity"
-                label="Engine Capacity (CC / Liters)"
+                v-model="form.engine_capacity"
+                :items="['1000', '1200', '1300', '1400', '1500', '1600', '1800', '2000', '2400', '2500', '2800', '3000', '3500', '3800', '4000', '4400', '4800', '5000', '5500', '5700', '6000', '6200', '6500', '8000']"
+                label="Engine Capacity (CC)"
                 prepend-inner-icon="tabler-piston"
+                variant="outlined"
                 :error-messages="fieldError('engine_capacity')"
-                maxlength="5"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VSelect
+                v-model="form.cylinders"
+                :items="['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']"
+                label="Cylinders"
+                prepend-inner-icon="tabler-engine-off"
+                variant="outlined"
+                :error-messages="fieldError('cylinders')"
               />
             </VCol>
 
