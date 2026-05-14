@@ -512,13 +512,13 @@ watch(
   box-shadow: 0 0 30px rgba(241, 196, 15, 0.3);
 }
 
-/* ✅ Global Ad Border */
+/* ✅ Global Ad Border (Orange) */
 .car-card--global {
-  border-color: #9b59b6 !important;
-  box-shadow: 0 0 20px rgba(155, 89, 182, 0.15);
+  border-color: #ff9f43 !important;
+  box-shadow: 0 0 20px rgba(255, 159, 67, 0.2);
 }
 .car-card--global:hover {
-  box-shadow: 0 0 30px rgba(155, 89, 182, 0.3);
+  box-shadow: 0 0 30px rgba(255, 159, 67, 0.4);
 }
 
 /* ✅ Import Border */
@@ -677,8 +677,9 @@ watch(
 }
 
 .badge-global {
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);
+  background: linear-gradient(135deg, #ff9f43, #ff6b6b);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 159, 67, 0.5);
+  color: #fff;
 }
 </style>
