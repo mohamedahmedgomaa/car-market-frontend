@@ -87,6 +87,46 @@ const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('success')
 
+/* ================= Refs for Auto-focus ================= */
+const refType = ref()
+const refSeller = ref()
+const refBrand = ref()
+const refModel = ref()
+const refCountry = ref()
+const refCity = ref()
+const refTitleAr = ref()
+const refTitleEn = ref()
+const refPrice = ref()
+const refYear = ref()
+const refMileage = ref()
+const refHorsepower = ref()
+const refTorque = ref()
+const refEngineCapacity = ref()
+const refTransmission = ref()
+const refFuelType = ref()
+const refDrivetrain = ref()
+const refCondition = ref()
+
+const focusNext = (nextRef) => {
+  if (nextRef && nextRef.focus) {
+    setTimeout(() => {
+      nextRef.focus()
+    }, 100)
+  }
+}
+
+const commonColors = [
+  { name: 'White', hex: '#FFFFFF' },
+  { name: 'Black', hex: '#000000' },
+  { name: 'Silver', hex: '#C0C0C0' },
+  { name: 'Grey', hex: '#808080' },
+  { name: 'Red', hex: '#FF0000' },
+  { name: 'Blue', hex: '#0000FF' },
+  { name: 'Brown', hex: '#A52A2A' },
+  { name: 'Beige', hex: '#F5F5DC' },
+  { name: 'Gold', hex: '#FFD700' },
+]
+
 /* ================= Numeric Helpers ================= */
 const isNumberKey = (evt) => {
   const charCode = (evt.which) ? evt.which : evt.keyCode
@@ -175,6 +215,9 @@ const loadModels = async (keepCurrent = false) => {
     form.value.model_id = exists ? current : null
   } else {
     form.value.model_id = null
+    if (models.value.length > 0) {
+      focusNext(refModel.value)
+    }
   }
 }
 
@@ -194,6 +237,9 @@ const loadCities = async (keepCurrent = false) => {
     form.value.city_id = exists ? current : null
   } else {
     form.value.city_id = null
+    if (cities.value.length > 0) {
+      focusNext(refCity.value)
+    }
   }
 }
 
@@ -479,11 +525,19 @@ const handleSubmit = async () => {
 
           <VRow dense>
             <VCol cols="12" md="12">
-              <VSelect v-model="form.type" :items="['car','motorcycle']" label="Type" :error-messages="fieldError('type')"  />
+              <VSelect
+                ref="refType"
+                v-model="form.type"
+                :items="['car','motorcycle']"
+                label="Type"
+                :error-messages="fieldError('type')"
+                @update:modelValue="focusNext(refSeller.value)"
+              />
             </VCol>
 
             <VCol cols="12">
               <VSelect
+                ref="refSeller"
                 v-model="form.seller_id"
                 :items="sellers"
                 item-title="name"
@@ -493,11 +547,13 @@ const handleSubmit = async () => {
                 variant="outlined"
                 :error="!!fieldError('seller_id').length"
                 :error-messages="fieldError('seller_id')"
+                @update:modelValue="focusNext(refBrand.value)"
               />
             </VCol>
 
             <VCol cols="12" md="6">
               <VSelect
+                ref="refBrand"
                 v-model="form.brand_id"
                 :items="brands"
                 :item-title="b => safeItemTitle(b)"
@@ -513,6 +569,7 @@ const handleSubmit = async () => {
 
             <VCol cols="12" md="6">
               <VSelect
+                ref="refModel"
                 v-model="form.model_id"
                 :items="models"
                 :item-title="m => safeItemTitle(m)"
@@ -523,6 +580,7 @@ const handleSubmit = async () => {
                 :disabled="!form.brand_id || !models.length"
                 :error="!!fieldError('model_id').length"
                 :error-messages="fieldError('model_id')"
+                @update:modelValue="focusNext(refCountry.value)"
               />
             </VCol>
           </VRow>
@@ -535,6 +593,7 @@ const handleSubmit = async () => {
           <VRow dense>
             <VCol cols="12" md="6">
               <VSelect
+                ref="refCountry"
                 v-model="form.country_id"
                 :items="countries"
                 :item-title="c => safeItemTitle(c)"
@@ -550,6 +609,7 @@ const handleSubmit = async () => {
 
             <VCol cols="12" md="6">
               <VSelect
+                ref="refCity"
                 v-model="form.city_id"
                 :items="cities"
                 :item-title="c => safeItemTitle(c)"
@@ -560,6 +620,7 @@ const handleSubmit = async () => {
                 :disabled="!form.country_id || !cities.length"
                 :error="!!fieldError('city_id').length"
                 :error-messages="fieldError('city_id')"
+                @update:modelValue="focusNext(refTitleAr.value)"
               />
             </VCol>
           </VRow>
@@ -572,6 +633,7 @@ const handleSubmit = async () => {
           <VRow dense>
             <VCol cols="12" md="6">
               <VTextField
+                ref="refTitleAr"
                 v-model="form.title_ar"
                 label="Title Arabic"
                 variant="outlined"
@@ -581,6 +643,7 @@ const handleSubmit = async () => {
 
             <VCol cols="12" md="6">
               <VTextField
+                ref="refTitleEn"
                 v-model="form.title_en"
                 label="Title English"
                 variant="outlined"
@@ -624,6 +687,7 @@ const handleSubmit = async () => {
           <VRow dense>
             <VCol cols="12" md="4">
               <VTextField
+                ref="refPrice"
                 v-model="displayPrice"
                 label="Price (EG)"
                 prepend-inner-icon="tabler-currency-pound"
@@ -635,6 +699,7 @@ const handleSubmit = async () => {
 
             <VCol cols="12" md="4">
               <VTextField
+                ref="refYear"
                 v-model="displayYear"
                 label="Year"
                 prepend-inner-icon="tabler-calendar"
@@ -646,6 +711,7 @@ const handleSubmit = async () => {
 
             <VCol cols="12" md="4">
               <VTextField
+                ref="refMileage"
                 v-model="displayMileage"
                 label="Mileage (km)"
                 prepend-inner-icon="tabler-road"
@@ -658,6 +724,7 @@ const handleSubmit = async () => {
             <!-- Technical Specs -->
             <VCol cols="12" md="4">
               <VTextField
+                ref="refHorsepower"
                 v-model="displayHorsepower"
                 label="Horsepower (HP)"
                 prepend-inner-icon="tabler-engine"
@@ -669,6 +736,7 @@ const handleSubmit = async () => {
 
             <VCol cols="12" md="4">
               <VTextField
+                ref="refTorque"
                 v-model="displayTorque"
                 label="Torque (Nm)"
                 prepend-inner-icon="tabler-settings-automation"
@@ -680,6 +748,7 @@ const handleSubmit = async () => {
 
             <VCol cols="12" md="4">
               <VTextField
+                ref="refEngineCapacity"
                 v-model="displayEngineCapacity"
                 label="Engine Capacity (CC / Liters)"
                 prepend-inner-icon="tabler-piston"
@@ -690,20 +759,23 @@ const handleSubmit = async () => {
 
             <!-- Mechanical Options -->
             <VCol cols="12" md="3">
-              <VSelect 
-                v-model="form.transmission" 
+              <VSelect
+                ref="refTransmission"
+                v-model="form.transmission"
                 :items="[
                   { title: 'Automatic', value: 'automatic' },
                   { title: 'Manual', value: 'manual' }
-                ]" 
-                label="Transmission" 
+                ]"
+                label="Transmission"
                 prepend-inner-icon="tabler-manual-gearbox"
+                @update:modelValue="focusNext(refFuelType.value)"
               />
             </VCol>
 
             <VCol cols="12" md="3">
-              <VSelect 
-                v-model="form.fuel_type" 
+              <VSelect
+                ref="refFuelType"
+                v-model="form.fuel_type"
                 :items="[
                   { title: 'Petrol', value: 'petrol' },
                   { title: 'Diesel', value: 'diesel' },
@@ -711,34 +783,38 @@ const handleSubmit = async () => {
                   { title: 'Hybrid', value: 'hybrid' },
                   { title: 'Mild Hybrid', value: 'mild_hybrid' },
                   { title: 'REEV (Plug-in)', value: 'reev' }
-                ]" 
-                label="Fuel Type" 
+                ]"
+                label="Fuel Type"
                 prepend-inner-icon="tabler-gas-station"
+                @update:modelValue="focusNext(refDrivetrain.value)"
               />
             </VCol>
 
             <VCol cols="12" md="3">
-              <VSelect 
-                v-model="form.drivetrain" 
+              <VSelect
+                ref="refDrivetrain"
+                v-model="form.drivetrain"
                 :items="[
                   { title: 'FWD (Front Wheel)', value: 'fwd' },
                   { title: 'RWD (Rear Wheel)', value: 'rwd' },
                   { title: 'AWD (All Wheel)', value: 'awd' },
                   { title: '4WD (4x4)', value: '4wd' }
-                ]" 
-                label="Drivetrain" 
+                ]"
+                label="Drivetrain"
                 prepend-inner-icon="tabler-binary-tree"
+                @update:modelValue="focusNext(refCondition.value)"
               />
             </VCol>
 
             <VCol cols="12" md="3">
-              <VSelect 
-                v-model="form.condition" 
+              <VSelect
+                ref="refCondition"
+                v-model="form.condition"
                 :items="[
                   { title: 'New', value: 'new' },
                   { title: 'Used', value: 'used' }
-                ]" 
-                label="Condition" 
+                ]"
+                label="Condition"
                 prepend-inner-icon="tabler-refresh"
               />
             </VCol>
@@ -764,14 +840,38 @@ const handleSubmit = async () => {
         <section class="mb-10">
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Color</h3>
 
-          <VTextField
-            v-model="form.color"
-            label="Color"
-            type="color"
-            variant="outlined"
-            :error-messages="fieldError('color')"
-            @update:modelValue="handleColorChange"
-          />
+          <div class="d-flex flex-wrap gap-3 mb-4">
+            <div
+              v-for="c in commonColors"
+              :key="c.hex"
+              class="cursor-pointer rounded-circle border d-flex align-center justify-center"
+              :style="{ backgroundColor: c.hex, width: '40px', height: '40px', border: form.color === c.hex ? '3px solid #FF9F43' : '1px solid #ddd' }"
+              :title="c.name"
+              @click="form.color = c.hex"
+            >
+              <VIcon v-if="form.color === c.hex" icon="tabler-check" :color="c.hex === '#FFFFFF' ? 'black' : 'white'" size="20" />
+            </div>
+          </div>
+
+          <VRow align="center">
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.color"
+                label="Custom Color (Hex)"
+                variant="outlined"
+                prepend-inner-icon="tabler-palette"
+                :error-messages="fieldError('color')"
+              >
+                <template #append-inner>
+                  <input
+                    type="color"
+                    v-model="form.color"
+                    style="width: 30px; height: 30px; border: none; cursor: pointer; background: none;"
+                  >
+                </template>
+              </VTextField>
+            </VCol>
+          </VRow>
         </section>
 
         <!-- ================= Contact Information ================= -->
