@@ -177,9 +177,26 @@ const fetchCars = async () => {
     })
 
     const all = normalizeCars(res.data)
-    const list = props.approvedOnly ? all.filter((c) => c.status === 'approved') : all
+    
+    // ✅ Sort by priority: 1. is_global_ad, 2. is_featured, 3. created_at DESC
+    const sorted = [...all].sort((a, b) => {
+      // 1. Global Ad priority
+      if (Number(b.is_global_ad) !== Number(a.is_global_ad)) {
+        return Number(b.is_global_ad) - Number(a.is_global_ad)
+      }
+      
+      // 2. Featured priority
+      if (Number(b.is_featured) !== Number(a.is_featured)) {
+        return Number(b.is_featured) - Number(a.is_featured)
+      }
 
-    // ✅ Limit to max 8 items for homepage display
+      // 3. Newest first
+      return new Date(b.created_at) - new Date(a.created_at)
+    })
+
+    const list = props.approvedOnly ? sorted.filter((c) => c.status === 'approved') : sorted
+
+    // ✅ Limit to max items
     const limitedList = list.slice(0, props.limit)
 
     const normalized = limitedList.map((c) => {
@@ -255,11 +272,44 @@ watch(
           v-for="car in displayCars"
           :key="car.id"
           class="car-card"
+          :class="{
+            'car-card--best-deal': Number(car.is_best_deal) === 1,
+            'car-card--featured': Number(car.is_featured) === 1 && Number(car.is_best_deal) !== 1,
+            'car-card--global': Number(car.is_global_ad) === 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1,
+            'car-card--import': Number(car.is_import) === 1 && Number(car.is_global_ad) !== 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1
+          }"
           :to="`/user/cars/${car.id}`"
         >
           <!-- ✅ صورة العربية اختيارية -->
           <div v-if="showImage" class="car-card__image">
             <img :src="getMainImage(car)" :alt="t(car.title) || `Car #${car.id}`" loading="lazy" />
+
+            <!-- ✅ Badges Section -->
+            <div class="car-card__badges">
+              <!-- Best Deal Badge -->
+              <div v-if="Number(car.is_best_deal) === 1" class="badge-item badge-best-deal">
+                <VIcon icon="tabler-tag" size="12" class="me-1" />
+                <span>Best Deal</span>
+              </div>
+              
+              <!-- Featured Badge -->
+              <div v-if="Number(car.is_featured) === 1" class="badge-item badge-featured">
+                <VIcon icon="tabler-star" size="12" class="me-1" />
+                <span>Featured</span>
+              </div>
+
+              <!-- Global Ad Badge -->
+              <div v-if="Number(car.is_global_ad) === 1" class="badge-item badge-global">
+                <VIcon icon="tabler-world" size="12" class="me-1" />
+                <span>Global Ad</span>
+              </div>
+
+              <!-- Import Badge -->
+              <div v-if="Number(car.is_import) === 1" class="badge-item badge-import">
+                <VIcon icon="tabler-plane-arrival" size="12" class="me-1" />
+                <span>Imported</span>
+              </div>
+            </div>
 
             <button
               class="fav-btn"
@@ -430,17 +480,54 @@ watch(
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 14px;
+  border-radius: 20px;
   overflow: hidden;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 .car-card:hover {
-  transform: translateY(-8px) scale(1.02);
+  transform: translateY(-8px) scale(1.01);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ✅ Best Deal Border */
+.car-card--best-deal {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 20px rgba(255, 77, 77, 0.15);
+}
+.car-card--best-deal:hover {
+  box-shadow: 0 0 30px rgba(255, 77, 77, 0.3);
+}
+
+/* ✅ Featured Border */
+.car-card--featured {
+  border-color: #f1c40f !important;
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.15);
+}
+.car-card--featured:hover {
+  box-shadow: 0 0 30px rgba(241, 196, 15, 0.3);
+}
+
+/* ✅ Global Ad Border */
+.car-card--global {
+  border-color: #9b59b6 !important;
+  box-shadow: 0 0 20px rgba(155, 89, 182, 0.15);
+}
+.car-card--global:hover {
+  box-shadow: 0 0 30px rgba(155, 89, 182, 0.3);
+}
+
+/* ✅ Import Border */
+.car-card--import {
+  border-color: #00d2ff !important;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+}
+.car-card--import:hover {
+  box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
 }
 
 .car-card__image {
@@ -544,5 +631,54 @@ watch(
 .fav-btn--static {
   position: static;
   margin-left: auto;
+}
+
+/* ✅ Badges Styles */
+.car-card__badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 5;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 10px; /* More compact */
+  border-radius: 6px 20px 20px 6px;
+  font-size: 10px; /* Smaller font */
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.badge-best-deal {
+  background: linear-gradient(135deg, #ff4d4d, #d63031);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(214, 48, 49, 0.4);
+}
+
+.badge-featured {
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
+  color: #000;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+}
+
+.badge-import {
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.badge-global {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);
 }
 </style>
