@@ -3,9 +3,10 @@ import { ref, onMounted } from 'vue'
 import dashboardAdminApi from '@/api/admin/dashboardAdminApi'
 
 const stats = ref({
-  cars: { total: 0, pending: 0, approved: 0 },
-  users: { total: 0 },
-  sellers: { total: 0 }
+  cars: { total: 0, pending: 0, approved: 0, views: 0 },
+  users: { total: 0, online: 0, new_this_month: 0 },
+  sellers: { total: 0 },
+  activity: { new_cars: 0 }
 })
 
 const brandStats = ref([])
@@ -32,10 +33,10 @@ onMounted(() => {
 })
 
 const statCards = [
-  { title: 'Total Vehicles', key: 'cars.total', icon: 'tabler-car', color: 'primary' },
-  { title: 'Pending Review', key: 'cars.pending', icon: 'tabler-hourglass-high', color: 'warning' },
-  { title: 'Active Sellers', key: 'sellers.total', icon: 'tabler-user-dollar', color: 'success' },
-  { title: 'Total Users', key: 'users.total', icon: 'tabler-users', color: 'info' },
+  { title: 'Total Vehicles', key: 'cars.total', icon: 'tabler-car', color: 'primary', trend: 'activity.new_cars' },
+  { title: 'Online Now', key: 'users.online', icon: 'tabler-broadcast', color: 'error', pulse: true },
+  { title: 'Total Views', key: 'cars.views', icon: 'tabler-eye', color: 'info' },
+  { title: 'Total Users', key: 'users.total', icon: 'tabler-users', color: 'success', trend: 'users.new_this_month' },
 ]
 
 const getNestedValue = (obj, path) => {
@@ -48,18 +49,22 @@ const getNestedValue = (obj, path) => {
     <!-- Header -->
     <div class="d-flex align-center justify-space-between mb-8">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Overview Dashboard</h1>
-        <p class="text-subtitle-1 text-medium-emphasis">Welcome back! Here's what's happening with NegmCars today.</p>
+        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">System Overview</h1>
+        <p class="text-subtitle-1 text-medium-emphasis">Real-time performance metrics and inventory management.</p>
       </div>
-      <VBtn
-        color="primary"
-        prepend-icon="tabler-refresh"
-        variant="tonal"
-        :loading="loading"
-        @click="fetchDashboardData"
-      >
-        Refresh Data
-      </VBtn>
+      <div class="d-flex gap-3">
+        <VBtn
+          color="primary"
+          prepend-icon="tabler-refresh"
+          variant="elevated"
+          elevation="4"
+          :loading="loading"
+          @click="fetchDashboardData"
+          class="rounded-pill px-6"
+        >
+          Refresh Data
+        </VBtn>
+      </div>
     </div>
 
     <!-- Stats Grid -->
@@ -71,26 +76,32 @@ const getNestedValue = (obj, path) => {
         sm="6"
         md="3"
       >
-        <VCard class="stat-card" elevation="2">
-          <VCardText class="d-flex align-center pa-6">
-            <VAvatar
-              :color="card.color"
-              variant="tonal"
-              size="54"
-              rounded="lg"
-              class="me-4"
-            >
-              <VIcon :icon="card.icon" size="30" />
-            </VAvatar>
-            <div>
-              <div class="text-caption text-uppercase font-weight-bold opacity-70">{{ card.title }}</div>
-              <div class="text-h4 font-weight-black">
-                <VSkeletonLoader v-if="loading" type="text" width="50" />
+        <VCard class="stat-card" elevation="4">
+          <VCardText class="pa-6">
+            <div class="d-flex align-center justify-space-between mb-4">
+              <VAvatar
+                :color="card.color"
+                variant="tonal"
+                size="48"
+                rounded="lg"
+              >
+                <VIcon :icon="card.icon" size="26" :class="{ 'pulse-icon': card.pulse }" />
+              </VAvatar>
+              <div v-if="card.trend" class="text-caption font-weight-bold d-flex align-center text-success bg-success-lighten-5 px-2 py-1 rounded-pill">
+                <VIcon icon="tabler-trending-up" size="14" class="me-1" />
+                +{{ getNestedValue(stats, card.trend) }}
+              </div>
+            </div>
+            
+            <div class="text-caption text-uppercase font-weight-black letter-spacing-1 text-medium-emphasis mb-1">{{ card.title }}</div>
+            <div class="d-flex align-end gap-2">
+              <div class="text-h3 font-weight-black">
+                <VSkeletonLoader v-if="loading" type="text" width="60" />
                 <span v-else>{{ getNestedValue(stats, card.key) }}</span>
               </div>
             </div>
           </VCardText>
-          <div class="stat-progress" :style="{ background: `var(--v-${card.color}-base)`, opacity: 0.1 }"></div>
+          <div class="card-glow" :style="{ background: `radial-gradient(circle at top right, rgba(var(--v-theme-${card.color}), 0.15), transparent)` }"></div>
         </VCard>
       </VCol>
     </VRow>
@@ -98,12 +109,14 @@ const getNestedValue = (obj, path) => {
     <VRow>
       <!-- Recent Inventory -->
       <VCol cols="12" md="8">
-        <VCard class="dashboard-card h-100 overflow-hidden">
+        <VCard class="dashboard-card h-100 overflow-hidden" elevation="6">
           <VCardTitle class="pa-6 d-flex align-center">
-            <VIcon icon="tabler-list-details" class="me-3 text-primary" />
-            <span class="font-weight-bold">Recent Inventory Arrivals</span>
+            <VAvatar color="primary" variant="tonal" size="32" class="me-3">
+              <VIcon icon="tabler-list-details" size="18" />
+            </VAvatar>
+            <span class="font-weight-black text-h6">Recent Arrivals</span>
             <VSpacer />
-            <VBtn variant="text" size="small" to="/admin/cars" class="text-none">View All Listings</VBtn>
+            <VBtn variant="tonal" size="small" to="/admin/cars" class="rounded-pill px-4">View All</VBtn>
           </VCardTitle>
           <VDivider />
           <VTable class="recent-cars-table">
@@ -242,11 +255,32 @@ const getNestedValue = (obj, path) => {
   height: 48px !important;
 }
 
-.brand-stat-item {
-  position: relative;
+.letter-spacing-1 {
+  letter-spacing: 1px;
 }
 
-.brand-stat-item :deep(.v-progress-linear) {
-  background-color: rgba(var(--v-theme-on-surface), 0.05) !important;
+.pulse-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stat-card :deep(.v-card-text) {
+  position: relative;
+  z-index: 1;
 }
 </style>
