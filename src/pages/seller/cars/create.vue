@@ -393,8 +393,33 @@ const handleSubmit = async () => {
             <VCol cols="12" md="4">
               <VSelect
                 v-model="form.engine_capacity"
-                :items="['1000', '1200', '1300', '1400', '1500', '1600', '1800', '2000', '2400', '2500', '2800', '3000', '3500', '3800', '4000', '4400', '4800', '5000', '5500', '5700', '6000', '6200', '6500', '8000']"
-                label="Engine Capacity (CC)"
+                :items="[
+                  { title: '1000 CC (1.0L)', value: '1000' },
+                  { title: '1200 CC (1.2L)', value: '1200' },
+                  { title: '1300 CC (1.3L)', value: '1300' },
+                  { title: '1400 CC (1.4L)', value: '1400' },
+                  { title: '1500 CC (1.5L)', value: '1500' },
+                  { title: '1600 CC (1.6L)', value: '1600' },
+                  { title: '1800 CC (1.8L)', value: '1800' },
+                  { title: '2000 CC (2.0L)', value: '2000' },
+                  { title: '2400 CC (2.4L)', value: '2400' },
+                  { title: '2500 CC (2.5L)', value: '2500' },
+                  { title: '2800 CC (2.8L)', value: '2800' },
+                  { title: '3000 CC (3.0L)', value: '3000' },
+                  { title: '3500 CC (3.5L)', value: '3500' },
+                  { title: '3800 CC (3.8L)', value: '3800' },
+                  { title: '4000 CC (4.0L)', value: '4000' },
+                  { title: '4400 CC (4.4L)', value: '4400' },
+                  { title: '4800 CC (4.8L)', value: '4800' },
+                  { title: '5000 CC (5.0L)', value: '5000' },
+                  { title: '5500 CC (5.5L)', value: '5500' },
+                  { title: '5700 CC (5.7L)', value: '5700' },
+                  { title: '6000 CC (6.0L)', value: '6000' },
+                  { title: '6200 CC (6.2L)', value: '6200' },
+                  { title: '6500 CC (6.5L)', value: '6500' },
+                  { title: '8000 CC (8.0L)', value: '8000' }
+                ]"
+                label="Engine Capacity"
                 prepend-inner-icon="tabler-piston"
                 variant="outlined"
                 :error-messages="fieldError('engine_capacity')"
