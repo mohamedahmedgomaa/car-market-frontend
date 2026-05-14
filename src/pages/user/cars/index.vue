@@ -227,10 +227,38 @@ const fetchCars = async () => {
   cars.value = []
 
   try {
-    const res = await carsUserApi.getAll(buildParams(page.value))
+    const mainParams = buildParams(page.value)
+    
+    // 1. Fetch main filtered results
+    const res = await carsUserApi.getAll(mainParams)
     const { items, total: tt } = normalizeCars(res.data)
+    let finalItems = items.map(normalizeFavFields)
 
-    cars.value = items.map(normalizeFavFields)
+    // 2. If it's the first page, fetch Global Ads to inject them at the top
+    // regardless of the current filters (but respecting vehicle type)
+    if (page.value === 1) {
+      try {
+        const globalRes = await carsUserApi.getAll({
+          perPage: 2,
+          'filter[status]': 'approved',
+          'filter[is_global_ad]': 1,
+          'filter[type]': draft.value.type || 'car',
+          sort: '-created_at'
+        })
+        const { items: globals } = normalizeCars(globalRes.data)
+        const globalItems = globals.map(normalizeFavFields)
+
+        // Prepend unique global ads to the list
+        const existingIds = new Set(finalItems.map(c => c.id))
+        const uniqueGlobals = globalItems.filter(g => !existingIds.has(g.id))
+        
+        finalItems = [...uniqueGlobals, ...finalItems]
+      } catch (globalErr) {
+        console.error('Global ads fetch error:', globalErr)
+      }
+    }
+
+    cars.value = finalItems
     total.value = tt
   } catch (err) {
     console.error('Fetch error:', err)

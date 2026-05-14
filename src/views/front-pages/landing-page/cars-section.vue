@@ -306,7 +306,7 @@ watch(
               <!-- Global Ad Badge -->
               <div v-if="Number(car.is_global_ad) === 1" class="badge-item badge-global">
                 <VIcon icon="tabler-world" size="12" class="me-1" />
-                <span>Global Ad</span>
+                <span>Ad</span>
               </div>
 
               <!-- Import Badge -->
