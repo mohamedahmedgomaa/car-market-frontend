@@ -155,8 +155,30 @@ const toggleFavorite = async (car) => {
   }
 }
 
-// ✅ Controlled/uncontrolled display
-const displayCars = computed(() => (props.cars !== null ? props.cars : localCars.value))
+// ✅ Controlled/uncontrolled display with Sorting
+const displayCars = computed(() => {
+  const list = props.cars !== null ? props.cars : localCars.value
+  if (!list || !Array.isArray(list)) return []
+
+  // ✅ Apply Priority Sort: 1. is_global_ad, 2. is_featured, 3. created_at DESC
+  return [...list].sort((a, b) => {
+    // 1. Global Ad priority
+    if (Number(b.is_global_ad) !== Number(a.is_global_ad)) {
+      return Number(b.is_global_ad) - Number(a.is_global_ad)
+    }
+    
+    // 2. Featured priority
+    if (Number(b.is_featured) !== Number(a.is_featured)) {
+      return Number(b.is_featured) - Number(a.is_featured)
+    }
+
+    // 3. Newest first (if dates are available)
+    if (a.created_at && b.created_at) {
+      return new Date(b.created_at) - new Date(a.created_at)
+    }
+    return 0
+  })
+})
 const displayLoading = computed(() => (props.loading !== null ? props.loading : localLoading.value))
 const displayError = computed(() => (props.error !== null ? props.error : localError.value))
 
@@ -177,24 +199,7 @@ const fetchCars = async () => {
     })
 
     const all = normalizeCars(res.data)
-    
-    // ✅ Sort by priority: 1. is_global_ad, 2. is_featured, 3. created_at DESC
-    const sorted = [...all].sort((a, b) => {
-      // 1. Global Ad priority
-      if (Number(b.is_global_ad) !== Number(a.is_global_ad)) {
-        return Number(b.is_global_ad) - Number(a.is_global_ad)
-      }
-      
-      // 2. Featured priority
-      if (Number(b.is_featured) !== Number(a.is_featured)) {
-        return Number(b.is_featured) - Number(a.is_featured)
-      }
-
-      // 3. Newest first
-      return new Date(b.created_at) - new Date(a.created_at)
-    })
-
-    const list = props.approvedOnly ? sorted.filter((c) => c.status === 'approved') : sorted
+    const list = props.approvedOnly ? all.filter((c) => c.status === 'approved') : all
 
     // ✅ Limit to max items
     const limitedList = list.slice(0, props.limit)
