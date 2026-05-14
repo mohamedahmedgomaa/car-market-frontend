@@ -222,7 +222,7 @@ const handleSubmit = async () => {
                 ref="refBrand"
                 v-model="form.brand_id"
                 :items="brands"
-                :item-title="b => b.name.en"
+                :item-title="b => b.name?.en ?? b.name ?? '-'"
                 item-value="id"
                 label="Brand"
                 prepend-inner-icon="tabler-building-factory"
@@ -238,7 +238,7 @@ const handleSubmit = async () => {
                 ref="refModel"
                 v-model="form.model_id"
                 :items="models"
-                :item-title="m => m.name.en"
+                :item-title="m => m.name?.en ?? m.name ?? '-'"
                 item-value="id"
                 label="Model"
                 prepend-inner-icon="tabler-car"
@@ -391,7 +391,14 @@ const handleSubmit = async () => {
               <VSelect
                 ref="refFuelType"
                 v-model="form.fuel_type"
-                :items="['petrol','diesel','electric','hybrid']"
+                :items="[
+                  { title: 'Petrol', value: 'petrol' },
+                  { title: 'Diesel', value: 'diesel' },
+                  { title: 'Electric', value: 'electric' },
+                  { title: 'Hybrid', value: 'hybrid' },
+                  { title: 'Mild Hybrid', value: 'mild_hybrid' },
+                  { title: 'REEV (Plug-in)', value: 'reev' }
+                ]"
                 label="Fuel Type"
                 @update:modelValue="focusNext(refDrivetrain.value)"
               />
