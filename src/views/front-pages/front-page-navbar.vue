@@ -141,6 +141,15 @@ const logout = async () => {
             Favorites
           </RouterLink>
 
+          <RouterLink
+            to="/user/sellers"
+            class="nav-link font-weight-medium"
+            :class="route.path === '/user/sellers' ? 'active-link' : ''"
+            @click="sidebar = false"
+          >
+            Showrooms
+          </RouterLink>
+
 
 
           <VDivider class="my-2" />
@@ -230,10 +239,10 @@ const logout = async () => {
           </VAppBarTitle>
 
           <!-- ✅ Links (Desktop) -->
-          <div class="text-base align-center d-none d-md-flex gap-x-6 ms-8">
+          <div class="text-base align-center d-none d-md-flex gap-x-4 ms-6">
             <RouterLink
               to="/user/cars"
-              class="nav-link font-weight-bold py-2 px-3"
+              class="nav-link font-weight-bold py-2 px-2"
               :class="route.path === '/user/cars' && !route.query.sort && !route.query['filter[type]'] ? 'active-link' : ''"
             >
               Cars
@@ -241,7 +250,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/best-deals"
-              class="nav-link font-weight-bold py-2 px-3"
+              class="nav-link font-weight-bold py-2 px-2"
               :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
             >
               Best Deals
@@ -249,7 +258,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/negm-sooq"
-              class="nav-link font-weight-bold py-2 px-3"
+              class="nav-link font-weight-bold py-2 px-2"
               :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
             >
               Import Cars
@@ -257,7 +266,7 @@ const logout = async () => {
 
             <RouterLink
               :to="{ path: '/user/cars', query: { 'filter[type]': 'motorcycle', sort: '-created_at' } }"
-              class="nav-link font-weight-bold py-2 px-3"
+              class="nav-link font-weight-bold py-2 px-2"
               :class="route.path === '/user/cars' && route.query['filter[type]'] === 'motorcycle' ? 'active-link' : ''"
             >
               Bikes
@@ -265,7 +274,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/sell"
-              class="nav-link font-weight-bold py-2 px-3"
+              class="nav-link font-weight-bold py-2 px-2"
               :class="route.path === '/user/sell' ? 'active-link' : ''"
             >
               Sell
@@ -273,10 +282,18 @@ const logout = async () => {
 
             <RouterLink
               to="/user/favorites"
-              class="nav-link font-weight-bold py-2 px-3"
+              class="nav-link font-weight-bold py-2 px-2"
               :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
             >
               Favorites
+            </RouterLink>
+
+            <RouterLink
+              to="/user/sellers"
+              class="nav-link font-weight-bold py-2 px-2"
+              :class="route.path === '/user/sellers' ? 'active-link' : ''"
+            >
+              Showrooms
             </RouterLink>
           </div>
         </div>
