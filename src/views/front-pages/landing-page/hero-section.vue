@@ -325,24 +325,6 @@ onBeforeUnmount(() => {
               />
             </div>
 
-            <!-- ✅ Search Ad by ID -->
-            <div class="mb-5">
-              <VTextField
-                v-model="searchId"
-                placeholder="Ad ID"
-                density="compact"
-                variant="outlined"
-                rounded="xl"
-                hide-details
-                prepend-inner-icon="tabler-hash"
-                append-inner-icon="tabler-search"
-                @click:append-inner="goSearchId"
-                @keydown.enter="goSearchId"
-                @update:model-value="handleIdInput"
-                class="premium-id-input"
-              />
-            </div>
-
             <!-- Header Row with Title and Reset -->
 
             <div class="search-form-grid">
@@ -504,7 +486,7 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Action Buttons Row -->
-            <div class="search-actions-row mt-6 d-flex gap-3">
+            <div class="search-actions-row mt-6 d-flex gap-3 align-center">
               <VBtn
                 color="primary"
                 height="48"
@@ -515,17 +497,21 @@ onBeforeUnmount(() => {
               >
                 Search
               </VBtn>
-              <VBtn
-                variant="tonal"
-                color="warning"
-                class="sell-side-btn"
-                width="100"
-                height="48"
-                @click="showAdPhone = true"
-                prepend-icon="tabler-circle-plus"
-              >
-                Sell
-              </VBtn>
+              <div class="id-search-compact" style="width: 140px;">
+                <VTextField
+                  v-model="searchId"
+                  placeholder="Ad ID"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  prepend-inner-icon="tabler-hash"
+                  append-inner-icon="tabler-search"
+                  @click:append-inner="goSearchId"
+                  @keydown.enter="goSearchId"
+                  @update:model-value="handleIdInput"
+                  class="compact-id-input"
+                />
+              </div>
             </div>
           </VCard>
         </div>
@@ -610,31 +596,31 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.premium-id-input :deep(.v-field) {
+.compact-id-input :deep(.v-field) {
   border-radius: 16px !important;
   background: rgba(var(--v-theme-primary), 0.08) !important;
   border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
-  height: 44px !important;
+  height: 48px !important;
   transition: all 0.3s ease;
 }
 
-.premium-id-input :deep(.v-field__input) {
-  font-size: 1rem !important;
+.compact-id-input :deep(.v-field__input) {
+  font-size: 0.95rem !important;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   color: rgb(var(--v-theme-primary)) !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  min-height: 44px !important;
+  min-height: 48px !important;
 }
 
-.premium-id-input :deep(.v-field--focused) {
+.compact-id-input :deep(.v-field--focused) {
   background: rgba(var(--v-theme-primary), 0.15) !important;
   border-color: rgb(var(--v-theme-primary)) !important;
-  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.3);
+  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.2);
 }
 
-.premium-id-input :deep(.v-icon) {
+.compact-id-input :deep(.v-icon) {
   color: rgb(var(--v-theme-primary));
   opacity: 0.8;
   cursor: pointer;
