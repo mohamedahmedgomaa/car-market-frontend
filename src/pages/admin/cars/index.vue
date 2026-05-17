@@ -7,12 +7,17 @@ const router = useRouter()
 const BASE_URL = import.meta.env.VITE_BASE_URL
 
 const lists = ref([])
+const allCarsForStats = ref([])
 const loading = ref(false)
+const statsLoading = ref(false)
 const search = ref('')
 const currentPage = ref(1)
 const lastPage = ref(1)
 const total = ref(0)
-const perPage = 10
+const perPage = ref(100) // ✅ 100 items per page as requested
+
+// ✅ Active Filter State ('all', 'pending', 'featured', 'best_deal', 'import', 'home_page', 'global')
+const activeFilter = ref('all')
 
 // ===== Promotion & Status Dialog =====
 const promotionDialog = ref(false)
@@ -41,24 +46,57 @@ const statusOptions = [
   { title: 'Rejected', value: 'rejected', color: 'error', icon: 'tabler-x' },
 ]
 
+// ✅ Fetch all database cars once in background for accurate overall statistics
+const fetchAllStats = async () => {
+  statsLoading.value = true
+  try {
+    const res = await carAdminApi.getAll({ perPage: 2000 })
+    allCarsForStats.value = res.data?.data || []
+  } catch (err) {
+    console.error('Failed to fetch full stats:', err)
+  } finally {
+    statsLoading.value = false
+  }
+}
+
 const fetchLists = async (page = 1) => {
   loading.value = true
   try {
-    const res = await carAdminApi.getAll({
+    const params = {
       page,
+      perPage: perPage.value,
       'filter[global]': search.value || undefined,
-      perPage,
-    })
+    }
+
+    // Apply active category filter
+    if (activeFilter.value === 'pending') params['filter[status]'] = 'pending'
+    if (activeFilter.value === 'featured') params['filter[is_featured]'] = 1
+    if (activeFilter.value === 'best_deal') params['filter[is_best_deal]'] = 1
+    if (activeFilter.value === 'import') params['filter[is_import]'] = 1
+    if (activeFilter.value === 'home_page') params['filter[show_on_home]'] = 1
+    if (activeFilter.value === 'global') params['filter[is_global_ad]'] = 1
+
+    const res = await carAdminApi.getAll(params)
 
     lists.value = res.data.data
-    currentPage.value = res.data.meta.currentPage
-    lastPage.value = res.data.meta.lastPage
-    total.value = res.data.meta.total
+    currentPage.value = res.data.meta?.currentPage || 1
+    lastPage.value = res.data.meta?.lastPage || 1
+    total.value = res.data.meta?.total || lists.value.length
   } catch (err) {
     console.error('Fetch cars failed:', err.response?.data || err.message)
   } finally {
     loading.value = false
   }
+}
+
+const selectFilter = (type) => {
+  if (activeFilter.value === type) {
+    activeFilter.value = 'all'
+  } else {
+    activeFilter.value = type
+  }
+  currentPage.value = 1
+  fetchLists(1)
 }
 
 const openPromotionDialog = (car) => {
@@ -89,6 +127,12 @@ const handleUpdatePromotion = async () => {
       lists.value[idx] = { ...lists.value[idx], ...res.data.data }
     }
 
+    // Also update stats array
+    const sIdx = allCarsForStats.value.findIndex(c => c.id === currentCar.value.id)
+    if (sIdx !== -1) {
+      allCarsForStats.value[sIdx] = { ...allCarsForStats.value[sIdx], ...res.data.data }
+    }
+
     promotionDialog.value = false
   } catch (err) {
     alert(err.response?.data?.message || 'Update promotion failed')
@@ -109,6 +153,7 @@ const handleDelete = async () => {
   try {
     await carAdminApi.delete(selectedCar.value.id)
     lists.value = lists.value.filter(c => c.id !== selectedCar.value.id)
+    allCarsForStats.value = allCarsForStats.value.filter(c => c.id !== selectedCar.value.id)
     total.value--
     deleteDialog.value = false
   } catch (err) {
@@ -121,7 +166,11 @@ const handleDelete = async () => {
 const handleEdit = (id) => router.push(`/admin/cars/edit/${id}`)
 
 watch(search, () => fetchLists(1))
-onMounted(() => fetchLists())
+
+onMounted(() => {
+  fetchAllStats()
+  fetchLists()
+})
 
 const getMainImageUrl = (car) => {
   if (car.main_image_url) return car.main_image_url
@@ -130,12 +179,17 @@ const getMainImageUrl = (car) => {
   return car.images?.[0]?.path || '/placeholder-car.png'
 }
 
+// ✅ Computed overall statistics across entire database
 const stats = computed(() => {
+  const db = allCarsForStats.value.length ? allCarsForStats.value : lists.value
   return [
-    { title: 'Total Cars', value: total.value, icon: 'tabler-car', color: 'primary' },
-    { title: 'Pending', value: lists.value.filter(c => c.status === 'pending').length, icon: 'tabler-hourglass-high', color: 'warning' },
-    { title: 'Featured', value: lists.value.filter(c => c.is_featured).length, icon: 'tabler-star', color: 'info' },
-    { title: 'Global Ads', value: lists.value.filter(c => c.is_global_ad).length, icon: 'tabler-broadcast', color: 'secondary' },
+    { title: 'Total Cars', filterKey: 'all', value: db.length, icon: 'tabler-car', color: 'primary' },
+    { title: 'Pending Review', filterKey: 'pending', value: db.filter(c => c.status === 'pending').length, icon: 'tabler-clock', color: 'warning' },
+    { title: 'Featured Ads', filterKey: 'featured', value: db.filter(c => Number(c.is_featured) === 1 || Boolean(c.is_featured)).length, icon: 'tabler-star-filled', color: 'info' },
+    { title: 'Best Deals', filterKey: 'best_deal', value: db.filter(c => Number(c.is_best_deal) === 1 || Boolean(c.is_best_deal)).length, icon: 'tabler-flame', color: 'error' },
+    { title: 'Import Cars', filterKey: 'import', value: db.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length, icon: 'tabler-ship', color: 'success' },
+    { title: 'Homepage Ads', filterKey: 'home_page', value: db.filter(c => Number(c.show_on_home) === 1 || Boolean(c.show_on_home)).length, icon: 'tabler-home-star', color: 'amber' },
+    { title: 'Global Banners', filterKey: 'global', value: db.filter(c => Number(c.is_global_ad) === 1 || Boolean(c.is_global_ad)).length, icon: 'tabler-world-broadcast', color: 'secondary' },
   ]
 })
 </script>
@@ -143,91 +197,135 @@ const stats = computed(() => {
 <template>
   <div class="admin-cars-page">
     <!-- Header Section -->
-    <div class="d-flex align-center justify-space-between mb-8">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-8">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 text-gradient">Car Management</h1>
-        <p class="text-subtitle-1 text-medium-emphasis">Manage inventory, promotions, and global advertisements</p>
+        <h1 class="text-h3 font-weight-black mb-1 text-gradient d-flex align-center gap-2">
+          Vehicle Database 
+          <VChip color="primary" variant="elevated" size="small" class="font-weight-black tracking-wider px-3">{{ total }} Listings</VChip>
+        </h1>
+        <p class="text-subtitle-1 text-medium-emphasis mb-0">Manage complete inventory, apply promotions, and monitor category metrics</p>
       </div>
-      <VBtn
-        color="primary"
-        prepend-icon="tabler-plus"
-        size="large"
-        class="elevation-4 action-btn"
-        @click="$router.push('/admin/cars/create')"
-      >
-        Post New Vehicle
-      </VBtn>
+
+      <div class="d-flex align-center gap-3">
+        <VBtn
+          v-if="activeFilter !== 'all'"
+          color="warning"
+          variant="tonal"
+          prepend-icon="tabler-filter-off"
+          class="font-weight-bold px-4"
+          rounded="pill"
+          @click="selectFilter('all')"
+        >
+          Clear Filter
+        </VBtn>
+
+        <VBtn
+          color="primary"
+          prepend-icon="tabler-plus"
+          size="large"
+          rounded="pill"
+          class="elevation-6 font-weight-black px-6 shadow-primary"
+          @click="$router.push('/admin/cars/create')"
+        >
+          Post New Vehicle
+        </VBtn>
+      </div>
     </div>
 
-    <!-- Stats Cards -->
-    <VRow class="mb-8">
-      <VCol v-for="stat in stats" :key="stat.title" cols="12" sm="6" md="3">
-        <VCard class="stat-card overflow-hidden">
-          <div class="stat-glow" :style="{ backgroundColor: `var(--v-${stat.color}-base)` }"></div>
-          <VCardText class="d-flex align-center pa-6">
-            <VAvatar :color="stat.color" variant="tonal" size="48" rounded="lg" class="me-4">
-              <VIcon :icon="stat.icon" size="28" />
-            </VAvatar>
-            <div>
-              <div class="text-caption text-uppercase font-weight-bold opacity-70">{{ stat.title }}</div>
-              <div class="text-h5 font-weight-black">{{ stat.value }}</div>
+    <!-- 📊 Interactive Stats / Filters Grid -->
+    <div class="mb-8">
+      <div class="text-subtitle-2 font-weight-bold opacity-70 mb-3 text-uppercase tracking-wider">Click any card to filter listings instantly:</div>
+      <VRow class="stats-grid">
+        <VCol v-for="stat in stats" :key="stat.title" cols="12" sm="6" md="4" lg="3">
+          <VCard
+            class="stat-card px-4 py-5 text-start h-100 rounded-2xl cursor-pointer transition-all relative overflow-hidden"
+            :class="{ 'active-stat-filter': activeFilter === stat.filterKey }"
+            elevation="4"
+            @click="selectFilter(stat.filterKey)"
+          >
+            <div class="stat-glow" :style="{ backgroundColor: `var(--v-${stat.color}-base)` }"></div>
+            <div class="d-flex align-center justify-space-between mb-3">
+              <VAvatar :color="stat.color" variant="tonal" size="52" rounded="xl" class="elevation-2 border">
+                <VIcon :icon="stat.icon" size="28" />
+              </VAvatar>
+
+              <div class="filter-indicator" v-if="activeFilter === stat.filterKey">
+                <VChip color="primary" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">Active Filter</VChip>
+              </div>
             </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+
+            <div>
+              <h2 class="text-h3 font-weight-black mb-1 line-height-1" :class="`text-${stat.color}`">
+                {{ statsLoading ? '...' : stat.value }}
+              </h2>
+              <div class="text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis">
+                {{ stat.title }}
+              </div>
+            </div>
+          </VCard>
+        </VCol>
+      </VRow>
+    </div>
 
     <!-- Main Content Card -->
-    <VCard class="main-content-card elevation-2">
-      <VCardTitle class="px-6 py-4 d-flex align-center gap-4">
-        <VTextField
-          v-model="search"
-          placeholder="Search by title, brand, or seller..."
-          variant="solo-filled"
-          density="comfortable"
-          prepend-inner-icon="tabler-search"
-          class="max-width-400"
-          hide-details
-          flat
-        />
-        <VSpacer />
-        <VBtn icon variant="text" @click="fetchLists(currentPage)">
-          <VIcon icon="tabler-refresh" />
-        </VBtn>
-      </VCardTitle>
+    <VCard class="main-content-card pa-6 rounded-2xl" elevation="6">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6">
+        <div class="d-flex align-center gap-3 flex-grow-1 max-w-500">
+          <VTextField
+            v-model="search"
+            placeholder="Search by title, brand, model, or seller..."
+            variant="solo-filled"
+            density="comfortable"
+            prepend-inner-icon="tabler-search"
+            hide-details
+            flat
+            rounded="pill"
+            class="search-input w-100 font-weight-medium"
+          >
+            <template #append-inner v-if="search">
+              <VBtn icon="tabler-x" size="small" variant="text" @click="search = ''" />
+            </template>
+          </VTextField>
+        </div>
 
-      <VDivider />
+        <div class="d-flex align-center gap-2">
+          <div class="text-caption font-weight-bold opacity-70">Rows / page: 100</div>
+          <VBtn icon variant="tonal" color="primary" size="small" class="rounded-lg" @click="fetchLists(currentPage)">
+            <VIcon icon="tabler-refresh" />
+          </VBtn>
+        </div>
+      </div>
 
       <VTable class="modern-table">
         <thead>
           <tr>
-            <th class="text-uppercase text-caption font-weight-bold">Vehicle</th>
-            <th class="text-uppercase text-caption font-weight-bold">Seller</th>
-            <th class="text-uppercase text-caption font-weight-bold">Pricing</th>
-            <th class="text-uppercase text-caption font-weight-bold">Visibility</th>
-            <th class="text-uppercase text-caption font-weight-bold text-center">Status</th>
-            <th class="text-uppercase text-caption font-weight-bold text-end px-6">Actions</th>
+            <th class="text-uppercase text-caption font-weight-bold py-3">Vehicle</th>
+            <th class="text-uppercase text-caption font-weight-bold py-3">Seller / City</th>
+            <th class="text-uppercase text-caption font-weight-bold py-3">Pricing & Specs</th>
+            <th class="text-uppercase text-caption font-weight-bold py-3">Visibility Features</th>
+            <th class="text-uppercase text-caption font-weight-bold text-center py-3">Status</th>
+            <th class="text-uppercase text-caption font-weight-bold text-end px-6 py-3">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          <tr v-if="loading" v-for="i in 5" :key="i">
-            <td colspan="6"><VSkeletonLoader type="table-row" /></td>
+          <tr v-if="loading" v-for="i in 8" :key="i">
+            <td colspan="6" class="py-4"><VSkeletonLoader type="table-row" /></td>
           </tr>
           
-          <tr v-else v-for="car in lists" :key="car.id" class="table-row-hover">
+          <tr v-else v-for="car in lists" :key="car.id" class="table-row-hover font-weight-medium">
             <!-- Vehicle Info -->
             <td>
               <div class="d-flex align-center py-3">
-                <VAvatar size="64" rounded="lg" class="me-4 elevation-2 border-primary">
+                <VAvatar size="64" rounded="xl" class="me-4 elevation-3 border overflow-hidden flex-shrink-0">
                   <VImg :src="getMainImageUrl(car)" cover />
                 </VAvatar>
-                <div>
-                  <div class="text-body-1 font-weight-bold text-no-wrap overflow-hidden text-truncate" style="max-width: 250px;">
+                <div class="overflow-hidden">
+                  <div class="text-body-1 font-weight-black text-no-wrap overflow-hidden text-truncate mb-1" style="max-width: 280px;">
                     {{ car.title?.en || car.title || 'Untitled' }}
                   </div>
-                  <div class="text-caption text-medium-emphasis">
-                    {{ car.brand?.name?.en || '-' }} • {{ car.model?.name?.en || '-' }} • {{ car.year }}
+                  <div class="text-caption text-medium-emphasis font-weight-bold">
+                    {{ car.brand?.name?.en || car.brand?.name || '-' }} • {{ car.model?.name?.en || car.model?.name || '-' }} • {{ car.year }}
                   </div>
                 </div>
               </div>
@@ -235,42 +333,42 @@ const stats = computed(() => {
 
             <!-- Seller -->
             <td>
-              <div class="text-body-2 font-weight-medium">{{ car.seller?.name || 'Anonymous' }}</div>
-              <div class="text-caption text-medium-emphasis">{{ car.city?.name?.en || 'N/A' }}</div>
+              <div class="text-body-2 font-weight-bold">{{ car.seller?.name || 'Anonymous' }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium">{{ car.city?.name?.en || car.city?.name || 'N/A' }}</div>
             </td>
 
             <!-- Pricing -->
             <td>
               <div class="text-body-1 font-weight-black text-primary">
-                {{ Number(car.price).toLocaleString() }} <span class="text-caption">EGP</span>
+                {{ Number(car.price).toLocaleString() }} <span class="text-caption font-weight-bold">EGP</span>
               </div>
-              <div class="text-caption text-medium-emphasis">{{ car.mileage?.toLocaleString() }} km</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium">{{ Number(car.mileage || 0).toLocaleString() }} km</div>
             </td>
 
             <!-- Visibility / Promotions -->
             <td>
-              <div class="d-flex flex-wrap gap-1">
-                <VTooltip text="Featured on Top" location="top">
-                  <template v-slot:activator="{ props }">
-                    <VIcon v-if="car.is_featured" v-bind="props" icon="tabler-star-filled" color="warning" size="18" />
-                  </template>
-                </VTooltip>
-                <VTooltip text="Best Deal Badge" location="top">
-                  <template v-slot:activator="{ props }">
-                    <VIcon v-if="car.is_best_deal" v-bind="props" icon="tabler-bolt" color="error" size="18" />
-                  </template>
-                </VTooltip>
-                <VTooltip text="Global Advertisement" location="top">
-                  <template v-slot:activator="{ props }">
-                    <VIcon v-if="car.is_global_ad" v-bind="props" icon="tabler-broadcast" color="secondary" size="18" />
-                  </template>
-                </VTooltip>
-                <VTooltip text="Shown on Home Page" location="top">
-                  <template v-slot:activator="{ props }">
-                    <VIcon v-if="car.show_on_home" v-bind="props" icon="tabler-home" color="info" size="18" />
-                  </template>
-                </VTooltip>
-                <span v-if="!car.is_featured && !car.is_best_deal && !car.is_global_ad" class="text-caption opacity-50">Standard</span>
+              <div class="d-flex flex-wrap gap-2 align-center">
+                <VChip v-if="car.is_featured" color="warning" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1 shadow-warning">
+                  <VIcon icon="tabler-star-filled" size="14" class="me-1" /> Featured
+                </VChip>
+
+                <VChip v-if="car.is_best_deal" color="error" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1 shadow-error">
+                  <VIcon icon="tabler-flame" size="14" class="me-1" /> Best Deal
+                </VChip>
+
+                <VChip v-if="car.is_import" color="success" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1 shadow-success">
+                  <VIcon icon="tabler-ship" size="14" class="me-1" /> Import
+                </VChip>
+
+                <VChip v-if="car.show_on_home" color="amber-darken-1" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">
+                  <VIcon icon="tabler-home" size="14" class="me-1" /> Home
+                </VChip>
+
+                <VChip v-if="car.is_global_ad" color="secondary" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">
+                  <VIcon icon="tabler-broadcast" size="14" class="me-1" /> Global Ad
+                </VChip>
+
+                <span v-if="!car.is_featured && !car.is_best_deal && !car.is_global_ad && !car.is_import && !car.show_on_home" class="text-caption opacity-40 font-weight-bold">Standard</span>
               </div>
             </td>
 
@@ -280,7 +378,7 @@ const stats = computed(() => {
                 :color="statusOptions.find(o => o.value === car.status)?.color || 'grey'"
                 size="small"
                 variant="flat"
-                class="font-weight-bold text-uppercase px-3"
+                class="font-weight-black text-uppercase px-4 py-2 cursor-pointer shadow-sm"
                 @click="openPromotionDialog(car)"
               >
                 {{ car.status }}
@@ -289,14 +387,14 @@ const stats = computed(() => {
 
             <!-- Actions -->
             <td class="text-end px-6">
-              <div class="d-flex justify-end gap-1">
-                <VBtn icon variant="tonal" color="info" size="small" @click="openPromotionDialog(car)">
+              <div class="d-flex justify-end gap-2">
+                <VBtn icon variant="tonal" color="info" size="small" class="rounded-lg shadow-hover" @click="openPromotionDialog(car)">
                   <VIcon icon="tabler-settings-automation" />
                 </VBtn>
-                <VBtn icon variant="tonal" color="primary" size="small" @click="handleEdit(car.id)">
+                <VBtn icon variant="tonal" color="primary" size="small" class="rounded-lg shadow-hover" @click="handleEdit(car.id)">
                   <VIcon icon="tabler-edit" />
                 </VBtn>
-                <VBtn icon variant="tonal" color="error" size="small" @click="confirmDelete(car)">
+                <VBtn icon variant="tonal" color="error" size="small" class="rounded-lg shadow-hover" @click="confirmDelete(car)">
                   <VIcon icon="tabler-trash" />
                 </VBtn>
               </div>
@@ -305,17 +403,18 @@ const stats = computed(() => {
         </tbody>
       </VTable>
 
-      <VDivider />
+      <VDivider class="my-4" />
 
       <!-- Pagination -->
-      <div class="pa-4 d-flex align-center justify-space-between">
-        <div class="text-caption text-medium-emphasis">
-          Showing {{ (currentPage - 1) * perPage + 1 }} - {{ Math.min(currentPage * perPage, total) }} of {{ total }} vehicles
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4 pt-2">
+        <div class="text-caption font-weight-bold text-medium-emphasis">
+          Showing {{ (currentPage - 1) * perPage + 1 }} - {{ Math.min(currentPage * perPage, total) }} of {{ total }} listings
         </div>
         <VPagination
+          v-if="total > perPage"
           v-model="currentPage"
           :length="lastPage"
-          :total-visible="5"
+          :total-visible="7"
           rounded="lg"
           size="small"
           @update:model-value="fetchLists"
@@ -325,36 +424,36 @@ const stats = computed(() => {
 
     <!-- Promotion / Status Dialog -->
     <VDialog v-model="promotionDialog" max-width="600" persistent transition="dialog-bottom-transition">
-      <VCard class="promotion-dialog-card">
+      <VCard class="promotion-dialog-card rounded-2xl elevation-10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px);">
         <div class="dialog-header-accent"></div>
         
-        <VCardTitle class="d-flex align-center pa-6">
+        <VCardTitle class="d-flex align-center pa-6 pb-4">
           <div>
-            <div class="text-h5 font-weight-bold">Visibility & Promotions</div>
-            <div class="text-caption opacity-70">Manage how this vehicle appears to users</div>
+            <div class="text-h5 font-weight-black">Visibility & Promotions</div>
+            <div class="text-caption opacity-70 font-weight-bold">Manage listing badges and featured placement</div>
           </div>
           <VSpacer />
-          <VBtn icon="tabler-x" variant="text" @click="promotionDialog = false" />
+          <VBtn icon="tabler-x" variant="text" size="small" class="rounded-lg" @click="promotionDialog = false" />
         </VCardTitle>
 
-        <VDivider />
+        <VDivider opacity="0.1" />
 
         <VCardText class="pa-6 scrollable-content">
           <!-- Car Preview Mini -->
-          <div class="d-flex align-center mb-6 pa-4 rounded-lg bg-surface-variant elevation-1">
-            <VAvatar size="60" rounded="lg" class="me-4">
+          <div class="d-flex align-center mb-6 pa-4 rounded-xl bg-surface-variant elevation-2 border">
+            <VAvatar size="64" rounded="lg" class="me-4 border overflow-hidden">
               <VImg :src="getMainImageUrl(currentCar)" cover />
             </VAvatar>
             <div>
-              <div class="font-weight-bold text-body-1">{{ currentCar?.title?.en || currentCar?.title }}</div>
-              <div class="text-caption">ID: #{{ currentCar?.id }} • Price: {{ Number(currentCar?.price).toLocaleString() }} EGP</div>
+              <div class="font-weight-black text-body-1">{{ currentCar?.title?.en || currentCar?.title }}</div>
+              <div class="text-caption font-weight-bold text-primary">ID: #{{ currentCar?.id }} • {{ Number(currentCar?.price).toLocaleString() }} EGP</div>
             </div>
           </div>
 
           <VRow>
             <!-- Core Status -->
             <VCol cols="12">
-              <div class="text-subtitle-2 font-weight-bold mb-2">Listing Status</div>
+              <div class="text-subtitle-2 font-weight-black mb-2">Listing Status</div>
               <VSelect
                 v-model="promotionForm.status"
                 :items="statusOptions"
@@ -364,7 +463,7 @@ const stats = computed(() => {
                 density="comfortable"
               >
                 <template v-slot:item="{ props, item }">
-                  <VListItem v-bind="props" :prepend-icon="item.raw.icon" :title="item.raw.title">
+                  <VListItem v-bind="props" :prepend-icon="item.raw.icon" :title="item.raw.title" class="font-weight-bold">
                     <template v-slot:prepend>
                        <VIcon :color="item.raw.color" />
                     </template>
@@ -375,59 +474,59 @@ const stats = computed(() => {
 
             <!-- Visibility Toggles -->
             <VCol cols="12">
-              <div class="text-subtitle-2 font-weight-bold mb-4">Promotional Features</div>
+              <div class="text-subtitle-2 font-weight-black mb-3">Promotional Features</div>
               
               <div class="promotion-grid">
-                <div class="promotion-item" :class="{ active: promotionForm.is_featured }">
+                <div class="promotion-item rounded-xl pa-4" :class="{ active: promotionForm.is_featured }">
                   <VSwitch v-model="promotionForm.is_featured" color="warning" hide-details inset>
                     <template v-slot:label>
                       <div class="ms-2">
-                        <div class="font-weight-bold">Featured Listing</div>
-                        <div class="text-caption">Pin to top of search results</div>
+                        <div class="font-weight-bold text-body-2">Featured Listing</div>
+                        <div class="text-caption opacity-70">Pin to top of search results</div>
                       </div>
                     </template>
                   </VSwitch>
                 </div>
 
-                <div class="promotion-item" :class="{ active: promotionForm.is_global_ad }">
-                  <VSwitch v-model="promotionForm.is_global_ad" color="secondary" hide-details inset>
-                    <template v-slot:label>
-                      <div class="ms-2">
-                        <div class="font-weight-bold">Global Advertisement</div>
-                        <div class="text-caption">Show as banner across all pages</div>
-                      </div>
-                    </template>
-                  </VSwitch>
-                </div>
-
-                <div class="promotion-item" :class="{ active: promotionForm.is_best_deal }">
+                <div class="promotion-item rounded-xl pa-4" :class="{ active: promotionForm.is_best_deal }">
                   <VSwitch v-model="promotionForm.is_best_deal" color="error" hide-details inset>
                     <template v-slot:label>
                       <div class="ms-2">
-                        <div class="font-weight-bold">Best Deal Badge</div>
-                        <div class="text-caption">Highlight as limited offer</div>
+                        <div class="font-weight-bold text-body-2">Best Deal Badge</div>
+                        <div class="text-caption opacity-70">Highlight as limited offer</div>
                       </div>
                     </template>
                   </VSwitch>
                 </div>
 
-                <div class="promotion-item" :class="{ active: promotionForm.show_on_home }">
-                  <VSwitch v-model="promotionForm.show_on_home" color="info" hide-details inset>
-                    <template v-slot:label>
-                      <div class="ms-2">
-                        <div class="font-weight-bold">Show on Homepage</div>
-                        <div class="text-caption">Include in home slider/grids</div>
-                      </div>
-                    </template>
-                  </VSwitch>
-                </div>
-
-                <div class="promotion-item" :class="{ active: promotionForm.is_import }">
+                <div class="promotion-item rounded-xl pa-4" :class="{ active: promotionForm.is_import }">
                   <VSwitch v-model="promotionForm.is_import" color="success" hide-details inset>
                     <template v-slot:label>
                       <div class="ms-2">
-                        <div class="font-weight-bold">Import Cars Section</div>
-                        <div class="text-caption">Show in specialized import list</div>
+                        <div class="font-weight-bold text-body-2">Import Cars</div>
+                        <div class="text-caption opacity-70">Show in specialized import list</div>
+                      </div>
+                    </template>
+                  </VSwitch>
+                </div>
+
+                <div class="promotion-item rounded-xl pa-4" :class="{ active: promotionForm.show_on_home }">
+                  <VSwitch v-model="promotionForm.show_on_home" color="amber-darken-1" hide-details inset>
+                    <template v-slot:label>
+                      <div class="ms-2">
+                        <div class="font-weight-bold text-body-2">Homepage Ads</div>
+                        <div class="text-caption opacity-70">Include in home slider/grids</div>
+                      </div>
+                    </template>
+                  </VSwitch>
+                </div>
+
+                <div class="promotion-item rounded-xl pa-4" :class="{ active: promotionForm.is_global_ad }">
+                  <VSwitch v-model="promotionForm.is_global_ad" color="secondary" hide-details inset>
+                    <template v-slot:label>
+                      <div class="ms-2">
+                        <div class="font-weight-bold text-body-2">Global Banner</div>
+                        <div class="text-caption opacity-70">Show as banner across all pages</div>
                       </div>
                     </template>
                   </VSwitch>
@@ -437,7 +536,7 @@ const stats = computed(() => {
 
             <!-- Ad Details -->
             <VCol cols="12" v-if="promotionForm.is_featured || promotionForm.is_global_ad">
-              <div class="text-subtitle-2 font-weight-bold mb-2">Ad Expiry Date</div>
+              <div class="text-subtitle-2 font-weight-black mb-2">Ad Expiry Date</div>
               <VTextField
                 v-model="promotionForm.ad_expiry"
                 type="date"
@@ -449,14 +548,15 @@ const stats = computed(() => {
           </VRow>
         </VCardText>
 
-        <VCardActions class="pa-6">
+        <VCardActions class="pa-6 pt-4 border-t">
           <VSpacer />
-          <VBtn variant="tonal" @click="promotionDialog = false" class="px-6">Cancel</VBtn>
+          <VBtn variant="tonal" rounded="pill" @click="promotionDialog = false" class="px-6 font-weight-bold">Cancel</VBtn>
           <VBtn
             color="primary"
+            rounded="pill"
             :loading="promotionUpdating"
             @click="handleUpdatePromotion"
-            class="px-8 elevation-4"
+            class="px-8 shadow-primary font-weight-bold"
             variant="elevated"
           >
             Apply Changes
@@ -467,22 +567,20 @@ const stats = computed(() => {
 
     <!-- Delete Confirmation Dialog -->
     <VDialog v-model="deleteDialog" max-width="400">
-      <VCard class="pa-4 rounded-xl">
-        <VCardText class="text-center">
-          <VAvatar color="error" variant="tonal" size="72" class="mb-4">
-            <VIcon icon="tabler-trash-x" size="40" />
-          </VAvatar>
-          <h3 class="text-h5 font-weight-bold mb-2">Confirm Removal</h3>
-          <p class="text-medium-emphasis">
-            Are you sure you want to delete this vehicle listing? This action cannot be undone.
-          </p>
-        </VCardText>
-        <VCardActions class="justify-center gap-4">
-          <VBtn variant="text" @click="deleteDialog = false" class="px-6">Keep it</VBtn>
-          <VBtn color="error" :loading="deleting" @click="handleDelete" variant="elevated" class="px-8 rounded-lg">
+      <VCard class="pa-6 text-center rounded-2xl elevation-10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px);">
+        <VAvatar color="error" variant="tonal" size="72" class="mx-auto mb-4 border">
+          <VIcon icon="tabler-trash-x" size="40" />
+        </VAvatar>
+        <h3 class="text-h5 font-weight-black mb-2">Confirm Removal</h3>
+        <p class="text-medium-emphasis font-weight-medium mb-6">
+          Are you sure you want to delete this vehicle listing? This action cannot be undone.
+        </p>
+        <div class="d-flex justify-center gap-3">
+          <VBtn variant="tonal" rounded="pill" @click="deleteDialog = false" class="px-6 font-weight-bold flex-grow-1">Keep it</VBtn>
+          <VBtn color="error" rounded="pill" :loading="deleting" @click="handleDelete" variant="elevated" class="px-8 font-weight-bold flex-grow-1 shadow-error">
             Delete Car
           </VBtn>
-        </VCardActions>
+        </div>
       </VCard>
     </VDialog>
   </div>
@@ -501,14 +599,23 @@ const stats = computed(() => {
 }
 
 .stat-card {
-  border-radius: 16px !important;
-  position: relative;
-  transition: transform 0.3s ease;
-  border: 1px solid rgba(var(--v-border-color), 0.05);
+  background: rgba(var(--v-theme-surface), 0.5) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-6px);
+    border-color: rgba(var(--v-theme-primary), 0.4) !important;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(var(--v-theme-primary), 0.15) !important;
+  }
 }
 
-.stat-card:hover {
-  transform: translateY(-5px);
+.active-stat-filter {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background: rgba(var(--v-theme-primary), 0.12) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(var(--v-theme-primary), 0.3) !important;
+  transform: translateY(-6px);
 }
 
 .stat-glow {
@@ -523,17 +630,47 @@ const stats = computed(() => {
 }
 
 .main-content-card {
-  border-radius: 20px !important;
-  background: rgba(var(--v-theme-surface), 0.8) !important;
-  backdrop-filter: blur(10px);
+  background: rgba(var(--v-theme-surface), 0.6) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-.max-width-400 {
-  max-width: 400px;
+.search-input :deep(.v-field) {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 9999px !important;
+}
+
+.max-w-500 {
+  max-width: 500px;
+}
+
+.line-height-1 {
+  line-height: 1 !important;
+}
+
+.tracking-wider {
+  letter-spacing: 1.5px;
+}
+
+.shadow-primary {
+  box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.4) !important;
+}
+
+.shadow-warning {
+  box-shadow: 0 4px 15px rgba(255, 179, 0, 0.3) !important;
+}
+
+.shadow-error {
+  box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3) !important;
+}
+
+.shadow-success {
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3) !important;
 }
 
 .modern-table :deep(thead) {
-  background-color: rgba(var(--v-theme-on-surface), 0.02);
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
 }
 
 .modern-table :deep(th) {
@@ -545,37 +682,12 @@ const stats = computed(() => {
 }
 
 .table-row-hover:hover {
-  background-color: rgba(var(--v-theme-primary), 0.03);
-}
-
-.promotion-dialog-card {
-  border-radius: 24px !important;
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
+  background-color: rgba(var(--v-theme-primary), 0.04);
 }
 
 .scrollable-content {
   overflow-y: auto;
   flex-grow: 1;
-}
-
-/* Custom Scrollbar for better aesthetics */
-.scrollable-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollable-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollable-content::-webkit-scrollbar-thumb {
-  background: rgba(var(--v-theme-primary), 0.2);
-  border-radius: 10px;
-}
-
-.scrollable-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--v-theme-primary), 0.4);
 }
 
 .dialog-header-accent {
@@ -592,15 +704,15 @@ const stats = computed(() => {
 }
 
 .promotion-item {
-  border: 1px solid rgba(var(--v-border-color), 0.1);
-  border-radius: 12px;
-  padding: 12px 16px;
-  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.3s ease;
 }
 
 .promotion-item.active {
-  border-color: var(--v-primary-base);
-  background-color: rgba(var(--v-theme-primary), 0.05);
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-primary), 0.08);
+  box-shadow: 0 8px 20px rgba(var(--v-theme-primary), 0.2);
 }
 
 @keyframes shimmer {
@@ -612,9 +724,5 @@ const stats = computed(() => {
   .promotion-grid {
     grid-template-columns: 1fr;
   }
-}
-
-.border-primary {
-  border: 2px solid rgba(var(--v-theme-primary), 0.3) !important;
 }
 </style>
