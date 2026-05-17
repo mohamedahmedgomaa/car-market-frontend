@@ -125,6 +125,33 @@ const buildQuery = () => {
   return q
 }
 
+// ✅ Search Ad by ID
+const searchId = ref('')
+
+const handleIdInput = (val) => {
+  if (!val) {
+    searchId.value = ''
+    return
+  }
+  let cleaned = String(val)
+  cleaned = cleaned.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+  cleaned = cleaned.replace(/[^0-9#]/g, '')
+  if (cleaned.includes('#')) {
+    cleaned = '#' + cleaned.replace(/#/g, '')
+  }
+  if (searchId.value !== cleaned) {
+    searchId.value = cleaned
+  }
+}
+
+const goSearchId = async () => {
+  const numericId = searchId.value.replace(/[^0-9]/g, '')
+  if (!numericId) return
+
+  await router.push(`/user/cars/${numericId}`)
+  searchId.value = ''
+}
+
 const onSearch = () => {
   router.push({
     path: '/user/cars',
@@ -133,6 +160,7 @@ const onSearch = () => {
 }
 
 const resetFilters = () => {
+  searchId.value = ''
   filters.value = {
     type: 'car',
     condition: '',
@@ -294,6 +322,24 @@ onBeforeUnmount(() => {
                 class="reset-btn-v2"
                 @click="resetFilters"
                 icon="tabler-rotate"
+              />
+            </div>
+
+            <!-- ✅ Search Ad by ID -->
+            <div class="mb-5">
+              <VTextField
+                v-model="searchId"
+                placeholder="Ad ID"
+                density="compact"
+                variant="outlined"
+                rounded="xl"
+                hide-details
+                prepend-inner-icon="tabler-hash"
+                append-inner-icon="tabler-search"
+                @click:append-inner="goSearchId"
+                @keydown.enter="goSearchId"
+                @update:model-value="handleIdInput"
+                class="premium-id-input"
               />
             </div>
 
@@ -562,6 +608,41 @@ onBeforeUnmount(() => {
   border-radius: 32px !important;
   padding: 24px;
   height: 100%;
+}
+
+.premium-id-input :deep(.v-field) {
+  border-radius: 16px !important;
+  background: rgba(var(--v-theme-primary), 0.08) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
+  height: 44px !important;
+  transition: all 0.3s ease;
+}
+
+.premium-id-input :deep(.v-field__input) {
+  font-size: 1rem !important;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: rgb(var(--v-theme-primary)) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: 44px !important;
+}
+
+.premium-id-input :deep(.v-field--focused) {
+  background: rgba(var(--v-theme-primary), 0.15) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.3);
+}
+
+.premium-id-input :deep(.v-icon) {
+  color: rgb(var(--v-theme-primary));
+  opacity: 0.8;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 .search-form-grid {
