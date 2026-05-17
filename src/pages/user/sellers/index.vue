@@ -23,7 +23,8 @@ const fetchSellers = async () => {
   loading.value = true
   error.value = ''
   try {
-    const res = await sellerUserApi.getAll({ 'filter[status]': 'approved', perPage: 100 })
+    // Fetch all active showrooms without the incorrect 'status' filter
+    const res = await sellerUserApi.getAll({ perPage: 100 })
     const payload = res.data?.data ?? res.data ?? []
     sellers.value = Array.isArray(payload) ? payload : payload.data ?? []
   } catch (err) {
@@ -69,7 +70,6 @@ const locateNearMe = () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        // As a fallback simulation for Egyptian users, if coordinates are in Delta/Cairo, default to nearest major hub
         isLocating.value = false
         searchQuery.value = 'Mansoura' // Setting default nearby demonstration for user
       },
@@ -105,7 +105,7 @@ onMounted(fetchSellers)
   <div class="showrooms-directory-page py-12">
     <VContainer>
       <!-- Hero Header -->
-      <div class="header-section text-center mb-10 animate-fade-in">
+      <div class="header-section text-center mb-8 animate-fade-in">
         <div class="d-inline-flex align-center gap-2 px-4 py-1 rounded-pill bg-amber-subtle mb-4">
           <VIcon icon="tabler-crown" size="18" color="amber-darken-1" />
           <span class="text-caption font-weight-bold text-amber-darken-1 text-uppercase tracking-wider">Premium Annual Member Network</span>
@@ -165,6 +165,33 @@ onMounted(fetchSellers)
           </VChip>
         </div>
       </div>
+
+      <!-- 👑 Showroom Registration Promo Banner (Clear Call to Action for Dealers) -->
+      <VCard class="dealer-promo-card mb-12 pa-8 rounded-2xl elevation-10 overflow-hidden relative">
+        <div class="d-flex flex-column flex-md-row align-center justify-space-between gap-6 relative z-1">
+          <div class="text-center text-md-start">
+            <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-2 text-caption font-weight-bold">
+              <VIcon icon="tabler-rocket" size="16" /> Dealership Partnership
+            </div>
+            <h2 class="text-h4 font-weight-black text-white mb-2">Own a Dealership or Showroom?</h2>
+            <p class="text-subtitle-1 text-white-50 mb-0 max-w-700">
+              Join our premium network! Subscribe to our verified annual membership, showcase your inventory to millions of active car buyers, and manage your leads effortlessly.
+            </p>
+          </div>
+          
+          <VBtn
+            color="primary"
+            size="x-large"
+            rounded="pill"
+            to="/seller/register"
+            class="px-8 py-3 font-weight-black shadow-primary text-subtitle-1 flex-shrink-0"
+            elevation="8"
+          >
+            <VIcon icon="tabler-building-store" size="22" class="me-2" />
+            Register Your Showroom
+          </VBtn>
+        </div>
+      </VCard>
 
       <!-- Loading State -->
       <div v-if="loading" class="d-flex flex-column align-center justify-center py-16">
@@ -337,6 +364,23 @@ onMounted(fetchSellers)
   &:focus-within {
     border-color: rgba(var(--v-theme-primary), 0.6) !important;
     box-shadow: 0 20px 50px rgba(var(--v-theme-primary), 0.25) !important;
+  }
+}
+
+.dealer-promo-card {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.25), rgba(var(--v-theme-surface), 0.8)) !important;
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(var(--v-theme-primary), 0.4) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.4), transparent 70%);
+    z-index: 0;
   }
 }
 
