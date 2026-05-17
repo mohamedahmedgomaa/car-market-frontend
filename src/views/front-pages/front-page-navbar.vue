@@ -48,6 +48,38 @@ const goSearch = async () => {
   sidebar.value = false
 }
 
+// ✅ Search Ad by ID (#39 or 39 or Arabic numbers)
+const searchId = ref('')
+
+const handleIdInput = (val) => {
+  if (!val) {
+    searchId.value = ''
+    return
+  }
+  let cleaned = String(val)
+  // Convert Arabic digits to English digits
+  cleaned = cleaned.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+  // Allow only digits and '#'
+  cleaned = cleaned.replace(/[^0-9#]/g, '')
+  // Ensure '#' only appears at the start if present
+  if (cleaned.includes('#')) {
+    cleaned = '#' + cleaned.replace(/#/g, '')
+  }
+  
+  if (searchId.value !== cleaned) {
+    searchId.value = cleaned
+  }
+}
+
+const goSearchId = async () => {
+  const numericId = searchId.value.replace(/[^0-9]/g, '')
+  if (!numericId) return
+
+  await router.push(`/user/cars/${numericId}`)
+  searchId.value = ''
+  sidebar.value = false
+}
+
 // ✅ force reactive re-check for localStorage changes (login/logout)
 const authKey = ref(0)
 const syncAuth = () => {
@@ -84,6 +116,24 @@ const logout = async () => {
     <PerfectScrollbar :options="{ wheelPropagation: false }" class="h-100">
       <div>
         <div class="d-flex flex-column gap-y-4 pa-4">
+          <!-- ✅ Search Ad by ID (Mobile Drawer) -->
+          <div class="d-flex d-md-none mb-1">
+            <VTextField
+              v-model="searchId"
+              placeholder="Ad ID"
+              density="compact"
+              variant="outlined"
+              rounded="pill"
+              hide-details
+              prepend-inner-icon="tabler-hash"
+              append-inner-icon="tabler-search"
+              @click:append-inner="goSearchId"
+              @keydown.enter="goSearchId"
+              @update:model-value="handleIdInput"
+              class="ad-id-search-mobile w-100"
+            />
+          </div>
+
           <!-- ✅ Links -->
           <RouterLink
             to="/user/cars"
@@ -281,6 +331,24 @@ const logout = async () => {
 
         <VSpacer />
 
+        <!-- ✅ Search Ad by ID (Desktop Navbar) -->
+        <div class="ad-search-wrapper d-none d-sm-flex align-center ms-2 me-2">
+          <VTextField
+            v-model="searchId"
+            placeholder="Ad ID"
+            density="compact"
+            variant="outlined"
+            rounded="pill"
+            hide-details
+            prepend-inner-icon="tabler-hash"
+            append-inner-icon="tabler-search"
+            @click:append-inner="goSearchId"
+            @keydown.enter="goSearchId"
+            @update:model-value="handleIdInput"
+            class="ad-id-search-input"
+          />
+        </div>
+
         <!-- ✅ Unified Auth button -->
         <template v-if="!isLoggedIn">
           <VBtn
@@ -322,6 +390,46 @@ const logout = async () => {
 </template>
 
 <style lang="scss" scoped>
+.ad-id-search-input {
+  width: 140px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:focus-within {
+    width: 190px;
+  }
+
+  :deep(.v-field) {
+    border-radius: 9999px !important;
+    background: rgba(var(--v-theme-surface), 0.6) !important;
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.2) !important;
+  }
+
+  :deep(.v-field__input) {
+    font-size: 0.9rem !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding-inline-start: 4px !important;
+  }
+
+  :deep(.v-icon) {
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+}
+
+.ad-id-search-mobile {
+  :deep(.v-field) {
+    border-radius: 9999px !important;
+    background: rgba(var(--v-theme-surface), 0.8) !important;
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.2) !important;
+  }
+}
+
 .nav-link {
   font-size: 1.05rem;
   transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
