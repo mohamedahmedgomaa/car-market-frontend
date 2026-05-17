@@ -139,6 +139,13 @@ const handleIdInput = (val) => {
   if (cleaned.includes('#')) {
     cleaned = '#' + cleaned.replace(/#/g, '')
   }
+  
+  const hasHash = cleaned.startsWith('#')
+  const maxLength = hasHash ? 8 : 7
+  if (cleaned.length > maxLength) {
+    cleaned = cleaned.slice(0, maxLength)
+  }
+
   if (searchId.value !== cleaned) {
     searchId.value = cleaned
   }
@@ -325,6 +332,24 @@ onBeforeUnmount(() => {
               />
             </div>
 
+            <!-- ✅ Search by ID -->
+            <div class="mb-5">
+              <VTextField
+                v-model="searchId"
+                placeholder="Search by ID"
+                density="compact"
+                variant="outlined"
+                hide-details
+                maxlength="8"
+                prepend-inner-icon="tabler-hash"
+                append-inner-icon="tabler-search"
+                @click:append-inner="goSearchId"
+                @keydown.enter="goSearchId"
+                @update:model-value="handleIdInput"
+                class="premium-id-input"
+              />
+            </div>
+
             <!-- Header Row with Title and Reset -->
 
             <div class="search-form-grid">
@@ -486,7 +511,7 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Action Buttons Row -->
-            <div class="search-actions-row mt-6 d-flex gap-3 align-center">
+            <div class="search-actions-row mt-6 d-flex gap-3">
               <VBtn
                 color="primary"
                 height="48"
@@ -497,21 +522,17 @@ onBeforeUnmount(() => {
               >
                 Search
               </VBtn>
-              <div class="id-search-compact" style="width: 140px;">
-                <VTextField
-                  v-model="searchId"
-                  placeholder="Ad ID"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  prepend-inner-icon="tabler-hash"
-                  append-inner-icon="tabler-search"
-                  @click:append-inner="goSearchId"
-                  @keydown.enter="goSearchId"
-                  @update:model-value="handleIdInput"
-                  class="compact-id-input"
-                />
-              </div>
+              <VBtn
+                variant="tonal"
+                color="warning"
+                class="sell-side-btn"
+                width="100"
+                height="48"
+                @click="showAdPhone = true"
+                prepend-icon="tabler-circle-plus"
+              >
+                Sell
+              </VBtn>
             </div>
           </VCard>
         </div>
@@ -596,31 +617,31 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.compact-id-input :deep(.v-field) {
-  border-radius: 16px !important;
+.premium-id-input :deep(.v-field) {
+  border-radius: 9999px !important;
   background: rgba(var(--v-theme-primary), 0.08) !important;
   border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
-  height: 48px !important;
+  height: 36px !important;
   transition: all 0.3s ease;
 }
 
-.compact-id-input :deep(.v-field__input) {
-  font-size: 0.95rem !important;
+.premium-id-input :deep(.v-field__input) {
+  font-size: 0.88rem !important;
   font-weight: 800;
   letter-spacing: 0.5px;
   color: rgb(var(--v-theme-primary)) !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  min-height: 48px !important;
+  min-height: 36px !important;
 }
 
-.compact-id-input :deep(.v-field--focused) {
+.premium-id-input :deep(.v-field--focused) {
   background: rgba(var(--v-theme-primary), 0.15) !important;
   border-color: rgb(var(--v-theme-primary)) !important;
-  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.2);
+  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.3);
 }
 
-.compact-id-input :deep(.v-icon) {
+.premium-id-input :deep(.v-icon) {
   color: rgb(var(--v-theme-primary));
   opacity: 0.8;
   cursor: pointer;
