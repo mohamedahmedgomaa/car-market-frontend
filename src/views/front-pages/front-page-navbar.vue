@@ -126,7 +126,7 @@ const logout = async () => {
           <RouterLink
             to="/user/sell"
             class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/sell') ? 'active-link' : ''"
+            :class="route.path === '/user/sell' ? 'active-link' : ''"
             @click="sidebar = false"
           >
             Sell
@@ -266,7 +266,7 @@ const logout = async () => {
             <RouterLink
               to="/user/sell"
               class="nav-link font-weight-bold py-2 px-3"
-              :class="route.path.startsWith('/user/sell') ? 'active-link' : ''"
+              :class="route.path === '/user/sell' ? 'active-link' : ''"
             >
               Sell
             </RouterLink>

@@ -107,7 +107,7 @@ onMounted(fetchSeller)
                     <div class="location-line d-flex align-center justify-center justify-md-start gap-2 mt-2 mb-3">
                       <VIcon icon="tabler-map-pin" color="error" size="20" />
                       <span class="text-subtitle-1 text-white font-weight-medium">
-                        {{ t(seller.address) || (seller.city ? t(seller.city.name) : 'Egypt') }}
+                        {{ t(seller.address) || (seller.city ? t(seller.city.name) : 'Egypt, Mansoura, Hay Elgamaa') }}
                       </span>
                       <VChip
                         size="small"
@@ -122,34 +122,98 @@ onMounted(fetchSeller)
                     </div>
                   </div>
 
-                  <!-- Primary Actions (Call & WhatsApp) -->
-                  <div class="action-buttons d-flex align-center gap-3">
-                    <VBtn
-                      v-if="seller.phone"
-                      color="primary"
-                      variant="elevated"
-                      size="large"
-                      rounded="xl"
-                      class="px-6 font-weight-bold shadow-primary text-subtitle-1"
-                      :href="`tel:${seller.phone}`"
-                      prepend-icon="tabler-phone"
-                    >
-                      Call
-                    </VBtn>
+                  <!-- Contact Hub Card (Spacious Premium Control Deck) -->
+                  <div class="contact-hub-card pa-6 rounded-2xl d-flex flex-column gap-4 mt-4 mt-md-0 elevation-10">
+                    <!-- Primary Actions (Call & WhatsApp) -->
+                    <div class="d-flex align-center gap-3 w-100">
+                      <VBtn
+                        v-if="seller.phone"
+                        color="primary"
+                        variant="elevated"
+                        size="large"
+                        rounded="pill"
+                        class="flex-grow-1 font-weight-bold shadow-primary text-subtitle-1 px-6 py-2"
+                        :href="`tel:${seller.phone}`"
+                      >
+                        <VIcon icon="tabler-phone" size="20" class="me-2" />
+                        Call Now
+                      </VBtn>
 
-                    <VBtn
-                      v-if="seller.phone"
-                      color="success"
-                      variant="elevated"
-                      size="large"
-                      rounded="xl"
-                      class="px-6 font-weight-bold shadow-success text-subtitle-1"
-                      :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
-                      target="_blank"
-                      prepend-icon="tabler-brand-whatsapp"
-                    >
-                      WhatsApp
-                    </VBtn>
+                      <VBtn
+                        v-if="seller.phone"
+                        color="success"
+                        variant="elevated"
+                        size="large"
+                        rounded="pill"
+                        class="flex-grow-1 font-weight-bold shadow-success text-subtitle-1 px-6 py-2"
+                        :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
+                        target="_blank"
+                      >
+                        <VIcon icon="tabler-brand-whatsapp" size="20" class="me-2" />
+                        WhatsApp
+                      </VBtn>
+                    </div>
+
+                    <VDivider class="w-100 my-2 opacity-20" />
+
+                    <!-- Social Media Row -->
+                    <div class="d-flex align-center justify-space-between gap-3 w-100 px-2">
+                      <span class="text-button text-uppercase font-weight-black text-white-50 tracking-wide">Connect:</span>
+                      
+                      <div class="d-flex align-center gap-3">
+                        <VBtn
+                          icon
+                          size="small"
+                          variant="tonal"
+                          color="blue-lighten-1"
+                          class="social-btn"
+                          :href="seller.facebook || 'https://facebook.com'"
+                          target="_blank"
+                          v-tooltip="'Facebook'"
+                        >
+                          <VIcon icon="tabler-brand-facebook" size="20" />
+                        </VBtn>
+
+                        <VBtn
+                          icon
+                          size="small"
+                          variant="tonal"
+                          color="purple-lighten-2"
+                          class="social-btn"
+                          :href="seller.instagram || 'https://instagram.com'"
+                          target="_blank"
+                          v-tooltip="'Instagram'"
+                        >
+                          <VIcon icon="tabler-brand-instagram" size="20" />
+                        </VBtn>
+
+                        <VBtn
+                          icon
+                          size="small"
+                          variant="tonal"
+                          color="cyan-lighten-1"
+                          class="social-btn"
+                          :href="seller.website || 'https://google.com'"
+                          target="_blank"
+                          v-tooltip="'Website'"
+                        >
+                          <VIcon icon="tabler-world" size="20" />
+                        </VBtn>
+
+                        <VBtn
+                          icon
+                          size="small"
+                          variant="tonal"
+                          color="red-lighten-1"
+                          class="social-btn"
+                          :href="seller.tiktok || 'https://tiktok.com'"
+                          target="_blank"
+                          v-tooltip="'TikTok'"
+                        >
+                          <VIcon icon="tabler-brand-tiktok" size="20" />
+                        </VBtn>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -157,63 +221,6 @@ onMounted(fetchSeller)
                 <p class="store-bio mt-4 text-subtitle-1 text-white-50 max-w-700">
                   {{ t(seller.store_description) || seller.bio || 'Welcome to our premium showroom. We offer a high-quality selection of certified pre-owned and brand new vehicles.' }}
                 </p>
-
-                <!-- Social Media Bar -->
-                <div class="social-bar mt-6 d-flex align-center justify-center justify-md-start gap-3 flex-wrap">
-                  <span class="text-caption text-uppercase font-weight-bold text-white-50 me-2">Connect:</span>
-                  
-                  <VBtn
-                    icon
-                    size="small"
-                    variant="tonal"
-                    color="blue"
-                    class="social-btn"
-                    :href="seller.facebook || 'https://facebook.com'"
-                    target="_blank"
-                    v-tooltip="'Facebook'"
-                  >
-                    <VIcon icon="tabler-brand-facebook" size="20" />
-                  </VBtn>
-
-                  <VBtn
-                    icon
-                    size="small"
-                    variant="tonal"
-                    color="purple-lighten-2"
-                    class="social-btn"
-                    :href="seller.instagram || 'https://instagram.com'"
-                    target="_blank"
-                    v-tooltip="'Instagram'"
-                  >
-                    <VIcon icon="tabler-brand-instagram" size="20" />
-                  </VBtn>
-
-                  <VBtn
-                    icon
-                    size="small"
-                    variant="tonal"
-                    color="cyan-lighten-1"
-                    class="social-btn"
-                    :href="seller.website || 'https://google.com'"
-                    target="_blank"
-                    v-tooltip="'Website'"
-                  >
-                    <VIcon icon="tabler-world" size="20" />
-                  </VBtn>
-
-                  <VBtn
-                    icon
-                    size="small"
-                    variant="tonal"
-                    color="red-lighten-1"
-                    class="social-btn"
-                    :href="seller.tiktok || 'https://tiktok.com'"
-                    target="_blank"
-                    v-tooltip="'TikTok'"
-                  >
-                    <VIcon icon="tabler-brand-tiktok" size="20" />
-                  </VBtn>
-                </div>
               </div>
 
             </div>
@@ -221,48 +228,54 @@ onMounted(fetchSeller)
         </VCard>
 
         <!-- 📊 Showroom Statistics Cards Grid -->
-        <VRow class="stats-grid mb-12 animate-fade-in-up" style="animation-delay: 0.2s">
+        <VRow class="stats-grid mb-10 animate-fade-in-up" style="animation-delay: 0.2s">
           <!-- Total Cars -->
           <VCol cols="12" md="4">
-            <VCard class="stat-card px-6 py-8 text-center h-100 rounded-xl" elevation="6">
-              <div class="stat-icon-wrapper bg-primary-subtle mx-auto mb-4">
-                <VIcon icon="tabler-car" size="36" color="primary" />
+            <VCard class="stat-card px-4 py-5 text-center h-100 rounded-xl d-flex align-center justify-center gap-4" elevation="6">
+              <div class="stat-icon-wrapper bg-primary-subtle flex-shrink-0">
+                <VIcon icon="tabler-car" size="28" color="primary" />
               </div>
-              <h2 class="text-h2 font-weight-black text-primary mb-1">
-                {{ totalCarsCount }}
-              </h2>
-              <div class="text-subtitle-1 font-weight-bold text-uppercase tracking-wide text-white-50">
-                Total Vehicles
+              <div class="text-start">
+                <h2 class="text-h3 font-weight-black text-primary mb-0 line-height-1">
+                  {{ totalCarsCount }}
+                </h2>
+                <div class="text-caption font-weight-bold text-uppercase tracking-wide text-white-50 mt-1">
+                  Total Vehicles
+                </div>
               </div>
             </VCard>
           </VCol>
 
           <!-- Featured Ads -->
           <VCol cols="12" md="4">
-            <VCard class="stat-card px-6 py-8 text-center h-100 rounded-xl" elevation="6">
-              <div class="stat-icon-wrapper bg-amber-subtle mx-auto mb-4">
-                <VIcon icon="tabler-star-filled" size="36" color="amber-darken-1" />
+            <VCard class="stat-card px-4 py-5 text-center h-100 rounded-xl d-flex align-center justify-center gap-4" elevation="6">
+              <div class="stat-icon-wrapper bg-amber-subtle flex-shrink-0">
+                <VIcon icon="tabler-star-filled" size="28" color="amber-darken-1" />
               </div>
-              <h2 class="text-h2 font-weight-black text-amber-darken-1 mb-1">
-                {{ featuredCarsCount }}
-              </h2>
-              <div class="text-subtitle-1 font-weight-bold text-uppercase tracking-wide text-white-50">
-                Featured Ads
+              <div class="text-start">
+                <h2 class="text-h3 font-weight-black text-amber-darken-1 mb-0 line-height-1">
+                  {{ featuredCarsCount }}
+                </h2>
+                <div class="text-caption font-weight-bold text-uppercase tracking-wide text-white-50 mt-1">
+                  Featured Ads
+                </div>
               </div>
             </VCard>
           </VCol>
 
           <!-- Best Deals -->
           <VCol cols="12" md="4">
-            <VCard class="stat-card px-6 py-8 text-center h-100 rounded-xl" elevation="6">
-              <div class="stat-icon-wrapper bg-deep-orange-subtle mx-auto mb-4">
-                <VIcon icon="tabler-flame" size="36" color="deep-orange-accent-2" />
+            <VCard class="stat-card px-4 py-5 text-center h-100 rounded-xl d-flex align-center justify-center gap-4" elevation="6">
+              <div class="stat-icon-wrapper bg-deep-orange-subtle flex-shrink-0">
+                <VIcon icon="tabler-flame" size="28" color="deep-orange-accent-2" />
               </div>
-              <h2 class="text-h2 font-weight-black text-deep-orange-accent-2 mb-1">
-                {{ bestDealCarsCount }}
-              </h2>
-              <div class="text-subtitle-1 font-weight-bold text-uppercase tracking-wide text-white-50">
-                Best Deals
+              <div class="text-start">
+                <h2 class="text-h3 font-weight-black text-deep-orange-accent-2 mb-0 line-height-1">
+                  {{ bestDealCarsCount }}
+                </h2>
+                <div class="text-caption font-weight-bold text-uppercase tracking-wide text-white-50 mt-1">
+                  Best Deals
+                </div>
               </div>
             </VCard>
           </VCol>
@@ -352,18 +365,31 @@ onMounted(fetchSeller)
   }
 }
 
-/* Social Buttons */
+/* Contact Hub Card */
+.contact-hub-card {
+  background: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  min-width: 360px;
+}
+
+.opacity-20 {
+  opacity: 0.2 !important;
+}
+
 .social-btn {
-  width: 40px !important;
-  height: 40px !important;
+  width: 42px !important;
+  height: 42px !important;
   border-radius: 50% !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
 
   &:hover {
     transform: translateY(-4px) rotate(8deg);
     background: currentColor !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     :deep(.v-icon) {
       color: #fff !important;
     }
@@ -385,9 +411,9 @@ onMounted(fetchSeller)
 }
 
 .stat-icon-wrapper {
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -395,6 +421,10 @@ onMounted(fetchSeller)
   .stat-card:hover & {
     transform: scale(1.1) rotate(5deg);
   }
+}
+
+.line-height-1 {
+  line-height: 1 !important;
 }
 
 .bg-primary-subtle {
