@@ -27,6 +27,7 @@ const normalizeOne = (payload) => payload?.data?.data ?? payload?.data ?? payloa
 const totalCarsCount = computed(() => sellerCars.value.length)
 const featuredCarsCount = computed(() => sellerCars.value.filter(c => c.is_featured).length)
 const bestDealCarsCount = computed(() => sellerCars.value.filter(c => c.is_best_deal).length)
+const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length)
 
 const fetchSeller = async () => {
   loading.value = true
@@ -232,54 +233,71 @@ onMounted(fetchSeller)
           </div>
         </VCard>
 
-        <!-- 📊 Showroom Statistics Cards Grid -->
+        <!-- 📊 Showroom Statistics Cards Grid (4 Columns side-by-side) -->
         <VRow class="stats-grid mb-10 animate-fade-in-up" style="animation-delay: 0.2s">
           <!-- Total Cars -->
-          <VCol cols="12" md="4">
-            <VCard class="stat-card px-4 py-5 text-center h-100 rounded-xl d-flex align-center justify-center gap-4" elevation="6">
+          <VCol cols="6" md="3">
+            <VCard class="stat-card px-3 py-4 text-center h-100 rounded-xl d-flex align-center justify-center gap-3" elevation="6">
               <div class="stat-icon-wrapper bg-primary-subtle flex-shrink-0">
-                <VIcon icon="tabler-car" size="28" color="primary" />
+                <VIcon icon="tabler-car" size="26" color="primary" />
               </div>
-              <div class="text-start">
+              <div class="text-start overflow-hidden">
                 <h2 class="text-h3 font-weight-black text-primary mb-0 line-height-1">
                   {{ totalCarsCount }}
                 </h2>
-                <div class="text-caption font-weight-bold text-uppercase tracking-wide text-white-50 mt-1">
-                  Total Vehicles
+                <div class="text-caption font-weight-bold text-uppercase tracking-wider text-white-50 mt-1 text-truncate">
+                  Total Cars
                 </div>
               </div>
             </VCard>
           </VCol>
 
           <!-- Featured Ads -->
-          <VCol cols="12" md="4">
-            <VCard class="stat-card px-4 py-5 text-center h-100 rounded-xl d-flex align-center justify-center gap-4" elevation="6">
+          <VCol cols="6" md="3">
+            <VCard class="stat-card px-3 py-4 text-center h-100 rounded-xl d-flex align-center justify-center gap-3" elevation="6">
               <div class="stat-icon-wrapper bg-amber-subtle flex-shrink-0">
-                <VIcon icon="tabler-star-filled" size="28" color="amber-darken-1" />
+                <VIcon icon="tabler-star-filled" size="26" color="amber-darken-1" />
               </div>
-              <div class="text-start">
+              <div class="text-start overflow-hidden">
                 <h2 class="text-h3 font-weight-black text-amber-darken-1 mb-0 line-height-1">
                   {{ featuredCarsCount }}
                 </h2>
-                <div class="text-caption font-weight-bold text-uppercase tracking-wide text-white-50 mt-1">
-                  Featured Ads
+                <div class="text-caption font-weight-bold text-uppercase tracking-wider text-white-50 mt-1 text-truncate">
+                  Featured
                 </div>
               </div>
             </VCard>
           </VCol>
 
           <!-- Best Deals -->
-          <VCol cols="12" md="4">
-            <VCard class="stat-card px-4 py-5 text-center h-100 rounded-xl d-flex align-center justify-center gap-4" elevation="6">
+          <VCol cols="6" md="3">
+            <VCard class="stat-card px-3 py-4 text-center h-100 rounded-xl d-flex align-center justify-center gap-3" elevation="6">
               <div class="stat-icon-wrapper bg-deep-orange-subtle flex-shrink-0">
-                <VIcon icon="tabler-flame" size="28" color="deep-orange-accent-2" />
+                <VIcon icon="tabler-flame" size="26" color="deep-orange-accent-2" />
               </div>
-              <div class="text-start">
+              <div class="text-start overflow-hidden">
                 <h2 class="text-h3 font-weight-black text-deep-orange-accent-2 mb-0 line-height-1">
                   {{ bestDealCarsCount }}
                 </h2>
-                <div class="text-caption font-weight-bold text-uppercase tracking-wide text-white-50 mt-1">
+                <div class="text-caption font-weight-bold text-uppercase tracking-wider text-white-50 mt-1 text-truncate">
                   Best Deals
+                </div>
+              </div>
+            </VCard>
+          </VCol>
+
+          <!-- Import Cars -->
+          <VCol cols="6" md="3">
+            <VCard class="stat-card px-3 py-4 text-center h-100 rounded-xl d-flex align-center justify-center gap-3" elevation="6">
+              <div class="stat-icon-wrapper bg-info-subtle flex-shrink-0">
+                <VIcon icon="tabler-ship" size="26" color="info" />
+              </div>
+              <div class="text-start overflow-hidden">
+                <h2 class="text-h3 font-weight-black text-info mb-0 line-height-1">
+                  {{ importCarsCount }}
+                </h2>
+                <div class="text-caption font-weight-bold text-uppercase tracking-wider text-white-50 mt-1 text-truncate">
+                  Import Cars
                 </div>
               </div>
             </VCard>
@@ -490,6 +508,11 @@ onMounted(fetchSeller)
 .bg-deep-orange-subtle {
   background: rgba(255, 82, 82, 0.15);
   border: 1px solid rgba(255, 82, 82, 0.3);
+}
+
+.bg-info-subtle {
+  background: rgba(33, 150, 243, 0.15);
+  border: 1px solid rgba(33, 150, 243, 0.3);
 }
 
 /* Shadows */
