@@ -58,6 +58,11 @@ const openMap = () => {
   window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
 }
 
+// ✅ Call Dialog
+const showCallDialog = ref(false)
+const openCallDialog = () => { showCallDialog.value = true }
+const closeCallDialog = () => { showCallDialog.value = false }
+
 onMounted(fetchSeller)
 </script>
 
@@ -133,7 +138,7 @@ onMounted(fetchSeller)
                         size="large"
                         rounded="pill"
                         class="flex-grow-1 font-weight-bold shadow-primary text-subtitle-1 px-6 py-2"
-                        :href="`tel:${seller.phone}`"
+                        @click="openCallDialog"
                       >
                         <VIcon icon="tabler-phone" size="20" class="me-2" />
                         Call Now
@@ -302,6 +307,51 @@ onMounted(fetchSeller)
             }"
           />
         </div>
+
+        <!-- ✅ Call Confirmation Dialog -->
+        <VDialog v-model="showCallDialog" max-width="400">
+          <VCard class="pa-6 text-center rounded-2xl" elevation="10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15);">
+            <VAvatar color="primary" variant="tonal" size="70" class="mx-auto mb-4 elevation-4">
+              <VIcon icon="tabler-phone-calling" size="40" />
+            </VAvatar>
+            
+            <h3 class="text-h5 font-weight-bold mb-2 text-white">Call Showroom</h3>
+            <p class="text-body-1 opacity-70 mb-6 text-white-50">
+              Contact <strong>{{ t(seller.store_name) || seller.name }}</strong> directly at:
+            </p>
+
+            <div class="phone-display mb-8 pa-4 rounded-xl font-weight-black text-h5 text-primary tracking-wide bg-primary-subtle border">
+              {{ seller.phone }}
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+              <VBtn
+                color="primary"
+                block
+                height="50"
+                size="large"
+                rounded="pill"
+                class="font-weight-bold shadow-primary"
+                :href="`tel:${seller.phone}`"
+                @click="closeCallDialog"
+              >
+                <VIcon icon="tabler-phone" class="me-2" />
+                Call Now
+              </VBtn>
+
+              <VBtn
+                variant="text"
+                block
+                height="50"
+                rounded="pill"
+                class="text-white-50 font-weight-medium"
+                @click="closeCallDialog"
+              >
+                Cancel
+              </VBtn>
+            </div>
+          </VCard>
+        </VDialog>
       </template>
     </VContainer>
   </div>
