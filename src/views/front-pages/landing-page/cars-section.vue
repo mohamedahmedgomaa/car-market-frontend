@@ -344,7 +344,7 @@ watch(
               <div class="car-card__info mb-2 opacity-80">
                 <span>{{ car.year }}</span>
                 <span class="mx-2">|</span>
-                <span :class="car.condition === 'new' ? 'text-primary' : 'text-white'">
+                <span class="text-primary">
                   {{ car.condition === 'new' ? 'New' : 'Used' }}
                 </span>
                 <template v-if="car.condition === 'used' && car.kilometers">
