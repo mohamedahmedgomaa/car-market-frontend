@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch, nextTick } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
@@ -335,6 +335,34 @@ const resetAll = () => {
   router.push({ path: '/user/cars', query: {} })
 }
 
+const isMobileFilterOpen = ref(false)
+
+const handleApplyMobile = () => {
+  applyFilters()
+  isMobileFilterOpen.value = false
+}
+
+const handleResetMobile = () => {
+  resetAll()
+  isMobileFilterOpen.value = false
+}
+
+watch(isMobileFilterOpen, (val) => {
+  if (typeof window !== 'undefined') {
+    if (val) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    document.body.style.overflow = ''
+  }
+})
+
 const onPageChange = (p) => {
   const query = { ...route.query, page: p }
   router.push({ query })
@@ -377,8 +405,21 @@ onMounted(async () => {
     <VContainer>
       <VRow>
         <!-- Sidebar Filters -->
-        <VCol cols="12" md="4" lg="3">
-          <div class="premium-search-box">
+        <VCol cols="12" md="4" lg="3" class="position-relative">
+          <!-- Backdrop for Mobile Drawer -->
+          <div
+            v-if="isMobileFilterOpen"
+            class="filter-backdrop d-md-none"
+            @click="isMobileFilterOpen = false"
+          ></div>
+
+          <div class="premium-search-box" :class="{ 'is-open': isMobileFilterOpen }">
+            <!-- Mobile Header -->
+            <div class="mobile-filter-header d-md-none d-flex align-center justify-space-between mb-4">
+              <span class="text-h6 font-weight-bold text-white">Filters</span>
+              <VBtn icon="tabler-x" variant="text" color="white" density="comfortable" @click="isMobileFilterOpen = false" />
+            </div>
+
             <!-- Type Toggle -->
             <div class="mb-4">
               <div class="premium-toggle">
@@ -618,13 +659,15 @@ onMounted(async () => {
               </VSelect>
             </div>
 
-            <VBtn block color="primary" height="52" class="search-submit-btn mb-3" @click="applyFilters">
-              Apply Filters
-            </VBtn>
+            <div class="filter-actions">
+              <VBtn block color="primary" height="52" class="search-submit-btn mb-3" @click="handleApplyMobile">
+                Apply Filters
+              </VBtn>
 
-            <VBtn block variant="text" color="secondary" size="small" @click="resetAll">
-              Reset All
-            </VBtn>
+              <VBtn block variant="text" color="secondary" size="small" @click="handleResetMobile">
+                Reset All
+              </VBtn>
+            </div>
           </div>
         </VCol>
 
@@ -683,6 +726,20 @@ onMounted(async () => {
       </VRow>
     </VContainer>
   </section>
+
+  <!-- Mobile Floating Filter Button -->
+  <div class="mobile-filter-trigger d-md-none">
+    <VBtn
+      color="primary"
+      rounded
+      height="50"
+      prepend-icon="tabler-adjustments-horizontal"
+      class="px-6 mobile-floating-btn"
+      @click="isMobileFilterOpen = true"
+    >
+      Filters
+    </VBtn>
+  </div>
 </template>
 
 <style scoped>
@@ -788,5 +845,75 @@ onMounted(async () => {
 
 :deep(input[type=number]) {
   -moz-appearance: textfield;
+}
+
+/* Responsive Mobile Drawer / Bottom Sheet */
+.filter-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 959px) {
+  .premium-search-box {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    z-index: 1001 !important;
+    max-height: 80vh !important;
+    border-radius: 32px 32px 0 0 !important;
+    background: #0f1620 !important; /* Premium dark background */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-bottom: none !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
+    transform: translateY(110%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    padding: 24px 20px 140px 20px !important; /* Prevent overlap with sticky actions */
+  }
+
+  .premium-search-box.is-open {
+    transform: translateY(0) !important;
+  }
+
+  .filter-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #0f1620;
+    padding: 16px 20px 24px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 10;
+  }
+}
+
+.mobile-filter-trigger {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+}
+
+.mobile-floating-btn {
+  font-weight: 800 !important;
+  text-transform: none !important;
+  font-size: 15px !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 10px 30px rgba(var(--v-theme-primary), 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  transition: all 0.3s ease !important;
+}
+
+.mobile-floating-btn:active {
+  transform: scale(0.95);
 }
 </style>
