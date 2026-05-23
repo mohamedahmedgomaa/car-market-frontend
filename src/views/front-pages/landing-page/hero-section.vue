@@ -528,7 +528,7 @@ onBeforeUnmount(() => {
                 class="sell-side-btn"
                 width="100"
                 height="48"
-                @click="showAdPhone = true"
+                to="/user/sell"
                 prepend-icon="tabler-circle-plus"
               >
                 Sell
