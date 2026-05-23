@@ -44,6 +44,7 @@ const form = ref({
   horsepower: '',
   torque: '',
   engine_capacity: '',
+  cylinders: null,
 
   phone_number: '',
   whatsapp_number: '',
@@ -381,6 +382,7 @@ const loadCar = async () => {
   form.value.horsepower = car.horsepower ?? ''
   form.value.torque = car.torque ?? ''
   form.value.engine_capacity = car.engine_capacity ?? ''
+  form.value.cylinders = car.cylinders ?? null
 
   form.value.phone_number = car.phone_number ?? ''
   form.value.whatsapp_number = car.whatsapp_number ?? ''
@@ -754,6 +756,17 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-piston"
                 :error-messages="fieldError('engine_capacity')"
                 maxlength="5"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VSelect
+                v-model="form.cylinders"
+                :items="['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']"
+                label="Cylinders"
+                prepend-inner-icon="tabler-engine-off"
+                variant="outlined"
+                :error-messages="fieldError('cylinders')"
               />
             </VCol>
 
