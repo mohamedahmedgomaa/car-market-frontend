@@ -420,7 +420,9 @@ onMounted(async () => {
               <VBtn icon="tabler-x" variant="text" color="white" density="comfortable" @click="isMobileFilterOpen = false" />
             </div>
 
-            <!-- Type Toggle -->
+            <!-- Scrollable Content on Mobile -->
+            <div class="filter-scroll-content">
+              <!-- Type Toggle -->
             <div class="mb-4">
               <div class="premium-toggle">
                 <button
@@ -658,6 +660,8 @@ onMounted(async () => {
                 </template>
               </VSelect>
             </div>
+            
+            </div> <!-- Close filter-scroll-content -->
 
             <div class="filter-actions">
               <VBtn block color="primary" height="52" class="search-submit-btn mb-3" @click="handleApplyMobile">
@@ -860,6 +864,10 @@ onMounted(async () => {
   transition: opacity 0.3s ease;
 }
 
+.filter-scroll-content {
+  display: block;
+}
+
 @media (max-width: 959px) {
   .premium-search-box {
     position: fixed !important;
@@ -868,6 +876,7 @@ onMounted(async () => {
     right: 0 !important;
     top: auto !important;
     z-index: 1001 !important;
+    height: 80vh !important; /* Fixed height for flex layout to work correctly */
     max-height: 80vh !important;
     border-radius: 32px 32px 0 0 !important;
     background: #0f1620 !important; /* Premium dark background */
@@ -876,21 +885,40 @@ onMounted(async () => {
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
     transform: translateY(110%);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    padding: 24px 20px 140px 20px !important; /* Prevent overlap with sticky actions */
+    padding: 24px 20px 0 20px !important; /* Bottom padding is managed by the flex footer */
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: hidden !important; /* The scroll-content handles scrolling */
   }
 
   .premium-search-box.is-open {
     transform: translateY(0) !important;
   }
 
+  .filter-scroll-content {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding-bottom: 24px !important;
+    scrollbar-width: thin;
+  }
+
+  .filter-scroll-content::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .filter-scroll-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
   .filter-actions {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #0f1620;
-    padding: 16px 20px 24px 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0 !important;
+    background: #0f1620 !important;
+    padding: 16px 0 24px 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin: 0 -20px !important; /* Extend borders full width */
+    padding-left: 20px !important;
+    padding-right: 20px !important;
     z-index: 10;
   }
 }
