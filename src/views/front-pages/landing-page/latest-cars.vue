@@ -212,11 +212,17 @@ onMounted(fetchCars)
 }
 
 .car-card__image {
+  position: relative;
+  width: 100%;
   aspect-ratio: 16 / 10;
   background: rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
 
 .car-card__image img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
