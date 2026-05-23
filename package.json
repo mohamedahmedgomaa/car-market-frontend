@@ -123,6 +123,13 @@
     "@tiptap/core": "^2",
     "@types/video.js": "^7"
   },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8",
+      "@tiptap/core": "^2",
+      "@types/video.js": "^7"
+    }
+  },
   "msw": {
     "workerDirectory": "public"
   }
