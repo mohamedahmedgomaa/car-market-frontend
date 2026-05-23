@@ -3,3 +3,8 @@ allowBuilds:
   esbuild: true
   msw: true
   vue-demi: true
+
+overrides:
+  postcss: "^8"
+  "@tiptap/core": "^2"
+  "@types/video.js": "^7"
