@@ -56,7 +56,7 @@ const getSellerName = (car) => {
   return t(car?.seller?.store_name) || car?.seller?.name || 'Unknown seller'
 }
 
-// ✅ تنسيق "منذ متى" (Time Ago) باللغة العربية
+// ✅ English "Time Ago" formatter with a 1 month ago cap
 const formatDateTime = (val) => {
   if (!val) return '—'
   const iso = String(val).replace(' ', 'T')
@@ -66,48 +66,33 @@ const formatDateTime = (val) => {
   const now = new Date()
   const diffInSeconds = Math.floor((now - date) / 1000)
 
-  if (diffInSeconds < 60) return 'الآن'
+  if (diffInSeconds < 60) return 'Just now'
 
   const diffInMinutes = Math.floor(diffInSeconds / 60)
   if (diffInMinutes < 60) {
-    if (diffInMinutes === 1) return 'منذ دقيقة'
-    if (diffInMinutes === 2) return 'منذ دقيقتين'
-    if (diffInMinutes <= 10) return `منذ ${diffInMinutes} دقائق`
-    return `منذ ${diffInMinutes} دقيقة`
+    if (diffInMinutes === 1) return '1 minute ago'
+    return `${diffInMinutes} minutes ago`
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours < 24) {
-    if (diffInHours === 1) return 'منذ ساعة'
-    if (diffInHours === 2) return 'منذ ساعتين'
-    if (diffInHours <= 10) return `منذ ${diffInHours} ساعات`
-    return `منذ ${diffInHours} ساعة`
+    if (diffInHours === 1) return '1 hour ago'
+    return `${diffInHours} hours ago`
   }
 
   const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays < 7) {
-    if (diffInDays === 1) return 'منذ يوم'
-    if (diffInDays === 2) return 'منذ يومين'
-    if (diffInDays <= 10) return `منذ ${diffInDays} أيام`
-    return `منذ ${diffInDays} يوم`
+    if (diffInDays === 1) return '1 day ago'
+    return `${diffInDays} days ago`
   }
 
   const diffInWeeks = Math.floor(diffInDays / 7)
   if (diffInWeeks < 4) {
-    if (diffInWeeks === 1) return 'منذ أسبوع'
-    if (diffInWeeks === 2) return 'منذ أسبوعين'
-    return `منذ ${diffInWeeks} أسابيع`
+    if (diffInWeeks === 1) return '1 week ago'
+    return `${diffInWeeks} weeks ago`
   }
 
-  const diffInMonths = Math.floor(diffInDays / 30)
-  if (diffInMonths < 12) {
-    if (diffInMonths === 1) return 'منذ شهر'
-    if (diffInMonths === 2) return 'منذ شهرين'
-    if (diffInMonths <= 10) return `منذ ${diffInMonths} أشهر`
-    return `منذ ${diffInMonths} شهر`
-  }
-
-  return 'منذ أكثر من سنة'
+  return '1 month ago'
 }
 
 const formatPrice = (price) => {
@@ -360,11 +345,11 @@ watch(
                 <span>{{ car.year }}</span>
                 <span class="mx-2">|</span>
                 <span :class="car.condition === 'new' ? 'text-primary' : 'text-white'">
-                  {{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}
+                  {{ car.condition === 'new' ? 'New' : 'Used' }}
                 </span>
                 <template v-if="car.condition === 'used' && car.kilometers">
                   <span class="mx-2">•</span>
-                  <span>{{ car.kilometers.toLocaleString() }} كم</span>
+                  <span>{{ car.kilometers.toLocaleString() }} km</span>
                 </template>
               </div>
             </div>
@@ -391,7 +376,7 @@ watch(
             <div class="car-card__footer pt-2 border-t border-white-opacity-10 opacity-70">
               <div class="car-card__location d-flex align-center">
                 <VIcon icon="tabler-map-pin" size="14" class="me-1" />
-                <span>{{ t(car.city?.name) || 'القاهرة' }}</span>
+                <span>{{ t(car.city?.name) || 'Cairo' }}</span>
               </div>
 
               <div class="car-card__date d-flex align-center">

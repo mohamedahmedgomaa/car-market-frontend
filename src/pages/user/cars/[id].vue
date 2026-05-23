@@ -435,8 +435,8 @@ watch(
             <!-- Condition -->
             <div class="spec-card">
               <VIcon icon="tabler-award" class="mb-2" color="primary" />
-              <span class="label">{{ car.condition === 'new' ? 'الحالة' : 'Condition' }}</span>
-              <span class="val">{{ car.condition === 'new' ? 'جديد' : 'مستعمل' }}</span>
+              <span class="label">Condition</span>
+              <span class="val">{{ car.condition === 'new' ? 'New' : 'Used' }}</span>
             </div>
 
             <!-- Mileage -->
