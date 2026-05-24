@@ -287,6 +287,14 @@ const showCallDialog = ref(false)
 const openCallDialog = () => { showCallDialog.value = true }
 const closeCallDialog = () => { showCallDialog.value = false }
 
+// ✅ Features Show More / Less Limit (8 * 3 = 24 items)
+const showAllFeatures = ref(false)
+const displayedFeatures = computed(() => {
+  const all = car.value?.features || []
+  if (showAllFeatures.value) return all
+  return all.slice(0, 24)
+})
+
 const handleKeyDown = (e) => {
   if (showLightbox.value) {
     if (e.key === 'Escape') closeLightbox()
@@ -542,10 +550,24 @@ watch(
               Features & Equipment
             </h3>
             <div class="features-grid">
-              <div v-for="f in car.features" :key="f.id" class="feature-item">
+              <div v-for="f in displayedFeatures" :key="f.id" class="feature-item">
                 <VIcon icon="tabler-check" size="18" class="me-2 text-primary" />
                 {{ t(f.name) }}
               </div>
+            </div>
+
+            <!-- Show More / Less button -->
+            <div v-if="car.features.length > 24" class="text-center mt-6">
+              <VBtn
+                variant="tonal"
+                color="primary"
+                class="rounded-xl px-6 font-weight-bold"
+                height="44"
+                @click="showAllFeatures = !showAllFeatures"
+              >
+                <VIcon :icon="showAllFeatures ? 'tabler-chevron-up' : 'tabler-chevron-down'" class="me-2" />
+                <span>{{ showAllFeatures ? 'Show Less / عرض أقل' : 'Show More / عرض المزيد (+' + (car.features.length - 24) + ')' }}</span>
+              </VBtn>
             </div>
           </div>
         </div>
