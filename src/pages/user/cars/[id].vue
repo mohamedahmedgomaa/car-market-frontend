@@ -1,7 +1,8 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
+import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 
 definePage({
   meta: {
@@ -177,6 +178,9 @@ const fetchCar = async () => {
     }
 
     car.value = ensureFavFields(data)
+    
+    // ✅ Fetch suggestions right after car is loaded successfully
+    await fetchSuggestedCars()
   } catch (e) {
     console.error(e)
     car.value = null
@@ -184,6 +188,59 @@ const fetchCar = async () => {
   } finally {
     loading.value = false
     requestAnimationFrame(updateThumbNav)
+  }
+}
+
+// -------------------------
+// ✅ Suggested / Similar Price Cars
+// -------------------------
+const suggestedCars = ref([])
+const loadingSuggested = ref(false)
+const errorSuggested = ref('')
+
+const fetchSuggestedCars = async () => {
+  if (!car.value || !car.value.price) {
+    suggestedCars.value = []
+    return
+  }
+
+  loadingSuggested.value = true
+  errorSuggested.value = ''
+
+  try {
+    const currentPrice = Number(car.value.price)
+    // 20% range
+    const minPrice = Math.max(0, Math.round(currentPrice * 0.8))
+    const maxPrice = Math.round(currentPrice * 1.2)
+
+    const res = await carsUserApi.getAll({
+      'filter[price_between]': `${minPrice}.${maxPrice}`,
+      'filter[status]': 'approved',
+      perPage: 9,
+    })
+
+    let list = []
+    const payload = res.data
+    if (payload?.data && Array.isArray(payload.data)) {
+      list = payload.data
+    } else if (payload?.data?.data && Array.isArray(payload.data.data)) {
+      list = payload.data.data
+    } else if (Array.isArray(payload)) {
+      list = payload
+    }
+
+    // Filter out current car
+    const currentCarId = Number(car.value.id)
+    const filteredList = list.filter(c => Number(c.id) !== currentCarId && c.status === 'approved')
+
+    // Take first 3 suggestions for the 3-column layout
+    suggestedCars.value = filteredList.slice(0, 3)
+  } catch (e) {
+    console.error('Failed to fetch suggested cars:', e)
+    errorSuggested.value = 'Failed to load suggested cars'
+    suggestedCars.value = []
+  } finally {
+    loadingSuggested.value = false
   }
 }
 
@@ -684,6 +741,20 @@ watch(
             </div>
           </VCard>
         </div>
+      </div>
+
+      <!-- Suggested Cars Section -->
+      <VDivider class="my-10" opacity="0.1" v-if="suggestedCars.length > 0" />
+
+      <div class="suggested-cars-section mt-10" v-if="suggestedCars.length > 0">
+        <CarsSection
+          embedded
+          :showViewAll="false"
+          :cars="suggestedCars"
+          :loading="loadingSuggested"
+          title="Similar Price Cars / سيارات بسعر متقارب"
+          subtitle="Cars with a similar price range / سيارات مقترحة بنطاق سعري مشابه"
+        />
       </div>
     </div>
   </VContainer>
