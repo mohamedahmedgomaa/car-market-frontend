@@ -9,6 +9,7 @@ import modelAdminApi from '../../../api/admin/modelAdminApi.js'
 import featureAdminApi from '../../../api/admin/carFeatureAdminApi.js'
 import countryAdminApi from '../../../api/admin/countryAdminApi.js'
 import cityAdminApi from '../../../api/admin/cityAdminApi.js'
+import FeaturesManager from '@/components/FeaturesManager.vue'
 
 const router = useRouter()
 
@@ -486,6 +487,14 @@ const handleSubmit = async () => {
             multiple
             chips
             variant="outlined"
+            placeholder="Select features... / اختر الإضافات..."
+            class="mb-4"
+          />
+
+          <FeaturesManager
+            v-model="form.features"
+            :features-list="features"
+            @feature-created="f => features.push(f)"
           />
         </section>
         <section class="mb-10">
