@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import carSellerApi from '../../../api/seller/carSellerApi.js'
@@ -148,8 +148,37 @@ const handleImagesChange = files => {
   }
 }
 
-const handleColorChange = (hex) => {
-  form.value.color = parseInt(hex.replace('#', ''), 16)
+const refCustomColorInput = ref(null)
+
+const isCustomColor = computed(() => {
+  if (!form.value.color) return false
+  const match = commonColors.some(c => c.hex.toLowerCase() === form.value.color.toLowerCase())
+  return !match && /^#[0-9A-F]{6}$/i.test(form.value.color)
+})
+
+const getContrastColor = (hex) => {
+  if (!hex || hex.length < 6) return 'white'
+  const cleanHex = hex.replace('#', '')
+  const r = parseInt(cleanHex.slice(0, 2), 16)
+  const g = parseInt(cleanHex.slice(2, 4), 16)
+  const b = parseInt(cleanHex.slice(4, 6), 16)
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
+  return (yiq >= 128) ? 'black' : 'white'
+}
+
+const triggerCustomColorPicker = () => {
+  if (refCustomColorInput.value) {
+    refCustomColorInput.value.click()
+  }
+}
+
+const handleColorInput = (evt) => {
+  let val = evt.target.value.trim()
+  if (val && !val.startsWith('#') && /^[0-9A-F]{3,6}$/i.test(val)) {
+    form.value.color = '#' + val
+  } else {
+    form.value.color = val
+  }
 }
 
 /* ================= Submit ================= */
@@ -485,38 +514,55 @@ const handleSubmit = async () => {
           />
         </section>
         <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Color</h3>
+          <h3 class="text-subtitle-1 font-weight-medium mb-4">Color / لون السيارة</h3>
 
-          <div class="d-flex flex-wrap gap-3 mb-4">
+          <div class="d-flex flex-wrap gap-3 mb-4 align-center">
+            <!-- Predefined Colors -->
             <div
               v-for="c in commonColors"
               :key="c.hex"
-              class="cursor-pointer rounded-circle border d-flex align-center justify-center"
-              :style="{ backgroundColor: c.hex, width: '40px', height: '40px', border: form.color === c.hex ? '3px solid #FF9F43' : '1px solid #ddd' }"
+              class="cursor-pointer rounded-circle border d-flex align-center justify-center transition-all"
+              :style="{ backgroundColor: c.hex, width: '40px', height: '40px', border: form.color === c.hex ? '3px solid #FF9F43' : '1px solid #ddd', transform: form.color === c.hex ? 'scale(1.1)' : 'none' }"
               :title="c.name"
               @click="form.color = c.hex"
             >
               <VIcon v-if="form.color === c.hex" icon="tabler-check" :color="c.hex === '#FFFFFF' ? 'black' : 'white'" size="20" />
+            </div>
+
+            <!-- Custom Color Circle Picker -->
+            <div
+              class="cursor-pointer rounded-circle border d-flex align-center justify-center transition-all position-relative overflow-hidden"
+              :style="{ 
+                background: isCustomColor ? form.color || '#fff' : 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)', 
+                width: '40px', 
+                height: '40px', 
+                border: isCustomColor ? '3px solid #FF9F43' : '1px solid #ddd',
+                transform: isCustomColor ? 'scale(1.1)' : 'none'
+              }"
+              title="Choose Custom Color / اختر لوناً مخصصاً"
+            >
+              <!-- Invisible native color input covering the entire circle -->
+              <input
+                type="color"
+                v-model="form.color"
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;"
+              />
+              <VIcon v-if="isCustomColor" icon="tabler-check" :color="getContrastColor(form.color)" size="20" style="position: relative; z-index: 1; pointer-events: none;" />
+              <VIcon v-else icon="tabler-color-picker" color="white" size="20" style="position: relative; z-index: 1; pointer-events: none;" />
             </div>
           </div>
 
           <VRow align="center">
             <VCol cols="12" md="4">
               <VTextField
-                v-model="form.color"
-                label="Custom Color (Hex)"
+                :model-value="form.color"
+                @input="handleColorInput"
+                label="Custom Color (Hex) / كود لون مخصص"
                 variant="outlined"
                 prepend-inner-icon="tabler-palette"
+                placeholder="e.g. #FF00FF"
                 :error-messages="fieldError('color')"
-              >
-                <template #append-inner>
-                  <input
-                    type="color"
-                    v-model="form.color"
-                    style="width: 30px; height: 30px; border: none; cursor: pointer; background: none;"
-                  >
-                </template>
-              </VTextField>
+              />
             </VCol>
           </VRow>
         </section>
