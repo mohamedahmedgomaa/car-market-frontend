@@ -115,6 +115,506 @@ const commonColors = [
   { name: 'Gold', hex: '#FFD700' },
 ]
 
+const engineCapacityOptions = [
+  { title: '700 CC (0.7L)', value: '700' },
+  { title: '800 CC (0.8L)', value: '800' },
+  { title: '900 CC (0.9L)', value: '900' },
+  { title: '1000 CC (1.0L)', value: '1000' },
+  { title: '1100 CC (1.1L)', value: '1100' },
+  { title: '1200 CC (1.2L)', value: '1200' },
+  { title: '1300 CC (1.3L)', value: '1300' },
+  { title: '1400 CC (1.4L)', value: '1400' },
+  { title: '1500 CC (1.5L)', value: '1500' },
+  { title: '1600 CC (1.6L)', value: '1600' },
+  { title: '1700 CC (1.7L)', value: '1700' },
+  { title: '1800 CC (1.8L)', value: '1800' },
+  { title: '1900 CC (1.9L)', value: '1900' },
+  { title: '2000 CC (2.0L)', value: '2000' },
+  { title: '2200 CC (2.2L)', value: '2200' },
+  { title: '2300 CC (2.3L)', value: '2300' },
+  { title: '2400 CC (2.4L)', value: '2400' },
+  { title: '2500 CC (2.5L)', value: '2500' },
+  { title: '2700 CC (2.7L)', value: '2700' },
+  { title: '2800 CC (2.8L)', value: '2800' },
+  { title: '2900 CC (2.9L)', value: '2900' },
+  { title: '3000 CC (3.0L)', value: '3000' },
+  { title: '3200 CC (3.2L)', value: '3200' },
+  { title: '3500 CC (3.5L)', value: '3500' },
+  { title: '3600 CC (3.6L)', value: '3600' },
+  { title: '3800 CC (3.8L)', value: '3800' },
+  { title: '4000 CC (4.0L)', value: '4000' },
+  { title: '4200 CC (4.2L)', value: '4200' },
+  { title: '4400 CC (4.4L)', value: '4400' },
+  { title: '4600 CC (4.6L)', value: '4600' },
+  { title: '4800 CC (4.8L)', value: '4800' },
+  { title: '5000 CC (5.0L)', value: '5000' },
+  { title: '5200 CC (5.2L)', value: '5200' },
+  { title: '5300 CC (5.3L)', value: '5300' },
+  { title: '5400 CC (5.4L)', value: '5400' },
+  { title: '5500 CC (5.5L)', value: '5500' },
+  { title: '5600 CC (5.6L)', value: '5600' },
+  { title: '5700 CC (5.7L)', value: '5700' },
+  { title: '5800 CC (5.8L)', value: '5800' },
+  { title: '6000 CC (6.0L)', value: '6000' },
+  { title: '6200 CC (6.2L)', value: '6200' },
+  { title: '6300 CC (6.3L)', value: '6300' },
+  { title: '6500 CC (6.5L)', value: '6500' },
+  { title: '6600 CC (6.6L)', value: '6600' },
+  { title: '6700 CC (6.7L)', value: '6700' },
+  { title: '7000 CC (7.0L)', value: '7000' },
+  { title: '7200 CC (7.2L)', value: '7200' },
+  { title: '7300 CC (7.3L)', value: '7300' },
+  { title: '8000 CC (8.0L)', value: '8000' },
+  { title: '8400 CC (8.4L)', value: '8400' }
+]
+
+/* ================= Smart Specs Paste Parser ================= */
+const pastedSpecsText = ref('')
+const specsFeedbackMessage = ref('')
+
+const handleParseSpecs = async () => {
+  if (!pastedSpecsText.value.trim()) return
+
+  const text = pastedSpecsText.value
+  let matchedCount = 0
+  const extractedDetails = []
+
+  // Helper to normalize values
+  const cleanVal = (v) => v.replace(/^['"\s]+|['"\s]+$/g, '').trim()
+
+  // First: try line-by-line key-value parsing
+  const lines = text.split(/\r?\n/)
+  const keyValueMap = {}
+  
+  lines.forEach(line => {
+    const parts = line.match(/^\s*(.+?)\s*[:=-]\s*(.+?)\s*$/)
+    if (parts && parts.length >= 3) {
+      const k = parts[1].toLowerCase().trim()
+      const v = cleanVal(parts[2])
+      keyValueMap[k] = v
+    }
+  })
+
+  // 1. Brand & Model Match
+  let brandValue = keyValueMap['brand'] || keyValueMap['الماركة'] || keyValueMap['الشركة'] || keyValueMap['ماركة']
+  if (!brandValue) {
+    // If not found in keys, search globally in text
+    const matchedBrand = brands.value.find(b => {
+      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase()
+      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase()
+      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+    })
+    if (matchedBrand) {
+      form.value.brand_id = matchedBrand.id
+      matchedCount++
+      extractedDetails.push(`Brand: ${matchedBrand.name?.en ?? matchedBrand.name}`)
+      await loadModels()
+    }
+  } else {
+    const brandLower = brandValue.toLowerCase()
+    const matchedBrand = brands.value.find(b => {
+      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase()
+      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase()
+      return nameEn === brandLower || nameAr === brandLower || nameEn.includes(brandLower) || nameAr.includes(brandLower)
+    })
+    if (matchedBrand) {
+      form.value.brand_id = matchedBrand.id
+      matchedCount++
+      extractedDetails.push(`Brand: ${matchedBrand.name?.en ?? matchedBrand.name}`)
+      await loadModels()
+    }
+  }
+
+  // Model Match
+  let modelValue = keyValueMap['model'] || keyValueMap['الموديل'] || keyValueMap['موديل'] || keyValueMap['طراز']
+  if (form.value.brand_id && models.value.length) {
+    if (modelValue) {
+      const modelLower = modelValue.toLowerCase()
+      const matchedModel = models.value.find(m => {
+        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase()
+        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase()
+        return nameEn === modelLower || nameAr === modelLower || nameEn.includes(modelLower) || nameAr.includes(modelLower)
+      })
+      if (matchedModel) {
+        form.value.model_id = matchedModel.id
+        matchedCount++
+        extractedDetails.push(`Model: ${matchedModel.name?.en ?? matchedModel.name}`)
+      }
+    } else {
+      // Global search for model
+      const matchedModel = models.value.find(m => {
+        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase()
+        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase()
+        if (nameEn.length <= 1 && nameAr.length <= 1) return false
+        return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+      })
+      if (matchedModel) {
+        form.value.model_id = matchedModel.id
+        matchedCount++
+        extractedDetails.push(`Model: ${matchedModel.name?.en ?? matchedModel.name}`)
+      }
+    }
+  }
+
+  // 2. Year
+  let yearValue = keyValueMap['year'] || keyValueMap['السنة'] || keyValueMap['سنة'] || keyValueMap['سنة الصنع'] || keyValueMap['عام']
+  if (yearValue) {
+    const yNum = parseInt(yearValue.replace(/\D/g, ''))
+    if (yNum && yNum >= 1900 && yNum <= 2030) {
+      form.value.year = yNum
+      matchedCount++
+      extractedDetails.push(`Year: ${yNum}`)
+    }
+  } else {
+    const yearMatch = text.match(/\b(19[8-9]\d|20[0-2]\d)\b/)
+    if (yearMatch) {
+      form.value.year = Number(yearMatch[1])
+      matchedCount++
+      extractedDetails.push(`Year: ${yearMatch[1]}`)
+    }
+  }
+
+  // 3. Price
+  let priceValue = keyValueMap['price'] || keyValueMap['السعر'] || keyValueMap['سعر']
+  if (priceValue) {
+    const millionMatch = priceValue.match(/(\d+(?:\.\d+)?)\s*مليون/)
+    if (millionMatch) {
+      form.value.price = parseFloat(millionMatch[1]) * 1000000
+      matchedCount++
+      extractedDetails.push(`Price: ${millionMatch[1]} Million`)
+    } else {
+      const thousandMatch = priceValue.match(/(\d+(?:\.\d+)?)\s*(?:ألف|الف|k)/i)
+      if (thousandMatch) {
+        form.value.price = parseFloat(thousandMatch[1]) * 1000
+        matchedCount++
+        extractedDetails.push(`Price: ${thousandMatch[1]}k`)
+      } else {
+        const cleanPrice = Number(priceValue.replace(/,/g, '').replace(/\D/g, ''))
+        if (cleanPrice) {
+          form.value.price = cleanPrice
+          matchedCount++
+          extractedDetails.push(`Price: ${cleanPrice.toLocaleString()}`)
+        }
+      }
+    }
+  } else {
+    const millionMatch = text.match(/(\d+(?:\.\d+)?)\s*مليون/)
+    if (millionMatch) {
+      form.value.price = parseFloat(millionMatch[1]) * 1000000
+      matchedCount++
+      extractedDetails.push(`Price: ${millionMatch[1]} Million`)
+    } else {
+      const thousandMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:ألف|الف|k)/i)
+      if (thousandMatch) {
+        form.value.price = parseFloat(thousandMatch[1]) * 1000
+        matchedCount++
+        extractedDetails.push(`Price: ${thousandMatch[1]}k`)
+      } else {
+        const cleanText = text.replace(/,/g, '')
+        const prices = cleanText.match(/\b(5[0-9]\d{3}|[6-9]\d{4}|\d{6,8})\b/g)
+        if (prices && prices.length) {
+          form.value.price = Number(prices[0])
+          matchedCount++
+          extractedDetails.push(`Price: ${prices[0]}`)
+        }
+      }
+    }
+  }
+
+  // 4. Mileage
+  let mileageValue = keyValueMap['mileage'] || keyValueMap['الممشى'] || keyValueMap['ممشى'] || keyValueMap['العداد'] || keyValueMap['عداد']
+  if (mileageValue) {
+    const cleanMileage = Number(mileageValue.replace(/,/g, '').replace(/\D/g, ''))
+    if (cleanMileage || cleanMileage === 0) {
+      form.value.mileage = cleanMileage
+      matchedCount++
+      extractedDetails.push(`Mileage: ${cleanMileage}`)
+    }
+  } else {
+    const cleanTextNoCommas = text.replace(/,/g, '')
+    const mileageMatch = cleanTextNoCommas.match(/\b(\d+)\s*(?:كم|km|كيلو|عداد)/i)
+    if (mileageMatch) {
+      form.value.mileage = Number(mileageMatch[1])
+      matchedCount++
+      extractedDetails.push(`Mileage: ${mileageMatch[1]} km`)
+    }
+  }
+
+  // 5. Engine Capacity
+  let engineValue = keyValueMap['engine capacity'] || keyValueMap['engine'] || keyValueMap['سعة المحرك'] || keyValueMap['المحرك'] || keyValueMap['سعة']
+  if (engineValue) {
+    const cleanEngine = engineValue.replace(/cc|سي سي|سي|لتر|l/gi, '').trim()
+    form.value.engine_capacity = cleanEngine
+    matchedCount++
+    extractedDetails.push(`Engine: ${cleanEngine}`)
+  } else {
+    const ccMatch = text.match(/\b(\d{3,4})\s*(?:cc|سي|سعة|محرك)/i)
+    const literMatch = text.match(/\b(\d\.\d)\s*(?:l|لتر|liters)/i)
+    if (ccMatch) {
+      form.value.engine_capacity = ccMatch[1]
+      matchedCount++
+      extractedDetails.push(`Engine: ${ccMatch[1]} CC`)
+    } else if (literMatch) {
+      const liters = parseFloat(literMatch[1])
+      form.value.engine_capacity = String(liters * 1000)
+      matchedCount++
+      extractedDetails.push(`Engine: ${liters * 1000} CC`)
+    }
+  }
+
+  // 6. Cylinders
+  let cylindersValue = keyValueMap['cylinders'] || keyValueMap['سلندر'] || keyValueMap['السلندرات'] || keyValueMap['عدد السلندرات']
+  if (cylindersValue) {
+    const code = cylindersValue.toUpperCase().trim()
+    const validCylinders = ['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']
+    const matchedCode = validCylinders.find(c => c === code || code.includes(c) || c.includes(code))
+    if (matchedCode) {
+      form.value.cylinders = matchedCode
+      matchedCount++
+      extractedDetails.push(`Cylinders: ${matchedCode}`)
+    } else {
+      const num = cylindersValue.replace(/\D/g, '')
+      const mapping = { '2': 'I2', '3': 'I3', '4': 'I4', '5': 'I5', '6': 'V6', '8': 'V8', '10': 'V10', '12': 'V12', '16': 'W16' }
+      form.value.cylinders = mapping[num] || null
+      if (form.value.cylinders) {
+        matchedCount++
+        extractedDetails.push(`Cylinders: ${form.value.cylinders}`)
+      }
+    }
+  } else {
+    const cylMatch = text.match(/\b(2|3|4|5|6|8|10|12|16)\s*(?:سلندر|cylinder|cyl)/i)
+    const vMatch = text.match(/\b([viw]\d{1,2})\b/i)
+    if (cylMatch) {
+      const num = cylMatch[1]
+      const mapping = { '2': 'I2', '3': 'I3', '4': 'I4', '5': 'I5', '6': 'V6', '8': 'V8', '10': 'V10', '12': 'V12', '16': 'W16' }
+      form.value.cylinders = mapping[num] || null
+      if (form.value.cylinders) {
+        matchedCount++
+        extractedDetails.push(`Cylinders: ${form.value.cylinders}`)
+      }
+    } else if (vMatch) {
+      const code = vMatch[1].toUpperCase()
+      const validCylinders = ['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']
+      if (validCylinders.includes(code)) {
+        form.value.cylinders = code
+        matchedCount++
+        extractedDetails.push(`Cylinders: ${code}`)
+      }
+    }
+  }
+
+  // 7. Horsepower
+  let hpValue = keyValueMap['horsepower'] || keyValueMap['القوة الحصانية'] || keyValueMap['قوة الحصان'] || keyValueMap['حصان']
+  if (hpValue) {
+    form.value.horsepower = hpValue
+    matchedCount++
+    extractedDetails.push(`Horsepower: ${hpValue}`)
+  } else {
+    const hpMatch = text.match(/\b(\d+)\s*(?:hp|حصان|قوة|horsepower)/i)
+    if (hpMatch) {
+      form.value.horsepower = hpMatch[1]
+      matchedCount++
+      extractedDetails.push(`Horsepower: ${hpMatch[1]} HP`)
+    }
+  }
+
+  // 8. Torque
+  let torqueValue = keyValueMap['torque'] || keyValueMap['العزم'] || keyValueMap['عزم الدوران'] || keyValueMap['نيوتن']
+  if (torqueValue) {
+    form.value.torque = torqueValue
+    matchedCount++
+    extractedDetails.push(`Torque: ${torqueValue}`)
+  } else {
+    const torqueMatch = text.match(/\b(\d+)\s*(?:nm|نيوتن|عزم|torque)/i)
+    if (torqueMatch) {
+      form.value.torque = torqueMatch[1]
+      matchedCount++
+      extractedDetails.push(`Torque: ${torqueMatch[1]} Nm`)
+    }
+  }
+
+  // 9. Transmission
+  let transValue = keyValueMap['transmission'] || keyValueMap['ناقل الحركة'] || keyValueMap['الفتيس'] || keyValueMap['ناقل']
+  if (transValue) {
+    const tLower = transValue.toLowerCase()
+    if (tLower.includes('auto') || tLower.includes('اوتوماتيك')) {
+      form.value.transmission = 'automatic'
+      matchedCount++
+      extractedDetails.push('Transmission: Automatic')
+    } else if (tLower.includes('manual') || tLower.includes('مانيوال') || tLower.includes('يدوي')) {
+      form.value.transmission = 'manual'
+      matchedCount++
+      extractedDetails.push('Transmission: Manual')
+    }
+  } else {
+    if (/اوتوماتيك|auto/i.test(text)) {
+      form.value.transmission = 'automatic'
+      matchedCount++
+      extractedDetails.push('Transmission: Automatic')
+    } else if (/مانيوال|يدوي|manual/i.test(text)) {
+      form.value.transmission = 'manual'
+      matchedCount++
+      extractedDetails.push('Transmission: Manual')
+    }
+  }
+
+  // 10. Fuel Type
+  let fuelValue = keyValueMap['fuel type'] || keyValueMap['fuel'] || keyValueMap['نوع الوقود'] || keyValueMap['الوقود']
+  if (fuelValue) {
+    const fLower = fuelValue.toLowerCase()
+    if (fLower.includes('petrol') || fLower.includes('بنزين') || fLower.includes('gas')) {
+      form.value.fuel_type = 'petrol'
+      matchedCount++
+      extractedDetails.push('Fuel: Petrol')
+    } else if (fLower.includes('diesel') || fLower.includes('ديزل') || fLower.includes('سولار')) {
+      form.value.fuel_type = 'diesel'
+      matchedCount++
+      extractedDetails.push('Fuel: Diesel')
+    } else if (fLower.includes('electric') || fLower.includes('كهرباء') || fLower.includes('ev')) {
+      form.value.fuel_type = 'electric'
+      matchedCount++
+      extractedDetails.push('Fuel: Electric')
+    } else if (fLower.includes('hybrid') || fLower.includes('هايبرد') || fLower.includes('هجين')) {
+      form.value.fuel_type = 'hybrid'
+      matchedCount++
+      extractedDetails.push('Fuel: Hybrid')
+    }
+  } else {
+    if (/بنزين|petrol|gas/i.test(text)) {
+      form.value.fuel_type = 'petrol'
+      matchedCount++
+      extractedDetails.push('Fuel: Petrol')
+    } else if (/ديزل|سولار|diesel/i.test(text)) {
+      form.value.fuel_type = 'diesel'
+      matchedCount++
+      extractedDetails.push('Fuel: Diesel')
+    } else if (/كهرباء|electric|ev/i.test(text)) {
+      form.value.fuel_type = 'electric'
+      matchedCount++
+      extractedDetails.push('Fuel: Electric')
+    } else if (/هايبرد|هجين|hybrid/i.test(text)) {
+      form.value.fuel_type = 'hybrid'
+      matchedCount++
+      extractedDetails.push('Fuel: Hybrid')
+    }
+  }
+
+  // 11. Condition
+  let condValue = keyValueMap['condition'] || keyValueMap['الحالة'] || keyValueMap['حالة السيارة']
+  if (condValue) {
+    const cLower = condValue.toLowerCase()
+    if (cLower.includes('new') || cLower.includes('جديد') || cLower.includes('زيرو')) {
+      form.value.condition = 'new'
+      matchedCount++
+      extractedDetails.push('Condition: New')
+    } else if (cLower.includes('used') || cLower.includes('مستعمل')) {
+      form.value.condition = 'used'
+      matchedCount++
+      extractedDetails.push('Condition: Used')
+    }
+  } else {
+    if (/جديد|زيرو|new/i.test(text)) {
+      form.value.condition = 'new'
+      matchedCount++
+      extractedDetails.push('Condition: New')
+    } else if (/مستعمل|used/i.test(text)) {
+      form.value.condition = 'used'
+      matchedCount++
+      extractedDetails.push('Condition: Used')
+    }
+  }
+
+  // 12. Drivetrain
+  let driveValue = keyValueMap['drivetrain'] || keyValueMap['نظام الدفع'] || keyValueMap['الدفع']
+  if (driveValue) {
+    const dLower = driveValue.toLowerCase()
+    if (dLower.includes('fwd') || dLower.includes('أمامي') || dLower.includes('امامي')) {
+      form.value.drivetrain = 'fwd'
+      matchedCount++
+      extractedDetails.push('Drivetrain: FWD')
+    } else if (dLower.includes('rwd') || dLower.includes('خلفي')) {
+      form.value.drivetrain = 'rwd'
+      matchedCount++
+      extractedDetails.push('Drivetrain: RWD')
+    } else if (dLower.includes('awd') || dLower.includes('4wd') || dLower.includes('رباعي')) {
+      form.value.drivetrain = 'awd'
+      matchedCount++
+      extractedDetails.push('Drivetrain: AWD')
+    }
+  } else {
+    if (/جر أمامي|أمامي|fwd/i.test(text)) {
+      form.value.drivetrain = 'fwd'
+      matchedCount++
+      extractedDetails.push('Drivetrain: FWD')
+    } else if (/دفع خلفي|خلفي|rwd/i.test(text)) {
+      form.value.drivetrain = 'rwd'
+      matchedCount++
+      extractedDetails.push('Drivetrain: RWD')
+    } else if (/دفع رباعي|رباعي|awd|4wd/i.test(text)) {
+      form.value.drivetrain = 'awd'
+      matchedCount++
+      extractedDetails.push('Drivetrain: AWD/4WD')
+    }
+  }
+
+  // 13. Color
+  let colorValue = keyValueMap['color'] || keyValueMap['اللون'] || keyValueMap['لون']
+  if (colorValue) {
+    const matchedColor = commonColors.find(c => c.name.toLowerCase() === colorValue.toLowerCase())
+    if (matchedColor) {
+      form.value.color = matchedColor.hex
+      matchedCount++
+      extractedDetails.push(`Color: ${matchedColor.name}`)
+    } else if (/^#[0-9A-F]{6}$/i.test(colorValue)) {
+      form.value.color = colorValue
+      matchedCount++
+      extractedDetails.push(`Color: ${colorValue}`)
+    }
+  }
+
+  // 14. Title Arabic
+  let titleArValue = keyValueMap['title arabic'] || keyValueMap['title ar'] || keyValueMap['العنوان العربي'] || keyValueMap['الاسم العربي']
+  if (titleArValue) {
+    form.value.title_ar = titleArValue
+    matchedCount++
+    extractedDetails.push('Title Arabic Matched')
+  }
+
+  // 15. Title English
+  let titleEnValue = keyValueMap['title english'] || keyValueMap['title en'] || keyValueMap['العنوان الانجليزي'] || keyValueMap['الاسم الانجليزي']
+  if (titleEnValue) {
+    form.value.title_en = titleEnValue
+    matchedCount++
+    extractedDetails.push('Title English Matched')
+  }
+
+  // 16. Description Arabic
+  let descArValue = keyValueMap['description arabic'] || keyValueMap['description ar'] || keyValueMap['الوصف العربي']
+  if (descArValue) {
+    form.value.description_ar = descArValue
+    matchedCount++
+    extractedDetails.push('Description Arabic Matched')
+  }
+
+  // 17. Description English
+  let descEnValue = keyValueMap['description english'] || keyValueMap['description en'] || keyValueMap['الوصف الانجليزي']
+  if (descEnValue) {
+    form.value.description_en = descEnValue
+    matchedCount++
+    extractedDetails.push('Description English Matched')
+  }
+
+  if (matchedCount > 0) {
+    specsFeedbackMessage.value = `Successfully extracted ${matchedCount} fields: ${extractedDetails.join(', ')}`
+  } else {
+    specsFeedbackMessage.value = `No matching specifications found in the pasted text. Please make sure the text contains standard car specs.`
+  }
+
+  setTimeout(() => {
+    specsFeedbackMessage.value = ''
+  }, 8000)
+}
+
 /* ================= Helpers ================= */
 const fieldError = field => errors.value?.[field] || []
 
@@ -423,6 +923,62 @@ const handleSubmit = async () => {
 
       <VForm @submit.prevent="handleSubmit">
 
+        <!-- Smart Specifications Paste Parser -->
+        <VCard variant="outlined" color="primary" class="mb-8 pa-5 rounded-xl relative overflow-hidden" style="background: rgba(var(--v-theme-primary), 0.04); border-width: 1.5px;">
+          <div class="d-flex align-center justify-space-between mb-3 flex-wrap gap-2">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="tabler-wand" color="primary" size="24" class="animate-pulse" />
+              <h3 class="text-subtitle-1 font-weight-bold text-primary mb-0">
+                Smart Auto-Fill from Text / تعبئة المواصفات ذكياً من نص خارجي
+              </h3>
+            </div>
+            <span class="text-caption opacity-80 font-weight-medium">
+              Copy specs text from any website or file, paste it here, and let the system parse & auto-fill the form!
+            </span>
+          </div>
+          
+          <VRow dense>
+            <VCol cols="12">
+              <VTextarea
+                v-model="pastedSpecsText"
+                rows="3"
+                placeholder="انسخ النص الذي يحتوي على ماركة وموديل وسنة وسعر ومواصفات المحرك والصقه هنا لتعديل الحقول فوراً وبضغطة واحدة..."
+                variant="outlined"
+                hide-details
+                append-inner-icon="tabler-clipboard-text"
+              />
+            </VCol>
+            <VCol cols="12" class="d-flex justify-end gap-2 mt-2">
+              <VBtn
+                size="small"
+                variant="tonal"
+                color="secondary"
+                @click="pastedSpecsText = ''"
+                :disabled="!pastedSpecsText"
+              >
+                Clear / مسح
+              </VBtn>
+              <VBtn
+                size="small"
+                color="primary"
+                @click="handleParseSpecs"
+                :disabled="!pastedSpecsText"
+                prepend-icon="tabler-sparkles"
+              >
+                Auto-Fill Form / استخراج وتعديل تلقائي
+              </VBtn>
+            </VCol>
+          </VRow>
+
+          <!-- Extraction Feedback -->
+          <Transition name="fade">
+            <div v-if="specsFeedbackMessage" class="mt-3 px-4 py-2.5 rounded bg-success-lighten-5 text-success text-sm d-flex align-center gap-2" style="background-color: rgba(40, 199, 111, 0.1); border: 1px solid rgba(40, 199, 111, 0.2);">
+              <VIcon icon="tabler-circle-check" size="18" />
+              <span class="font-weight-medium">{{ specsFeedbackMessage }}</span>
+            </div>
+          </Transition>
+        </VCard>
+
         <!-- ================= Basic Info ================= -->
         <section class="mb-10">
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Basic Information</h3>
@@ -629,36 +1185,14 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12" md="6">
-              <VSelect
+              <VCombobox
                 v-model="form.engine_capacity"
-                :items="[
-                  { title: '1000 CC (1.0L)', value: '1000' },
-                  { title: '1200 CC (1.2L)', value: '1200' },
-                  { title: '1300 CC (1.3L)', value: '1300' },
-                  { title: '1400 CC (1.4L)', value: '1400' },
-                  { title: '1500 CC (1.5L)', value: '1500' },
-                  { title: '1600 CC (1.6L)', value: '1600' },
-                  { title: '1800 CC (1.8L)', value: '1800' },
-                  { title: '2000 CC (2.0L)', value: '2000' },
-                  { title: '2400 CC (2.4L)', value: '2400' },
-                  { title: '2500 CC (2.5L)', value: '2500' },
-                  { title: '2800 CC (2.8L)', value: '2800' },
-                  { title: '3000 CC (3.0L)', value: '3000' },
-                  { title: '3500 CC (3.5L)', value: '3500' },
-                  { title: '3800 CC (3.8L)', value: '3800' },
-                  { title: '4000 CC (4.0L)', value: '4000' },
-                  { title: '4400 CC (4.4L)', value: '4400' },
-                  { title: '4800 CC (4.8L)', value: '4800' },
-                  { title: '5000 CC (5.0L)', value: '5000' },
-                  { title: '5500 CC (5.5L)', value: '5500' },
-                  { title: '5700 CC (5.7L)', value: '5700' },
-                  { title: '6000 CC (6.0L)', value: '6000' },
-                  { title: '6200 CC (6.2L)', value: '6200' },
-                  { title: '6500 CC (6.5L)', value: '6500' },
-                  { title: '8000 CC (8.0L)', value: '8000' }
-                ]"
-                label="Engine Capacity"
-                prepend-inner-icon="tabler-engine"
+                :items="engineCapacityOptions"
+                item-title="title"
+                item-value="value"
+                :return-object="false"
+                label="Engine Capacity / السعة اللترية"
+                prepend-inner-icon="tabler-piston"
                 variant="outlined"
                 :error-messages="fieldError('engine_capacity')"
               />

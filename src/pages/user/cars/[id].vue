@@ -65,6 +65,31 @@ const formatPrice = (price) => {
   return n.toLocaleString()
 }
 
+const formatEngineCapacity = (val) => {
+  if (!val) return '—'
+  const s = String(val).trim()
+  if (/[a-zA-Z\u0600-\u06FF]/.test(s)) {
+    return s
+  }
+  const num = Number(s)
+  if (!isNaN(num)) {
+    if (num < 10) {
+      return `${num}L`
+    }
+    return `${num} CC`
+  }
+  return `${s} CC`
+}
+
+const formatHorsepower = (val) => {
+  if (!val) return '—'
+  const s = String(val).trim()
+  if (/[a-zA-Z\u0600-\u06FF]/.test(s)) {
+    return s
+  }
+  return `${s} HP`
+}
+
 // -------------------------
 // ✅ Favorites (Details page)
 // -------------------------
@@ -451,15 +476,15 @@ watch(
             <!-- Engine CC -->
             <div class="spec-card">
               <VIcon icon="tabler-engine" class="mb-2" color="primary" />
-              <span class="label">Engine (CC)</span>
-              <span class="val">{{ car.engine_capacity || '—' }} CC</span>
+              <span class="label">Engine Capacity</span>
+              <span class="val">{{ formatEngineCapacity(car.engine_capacity) }}</span>
             </div>
 
             <!-- Horsepower -->
             <div class="spec-card">
               <VIcon icon="tabler-horse-toy" class="mb-2" color="primary" />
               <span class="label">Horsepower</span>
-              <span class="val">{{ car.horsepower || '—' }} HP</span>
+              <span class="val">{{ formatHorsepower(car.horsepower) }}</span>
             </div>
 
             <!-- Cylinders -->
