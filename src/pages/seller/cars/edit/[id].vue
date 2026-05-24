@@ -604,6 +604,112 @@ const handleParseSpecs = async () => {
     extractedDetails.push('Description English Matched')
   }
 
+  // 18. Country & City Match
+  let countryValue = keyValueMap['country'] || keyValueMap['البلد'] || keyValueMap['الدولة'] || keyValueMap['بلد'] || keyValueMap['دولة']
+  let cityValue = keyValueMap['city'] || keyValueMap['المدينة'] || keyValueMap['مدينة'] || keyValueMap['المحافظة']
+
+  let matchedCountry = null
+  if (countryValue) {
+    matchedCountry = countries.value.find(c => {
+      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
+      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+      const search = countryValue.toLowerCase().trim()
+      return nameEn === search || nameAr === search || nameEn.includes(search) || nameAr.includes(search)
+    })
+  } else {
+    matchedCountry = countries.value.find(c => {
+      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
+      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+      if (nameEn.length <= 1 && nameAr.length <= 1) return false
+      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+    })
+  }
+
+  if (matchedCountry) {
+    form.value.country_id = matchedCountry.id
+    matchedCount++
+    extractedDetails.push(`Country: ${matchedCountry.name?.en ?? matchedCountry.name}`)
+    
+    await loadCities()
+    if (cities.value.length) {
+      let matchedCity = null
+      if (cityValue) {
+        const search = cityValue.toLowerCase().trim()
+        matchedCity = cities.value.find(c => {
+          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
+          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+          return nameEn === search || nameAr === search || nameEn.includes(search) || nameAr.includes(search)
+        })
+      } else {
+        matchedCity = cities.value.find(c => {
+          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
+          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+          if (nameEn.length <= 1 && nameAr.length <= 1) return false
+          return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+        })
+      }
+      
+      if (matchedCity) {
+        form.value.city_id = matchedCity.id
+        matchedCount++
+        extractedDetails.push(`City: ${matchedCity.name?.en ?? matchedCity.name}`)
+      }
+    }
+  }
+
+  // 19. Phone Number
+  let phoneValue = keyValueMap['phone'] || keyValueMap['phone number'] || keyValueMap['تليفون'] || keyValueMap['الهاتف'] || keyValueMap['رقم الهاتف'] || keyValueMap['الجوال'] || keyValueMap['موبايل'] || keyValueMap['رقم الموبايل'] || keyValueMap['رقم التليفون']
+  if (phoneValue) {
+    const cleanPhone = phoneValue.replace(/[^\d+]/g, '')
+    form.value.phone_number = cleanPhone
+    matchedCount++
+    extractedDetails.push(`Phone: ${cleanPhone}`)
+  } else {
+    const phoneMatch = text.match(/\b(01[0-25]\d{8}|002\d{10}|\+20\d{10})\b/)
+    if (phoneMatch) {
+      form.value.phone_number = phoneMatch[1]
+      matchedCount++
+      extractedDetails.push(`Phone: ${phoneMatch[1]}`)
+    }
+  }
+
+  // 20. WhatsApp Number
+  let whatsappValue = keyValueMap['whatsapp'] || keyValueMap['whatsapp number'] || keyValueMap['واتساب'] || keyValueMap['رقم الواتساب']
+  if (whatsappValue) {
+    const cleanWa = whatsappValue.replace(/[^\d+]/g, '')
+    form.value.whatsapp_number = cleanWa
+    matchedCount++
+    extractedDetails.push(`WhatsApp: ${cleanWa}`)
+  } else {
+    const waMatch = text.match(/\b(01[0-25]\d{8}|002\d{10}|\+20\d{10})\b/g)
+    if (waMatch && waMatch.length > 0) {
+      const num = waMatch[waMatch.length - 1]
+      form.value.whatsapp_number = num
+      matchedCount++
+      extractedDetails.push(`WhatsApp: ${num}`)
+    }
+  }
+
+  // 21. Features / Options Match
+  if (features.value && features.value.length) {
+    const matchedFeatures = []
+    features.value.forEach(f => {
+      const nameEn = String(f.name?.en ?? f.name ?? '').toLowerCase().trim()
+      const nameAr = String(f.name?.ar ?? f.name ?? '').toLowerCase().trim()
+      if (nameEn.length > 2 && text.toLowerCase().includes(nameEn)) {
+        if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
+      } else if (nameAr.length > 2 && text.toLowerCase().includes(nameAr)) {
+        if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
+      }
+    })
+    
+    if (matchedFeatures.length > 0) {
+      form.value.features = matchedFeatures
+      matchedCount += matchedFeatures.length
+      extractedDetails.push(`Features: ${matchedFeatures.length} matched`)
+    }
+  }
+
   if (matchedCount > 0) {
     specsFeedbackMessage.value = `Successfully extracted ${matchedCount} fields: ${extractedDetails.join(', ')}`
   } else {
