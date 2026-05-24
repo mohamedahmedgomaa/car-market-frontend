@@ -537,7 +537,7 @@ watch(
               class="d-flex align-center gap-4 mb-8 text-decoration-none text-high-emphasis seller-profile-header"
             >
                <VAvatar color="primary" size="64" class="text-h4 font-weight-bold elevation-4 overflow-hidden">
-                 <img v-if="car.seller?.store_logo" :src="car.seller.store_logo" alt="Seller Logo" class="w-100 h-100 object-fit-cover" />
+                 <img v-if="car.seller?.store_logo" :src="car.seller.store_logo" alt="Seller Logo" class="w-100 h-100" style="object-fit: contain; padding: 4px;" />
                  <span v-else>{{ (car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name)?.charAt(0)?.toUpperCase() }}</span>
                </VAvatar>
                <div>

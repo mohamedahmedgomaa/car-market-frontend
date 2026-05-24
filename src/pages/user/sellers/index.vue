@@ -221,7 +221,7 @@ onMounted(fetchSellers)
               <!-- Top details -->
               <div class="d-flex align-center gap-4 mb-4">
                 <VAvatar size="72" color="primary" variant="tonal" class="elevation-4 overflow-hidden flex-shrink-0 border">
-                  <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100 object-fit-cover" />
+                  <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; padding: 4px;" />
                   <span v-else class="text-h4 font-weight-black">{{ (t(seller.store_name) || seller.name)?.charAt(0)?.toUpperCase() }}</span>
                 </VAvatar>
 

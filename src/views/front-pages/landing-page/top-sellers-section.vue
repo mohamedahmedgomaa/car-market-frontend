@@ -72,8 +72,8 @@ const display = computed(() => sellers.value || [])
           @click="openSeller(s.id)"
         >
           <div class="row">
-            <VAvatar size="44">
-              <img v-if="s.store_logo" :src="s.store_logo" alt="Seller" />
+            <VAvatar size="44" style="overflow: hidden;">
+              <img v-if="s.store_logo" :src="s.store_logo" alt="Seller" style="object-fit: contain; width: 100%; height: 100%; padding: 2px;" />
               <span v-else>{{ (s.name || 'S')[0] }}</span>
             </VAvatar>
 

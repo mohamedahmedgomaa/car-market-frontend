@@ -101,7 +101,7 @@ onMounted(fetchSeller)
               <!-- Profile Details -->
               <div class="showroom-info flex-grow-1">
                 <div class="d-flex flex-column flex-md-row align-center align-md-start justify-space-between gap-4">
-                  <div>
+                  <div class="flex-grow-1 w-100 text-center text-md-start">
                     <div class="d-flex align-center justify-center justify-md-start gap-2 mb-1">
                       <h1 class="text-h3 font-weight-black text-white mb-0">
                         {{ t(seller.store_name) || seller.name }}
@@ -126,10 +126,15 @@ onMounted(fetchSeller)
                         Open Map
                       </VChip>
                     </div>
+
+                    <!-- Showroom Bio / Description (Moved here to the empty left side) -->
+                    <p class="store-bio mt-4 text-subtitle-1 text-white-50 max-w-700 mx-auto mx-md-0 text-center text-md-start">
+                      {{ t(seller.store_description) || seller.bio || 'Welcome to our premium showroom. We offer a high-quality selection of certified pre-owned and brand new vehicles.' }}
+                    </p>
                   </div>
 
                   <!-- Contact Hub Card (Spacious Premium Control Deck) -->
-                  <div class="contact-hub-card pa-6 rounded-2xl d-flex flex-column gap-4 mt-4 mt-md-0 elevation-10">
+                  <div class="contact-hub-card pa-6 rounded-2xl d-flex flex-column gap-4 mt-4 mt-md-0 elevation-10 flex-shrink-0">
                     <!-- Primary Actions (Call & WhatsApp) -->
                     <div class="d-flex align-center gap-3 w-100">
                       <VBtn
@@ -222,11 +227,6 @@ onMounted(fetchSeller)
                     </div>
                   </div>
                 </div>
-
-                <!-- Showroom Bio / Description -->
-                <p class="store-bio mt-4 text-subtitle-1 text-white-50 max-w-700">
-                  {{ t(seller.store_description) || seller.bio || 'Welcome to our premium showroom. We offer a high-quality selection of certified pre-owned and brand new vehicles.' }}
-                </p>
               </div>
 
             </div>
@@ -409,12 +409,22 @@ onMounted(fetchSeller)
   border: 4px solid rgba(var(--v-theme-primary), 0.8);
   background: rgba(var(--v-theme-surface), 0.9);
   box-shadow: 0 0 30px rgba(var(--v-theme-primary), 0.4);
+  overflow: hidden;
+
+  :deep(img) {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 4px;
+  }
 }
 
 /* Typography & Info */
 .store-bio {
-  line-height: 1.6;
-  max-width: 800px;
+  line-height: 1.7;
+  max-width: 720px;
+  font-size: 1.05rem !important;
+  color: rgba(255, 255, 255, 0.75) !important;
 }
 
 .text-white-50 {
