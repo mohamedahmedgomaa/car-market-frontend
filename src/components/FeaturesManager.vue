@@ -11,6 +11,10 @@ const props = defineProps({
   featuresList: {
     type: Array,
     default: () => []
+  },
+  errorMessages: {
+    type: [Array, String],
+    default: () => []
   }
 })
 
@@ -384,6 +388,11 @@ const getFeatureName = (f) => {
             <div v-if="item.error" class="text-caption text-error mt-1">{{ item.error }}</div>
           </div>
         </div>
+      </div>
+
+      <!-- Validation Error Messages -->
+      <div v-if="errorMessages && errorMessages.length" class="text-error text-caption mt-3 px-1 font-weight-medium">
+        {{ Array.isArray(errorMessages) ? errorMessages[0] : errorMessages }}
       </div>
     </VCard>
 

@@ -477,23 +477,10 @@ const handleSubmit = async () => {
 
         <!-- ================= Features ================= -->
         <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Features</h3>
-
-          <VSelect
-            v-model="form.features"
-            :items="features"
-            :item-title="f => f.name.en"
-            item-value="id"
-            multiple
-            chips
-            variant="outlined"
-            placeholder="Select features... / اختر الإضافات..."
-            class="mb-4"
-          />
-
           <FeaturesManager
             v-model="form.features"
             :features-list="features"
+            :error-messages="fieldError('features')"
             @feature-created="f => features.push(f)"
           />
         </section>
