@@ -32,6 +32,7 @@ const bulkDialog = ref(false)
 const missingFeatures = ref([]) // Features pasted but not in the database
 const isCreatingFeatures = ref(false)
 const filterQuery = ref('')
+const isCollapsed = ref(true)
 
 // Computed properties for features
 const filteredFeatures = computed(() => {
@@ -265,48 +266,68 @@ const getFeatureName = (f) => {
       </div>
 
       <!-- Live Search & Tags Info -->
-      <VRow dense class="mb-4">
-        <VCol cols="12" md="6">
+      <VRow dense class="mb-4" align="center">
+        <VCol cols="12" md="6" class="d-flex gap-2 align-center">
           <VTextField
             v-model="filterQuery"
             density="compact"
-            placeholder="Search existing options... / ابحث في الخيارات الحالية..."
+            :placeholder="isCollapsed ? 'Click arrow on right to show list / اضغط على السهم باليمين لعرض القائمة' : 'Search existing options... / ابحث في الخيارات الحالية...'"
             prepend-inner-icon="tabler-search"
             variant="outlined"
             hide-details
             clearable
+            class="flex-grow-1"
+            @click="isCollapsed = false"
           />
+          <VBtn
+            variant="tonal"
+            color="primary"
+            icon
+            size="small"
+            @click="isCollapsed = !isCollapsed"
+            :title="isCollapsed ? 'Expand / إظهار الخيارات' : 'Collapse / إخفاء الخيارات'"
+            :class="{ 'animate-pulse': isCollapsed }"
+          >
+            <VIcon :icon="isCollapsed ? 'tabler-chevron-down' : 'tabler-chevron-up'" size="20" />
+          </VBtn>
         </VCol>
         <VCol cols="12" md="6" class="d-flex align-center justify-end">
-          <div class="text-caption font-weight-medium">
-            Selected: <VChip color="primary" size="x-small" class="px-2">{{ selectedIds.length }}</VChip> of {{ featuresList.length }} options
+          <div class="text-caption font-weight-medium d-flex align-center gap-2">
+            <div>
+              Selected: <VChip color="primary" size="x-small" class="px-2">{{ selectedIds.length }}</VChip> of {{ featuresList.length }} options
+            </div>
+            <div v-if="isCollapsed" class="text-caption text-warning font-weight-bold animate-pulse-text">
+              (اضغط السهم لعرض الإضافات ↗)
+            </div>
           </div>
         </VCol>
       </VRow>
 
       <!-- Selection Grid -->
-      <div class="features-grid-container mb-4">
-        <TransitionGroup name="list" tag="div" class="features-chips-grid">
-          <div
-            v-for="f in filteredFeatures"
-            :key="f.id"
-            class="feature-toggle-chip"
-            :class="{ 'active': selectedIds.includes(f.id) }"
-            @click="toggleFeature(f.id)"
-          >
-            <VIcon
-              :icon="selectedIds.includes(f.id) ? 'tabler-circle-check-filled' : 'tabler-circle'"
-              size="18"
-              class="me-2 chip-icon"
-            />
-            <span class="chip-text">{{ getFeatureName(f) }}</span>
+      <VExpandTransition>
+        <div v-show="!isCollapsed" class="features-grid-container mb-4">
+          <TransitionGroup name="list" tag="div" class="features-chips-grid">
+            <div
+              v-for="f in filteredFeatures"
+              :key="f.id"
+              class="feature-toggle-chip"
+              :class="{ 'active': selectedIds.includes(f.id) }"
+              @click="toggleFeature(f.id)"
+            >
+              <VIcon
+                :icon="selectedIds.includes(f.id) ? 'tabler-circle-check-filled' : 'tabler-circle'"
+                size="18"
+                class="me-2 chip-icon"
+              />
+              <span class="chip-text">{{ getFeatureName(f) }}</span>
+            </div>
+          </TransitionGroup>
+          
+          <div v-if="filteredFeatures.length === 0" class="text-center py-6 text-muted opacity-70">
+            No matching features found.
           </div>
-        </TransitionGroup>
-        
-        <div v-if="filteredFeatures.length === 0" class="text-center py-6 text-muted opacity-70">
-          No matching features found.
         </div>
-      </div>
+      </VExpandTransition>
 
       <!-- YouTube Style Tag Input / Fast Paste Area -->
       <div class="quick-paste-row mt-4 pa-4 rounded bg-surface-variant-opacity border">
@@ -510,5 +531,35 @@ const getFeatureName = (f) => {
 .list-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+
+/* Custom Pulse Animations */
+.animate-pulse {
+  animation: pulse-border 2s infinite;
+}
+
+.animate-pulse-text {
+  animation: pulse-opacity 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(var(--v-theme-primary), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0);
+  }
+}
+
+@keyframes pulse-opacity {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 </style>
