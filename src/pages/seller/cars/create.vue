@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import carSellerApi from '../../../api/seller/carSellerApi.js'
@@ -148,6 +148,31 @@ const engineCapacityOptions = [
   { title: '8000 CC (8.0L)', value: '8000' },
   { title: '8400 CC (8.4L)', value: '8400' }
 ]
+
+/* ================= Truncation Watchers ================= */
+watch(() => form.value.title_ar, (newVal) => {
+  if (newVal && newVal.length > 150) {
+    form.value.title_ar = newVal.slice(0, 150)
+  }
+})
+
+watch(() => form.value.title_en, (newVal) => {
+  if (newVal && newVal.length > 150) {
+    form.value.title_en = newVal.slice(0, 150)
+  }
+})
+
+watch(() => form.value.description_ar, (newVal) => {
+  if (newVal && newVal.length > 2000) {
+    form.value.description_ar = newVal.slice(0, 2000)
+  }
+})
+
+watch(() => form.value.description_en, (newVal) => {
+  if (newVal && newVal.length > 2000) {
+    form.value.description_en = newVal.slice(0, 2000)
+  }
+})
 
 /* ================= Smart Specs Paste Parser ================= */
 const pastedSpecsText = ref('')
@@ -556,7 +581,7 @@ const handleParseSpecs = async () => {
   // 14. Title Arabic
   let titleArValue = keyValueMap['title arabic'] || keyValueMap['title ar'] || keyValueMap['العنوان العربي'] || keyValueMap['الاسم العربي']
   if (titleArValue) {
-    form.value.title_ar = titleArValue
+    form.value.title_ar = titleArValue.slice(0, 150)
     matchedCount++
     extractedDetails.push('Title Arabic Matched')
   }
@@ -564,7 +589,7 @@ const handleParseSpecs = async () => {
   // 15. Title English
   let titleEnValue = keyValueMap['title english'] || keyValueMap['title en'] || keyValueMap['العنوان الانجليزي'] || keyValueMap['الاسم الانجليزي']
   if (titleEnValue) {
-    form.value.title_en = titleEnValue
+    form.value.title_en = titleEnValue.slice(0, 150)
     matchedCount++
     extractedDetails.push('Title English Matched')
   }
@@ -572,7 +597,7 @@ const handleParseSpecs = async () => {
   // 16. Description Arabic
   let descArValue = keyValueMap['description arabic'] || keyValueMap['description ar'] || keyValueMap['الوصف العربي']
   if (descArValue) {
-    form.value.description_ar = descArValue
+    form.value.description_ar = descArValue.slice(0, 2000)
     matchedCount++
     extractedDetails.push('Description Arabic Matched')
   }
@@ -580,7 +605,7 @@ const handleParseSpecs = async () => {
   // 17. Description English
   let descEnValue = keyValueMap['description english'] || keyValueMap['description en'] || keyValueMap['الوصف الانجليزي']
   if (descEnValue) {
-    form.value.description_en = descEnValue
+    form.value.description_en = descEnValue.slice(0, 2000)
     matchedCount++
     extractedDetails.push('Description English Matched')
   }
@@ -995,6 +1020,8 @@ const handleSubmit = async () => {
                 v-model="form.title_ar"
                 label="Title Arabic"
                 variant="outlined"
+                maxlength="150"
+                counter="150"
                 :error-messages="fieldError('title_ar')"
               />
             </VCol>
@@ -1005,6 +1032,8 @@ const handleSubmit = async () => {
                 v-model="form.title_en"
                 label="Title English"
                 variant="outlined"
+                maxlength="150"
+                counter="150"
                 :error-messages="fieldError('title_en')"
               />
             </VCol>
@@ -1022,6 +1051,8 @@ const handleSubmit = async () => {
                 label="Description Arabic"
                 rows="4"
                 variant="outlined"
+                maxlength="2000"
+                counter="2000"
                 :error-messages="fieldError('description_ar')"
               />
             </VCol>
@@ -1032,6 +1063,8 @@ const handleSubmit = async () => {
                 label="Description English"
                 rows="4"
                 variant="outlined"
+                maxlength="2000"
+                counter="2000"
                 :error-messages="fieldError('description_en')"
               />
             </VCol>

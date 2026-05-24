@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import carAdminApi from '../../../api/admin/carAdminApi.js'
@@ -166,17 +166,53 @@ const displayYear = computed({
 
 const displayHorsepower = computed({
   get: () => form.value.horsepower,
-  set: (v) => { form.value.horsepower = v }
+  set: (v) => {
+    let num = toNumOrNull(v, 4)
+    if (num !== null && num > 3000) num = 3000
+    form.value.horsepower = num === null ? '' : num
+  }
 })
 
 const displayTorque = computed({
   get: () => form.value.torque,
-  set: (v) => { form.value.torque = v }
+  set: (v) => {
+    let num = toNumOrNull(v, 5)
+    if (num !== null && num > 15000) num = 15000
+    form.value.torque = num === null ? '' : num
+  }
 })
 
 const displayEngineCapacity = computed({
   get: () => form.value.engine_capacity,
-  set: (v) => { form.value.engine_capacity = v }
+  set: (v) => {
+    let num = toNumOrNull(v, 4)
+    form.value.engine_capacity = num === null ? '' : num
+  }
+})
+
+/* ================= Truncation Watchers ================= */
+watch(() => form.value.title_ar, (newVal) => {
+  if (newVal && newVal.length > 150) {
+    form.value.title_ar = newVal.slice(0, 150)
+  }
+})
+
+watch(() => form.value.title_en, (newVal) => {
+  if (newVal && newVal.length > 150) {
+    form.value.title_en = newVal.slice(0, 150)
+  }
+})
+
+watch(() => form.value.description_ar, (newVal) => {
+  if (newVal && newVal.length > 2000) {
+    form.value.description_ar = newVal.slice(0, 2000)
+  }
+})
+
+watch(() => form.value.description_en, (newVal) => {
+  if (newVal && newVal.length > 2000) {
+    form.value.description_en = newVal.slice(0, 2000)
+  }
 })
 
 const engineCapacityOptions = [
@@ -470,30 +506,38 @@ const handleParseSpecs = async () => {
   // 7. Horsepower
   let hpValue = keyValueMap['horsepower'] || keyValueMap['القوة الحصانية'] || keyValueMap['قوة الحصان'] || keyValueMap['حصان']
   if (hpValue) {
-    form.value.horsepower = hpValue
+    let cleanHp = toNumOrNull(hpValue, 4)
+    if (cleanHp !== null && cleanHp > 3000) cleanHp = 3000
+    form.value.horsepower = cleanHp === null ? '' : cleanHp
     matchedCount++
-    extractedDetails.push(`Horsepower: ${hpValue}`)
+    extractedDetails.push(`Horsepower: ${form.value.horsepower}`)
   } else {
     const hpMatch = text.match(/\b(\d+)\s*(?:hp|حصان|قوة|horsepower)/i)
     if (hpMatch) {
-      form.value.horsepower = hpMatch[1]
+      let cleanHp = toNumOrNull(hpMatch[1], 4)
+      if (cleanHp !== null && cleanHp > 3000) cleanHp = 3000
+      form.value.horsepower = cleanHp === null ? '' : cleanHp
       matchedCount++
-      extractedDetails.push(`Horsepower: ${hpMatch[1]} HP`)
+      extractedDetails.push(`Horsepower: ${form.value.horsepower} HP`)
     }
   }
 
   // 8. Torque
   let torqueValue = keyValueMap['torque'] || keyValueMap['العزم'] || keyValueMap['عزم الدوران'] || keyValueMap['نيوتن']
   if (torqueValue) {
-    form.value.torque = torqueValue
+    let cleanTorque = toNumOrNull(torqueValue, 5)
+    if (cleanTorque !== null && cleanTorque > 15000) cleanTorque = 15000
+    form.value.torque = cleanTorque === null ? '' : cleanTorque
     matchedCount++
-    extractedDetails.push(`Torque: ${torqueValue}`)
+    extractedDetails.push(`Torque: ${form.value.torque}`)
   } else {
     const torqueMatch = text.match(/\b(\d+)\s*(?:nm|نيوتن|عزم|torque)/i)
     if (torqueMatch) {
-      form.value.torque = torqueMatch[1]
+      let cleanTorque = toNumOrNull(torqueMatch[1], 5)
+      if (cleanTorque !== null && cleanTorque > 15000) cleanTorque = 15000
+      form.value.torque = cleanTorque === null ? '' : cleanTorque
       matchedCount++
-      extractedDetails.push(`Torque: ${torqueMatch[1]} Nm`)
+      extractedDetails.push(`Torque: ${form.value.torque} Nm`)
     }
   }
 
@@ -639,7 +683,7 @@ const handleParseSpecs = async () => {
   // 14. Title Arabic
   let titleArValue = keyValueMap['title arabic'] || keyValueMap['title ar'] || keyValueMap['العنوان العربي'] || keyValueMap['الاسم العربي']
   if (titleArValue) {
-    form.value.title_ar = titleArValue
+    form.value.title_ar = titleArValue.slice(0, 150)
     matchedCount++
     extractedDetails.push('Title Arabic Matched')
   }
@@ -647,7 +691,7 @@ const handleParseSpecs = async () => {
   // 15. Title English
   let titleEnValue = keyValueMap['title english'] || keyValueMap['title en'] || keyValueMap['العنوان الانجليزي'] || keyValueMap['الاسم الانجليزي']
   if (titleEnValue) {
-    form.value.title_en = titleEnValue
+    form.value.title_en = titleEnValue.slice(0, 150)
     matchedCount++
     extractedDetails.push('Title English Matched')
   }
@@ -655,7 +699,7 @@ const handleParseSpecs = async () => {
   // 16. Description Arabic
   let descArValue = keyValueMap['description arabic'] || keyValueMap['description ar'] || keyValueMap['الوصف العربي']
   if (descArValue) {
-    form.value.description_ar = descArValue
+    form.value.description_ar = descArValue.slice(0, 2000)
     matchedCount++
     extractedDetails.push('Description Arabic Matched')
   }
@@ -663,7 +707,7 @@ const handleParseSpecs = async () => {
   // 17. Description English
   let descEnValue = keyValueMap['description english'] || keyValueMap['description en'] || keyValueMap['الوصف الانجليزي']
   if (descEnValue) {
-    form.value.description_en = descEnValue
+    form.value.description_en = descEnValue.slice(0, 2000)
     matchedCount++
     extractedDetails.push('Description English Matched')
   }
@@ -1143,6 +1187,8 @@ const handleSubmit = async () => {
                 v-model="form.title_ar"
                 label="Title Arabic"
                 variant="outlined"
+                maxlength="150"
+                counter="150"
                 :error-messages="fieldError('title_ar')"
               />
             </VCol>
@@ -1153,6 +1199,8 @@ const handleSubmit = async () => {
                 v-model="form.title_en"
                 label="Title English"
                 variant="outlined"
+                maxlength="150"
+                counter="150"
                 :error-messages="fieldError('title_en')"
               />
             </VCol>
@@ -1170,6 +1218,8 @@ const handleSubmit = async () => {
                 label="Description Arabic"
                 rows="4"
                 variant="outlined"
+                maxlength="2000"
+                counter="2000"
                 :error-messages="fieldError('description_ar')"
               />
             </VCol>
@@ -1180,6 +1230,8 @@ const handleSubmit = async () => {
                 label="Description English"
                 rows="4"
                 variant="outlined"
+                maxlength="2000"
+                counter="2000"
                 :error-messages="fieldError('description_en')"
               />
             </VCol>
@@ -1235,7 +1287,8 @@ const handleSubmit = async () => {
                 label="Horsepower (HP)"
                 prepend-inner-icon="tabler-engine"
                 :error-messages="fieldError('horsepower')"
-                maxlength="50"
+                @keypress="isNumberKey"
+                maxlength="4"
               />
             </VCol>
 
@@ -1246,14 +1299,15 @@ const handleSubmit = async () => {
                 label="Torque (Nm)"
                 prepend-inner-icon="tabler-settings-automation"
                 :error-messages="fieldError('torque')"
-                maxlength="50"
+                @keypress="isNumberKey"
+                maxlength="5"
               />
             </VCol>
 
             <VCol cols="12" md="4">
               <VCombobox
                 ref="refEngineCapacity"
-                v-model="form.engine_capacity"
+                v-model="displayEngineCapacity"
                 :items="engineCapacityOptions"
                 item-title="title"
                 item-value="value"
@@ -1261,6 +1315,7 @@ const handleSubmit = async () => {
                 label="Engine Capacity / السعة اللترية"
                 prepend-inner-icon="tabler-piston"
                 variant="outlined"
+                maxlength="4"
                 :error-messages="fieldError('engine_capacity')"
               />
             </VCol>
