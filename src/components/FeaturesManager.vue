@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import carFeatureAdminApi from '../api/admin/carFeatureAdminApi.js'
+import { predefinedFeatures } from '../utils/predefinedFeatures.js'
 
 const props = defineProps({
   modelValue: {
@@ -74,7 +75,7 @@ const handleBulkPaste = () => {
   const tempMissing = []
 
   items.forEach(item => {
-    // Search case-insensitively in existing features list
+    // 1. Search case-insensitively in existing loaded features list
     const found = props.featuresList.find(f => {
       const en = (f.name?.en || f.name || '').toLowerCase()
       const ar = (f.name?.ar || f.name || '').toLowerCase()
@@ -86,13 +87,53 @@ const handleBulkPaste = () => {
       if (!newlySelected.includes(found.id)) {
         newlySelected.push(found.id)
       }
+      return
+    }
+
+    // 2. Search in predefinedFeatures dictionary
+    // Normalize target by removing dashes or bullet characters and trimming
+    const target = item.toLowerCase().replace(/[—\-–•*]/g, '').trim()
+    const dictFound = predefinedFeatures.find(df => {
+      return df.aliases.some(alias => target === alias || target.includes(alias) || alias.includes(target)) ||
+             df.en.toLowerCase().includes(target) ||
+             df.ar.includes(target)
+    })
+
+    if (dictFound) {
+      // Check if this predefined feature is already in db features list
+      const alreadyInDb = props.featuresList.find(f => {
+        const en = (f.name?.en || f.name || '').toLowerCase()
+        const ar = (f.name?.ar || f.name || '').toLowerCase()
+        return en === dictFound.en.toLowerCase() || ar === dictFound.ar.toLowerCase()
+      })
+
+      if (alreadyInDb) {
+        if (!newlySelected.includes(alreadyInDb.id)) {
+          newlySelected.push(alreadyInDb.id)
+        }
+      } else {
+        // Add to missing list but pre-populated!
+        const isAlreadyMissing = tempMissing.some(m => m.name_en === dictFound.en)
+        const isAlreadyInDbMissing = missingFeatures.value.some(m => m.name_en === dictFound.en)
+        if (!isAlreadyMissing && !isAlreadyInDbMissing) {
+          tempMissing.push({
+            name: `${dictFound.en} — ${dictFound.ar}`,
+            name_en: dictFound.en,
+            name_ar: dictFound.ar,
+            error: ''
+          })
+        }
+      }
     } else {
-      // Check if it's already in the missing list to avoid duplicates
+      // 3. Fallback: completely new unknown feature
       const isAlreadyMissing = tempMissing.some(m => m.name.toLowerCase() === item.toLowerCase())
       const isAlreadyInDbMissing = missingFeatures.value.some(m => m.name.toLowerCase() === item.toLowerCase())
       if (!isAlreadyMissing && !isAlreadyInDbMissing) {
+        const isArabic = /[\u0600-\u06FF]/.test(item)
         tempMissing.push({
           name: item,
+          name_en: isArabic ? '' : item,
+          name_ar: isArabic ? item : '',
           error: ''
         })
       }
@@ -107,8 +148,12 @@ const handleBulkPaste = () => {
 // Create a single missing feature in DB and auto-select it
 const createMissingFeature = async (index) => {
   const item = missingFeatures.value[index]
-  const val = item.name.trim()
-  if (!val) {
+  
+  // Use pre-populated name_en/name_ar if available, otherwise fallback to item.name
+  const en = (item.name_en || item.name || '').trim()
+  const ar = (item.name_ar || item.name || '').trim()
+
+  if (!en && !ar) {
     item.error = 'Name is required'
     return
   }
@@ -116,8 +161,8 @@ const createMissingFeature = async (index) => {
   try {
     item.error = ''
     const formData = new FormData()
-    formData.append('name_en', val)
-    formData.append('name_ar', val)
+    formData.append('name_en', en)
+    formData.append('name_ar', ar)
     formData.append('is_verified', '1')
 
     const res = await carFeatureAdminApi.create(formData)
@@ -149,13 +194,14 @@ const createAllMissingFeatures = async () => {
   const items = [...missingFeatures.value]
   for (let i = items.length - 1; i >= 0; i--) {
     const item = items[i]
-    const val = item.name.trim()
-    if (!val) continue
+    const en = (item.name_en || item.name || '').trim()
+    const ar = (item.name_ar || item.name || '').trim()
+    if (!en && !ar) continue
 
     try {
       const formData = new FormData()
-      formData.append('name_en', val)
-      formData.append('name_ar', val)
+      formData.append('name_en', en)
+      formData.append('name_ar', ar)
       formData.append('is_verified', '1')
 
       const res = await carFeatureAdminApi.create(formData)
