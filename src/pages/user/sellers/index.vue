@@ -145,14 +145,17 @@ onMounted(fetchSellers)
     <VContainer>
       <!-- Hero Header -->
       <div class="header-section text-center mb-8 animate-fade-in">
-        <div class="d-inline-flex align-center gap-2 px-4 py-1 rounded-pill bg-amber-subtle mb-4">
-          <VIcon icon="tabler-crown" size="18" color="amber-darken-1" />
-          <span class="text-caption font-weight-bold text-amber-darken-1 text-uppercase tracking-wider">Premium Annual Member Network</span>
+        <div class="d-inline-flex align-center gap-2 px-4 py-1.5 rounded-pill bg-primary-subtle mb-4 border border-primary-20">
+          <VIcon icon="tabler-building-store" size="18" color="primary" />
+          <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">Certified Dealership Directory</span>
         </div>
         
-        <h1 class="text-h2 font-weight-black text-white mb-3">Verified Dealerships & Showrooms</h1>
-        <p class="text-h6 text-white-50 max-w-700 mx-auto font-weight-medium mb-8">
-          Explore our exclusive network of premium showrooms with verified annual subscriptions. Connect directly, locate nearby showrooms, and browse certified inventories.
+        <h1 class="text-h2 font-weight-black text-white mb-3">Find Dealerships & Showrooms Near You</h1>
+        <p class="text-h6 text-white-50 max-w-800 mx-auto font-weight-medium mb-8" style="line-height: 1.6;">
+          Explore Egypt's premier directory of verified automotive showrooms. 
+          <span class="text-primary font-weight-bold d-block mt-2">
+            Own a showroom? Pin your location, showcase your certified inventory, and connect with thousands of active buyers via our annual subscription!
+          </span>
         </p>
 
         <!-- Search input -->
