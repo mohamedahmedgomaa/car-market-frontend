@@ -189,7 +189,7 @@ const stats = computed(() => {
     { title: 'Best Deals', filterKey: 'best_deal', value: db.filter(c => Number(c.is_best_deal) === 1 || Boolean(c.is_best_deal)).length, icon: 'tabler-flame', color: 'error' },
     { title: 'Import Cars', filterKey: 'import', value: db.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length, icon: 'tabler-ship', color: 'success' },
     { title: 'Homepage Ads', filterKey: 'home_page', value: db.filter(c => Number(c.show_on_home) === 1 || Boolean(c.show_on_home)).length, icon: 'tabler-home-star', color: 'amber' },
-    { title: 'Global Banners', filterKey: 'global', value: db.filter(c => Number(c.is_global_ad) === 1 || Boolean(c.is_global_ad)).length, icon: 'tabler-world-broadcast', color: 'secondary' },
+    { title: 'Global Banners', filterKey: 'global', value: db.filter(c => Number(c.is_global_ad) === 1 || Boolean(c.is_global_ad)).length, icon: 'tabler-broadcast', color: 'purple' },
   ]
 })
 </script>
@@ -235,36 +235,37 @@ const stats = computed(() => {
     <!-- 📊 Interactive Stats / Filters Grid -->
     <div class="mb-8">
       <div class="text-subtitle-2 font-weight-bold opacity-70 mb-3 text-uppercase tracking-wider">Click any card to filter listings instantly:</div>
-      <VRow class="stats-grid">
-        <VCol v-for="stat in stats" :key="stat.title" cols="12" sm="6" md="4" lg="3">
-          <VCard
-            class="stat-card px-4 py-5 text-start h-100 rounded-2xl cursor-pointer transition-all relative overflow-hidden"
-            :class="{ 'active-stat-filter': activeFilter === stat.filterKey }"
-            elevation="4"
-            @click="selectFilter(stat.filterKey)"
-          >
-            <div class="stat-glow" :style="{ backgroundColor: `var(--v-${stat.color}-base)` }"></div>
-            <div class="d-flex align-center justify-space-between mb-3">
-              <VAvatar :color="stat.color" variant="tonal" size="52" rounded="xl" class="elevation-2 border">
-                <VIcon :icon="stat.icon" size="28" />
-              </VAvatar>
+      <div class="stats-container">
+        <VCard
+          v-for="stat in stats"
+          :key="stat.title"
+          class="stat-card px-3 py-3 text-start h-100 rounded-xl cursor-pointer transition-all relative overflow-hidden"
+          :class="[
+            activeFilter === stat.filterKey ? 'active-stat-filter' : '',
+            activeFilter === stat.filterKey ? `active-card-${stat.color}` : '',
+          ]"
+          elevation="4"
+          @click="selectFilter(stat.filterKey)"
+        >
+          <div class="stat-glow" :style="{ backgroundColor: `rgba(var(--v-theme-${stat.color}), 0.15)` }"></div>
+          <div class="d-flex align-center justify-space-between mb-2">
+            <VAvatar :color="stat.color" variant="tonal" size="38" rounded="lg" class="border">
+              <VIcon :icon="stat.icon" size="18" />
+            </VAvatar>
 
-              <div class="filter-indicator" v-if="activeFilter === stat.filterKey">
-                <VChip color="primary" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">Active Filter</VChip>
-              </div>
-            </div>
+            <div class="active-dot" :class="`bg-${stat.color}`" v-if="activeFilter === stat.filterKey"></div>
+          </div>
 
-            <div>
-              <h2 class="text-h3 font-weight-black mb-1 line-height-1" :class="`text-${stat.color}`">
-                {{ statsLoading ? '...' : stat.value }}
-              </h2>
-              <div class="text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis">
-                {{ stat.title }}
-              </div>
+          <div>
+            <h2 class="text-h4 font-weight-black mb-0.5 line-height-1" :class="`text-${stat.color}`">
+              {{ statsLoading ? '...' : stat.value }}
+            </h2>
+            <div class="stat-card-title text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis">
+              {{ stat.title }}
             </div>
-          </VCard>
-        </VCol>
-      </VRow>
+          </div>
+        </VCard>
+      </div>
     </div>
 
     <!-- Main Content Card -->
@@ -598,34 +599,79 @@ const stats = computed(() => {
   -webkit-text-fill-color: transparent;
 }
 
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .stats-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .stat-card {
   background: rgba(var(--v-theme-surface), 0.5) !important;
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    transform: translateY(-6px);
-    border-color: rgba(var(--v-theme-primary), 0.4) !important;
-    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(var(--v-theme-primary), 0.15) !important;
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4) !important;
   }
 }
 
+.stat-card-title {
+  font-size: 11px !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .active-stat-filter {
-  border-color: rgb(var(--v-theme-primary)) !important;
-  background: rgba(var(--v-theme-primary), 0.12) !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(var(--v-theme-primary), 0.3) !important;
-  transform: translateY(-6px);
+  border-width: 1.5px !important;
+  transform: translateY(-4px);
+}
+
+/* Beautiful dynamic colored active styles matching each category */
+.active-card-primary { border-color: rgba(var(--v-theme-primary), 0.8) !important; background: rgba(var(--v-theme-primary), 0.12) !important; box-shadow: 0 10px 20px rgba(var(--v-theme-primary), 0.15) !important; }
+.active-card-warning { border-color: rgba(var(--v-theme-warning), 0.8) !important; background: rgba(var(--v-theme-warning), 0.12) !important; box-shadow: 0 10px 20px rgba(var(--v-theme-warning), 0.15) !important; }
+.active-card-info { border-color: rgba(var(--v-theme-info), 0.8) !important; background: rgba(var(--v-theme-info), 0.12) !important; box-shadow: 0 10px 20px rgba(var(--v-theme-info), 0.15) !important; }
+.active-card-error { border-color: rgba(var(--v-theme-error), 0.8) !important; background: rgba(var(--v-theme-error), 0.12) !important; box-shadow: 0 10px 20px rgba(var(--v-theme-error), 0.15) !important; }
+.active-card-success { border-color: rgba(var(--v-theme-success), 0.8) !important; background: rgba(var(--v-theme-success), 0.12) !important; box-shadow: 0 10px 20px rgba(var(--v-theme-success), 0.15) !important; }
+.active-card-amber { border-color: rgba(var(--v-theme-amber), 0.8) !important; background: rgba(var(--v-theme-amber), 0.12) !important; box-shadow: 0 10px 20px rgba(var(--v-theme-amber), 0.15) !important; }
+.active-card-purple { border-color: rgba(var(--v-theme-purple), 0.8) !important; background: rgba(var(--v-theme-purple), 0.12) !important; box-shadow: 0 10px 20px rgba(var(--v-theme-purple), 0.15) !important; }
+
+.active-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
 }
 
 .stat-glow {
   position: absolute;
-  top: -50px;
-  right: -50px;
-  width: 100px;
-  height: 100px;
-  filter: blur(40px);
-  opacity: 0.15;
+  top: -30px;
+  right: -30px;
+  width: 60px;
+  height: 60px;
+  filter: blur(25px);
+  opacity: 0.12;
   border-radius: 50%;
 }
 
