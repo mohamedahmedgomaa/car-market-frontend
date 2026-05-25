@@ -42,28 +42,54 @@ const filteredSellers = computed(() => {
   if (selectedCity.value !== 'All') {
     const cityQ = selectedCity.value.toLowerCase()
     result = result.filter(s => {
-      const city = (t(s.city?.name) || '').toLowerCase()
-      const address = (s.address || '').toLowerCase()
-      return city.includes(cityQ) || address.includes(cityQ)
+      const cityEn = (s.city?.name?.en || '').toLowerCase()
+      const cityAr = (s.city?.name?.ar || '').toLowerCase()
+      const address = (t(s.address) || '').toLowerCase()
+      return cityEn.includes(cityQ) || cityAr.includes(cityQ) || address.includes(cityQ)
     })
   }
 
-  // Search Query Filter (Matches Name, Address, Area like 'Hay Elgamaa', Description)
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase()
-    result = result.filter(s => {
-      const name = (t(s.store_name) || s.name || '').toLowerCase()
-      const desc = (t(s.store_description) || s.bio || '').toLowerCase()
-      const city = (t(s.city?.name) || '').toLowerCase()
-      const address = (s.address || '').toLowerCase()
-      return name.includes(q) || desc.includes(q) || city.includes(q) || address.includes(q)
-    })
+  // Smart Intelligent Search Query Filter (Matches Name, Address, City, Area/Neighborhood, Description in AR/EN)
+  if (searchQuery.value.trim()) {
+    const tokens = searchQuery.value.toLowerCase().trim().split(/\s+/).filter(Boolean)
+
+    if (tokens.length > 0) {
+      result = result.filter(s => {
+        // Collect all searchable strings for this showroom
+        const nameEn = (s.store_name?.en || s.name || '').toLowerCase()
+        const nameAr = (s.store_name?.ar || '').toLowerCase()
+        const descEn = (s.store_description?.en || s.bio || '').toLowerCase()
+        const descAr = (s.store_description?.ar || '').toLowerCase()
+        const cityEn = (s.city?.name?.en || '').toLowerCase()
+        const cityAr = (s.city?.name?.ar || '').toLowerCase()
+        
+        // Handle address translatable or plain string
+        const addressEn = (s.address?.en || '').toLowerCase()
+        const addressAr = (s.address?.ar || '').toLowerCase()
+        const addressStr = (typeof s.address === 'string' ? s.address : '').toLowerCase()
+        const nameStr = (typeof s.store_name === 'string' ? s.store_name : '').toLowerCase()
+        const descStr = (typeof s.store_description === 'string' ? s.store_description : '').toLowerCase()
+
+        const searchableFields = [
+          nameEn, nameAr, nameStr,
+          descEn, descAr, descStr,
+          cityEn, cityAr,
+          addressEn, addressAr, addressStr,
+          s.phone || ''
+        ]
+
+        // Intelligent Matching: ALL query tokens must match AT LEAST ONE searchable field
+        return tokens.every(token => {
+          return searchableFields.some(field => field.includes(token))
+        })
+      })
+    }
   }
 
   return result
 })
 
-// ✅ Find Near Me Simulation
+// ✅ Find Near Me using Smart Egyptian Geolocation range matching
 const isLocating = ref(false)
 const locateNearMe = () => {
   isLocating.value = true
@@ -71,16 +97,29 @@ const locateNearMe = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         isLocating.value = false
-        searchQuery.value = 'Mansoura' // Setting default nearby demonstration for user
+        const lat = pos.coords.latitude
+        const lon = pos.coords.longitude
+        
+        // Smart Egyptian latitude/longitude boundaries
+        if (lat >= 30.9 && lat <= 31.2 && lon >= 31.2 && lon <= 31.6) {
+          searchQuery.value = 'Mansoura'
+        } else if (lat >= 29.8 && lat <= 30.3 && lon >= 30.8 && lon <= 31.6) {
+          searchQuery.value = 'Cairo'
+        } else if (lat >= 31.0 && lat <= 31.4 && lon >= 29.6 && lon <= 30.1) {
+          searchQuery.value = 'Alexandria'
+        } else {
+          searchQuery.value = 'Cairo' // default Egypt hub
+        }
       },
       (err) => {
         isLocating.value = false
-        searchQuery.value = 'Mansoura'
-      }
+        searchQuery.value = 'Cairo' // default fallback on permission error
+      },
+      { timeout: 5000 }
     )
   } else {
     isLocating.value = false
-    searchQuery.value = 'Mansoura'
+    searchQuery.value = 'Cairo'
   }
 }
 
