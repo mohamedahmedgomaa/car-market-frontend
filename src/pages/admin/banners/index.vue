@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import bannerAdminApi from '../../../api/admin/bannerAdminApi.js'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
@@ -14,6 +14,7 @@ definePage({
 
 const banners = ref([])
 const loading = ref(false)
+const uploadType = ref('hero') // 'hero' or 'sidebar'
 
 const deleteDialog = ref(false)
 const selectedBanner = ref(null)
@@ -28,6 +29,15 @@ const imageToCrop = ref(null)
 const cropperElement = ref(null)
 const isCropped = ref(false)
 let cropper = null
+
+// Separate Banners by Type
+const heroBanners = computed(() => {
+  return banners.value.filter((b) => b.type === 'hero' || !b.type)
+})
+
+const sidebarBanners = computed(() => {
+  return banners.value.filter((b) => b.type === 'sidebar')
+})
 
 const fetchBanners = async () => {
   loading.value = true
@@ -71,7 +81,7 @@ watch(selectedFile, (file) => {
         if (cropper) cropper.destroy()
         if (cropperElement.value) {
           cropper = new Cropper(cropperElement.value, {
-            aspectRatio: 16 / 10, // المقاس المطلوب للموقع
+            aspectRatio: uploadType.value === 'sidebar' ? 640 / 420 : 16 / 10, // المقاس المطلوب للموقع حسب النوع
             viewMode: 1,
             dragMode: 'move',
             autoCropArea: 1,
@@ -104,9 +114,11 @@ const handleCreate = async () => {
 
     // If cropper is active, get the cropped version first
     if (cropper && !isCropped.value) {
+      const cropWidth = uploadType.value === 'sidebar' ? 640 : 2560
+      const cropHeight = uploadType.value === 'sidebar' ? 420 : 1600
       const canvas = cropper.getCroppedCanvas({ 
-        width: 2560, // مقاس 2K لضمان أعلى جودة
-        height: 1600,
+        width: cropWidth,
+        height: cropHeight,
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high',
       })
@@ -114,11 +126,12 @@ const handleCreate = async () => {
       const blob = await new Promise((resolve) => {
         canvas.toBlob(resolve, 'image/jpeg', 0.95) // جودة عالية جداً مع حجم ملف معقول
       })
-      fileToUpload = new File([blob], 'banner_2k.jpg', { type: 'image/jpeg' })
+      fileToUpload = new File([blob], uploadType.value === 'sidebar' ? 'sidebar_ad.jpg' : 'banner_2k.jpg', { type: 'image/jpeg' })
     }
 
     const fd = new FormData()
     fd.append('image', fileToUpload)
+    fd.append('type', uploadType.value)
 
     await bannerAdminApi.create(fd)
     createDialog.value = false
@@ -149,9 +162,10 @@ onMounted(() => fetchBanners())
 
 <template>
   <div class="p-6">
+    <!-- 1️⃣ Hero Banners Section -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h2 class="text-2xl font-bold text-white mb-1">إعلانات الصفحة الرئيسية</h2>
+        <h2 class="text-2xl font-bold text-white mb-1">إعلانات الصفحة الرئيسية (Hero Banners)</h2>
         <p class="text-sm text-gray-400">إدارة البانرات التي تظهر في الواجهة الرئيسية للموقع (المقاس الإجباري بجودة 2K: 2560×1600)</p>
       </div>
 
@@ -160,14 +174,14 @@ onMounted(() => fetchBanners())
         variant="elevated"
         class="rounded-xl px-6"
         height="44"
-        @click="createDialog = true; selectedFile = null"
+        @click="uploadType = 'hero'; createDialog = true; selectedFile = null"
       >
         <VIcon icon="tabler-plus" class="me-2" />
-        إضافة إعلان
+        إضافة إعلان هيرو
       </VBtn>
     </div>
 
-    <VCard rounded="xl" border class="overflow-hidden">
+    <VCard rounded="xl" border class="overflow-hidden mb-12">
       <VTable class="custom-table">
         <thead>
           <tr>
@@ -179,11 +193,11 @@ onMounted(() => fetchBanners())
         </thead>
 
         <tbody>
-          <tr v-for="banner in banners" :key="banner.id">
+          <tr v-for="banner in heroBanners" :key="banner.id">
             <td class="font-medium">#{{ banner.id }}</td>
             <td>
               <div class="py-3">
-                <div class="banner-preview-wrapper">
+                <div class="banner-preview-wrapper hero-preview">
                   <VImg :src="banner.image_path" cover class="rounded-lg border shadow-sm h-100" />
                 </div>
               </div>
@@ -214,10 +228,89 @@ onMounted(() => fetchBanners())
               </VBtn>
             </td>
           </tr>
-          <tr v-if="banners.length === 0 && !loading">
+          <tr v-if="heroBanners.length === 0 && !loading">
             <td colspan="4" class="text-center py-12 text-gray-400">
               <VIcon icon="tabler-photo-off" size="48" class="opacity-20 mb-4 d-block mx-auto" />
-              لا توجد إعلانات حالياً
+              لا توجد إعلانات هيرو حالياً
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <div v-if="loading" class="flex justify-center items-center py-12">
+        <VProgressCircular indeterminate color="primary" />
+      </div>
+    </VCard>
+
+    <!-- 2️⃣ Sidebar Banners Section -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-2xl font-bold text-white mb-1">إعلانات تفاصيل السيارة (Sidebar Banners)</h2>
+        <p class="text-sm text-gray-400">إدارة البانرات الجانبية الصغيرة التي تظهر في صفحة تفاصيل السيارات (المقاس المقترح: 640×420)</p>
+      </div>
+
+      <VBtn
+        color="warning"
+        variant="elevated"
+        class="rounded-xl px-6"
+        height="44"
+        @click="uploadType = 'sidebar'; createDialog = true; selectedFile = null"
+      >
+        <VIcon icon="tabler-plus" class="me-2" />
+        إضافة إعلان جانبي
+      </VBtn>
+    </div>
+
+    <VCard rounded="xl" border class="overflow-hidden">
+      <VTable class="custom-table">
+        <thead>
+          <tr>
+            <th class="text-uppercase text-xs font-bold opacity-70">ID</th>
+            <th class="text-uppercase text-xs font-bold opacity-70">المعاينة</th>
+            <th class="text-uppercase text-xs font-bold opacity-70">الحالة</th>
+            <th class="text-uppercase text-xs font-bold opacity-70 text-center">العمليات</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="banner in sidebarBanners" :key="banner.id">
+            <td class="font-medium">#{{ banner.id }}</td>
+            <td>
+              <div class="py-3">
+                <div class="banner-preview-wrapper sidebar-preview">
+                  <VImg :src="banner.image_path" cover class="rounded-lg border shadow-sm h-100" />
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="flex items-center gap-3">
+                <VSwitch
+                  v-model="banner.is_active"
+                  color="success"
+                  hide-details
+                  density="compact"
+                  @change="toggleActive(banner)"
+                />
+                <VChip :color="banner.is_active ? 'success' : 'default'" size="small" variant="tonal" class="font-weight-bold">
+                  {{ banner.is_active ? 'نشط' : 'غير نشط' }}
+                </VChip>
+              </div>
+            </td>
+            <td class="text-center">
+              <VBtn
+                icon
+                variant="text"
+                color="error"
+                class="rounded-lg"
+                @click="confirmDelete(banner)"
+              >
+                <VIcon icon="tabler-trash" />
+              </VBtn>
+            </td>
+          </tr>
+          <tr v-if="sidebarBanners.length === 0 && !loading">
+            <td colspan="4" class="text-center py-12 text-gray-400">
+              <VIcon icon="tabler-photo-off" size="48" class="opacity-20 mb-4 d-block mx-auto" />
+              لا توجد إعلانات جانبية حالياً
             </td>
           </tr>
         </tbody>
@@ -231,7 +324,7 @@ onMounted(() => fetchBanners())
     <VDialog v-model="createDialog" max-width="800" persistent>
       <VCard rounded="xl">
         <VCardTitle class="text-xl font-bold px-6 pt-6 flex justify-between items-center">
-          رفع إعلان جديد
+          رفع إعلان جديد ({{ uploadType === 'sidebar' ? 'جانبي' : 'شاشة كاملة هيرو' }})
           <VBtn icon variant="text" size="small" @click="createDialog = false">
             <VIcon icon="tabler-x" />
           </VBtn>
@@ -239,7 +332,7 @@ onMounted(() => fetchBanners())
 
         <VCardText class="px-6 pb-6">
           <p class="text-sm text-gray-500 mb-6 italic">
-            سيتم قص الصورة تلقائياً لتناسب المقاس الإجباري للموقع (1600×1000).
+            {{ uploadType === 'sidebar' ? 'سيتم قص الصورة تلقائياً لتناسب المقاس المقترح (640×420).' : 'سيتم قص الصورة تلقائياً لتناسب المقاس الإجباري للموقع (2560×1600).' }}
           </p>
 
           <VFileInput
@@ -330,8 +423,15 @@ onMounted(() => fetchBanners())
 <style scoped>
 .banner-preview-wrapper {
   width: 240px;
-  height: 150px; /* 16:10 ratio */
   position: relative;
+}
+
+.banner-preview-wrapper.hero-preview {
+  height: 150px; /* 16:10 ratio */
+}
+
+.banner-preview-wrapper.sidebar-preview {
+  height: 157px; /* 640:420 ratio => 240 * (420 / 640) = 157.5px */
 }
 
 .cropper-wrapper {

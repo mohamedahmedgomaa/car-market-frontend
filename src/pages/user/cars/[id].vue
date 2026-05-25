@@ -3,6 +3,7 @@ import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
+import api from '@/api/index.js'
 
 definePage({
   meta: {
@@ -367,13 +368,42 @@ const handleKeyDown = (e) => {
   }
 }
 
+// -------------------------
+// ✅ Sidebar Ad Space
+// -------------------------
+const adSlides = ref([])
+const adSlideIndex = ref(0)
+let adTimer = null
+
+const fetchAdBanners = async () => {
+  try {
+    const res = await api.get('/user/banners', { params: { type: 'sidebar' } })
+    if (res.data && res.data.data && res.data.data.length > 0) {
+      adSlides.value = res.data.data.map((b) => ({
+        image: b.image_path,
+        link: b.link || '#',
+      }))
+    }
+  } catch (err) {
+    console.error('Error fetching sidebar ads:', err)
+  }
+}
+
+const nextAdSlide = () => {
+  if (adSlides.value.length === 0) return
+  adSlideIndex.value = (adSlideIndex.value + 1) % adSlides.value.length
+}
+
 onMounted(() => {
   fetchCar()
+  fetchAdBanners()
+  adTimer = window.setInterval(nextAdSlide, 5000)
   window.addEventListener('resize', onResize, { passive: true })
   window.addEventListener('keydown', handleKeyDown)
 })
 
 onBeforeUnmount(() => {
+  if (adTimer) window.clearInterval(adTimer)
   window.removeEventListener('resize', onResize)
   window.removeEventListener('keydown', handleKeyDown)
 })
@@ -724,6 +754,21 @@ watch(
               </div>
             </VCard>
           </VDialog>
+
+          <!-- ✅ Premium Sidebar Ad Spot -->
+          <VCard variant="flat" class="pa-4 rounded-xl sidebar-ad-card mb-4 text-center relative overflow-hidden" v-if="adSlides.length > 0" style="background: rgba(var(--v-theme-surface), 0.3); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="ad-label-tag">AD</div>
+            <div class="ad-carousel-container">
+              <Transition name="fade" mode="out-in">
+                <div :key="adSlideIndex" class="ad-item-slide">
+                  <div
+                    class="ad-item-image"
+                    :style="{ backgroundImage: `url(${adSlides[adSlideIndex].image})` }"
+                  />
+                </div>
+              </Transition>
+            </div>
+          </VCard>
 
           <VCard variant="flat" class="pa-5 text-center rounded-xl metadata-card mb-4" style="background: rgba(var(--v-theme-surface), 0.5); border: 1px solid rgba(255, 255, 255, 0.1);">
             <div class="d-flex flex-column gap-3">
@@ -1115,4 +1160,43 @@ watch(
 }
 
 .leading-relaxed { line-height: 1.8; }
+
+.sidebar-ad-card {
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.ad-label-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(var(--v-theme-primary), 0.9);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+  z-index: 2;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.ad-carousel-container {
+  width: 100%;
+  height: 100%;
+}
+
+.ad-item-slide {
+  width: 100%;
+  height: 100%;
+}
+
+.ad-item-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
 </style>

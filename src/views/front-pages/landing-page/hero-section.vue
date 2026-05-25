@@ -280,7 +280,7 @@ let timer = null
 
 const fetchBanners = async () => {
   try {
-    const res = await api.get('/user/banners')
+    const res = await api.get('/user/banners', { params: { type: 'hero' } })
     if (res.data && res.data.data && res.data.data.length > 0) {
       slides.value = res.data.data.slice(0, 3).map((b) => ({
         image: b.image_path,
