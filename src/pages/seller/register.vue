@@ -3,19 +3,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { VForm } from 'vuetify/components/VForm'
 import sellerApi from '@/api/sellerApi.js'
-
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
-import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
-import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
-
-// نفس صور صفحة seller login
-import authV2RegisterIllustrationBorderedDark from '@images/pages/auth-v2-register-illustration-bordered-dark.png'
-import authV2RegisterIllustrationBorderedLight from '@images/pages/auth-v2-register-illustration-bordered-light.png'
-import authV2RegisterIllustrationDark from '@images/pages/auth-v2-register-illustration-dark.png'
-import authV2RegisterIllustrationLight from '@images/pages/auth-v2-register-illustration-light.png'
-import authV2MaskDark from '@images/pages/misc-mask-dark.png'
-import authV2MaskLight from '@images/pages/misc-mask-light.png'
 
 definePage({
   meta: {
@@ -33,19 +22,12 @@ const errorMessage = ref('')
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 
-const authThemeImg = useGenerateImageVariant(
-  authV2RegisterIllustrationLight,
-  authV2RegisterIllustrationDark,
-  authV2RegisterIllustrationBorderedLight,
-  authV2RegisterIllustrationBorderedDark,
-  true
-)
-const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
-
 const form = ref({
   name: '',
   email: '',
   phone: '',
+  address_en: '',
+  address_ar: '',
 
   password: '',
   password_confirmation: '',
@@ -57,16 +39,16 @@ const form = ref({
 
   business_license: '',
   bank_account: '',
+  tax_number: '',
 
   store_logo: null, // File
+  tax_card_image: null, // File
 })
 
-// قواعد بسيطة (لو عندك validators جاهزة في مشروعك استعملها بدل دي)
+// Validation rules
 const required = v => !!String(v ?? '').trim() || 'Required'
 const emailRule = v => /.+@.+\..+/.test(String(v ?? '')) || 'Invalid email'
 const min6 = v => String(v ?? '').length >= 6 || 'Min 6 characters'
-const max20 = v => !v || String(v).length <= 20 || 'Max 20 characters'
-const max255 = v => !v || String(v).length <= 255 || 'Max 255 characters'
 
 const handleRegister = async () => {
   errorMessage.value = ''
@@ -75,7 +57,7 @@ const handleRegister = async () => {
   const ok = await formRef.value?.validate?.()
   if (ok?.valid === false) return
 
-  // تحقق بسيط لكلمة السر confirmation
+  // Password confirmation check
   if (form.value.password !== form.value.password_confirmation) {
     errorMessage.value = 'Password confirmation does not match'
     return
@@ -86,7 +68,7 @@ const handleRegister = async () => {
   try {
     const fd = new FormData()
 
-    // required
+    // Required fields
     fd.append('name', form.value.name)
     fd.append('email', form.value.email)
     fd.append('password', form.value.password)
@@ -94,22 +76,32 @@ const handleRegister = async () => {
     fd.append('store_name_en', form.value.store_name_en)
     fd.append('store_name_ar', form.value.store_name_ar)
 
-    // nullable
+    // Nullable / added fields
     if (form.value.phone) fd.append('phone', form.value.phone)
+    if (form.value.address_en) fd.append('address_en', form.value.address_en)
+    if (form.value.address_ar) fd.append('address_ar', form.value.address_ar)
     if (form.value.store_description_en) fd.append('store_description_en', form.value.store_description_en)
     if (form.value.store_description_ar) fd.append('store_description_ar', form.value.store_description_ar)
     if (form.value.business_license) fd.append('business_license', form.value.business_license)
     if (form.value.bank_account) fd.append('bank_account', form.value.bank_account)
+    if (form.value.tax_number) fd.append('tax_number', form.value.tax_number)
 
-    // image
+    // Image/File uploads
     if (form.value.store_logo instanceof File) {
       fd.append('store_logo', form.value.store_logo)
+    } else if (Array.isArray(form.value.store_logo) && form.value.store_logo[0] instanceof File) {
+      fd.append('store_logo', form.value.store_logo[0])
+    }
+
+    if (form.value.tax_card_image instanceof File) {
+      fd.append('tax_card_image', form.value.tax_card_image)
+    } else if (Array.isArray(form.value.tax_card_image) && form.value.tax_card_image[0] instanceof File) {
+      fd.append('tax_card_image', form.value.tax_card_image[0])
     }
 
     const response = await sellerApi.register(fd)
-
     const data = response?.data?.data ?? response?.data
-    // متوقع يرجع token + seller (زي login)
+
     const token = data?.token
     const seller = data?.seller ?? data?.user ?? data
 
@@ -126,7 +118,7 @@ const handleRegister = async () => {
       errorMessage.value =
         err.response.data.message ||
         err.response.data.error ||
-        (err.response.data.errors ? JSON.stringify(err.response.data.errors) : JSON.stringify(err.response.data))
+        (err.response.data.errors ? Object.values(err.response.data.errors).flat().join(', ') : JSON.stringify(err.response.data))
     } else {
       errorMessage.value = err?.message || 'Register failed'
     }
@@ -137,193 +129,342 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <RouterLink to="/">
-    <div class="auth-logo d-flex align-center gap-x-3">
+  <div class="auth-wrapper d-flex flex-column align-center justify-center pa-6">
+    <!-- App Logo -->
+    <RouterLink
+      to="/"
+      class="auth-logo mb-6 d-flex align-center gap-x-3 text-decoration-none"
+    >
       <VNodeRenderer :nodes="themeConfig.app.logo" />
-      <h1 class="auth-title">Seller Portal</h1>
-    </div>
-  </RouterLink>
+      <h1 class="auth-title text-white text-h4 font-weight-bold">{{ themeConfig.app.title }}</h1>
+    </RouterLink>
 
-  <VRow no-gutters class="auth-wrapper bg-surface">
-    <VCol md="8" class="d-none d-md-flex">
-      <div class="position-relative bg-background w-100 me-0">
-        <div class="d-flex align-center justify-center w-100 h-100" style="padding-inline: 6.25rem;">
-          <VImg max-width="613" :src="authThemeImg" class="auth-illustration mt-16 mb-2" />
-        </div>
+    <VCard class="auth-card" elevation="24">
+      <VCardText class="pa-10">
+        <!-- Title -->
+        <h2 class="text-h4 font-weight-bold mb-2 text-center text-white">
+          Create Seller Account 🏪
+        </h2>
+        <p class="text-center text-disabled mb-8">Register to start selling cars on the platform</p>
 
-        <img
-          class="auth-footer-mask flip-in-rtl"
-          :src="authThemeMask"
-          alt="auth-footer-mask"
-          height="280"
-          width="100"
-        >
-      </div>
-    </VCol>
+        <!-- Form -->
+        <VForm ref="formRef" @submit.prevent="handleRegister">
+          <VRow>
+            <!-- SECTION 1: Personal & Account Info -->
+            <VCol cols="12">
+              <h3 class="section-title mb-4 d-flex align-center gap-x-2 text-primary">
+                <VIcon icon="tabler-user" size="20" />
+                Account Information
+              </h3>
+            </VCol>
 
-    <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center">
-      <VCard flat :max-width="520" class="mt-12 mt-sm-0 pa-6">
-        <VCardText>
-          <h4 class="text-h4 mb-1">Create Seller Account 🏪</h4>
-          <p class="mb-0">Register to start selling cars on the platform</p>
-        </VCardText>
+            <VCol cols="12" md="6">
+              <label class="input-label">Full Name</label>
+              <VTextField
+                v-model="form.name"
+                placeholder="Ex: John Doe"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="premium-input"
+              />
+            </VCol>
 
-        <VCardText>
-          <VForm ref="formRef" @submit.prevent="handleRegister">
-            <VRow>
-              <!-- name -->
-              <VCol cols="12">
-                <AppTextField v-model="form.name" label="Name" :rules="[required]" placeholder="Seller name" />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Email Address</label>
+              <VTextField
+                v-model="form.email"
+                placeholder="seller@example.com"
+                variant="outlined"
+                density="comfortable"
+                type="email"
+                required
+                :rules="[required, emailRule]"
+                class="premium-input"
+              />
+            </VCol>
 
-              <!-- email -->
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.email"
-                  label="Email"
-                  type="email"
-                  :rules="[required, emailRule]"
-                  placeholder="seller@email.com"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Phone Number</label>
+              <VTextField
+                v-model="form.phone"
+                placeholder="05xxxxxxxx"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              />
+            </VCol>
 
-              <!-- phone (nullable) -->
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.phone"
-                  label="Phone (optional)"
-                  :rules="[max20]"
-                  placeholder="05xxxxxxxx"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Bank Account / IBAN</label>
+              <VTextField
+                v-model="form.bank_account"
+                placeholder="IBAN / Account details"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              />
+            </VCol>
 
-              <!-- store names -->
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.store_name_en"
-                  label="Store Name (EN)"
-                  :rules="[required, max255]"
-                  placeholder="My Store"
-                />
-              </VCol>
+            <!-- SECTION 2: Showroom Info -->
+            <VCol cols="12" class="mt-4">
+              <h3 class="section-title mb-4 d-flex align-center gap-x-2 text-primary">
+                <VIcon icon="tabler-building-store" size="20" />
+                Showroom Details
+              </h3>
+            </VCol>
 
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.store_name_ar"
-                  label="Store Name (AR)"
-                  :rules="[required, max255]"
-                  placeholder="متجري"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Store Name (English)</label>
+              <VTextField
+                v-model="form.store_name_en"
+                placeholder="Ex: Golden Motors"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="premium-input"
+              />
+            </VCol>
 
-              <!-- descriptions -->
-              <VCol cols="12">
-                <AppTextarea
-                  v-model="form.store_description_en"
-                  label="Store Description (EN) (optional)"
-                  rows="2"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">اسم المعرض (عربي)</label>
+              <VTextField
+                v-model="form.store_name_ar"
+                placeholder="مثال: معرض الذهبية للسيارات"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="premium-input"
+                dir="rtl"
+              />
+            </VCol>
 
-              <VCol cols="12">
-                <AppTextarea
-                  v-model="form.store_description_ar"
-                  label="Store Description (AR) (optional)"
-                  rows="2"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Address (English)</label>
+              <VTextField
+                v-model="form.address_en"
+                placeholder="Showroom address"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              />
+            </VCol>
 
-              <!-- store logo -->
-              <VCol cols="12">
-                <VFileInput
-                  v-model="form.store_logo"
-                  label="Store Logo (optional)"
-                  accept="image/*"
-                  prepend-icon="tabler-photo"
-                  variant="outlined"
-                  density="comfortable"
-                  show-size
-                  clearable
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">عنوان المعرض (عربي)</label>
+              <VTextField
+                v-model="form.address_ar"
+                placeholder="عنوان المعرض بالتفصيل"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                dir="rtl"
+              />
+            </VCol>
 
-              <!-- business & bank -->
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.business_license"
-                  label="Business License (optional)"
-                  :rules="[max255]"
-                  placeholder="License number"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Store Description (English)</label>
+              <VTextarea
+                v-model="form.store_description_en"
+                placeholder="Write a brief description..."
+                variant="outlined"
+                density="comfortable"
+                rows="3"
+                class="premium-input"
+              />
+            </VCol>
 
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.bank_account"
-                  label="Bank Account (optional)"
-                  :rules="[max255]"
-                  placeholder="IBAN / Account"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">وصف المعرض (عربي)</label>
+              <VTextarea
+                v-model="form.store_description_ar"
+                placeholder="اكتب وصفاً مختصراً للمعرض..."
+                variant="outlined"
+                density="comfortable"
+                rows="3"
+                class="premium-input"
+                dir="rtl"
+              />
+            </VCol>
 
-              <!-- password -->
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.password"
-                  label="Password"
-                  placeholder="············"
-                  :type="isPasswordVisible ? 'text' : 'password'"
-                  autocomplete="new-password"
-                  :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                  :rules="[required, min6]"
-                />
-              </VCol>
+            <!-- SECTION 3: Uploads & Verification -->
+            <VCol cols="12" class="mt-4">
+              <h3 class="section-title mb-4 d-flex align-center gap-x-2 text-primary">
+                <VIcon icon="tabler-shield-check" size="20" />
+                Legal & Verification Details
+              </h3>
+            </VCol>
 
-              <!-- password confirmation -->
-              <VCol cols="12">
-                <AppTextField
-                  v-model="form.password_confirmation"
-                  label="Confirm Password"
-                  placeholder="············"
-                  :type="isConfirmPasswordVisible ? 'text' : 'password'"
-                  autocomplete="new-password"
-                  :append-inner-icon="isConfirmPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
-                  :rules="[required]"
-                />
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Tax Number (الرقم الضريبي)</label>
+              <VTextField
+                v-model="form.tax_number"
+                placeholder="Tax Identification Number"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              />
+            </VCol>
 
-              <VCol cols="12" v-if="errorMessage">
-                <div class="text-error">{{ errorMessage }}</div>
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Business License (السجل التجاري)</label>
+              <VTextField
+                v-model="form.business_license"
+                placeholder="License or Registration number"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              />
+            </VCol>
 
-              <VCol cols="12">
-                <VBtn block type="submit" :loading="loading">
-                  Register as Seller
-                </VBtn>
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Store Logo</label>
+              <VFileInput
+                v-model="form.store_logo"
+                accept="image/*"
+                placeholder="Upload logo image"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                prepend-icon=""
+                append-inner-icon="tabler-photo"
+              />
+            </VCol>
 
-              <VCol cols="12" class="text-body-1 text-center">
-                <span>Already have a seller account?</span>
-                <RouterLink class="text-primary ms-1" to="/seller/login">Sign in</RouterLink>
-              </VCol>
+            <VCol cols="12" md="6">
+              <label class="input-label">Tax Card Image (صورة الرقم الضريبي)</label>
+              <VFileInput
+                v-model="form.tax_card_image"
+                accept="image/*"
+                placeholder="Upload tax card image"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                prepend-icon=""
+                append-inner-icon="tabler-file-analytics"
+              />
+            </VCol>
 
-              <VCol cols="12" class="d-flex align-center">
-                <VDivider /><span class="mx-4">or</span><VDivider />
-              </VCol>
+            <!-- SECTION 4: Security -->
+            <VCol cols="12" class="mt-4">
+              <h3 class="section-title mb-4 d-flex align-center gap-x-2 text-primary">
+                <VIcon icon="tabler-lock" size="20" />
+                Security
+              </h3>
+            </VCol>
 
-              <VCol cols="12" class="text-center">
-                <AuthProvider />
-              </VCol>
-            </VRow>
-          </VForm>
-        </VCardText>
-      </VCard>
-    </VCol>
-  </VRow>
+            <VCol cols="12" md="6">
+              <label class="input-label">Password</label>
+              <VTextField
+                v-model="form.password"
+                :type="isPasswordVisible ? 'text' : 'password'"
+                placeholder="••••••••"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required, min6]"
+                class="premium-input"
+                :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                @click:append-inner="isPasswordVisible = !isPasswordVisible"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">Confirm Password</label>
+              <VTextField
+                v-model="form.password_confirmation"
+                :type="isConfirmPasswordVisible ? 'text' : 'password'"
+                placeholder="••••••••"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="premium-input"
+                :append-inner-icon="isConfirmPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
+              />
+            </VCol>
+
+            <!-- Errors & Actions -->
+            <VCol cols="12" class="mt-6">
+              <div v-if="errorMessage" class="text-error mb-4 text-center text-body-2 font-weight-bold">{{ errorMessage }}</div>
+              <VBtn
+                block
+                color="primary"
+                height="56"
+                type="submit"
+                :loading="loading"
+                class="auth-submit-btn"
+              >
+                Register as Showroom
+              </VBtn>
+            </VCol>
+
+            <VCol cols="12" class="text-center mt-4 text-body-1 text-disabled">
+              <span>Already have a showroom account?</span>
+              <RouterLink class="text-primary ms-2 font-weight-bold hover-white" to="/seller/login">Sign in</RouterLink>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+    </VCard>
+  </div>
 </template>
 
-<style lang="scss">
-@use "@core/scss/template/pages/page-auth";
+<style lang="scss" scoped>
+.auth-wrapper {
+  min-height: 100vh;
+  background-color: #0f111a;
+  background-image: radial-gradient(circle at 50% 50%, rgba(var(--v-theme-primary), 0.12) 0%, transparent 80%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 900px;
+  background-color: #1c1f2e !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.premium-input :deep(.v-field) {
+  border-radius: 14px !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &.v-field--focused {
+    border-color: rgba(var(--v-theme-primary), 0.8);
+  }
+}
+
+.auth-submit-btn {
+  border-radius: 16px !important;
+  font-weight: 800 !important;
+  font-size: 18px !important;
+  text-transform: none !important;
+  box-shadow: 0 10px 30px -10px rgba(var(--v-theme-primary), 0.6) !important;
+}
+
+.hover-white:hover {
+  color: #fff !important;
+}
+
+.auth-title {
+  letter-spacing: 1px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
 </style>
+
