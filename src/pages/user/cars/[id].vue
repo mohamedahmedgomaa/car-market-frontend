@@ -83,6 +83,58 @@ const formatEngineCapacity = (val) => {
   return `${s} CC`
 }
 
+const getEngineCapacityDetails = (val) => {
+  if (!val) return { cc: '—', l: '' }
+  const s = String(val).trim()
+  if (/[a-zA-Z\u0600-\u06FF]/.test(s)) {
+    return { cc: s, l: '' }
+  }
+  const num = Number(s)
+  if (!isNaN(num)) {
+    if (num < 10) {
+      return {
+        cc: `${Math.round(num * 1000)} CC`,
+        l: `${num}L`
+      }
+    }
+    return {
+      cc: `${num} CC`,
+      l: `${(num / 1000).toFixed(1)}L`
+    }
+  }
+  return { cc: `${s} CC`, l: '' }
+}
+
+const formatDrivetrain = (val) => {
+  if (!val) return '—'
+  const dt = String(val).toLowerCase().trim()
+  if (dt.includes('fwd')) return 'FWD'
+  if (dt.includes('rwd')) return 'RWD'
+  if (dt.includes('4wd')) return '4WD'
+  if (dt.includes('awd')) return 'AWD'
+  if (dt.includes('4x4')) return '4x4'
+  return val
+}
+
+const drivetrainLower = computed(() => String(car.value?.drivetrain || '').toLowerCase().trim())
+const isFrontActive = computed(() => {
+  const dt = drivetrainLower.value
+  return dt.includes('fwd') || dt.includes('4wd') || dt.includes('awd') || dt.includes('4x4')
+})
+const isRearActive = computed(() => {
+  const dt = drivetrainLower.value
+  return dt.includes('rwd') || dt.includes('4wd') || dt.includes('awd') || dt.includes('4x4')
+})
+
+const formatCylinders = (val) => {
+  if (!val) return '—'
+  const s = String(val).trim()
+  if (isNaN(Number(s))) {
+    return s
+  }
+  return `${s} Cylinders`
+}
+
 const formatHorsepower = (val) => {
   if (!val) return '—'
   const s = String(val).trim()
@@ -572,7 +624,12 @@ watch(
             <div class="spec-card">
               <VIcon icon="tabler-engine" class="mb-2" color="primary" />
               <span class="label">Engine Capacity</span>
-              <span class="val">{{ formatEngineCapacity(car.engine_capacity) }}</span>
+              <div class="d-flex flex-column align-center">
+                <span class="val">{{ getEngineCapacityDetails(car.engine_capacity).cc }}</span>
+                <span v-if="getEngineCapacityDetails(car.engine_capacity).l" class="text-caption opacity-80 font-weight-bold mt-1" style="font-size: 14px !important; color: rgb(var(--v-theme-primary));">
+                  {{ getEngineCapacityDetails(car.engine_capacity).l }}
+                </span>
+              </div>
             </div>
 
             <!-- Horsepower -->
@@ -586,7 +643,7 @@ watch(
             <div class="spec-card">
               <VIcon icon="tabler-engine" class="mb-2" color="primary" />
               <span class="label">Cylinders</span>
-              <span class="val">{{ car.cylinders || '—' }}</span>
+              <span class="val">{{ formatCylinders(car.cylinders) }}</span>
             </div>
 
             <!-- Transmission -->
@@ -604,10 +661,23 @@ watch(
             </div>
 
             <!-- Drivetrain -->
-            <div class="spec-card">
-              <VIcon icon="tabler-circles-relation" class="mb-2" color="primary" />
+            <div class="spec-card d-flex flex-column align-center justify-center">
+              <!-- Drivetrain 4-Wheel Visual -->
+              <div class="drivetrain-visual">
+                <div class="chassis-line"></div>
+                <div class="axle front" :class="{ active: isFrontActive }">
+                  <div class="wheel left" :class="{ active: isFrontActive }"></div>
+                  <div class="axle-bar"></div>
+                  <div class="wheel right" :class="{ active: isFrontActive }"></div>
+                </div>
+                <div class="axle rear" :class="{ active: isRearActive }">
+                  <div class="wheel left" :class="{ active: isRearActive }"></div>
+                  <div class="axle-bar"></div>
+                  <div class="wheel right" :class="{ active: isRearActive }"></div>
+                </div>
+              </div>
               <span class="label">Drivetrain</span>
-              <span class="val text-uppercase">{{ car.drivetrain || '—' }}</span>
+              <span class="val text-uppercase" style="font-size: 13px;">{{ formatDrivetrain(car.drivetrain) }}</span>
             </div>
 
             <!-- Color -->
@@ -1141,15 +1211,87 @@ watch(
   align-items: center;
 }
 
-.seller-card {
+.sidebar-content {
   position: sticky;
   top: 110px;
+  align-self: start;
+  z-index: 100;
+}
+
+@media (max-width: 900px) {
+  .sidebar-content {
+    position: static;
+  }
+}
+
+.seller-card {
   background-color: #25293c !important;
   opacity: 1 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 24px !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
-  z-index: 100 !important;
+}
+
+/* Custom Drivetrain 4-Wheel Visual */
+.drivetrain-visual {
+  position: relative;
+  width: 40px;
+  height: 50px;
+  margin: 0 auto 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chassis-line {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.axle {
+  position: relative;
+  width: 32px;
+  height: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.axle-bar {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.axle.active .axle-bar {
+  background: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 8px rgb(var(--v-theme-primary));
+}
+
+.wheel {
+  width: 6px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.wheel.active {
+  background: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 10px rgb(var(--v-theme-primary));
+  transform: scale(1.1);
 }
 
 .fade-enter-active, .fade-leave-active {
