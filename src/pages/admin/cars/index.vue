@@ -35,6 +35,89 @@ const promotionForm = ref({
   ad_expiry: null
 })
 
+// ===== Expiry Presets System =====
+const selectedPreset = ref('always')
+
+const expiryPresets = [
+  { label: '٣ أيام (3 Days)', value: '3days', icon: 'tabler-calendar-time' },
+  { label: '٧ أيام (7 Days)', value: '7days', icon: 'tabler-calendar-due' },
+  { label: 'دائماً (Always)', value: 'always', icon: 'tabler-infinity' },
+  { label: 'يدوياً (Manual)', value: 'custom', icon: 'tabler-calendar-user' }
+]
+
+const formatDateLocal = (date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const parseDateLocal = (dateStr) => {
+  if (!dateStr) return null
+  const parts = dateStr.split('-')
+  return new Date(parts[0], parts[1] - 1, parts[2])
+}
+
+const applyExpiryPreset = (preset) => {
+  selectedPreset.value = preset
+  const today = new Date()
+  
+  if (preset === '3days') {
+    today.setDate(today.getDate() + 3)
+    promotionForm.value.ad_expiry = formatDateLocal(today)
+  } else if (preset === '7days') {
+    today.setDate(today.getDate() + 7)
+    promotionForm.value.ad_expiry = formatDateLocal(today)
+  } else if (preset === 'always') {
+    promotionForm.value.ad_expiry = null
+  }
+}
+
+const detectPreset = (expiryDate) => {
+  if (!expiryDate) return 'always'
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const expiry = parseDateLocal(expiryDate)
+  if (!expiry) return 'always'
+  expiry.setHours(0, 0, 0, 0)
+  
+  const diffTime = expiry.getTime() - today.getTime()
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 3) return '3days'
+  if (diffDays === 7) return '7days'
+  return 'custom'
+}
+
+watch(() => promotionForm.value.ad_expiry, (newVal) => {
+  if (newVal === null || newVal === '') {
+    selectedPreset.value = 'always'
+  } else {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const expiry = parseDateLocal(newVal)
+    if (!expiry) {
+      selectedPreset.value = 'always'
+      return
+    }
+    expiry.setHours(0, 0, 0, 0)
+    
+    const diffTime = expiry.getTime() - today.getTime()
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 3) {
+      selectedPreset.value = '3days'
+    } else if (diffDays === 7) {
+      selectedPreset.value = '7days'
+    } else {
+      selectedPreset.value = 'custom'
+    }
+  }
+})
+
 // ===== Delete =====
 const deleteDialog = ref(false)
 const selectedCar = ref(null)
@@ -101,6 +184,7 @@ const selectFilter = (type) => {
 
 const openPromotionDialog = (car) => {
   currentCar.value = car
+  const expiry = car.ad_expiry ? car.ad_expiry.split('T')[0] : null
   promotionForm.value = {
     status: car.status || 'pending',
     is_featured: !!car.is_featured,
@@ -109,8 +193,9 @@ const openPromotionDialog = (car) => {
     show_on_home: !!car.show_on_home,
     is_global_ad: !!car.is_global_ad,
     featured_fee: car.featured_fee || 0,
-    ad_expiry: car.ad_expiry ? car.ad_expiry.split('T')[0] : null
+    ad_expiry: expiry
   }
+  selectedPreset.value = detectPreset(expiry)
   promotionDialog.value = true
 }
 
@@ -537,13 +622,38 @@ const stats = computed(() => {
 
             <!-- Ad Details -->
             <VCol cols="12" v-if="promotionForm.is_featured || promotionForm.is_global_ad">
-              <div class="text-subtitle-2 font-weight-black mb-2">Ad Expiry Date</div>
+              <div class="text-subtitle-2 font-weight-black mb-2">تاريخ انتهاء الإعلان (Ad Expiry Preset)</div>
+              
+              <!-- Premium Preset Buttons -->
+              <div class="d-flex gap-2 mb-4 flex-wrap">
+                <VBtn
+                  v-for="preset in expiryPresets"
+                  :key="preset.value"
+                  :color="selectedPreset === preset.value ? 'primary' : 'surface-variant'"
+                  :variant="selectedPreset === preset.value ? 'elevated' : 'tonal'"
+                  size="small"
+                  class="font-weight-black rounded-lg px-4"
+                  @click="applyExpiryPreset(preset.value)"
+                  :style="selectedPreset === preset.value ? 'color: #fff !important; -webkit-text-fill-color: #fff !important;' : ''"
+                >
+                  <VIcon :icon="preset.icon" size="16" class="me-1" />
+                  {{ preset.label }}
+                </VBtn>
+              </div>
+
+              <!-- Date Picker Input -->
+              <div class="text-subtitle-2 font-weight-black mb-2" v-if="selectedPreset !== 'always'">اختر تاريخ انتهاء يدوي (Expiry Date)</div>
               <VTextField
+                v-if="selectedPreset !== 'always'"
                 v-model="promotionForm.ad_expiry"
                 type="date"
                 variant="outlined"
                 density="comfortable"
                 prepend-inner-icon="tabler-calendar"
+                :readonly="selectedPreset !== 'custom'"
+                class="expiry-date-input"
+                :hint="selectedPreset !== 'custom' ? 'تم التحديد تلقائياً بناءً على الخيار السريع (Read-only)' : 'حدد التاريخ يدوياً'"
+                persistent-hint
               />
             </VCol>
           </VRow>
