@@ -300,9 +300,11 @@ onMounted(fetchSellers)
                       <span>Verified Showroom</span>
                     </div>
 
-                    <div class="d-flex align-center gap-1 text-white-50 text-caption mt-1" v-if="seller.city || seller.address">
+                    <div class="d-flex align-center gap-1 text-white-50 text-caption mt-1">
                       <VIcon icon="tabler-map-pin" size="14" color="error" />
-                      <span class="text-truncate font-weight-medium">{{ seller.address || t(seller.city?.name) || 'Egypt' }}</span>
+                      <span class="text-truncate font-weight-medium">
+                        {{ t(seller.city?.name) ? (t(seller.city?.name) + (t(seller.address) ? ' - ' + t(seller.address) : '')) : (t(seller.address) || 'Egypt') }}
+                      </span>
                     </div>
                   </div>
                 </div>
