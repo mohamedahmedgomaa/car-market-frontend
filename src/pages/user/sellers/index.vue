@@ -146,7 +146,7 @@ onMounted(fetchSellers)
       <!-- Premium Split Hero Layout (Above the Fold) -->
       <VRow class="align-center mb-12" no-gutters>
         <!-- Left: Search & Discovery for Buyers -->
-        <VCol cols="12" md="7" class="pe-md-10 mb-8 mb-md-0">
+        <VCol cols="12" md="8" class="pe-md-10 mb-8 mb-md-0">
           <div class="header-section text-center text-md-start animate-fade-in">
             <div class="d-inline-flex align-center gap-2 px-4 py-1.5 rounded-pill bg-primary-subtle mb-4 border border-primary-20">
               <VIcon icon="tabler-building-store" size="18" color="primary" />
@@ -211,48 +211,33 @@ onMounted(fetchSellers)
           </div>
         </VCol>
 
-        <!-- Right: Premium Partnership Card for Showroom Owners & Agencies (Highly visible instantly) -->
-        <VCol cols="12" md="5">
-          <VCard class="dealer-promo-card pa-8 rounded-2xl elevation-10 overflow-hidden relative border-glow">
-            <div class="d-flex flex-column gap-4 relative z-1">
-              <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary text-caption font-weight-bold align-self-start">
-                <VIcon icon="tabler-rocket" size="16" /> Dealership Partnership
+        <!-- Right: Premium Partnership Card for Showroom Owners & Agencies (Sleeker & More Compact!) -->
+        <VCol cols="12" md="4">
+          <VCard class="dealer-promo-card pa-6 rounded-2xl elevation-10 overflow-hidden relative border-glow">
+            <div class="d-flex flex-column gap-3 relative z-1">
+              <div class="d-inline-flex align-center gap-1.5 px-3 py-1 rounded-pill bg-primary-subtle text-primary text-caption font-weight-bold align-self-start">
+                <VIcon icon="tabler-rocket" size="14" /> Dealership Partnership
               </div>
               
-              <h2 class="text-h4 font-weight-black text-white leading-tight">
-                Own a Showroom or Agency?
+              <h2 class="text-h5 font-weight-black text-white leading-tight">
+                Own a Showroom?
               </h2>
               
-              <p class="text-body-1 text-white-50 mb-2 font-weight-medium">
-                Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Feature your showroom, display certified inventories, and connect directly with thousands of buyers.
+              <p class="text-caption text-white-50 mb-2 font-weight-medium" style="line-height: 1.5;">
+                Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Display your inventory and receive direct qualified buyer leads.
               </p>
-
-              <!-- Value Prop list items -->
-              <div class="d-flex flex-column gap-2 mb-4">
-                <div class="d-flex align-center gap-2 text-white-50 text-subtitle-2 font-weight-semibold">
-                  <VIcon icon="tabler-circle-check" color="primary" size="18" />
-                  <span>Premium listing in Egypt's directory</span>
-                </div>
-                <div class="d-flex align-center gap-2 text-white-50 text-subtitle-2 font-weight-semibold">
-                  <VIcon icon="tabler-circle-check" color="primary" size="18" />
-                  <span>Direct phone & WhatsApp customer leads</span>
-                </div>
-                <div class="d-flex align-center gap-2 text-white-50 text-subtitle-2 font-weight-semibold">
-                  <VIcon icon="tabler-circle-check" color="primary" size="18" />
-                  <span>Certified inventory showcasing</span>
-                </div>
-              </div>
               
               <VBtn
                 color="primary"
                 size="large"
                 rounded="pill"
                 to="/seller/register"
-                class="px-6 py-3 font-weight-black shadow-primary text-subtitle-1 w-100"
+                class="px-5 font-weight-black shadow-primary text-subtitle-2 w-100"
+                height="44"
                 elevation="8"
               >
-                <VIcon icon="tabler-building-store" size="20" class="me-2" />
-                Register Your Showroom
+                <VIcon icon="tabler-building-store" size="18" class="me-2" />
+                Register Showroom
               </VBtn>
             </div>
           </VCard>
@@ -289,7 +274,11 @@ onMounted(fetchSellers)
       <div v-else class="mb-8">
         <VRow class="showrooms-grid">
           <VCol v-for="seller in filteredSellers" :key="seller.id" cols="12" sm="6" lg="4">
-            <VCard class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between" elevation="6">
+            <VCard
+              class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between cursor-pointer"
+              elevation="6"
+              :to="`/user/sellers/${seller.id}`"
+            >
               <div>
                 <!-- Top details -->
                 <div class="d-flex align-center gap-4 mb-4">
@@ -334,7 +323,7 @@ onMounted(fetchSellers)
                     size="small"
                     rounded="pill"
                     class="flex-grow-1 font-weight-bold shadow-primary px-4 py-2"
-                    @click="openCallDialog(seller)"
+                    @click.stop="openCallDialog(seller)"
                   >
                     <VIcon icon="tabler-phone" size="16" class="me-1" />
                     Call
@@ -349,6 +338,7 @@ onMounted(fetchSellers)
                     class="flex-grow-1 font-weight-bold shadow-success px-4 py-2"
                     :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
                     target="_blank"
+                    @click.stop
                   >
                     <VIcon icon="tabler-brand-whatsapp" size="16" class="me-1" />
                     WhatsApp
@@ -361,6 +351,7 @@ onMounted(fetchSellers)
                   block
                   rounded="pill"
                   class="font-weight-bold tracking-wide"
+                  @click.stop
                   :to="`/user/sellers/${seller.id}`"
                 >
                   Explore Showroom
