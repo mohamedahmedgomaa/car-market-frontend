@@ -90,15 +90,15 @@ const normalizeCars = (data) => {
 // Options
 // -------------------------
 const transmissionOptions = [
-  { title: 'Automatic', value: 'automatic' },
-  { title: 'Manual', value: 'manual' },
+  { title: 'Automatic', value: 'automatic', icon: '⚙️' },
+  { title: 'Manual', value: 'manual', icon: '🕹️' },
 ]
 
 const fuelOptions = [
-  { title: 'Petrol', value: 'petrol' },
-  { title: 'Diesel', value: 'diesel' },
-  { title: 'Hybrid', value: 'hybrid' },
-  { title: 'Electric', value: 'electric' },
+  { title: 'Petrol', value: 'petrol', icon: '⛽' },
+  { title: 'Diesel', value: 'diesel', icon: '🛢️' },
+  { title: 'Hybrid', value: 'hybrid', icon: '🔋' },
+  { title: 'Electric', value: 'electric', icon: '⚡' },
 ]
 
 const drivetrainOptions = [
@@ -163,8 +163,8 @@ const displayDraftMileageTo = computed({
 
 const hasMore = computed(() => cars.value.length < total.value)
 
-const sectionTitle = computed(() => {
-  return draft.value.type === 'motorcycle' ? 'Bikes' : 'Cars'
+const activeType = computed(() => {
+  return String(firstQueryVal(route.query['filter[type]']) || 'car')
 })
 
 // -------------------------
@@ -386,6 +386,55 @@ watch(() => draft.value.brandId, async (val) => {
   } catch { draftModels.value = [] }
 }, { immediate: true })
 
+const filteredBrands = computed(() => {
+  const type = draft.value.type || 'car'
+  const items = brands.value || []
+  return items.filter(b => !b.type || b.type === type)
+})
+
+const BIKE_KEYWORDS = [
+  'ducati', 'yamaha', 'kawasaki', 'suzuki bike', 'honda bike', 'cc engine', 
+  'quick shift', 'ride by wire', 'wheelie', 'slide control', 'traction control evo',
+  'dqs', 'dtc', 'dsc', 'dwc', 'dpl', 'desmosedici', '1103cc', '955cc', 'v4 engine',
+  'monoshock', 'chain drive', 'slipper clutch', 'engine cc', 'engine displacement'
+]
+
+const CAR_KEYWORDS = [
+  'airbag', 'sunroof', 'carplay', 'android auto', 'isofix', 'seat', 'climate control',
+  'tailgate', 'door', 'hepa', 'glass', 'lane keep', 'lane departure', 'blind spot',
+  'park assist', 'cruise control', 'roof', 'trunk', 'frunk', 'window', 'chassis', 'differential',
+  'nappa', 'alcantara', 'wood trim', 'carbon fiber trim', 'refrigerator', 'starlight', 'ambient lighting'
+]
+
+const filteredFeatures = computed(() => {
+  const type = draft.value.type || 'car'
+  const items = features.value || []
+  
+  return items.filter(feat => {
+    const nameEn = String(feat.name?.en || feat.name || '').toLowerCase()
+    const nameAr = String(feat.name?.ar || '').toLowerCase()
+    const name = `${nameEn} ${nameAr}`
+    
+    const isBikeFeature = BIKE_KEYWORDS.some(kw => name.includes(kw) || nameEn.includes(kw))
+    const isCarFeature = CAR_KEYWORDS.some(kw => name.includes(kw) || nameEn.includes(kw))
+    
+    if (type === 'motorcycle') {
+      return !isCarFeature || isBikeFeature
+    } else {
+      return !isBikeFeature
+    }
+  })
+})
+
+watch(() => draft.value.type, () => {
+  draft.value.brandId = null
+  draft.value.modelId = null
+  draft.value.featureIds = []
+  draft.value.transmission = null
+  draft.value.fuelType = null
+  draft.value.drivetrain = null
+})
+
 onMounted(async () => {
   syncDraftFromQuery()
   fetchCars(true)
@@ -478,7 +527,7 @@ onMounted(async () => {
             <div class="mb-3">
               <VSelect
                 v-model="draft.brandId"
-                :items="brands"
+                :items="filteredBrands"
                 item-value="id"
                 label="Brand"
                 variant="outlined"
@@ -578,38 +627,60 @@ onMounted(async () => {
             <div class="advanced-filters-section mt-6">
               <div class="input-label-mini mb-2">Technical Details</div>
               
-              <VSelect
-                v-model="draft.transmission"
-                :items="transmissionOptions"
-                label="Transmission"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                clearable
-                class="premium-input mb-3"
-              />
+              <div class="technical-details-section">
+                <!-- Transmission -->
+                <div class="mb-4">
+                  <div class="input-label-mini">Transmission</div>
+                  <div class="transmission-grid">
+                    <button
+                      v-for="opt in transmissionOptions"
+                      :key="opt.value"
+                      type="button"
+                      class="transmission-btn"
+                      :class="{ active: draft.transmission === opt.value }"
+                      @click="draft.transmission = draft.transmission === opt.value ? null : opt.value"
+                    >
+                      <span class="trans-icon">{{ opt.icon }}</span>
+                      <span class="trans-title">{{ opt.title }}</span>
+                    </button>
+                  </div>
+                </div>
 
-              <VSelect
-                v-model="draft.fuelType"
-                :items="fuelOptions"
-                label="Fuel Type"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                clearable
-                class="premium-input mb-3"
-              />
+                <!-- Fuel Type -->
+                <div class="mb-4">
+                  <div class="input-label-mini">Fuel Type</div>
+                  <div class="fuel-type-grid">
+                    <button
+                      v-for="opt in fuelOptions"
+                      :key="opt.value"
+                      type="button"
+                      class="fuel-type-btn"
+                      :class="{ active: draft.fuelType === opt.value }"
+                      @click="draft.fuelType = draft.fuelType === opt.value ? null : opt.value"
+                    >
+                      <span class="fuel-icon">{{ opt.icon }}</span>
+                      <span class="fuel-title">{{ opt.title }}</span>
+                    </button>
+                  </div>
+                </div>
 
-              <VSelect
-                v-model="draft.drivetrain"
-                :items="drivetrainOptions"
-                label="Drivetrain"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                clearable
-                class="premium-input mb-3"
-              />
+                <!-- Drivetrain -->
+                <div class="mb-4" v-if="draft.type === 'car'">
+                  <div class="input-label-mini">Drivetrain</div>
+                  <div class="drivetrain-grid">
+                    <button
+                      v-for="opt in drivetrainOptions"
+                      :key="opt.value"
+                      type="button"
+                      class="drivetrain-btn"
+                      :class="{ active: draft.drivetrain === opt.value }"
+                      @click="draft.drivetrain = draft.drivetrain === opt.value ? null : opt.value"
+                    >
+                      <span class="drive-title">{{ opt.title }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               <div class="input-label-mini mb-1">Mileage (km)</div>
               <VRow dense class="mb-3">
@@ -641,7 +712,7 @@ onMounted(async () => {
 
               <VSelect
                 v-model="draft.featureIds"
-                :items="features"
+                :items="filteredFeatures"
                 item-value="id"
                 label="Features"
                 variant="outlined"
@@ -681,9 +752,9 @@ onMounted(async () => {
             <div class="d-flex align-center justify-space-between mb-8">
               <div>
                 <h2 class="text-h4 font-weight-bold text-white mb-1">
-                  {{ draft.type === 'motorcycle' ? 'Bikes' : (draft.type === 'car' ? 'Cars' : 'Search Results') }}
+                  {{ activeType === 'motorcycle' ? 'Bikes' : (activeType === 'car' ? 'Cars' : 'Search Results') }}
                 </h2>
-                <div class="text-body-1 opacity-60">{{ total }} {{ draft.type === 'motorcycle' ? 'bikes' : 'cars' }} available</div>
+                <div class="text-body-1 opacity-60">{{ total }} {{ activeType === 'motorcycle' ? 'bikes' : 'cars' }} available</div>
               </div>
               
               <VSelect
@@ -943,5 +1014,57 @@ onMounted(async () => {
 
 .mobile-floating-btn:active {
   transform: scale(0.95);
+}
+
+/* Fuel Type, Transmission, Drivetrain Custom Grids */
+.transmission-grid, .fuel-type-grid, .drivetrain-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.fuel-type-btn, .transmission-btn, .drivetrain-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.fuel-type-btn:hover, .transmission-btn:hover, .drivetrain-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.fuel-type-btn:active, .transmission-btn:active, .drivetrain-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.fuel-type-btn.active, .transmission-btn.active, .drivetrain-btn.active {
+  background: rgba(var(--v-theme-primary), 0.15);
+  border-color: rgba(var(--v-theme-primary), 1);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.2);
+  font-weight: 700;
+}
+
+.fuel-icon, .trans-icon {
+  font-size: 15px;
+}
+
+.trans-title, .fuel-title, .drive-title {
+  white-space: nowrap;
 }
 </style>
