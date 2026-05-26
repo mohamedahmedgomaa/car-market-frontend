@@ -199,9 +199,9 @@ const stats = computed(() => {
     <!-- Header Section -->
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-8">
       <div>
-        <h1 class="text-h3 font-weight-black mb-1 text-gradient d-flex align-center gap-2">
-          Vehicle Database 
-          <VChip color="primary" variant="elevated" size="small" class="font-weight-black tracking-wider px-3">{{ total }} Listings</VChip>
+        <h1 class="text-h3 font-weight-black mb-1 d-flex align-center gap-2">
+          <span class="text-gradient">Vehicle Database</span>
+          <VChip color="primary" variant="elevated" size="small" class="font-weight-black tracking-wider px-3 text-white" style="color: #fff !important; -webkit-text-fill-color: #fff !important;">{{ total }} Listings</VChip>
         </h1>
         <p class="text-subtitle-1 text-medium-emphasis mb-0">Manage complete inventory, apply promotions, and monitor category metrics</p>
       </div>
