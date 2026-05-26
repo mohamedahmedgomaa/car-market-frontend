@@ -86,7 +86,7 @@ onMounted(fetchTopCars)
           <VCol cols="12" md="4">
             <div class="mb-4">
               <div class="app-logo mb-6">
-                <VNodeRenderer :nodes="themeConfig.app.logo" />
+                <VNodeRenderer v-if="themeConfig.app.logo" :nodes="themeConfig.app.logo" />
                 <h1 class="app-logo-title text-white">
                   {{ themeConfig.app.title }}
                 </h1>

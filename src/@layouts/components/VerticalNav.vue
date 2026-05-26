@@ -87,7 +87,7 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
           to="/"
           class="app-logo app-title-wrapper"
         >
-          <VNodeRenderer :nodes="layoutConfig.app.logo" />
+          <VNodeRenderer v-if="layoutConfig.app.logo" :nodes="layoutConfig.app.logo" />
 
           <Transition name="vertical-nav-app-title">
             <h1
@@ -159,11 +159,12 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
   column-gap: 0.75rem;
 
   .app-logo-title {
-    font-size: 1.375rem;
-    font-weight: 700;
-    letter-spacing: 0.25px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     line-height: 1.5rem;
     text-transform: capitalize;
+    color: rgb(var(--v-theme-primary)) !important;
   }
 }
 </style>

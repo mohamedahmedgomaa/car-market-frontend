@@ -364,9 +364,8 @@ watch(
                 <span class="text-caption text-white opacity-60">EG</span>
               </div>
 
-              <div class="d-flex align-center gap-1 opacity-90 text-white" style="font-size: 11px">
-                <VIcon icon="tabler-building-store" size="14" color="white" />
-                <span class="text-truncate" style="max-width: 80px">
+              <div class="d-flex align-center" style="font-size: 12px">
+                <span class="text-truncate font-weight-bold text-primary" style="max-width: 95px">
                   {{ getSellerName(car) }}
                 </span>
               </div>

@@ -70,7 +70,7 @@ const handleLogin = async () => {
       to="/"
       class="auth-logo mb-6 d-flex align-center gap-x-3 text-decoration-none"
     >
-      <VNodeRenderer :nodes="themeConfig.app.logo" />
+      <VNodeRenderer v-if="themeConfig.app.logo" :nodes="themeConfig.app.logo" />
       <h1 class="auth-title text-white text-h4 font-weight-bold">{{ themeConfig.app.title }}</h1>
     </RouterLink>
 
