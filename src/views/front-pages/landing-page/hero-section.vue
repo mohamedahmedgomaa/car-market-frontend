@@ -160,10 +160,15 @@ const goSearchId = async () => {
 }
 
 const onSearch = () => {
-  router.push({
-    path: '/user/cars',
-    query: buildQuery(),
-  })
+  const numericId = searchId.value ? searchId.value.replace(/[^0-9]/g, '') : ''
+  if (numericId) {
+    goSearchId()
+  } else {
+    router.push({
+      path: '/user/cars',
+      query: buildQuery(),
+    })
+  }
 }
 
 const resetFilters = () => {
@@ -343,8 +348,7 @@ onBeforeUnmount(() => {
                 maxlength="8"
                 prepend-inner-icon="tabler-hash"
                 append-inner-icon="tabler-search"
-                @click:append-inner="goSearchId"
-                @keydown.enter="goSearchId"
+                @keydown.enter.prevent="onSearch"
                 @update:model-value="handleIdInput"
                 class="premium-id-input"
               />
@@ -619,9 +623,9 @@ onBeforeUnmount(() => {
 
 .premium-id-input :deep(.v-field) {
   border-radius: 9999px !important;
-  background: rgba(var(--v-theme-primary), 0.08) !important;
-  border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
-  height: 36px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.25) !important;
+  height: 40px !important;
   transition: all 0.3s ease;
 }
 
@@ -632,24 +636,23 @@ onBeforeUnmount(() => {
   color: rgb(var(--v-theme-primary)) !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  min-height: 36px !important;
+  min-height: 40px !important;
 }
 
 .premium-id-input :deep(.v-field--focused) {
-  background: rgba(var(--v-theme-primary), 0.15) !important;
+  background: rgba(var(--v-theme-primary), 0.08) !important;
   border-color: rgb(var(--v-theme-primary)) !important;
-  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.3);
+  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.25);
 }
 
 .premium-id-input :deep(.v-icon) {
   color: rgb(var(--v-theme-primary));
-  opacity: 0.8;
-  cursor: pointer;
+  opacity: 0.7;
   transition: all 0.2s;
-  &:hover {
-    opacity: 1;
-    transform: scale(1.1);
-  }
+}
+
+.premium-id-input :deep(.v-field--focused .v-icon) {
+  opacity: 1;
 }
 
 .search-form-grid {
