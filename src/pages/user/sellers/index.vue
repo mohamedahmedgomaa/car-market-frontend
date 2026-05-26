@@ -143,102 +143,132 @@ onMounted(fetchSellers)
 <template>
   <div class="showrooms-directory-page py-12">
     <VContainer>
-      <!-- Hero Header -->
-      <div class="header-section text-center mb-8 animate-fade-in">
-        <div class="d-inline-flex align-center gap-2 px-4 py-1.5 rounded-pill bg-primary-subtle mb-4 border border-primary-20">
-          <VIcon icon="tabler-building-store" size="18" color="primary" />
-          <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">Certified Dealership Directory</span>
-        </div>
-        
-        <h1 class="text-h2 font-weight-black text-white mb-3">Find Dealerships & Showrooms Near You</h1>
-        <p class="text-h6 text-white-50 max-w-800 mx-auto font-weight-medium mb-8" style="line-height: 1.6;">
-          Explore Egypt's premier directory of verified automotive showrooms. 
-          <span class="text-primary font-weight-bold d-block mt-2">
-            Own a showroom? Pin your location, showcase your certified inventory, and connect with thousands of active buyers via our annual subscription!
-          </span>
-        </p>
-
-        <!-- Search input -->
-        <VSheet class="search-sheet mx-auto rounded-pill px-4 py-2 elevation-8 mb-6" max-width="750">
-          <div class="d-flex align-center">
-            <VIcon icon="tabler-search" color="primary" class="ms-3 me-2" size="24" />
-            
-            <VTextField
-              v-model="searchQuery"
-              placeholder="Search by area (e.g. Hay Elgamaa), city, or showroom name..."
-              variant="plain"
-              hide-details
-              density="comfortable"
-              class="showroom-search-input text-subtitle-1 font-weight-medium flex-grow-1"
-            >
-              <template #append-inner v-if="searchQuery">
-                <VBtn icon="tabler-x" size="small" variant="text" @click="searchQuery = ''" />
-              </template>
-            </VTextField>
-
-            <VBtn
-              color="primary"
-              variant="elevated"
-              rounded="pill"
-              class="px-5 font-weight-bold shadow-primary text-subtitle-1 ms-2"
-              height="44"
-              :loading="isLocating"
-              @click="locateNearMe"
-            >
-              <VIcon icon="tabler-map-pin-up" size="20" class="me-2" />
-              Near Me
-            </VBtn>
-          </div>
-        </VSheet>
-
-        <!-- Quick City Filter Chips -->
-        <div class="city-chips d-flex align-center justify-center flex-wrap gap-2 max-w-900 mx-auto">
-          <span class="text-caption text-uppercase font-weight-bold text-white-50 me-2">Location Hubs:</span>
-          <VChip
-            v-for="city in popularCities"
-            :key="city"
-            :color="selectedCity === city ? 'primary' : 'default'"
-            :variant="selectedCity === city ? 'elevated' : 'tonal'"
-            class="city-chip font-weight-bold px-4 py-2 rounded-pill"
-            size="large"
-            @click="selectedCity = city"
-          >
-            {{ city }}
-          </VChip>
-        </div>
-      </div>
-
-      <!-- 👑 Showroom Registration Promo Banner (Clear Call to Action for Dealers) -->
-      <VCard class="dealer-promo-card mb-12 pa-8 rounded-2xl elevation-10 overflow-hidden relative">
-        <div class="d-flex flex-column flex-md-row align-center justify-space-between gap-6 relative z-1">
-          <div class="text-center text-md-start">
-            <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-2 text-caption font-weight-bold">
-              <VIcon icon="tabler-rocket" size="16" /> Dealership Partnership
+      <!-- Premium Split Hero Layout (Above the Fold) -->
+      <VRow class="align-center mb-12" no-gutters>
+        <!-- Left: Search & Discovery for Buyers -->
+        <VCol cols="12" md="7" class="pe-md-10 mb-8 mb-md-0">
+          <div class="header-section text-center text-md-start animate-fade-in">
+            <div class="d-inline-flex align-center gap-2 px-4 py-1.5 rounded-pill bg-primary-subtle mb-4 border border-primary-20">
+              <VIcon icon="tabler-building-store" size="18" color="primary" />
+              <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">Showrooms Directory</span>
             </div>
-            <h2 class="text-h4 font-weight-black text-white mb-2">Own a Dealership or Showroom?</h2>
-            <p class="text-subtitle-1 text-white-50 mb-0 max-w-700">
-              Join our premium network! Subscribe to our verified annual membership, showcase your inventory to millions of active car buyers, and manage your leads effortlessly.
+            
+            <h1 class="text-h2 font-weight-black text-white mb-4 leading-tight">
+              Find & Search Any <span class="text-gradient">Showroom</span> in Egypt
+            </h1>
+            <p class="text-h6 text-white-50 max-w-650 font-weight-medium mb-8" style="line-height: 1.6;">
+              Your comprehensive destination to explore certified automotive dealers. Search by name, city, or neighborhood to locate verified showrooms and browse premium inventories.
             </p>
+
+            <!-- Search input -->
+            <VSheet class="search-sheet rounded-pill px-4 py-2 elevation-8 mb-6 mx-auto mx-md-0" max-width="650">
+              <div class="d-flex align-center">
+                <VIcon icon="tabler-search" color="primary" class="ms-3 me-2" size="24" />
+                
+                <VTextField
+                  v-model="searchQuery"
+                  placeholder="Search for any showroom, city, district, or neighborhood..."
+                  variant="plain"
+                  hide-details
+                  density="comfortable"
+                  class="showroom-search-input text-subtitle-1 font-weight-medium flex-grow-1"
+                >
+                  <template #append-inner v-if="searchQuery">
+                    <VBtn icon="tabler-x" size="small" variant="text" @click="searchQuery = ''" />
+                  </template>
+                </VTextField>
+
+                <VBtn
+                  color="primary"
+                  variant="elevated"
+                  rounded="pill"
+                  class="px-5 font-weight-bold shadow-primary text-subtitle-1 ms-2"
+                  height="44"
+                  :loading="isLocating"
+                  @click="locateNearMe"
+                >
+                  <VIcon icon="tabler-map-pin-up" size="20" class="me-2" />
+                  Near Me
+                </VBtn>
+              </div>
+            </VSheet>
+
+            <!-- Quick City Filter Chips -->
+            <div class="city-chips d-flex align-center justify-center justify-md-start flex-wrap gap-2 max-w-900">
+              <span class="text-caption text-uppercase font-weight-bold text-white-50 me-2 align-self-center">Location Hubs:</span>
+              <VChip
+                v-for="city in popularCities"
+                :key="city"
+                :color="selectedCity === city ? 'primary' : 'default'"
+                :variant="selectedCity === city ? 'elevated' : 'tonal'"
+                class="city-chip font-weight-bold px-4 py-2 rounded-pill"
+                size="large"
+                @click="selectedCity = city"
+              >
+                {{ city }}
+              </VChip>
+            </div>
           </div>
-          
-          <VBtn
-            color="primary"
-            size="x-large"
-            rounded="pill"
-            to="/seller/register"
-            class="px-8 py-3 font-weight-black shadow-primary text-subtitle-1 flex-shrink-0"
-            elevation="8"
-          >
-            <VIcon icon="tabler-building-store" size="22" class="me-2" />
-            Register Your Showroom
-          </VBtn>
-        </div>
-      </VCard>
+        </VCol>
+
+        <!-- Right: Premium Partnership Card for Showroom Owners & Agencies (Highly visible instantly) -->
+        <VCol cols="12" md="5">
+          <VCard class="dealer-promo-card pa-8 rounded-2xl elevation-10 overflow-hidden relative border-glow">
+            <div class="d-flex flex-column gap-4 relative z-1">
+              <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary text-caption font-weight-bold align-self-start">
+                <VIcon icon="tabler-rocket" size="16" /> Dealership Partnership
+              </div>
+              
+              <h2 class="text-h4 font-weight-black text-white leading-tight">
+                Own a Showroom or Agency?
+              </h2>
+              
+              <p class="text-body-1 text-white-50 mb-2 font-weight-medium">
+                Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Feature your showroom, display certified inventories, and connect directly with thousands of buyers.
+              </p>
+
+              <!-- Value Prop list items -->
+              <div class="d-flex flex-column gap-2 mb-4">
+                <div class="d-flex align-center gap-2 text-white-50 text-subtitle-2 font-weight-semibold">
+                  <VIcon icon="tabler-circle-check" color="primary" size="18" />
+                  <span>Premium listing in Egypt's directory</span>
+                </div>
+                <div class="d-flex align-center gap-2 text-white-50 text-subtitle-2 font-weight-semibold">
+                  <VIcon icon="tabler-circle-check" color="primary" size="18" />
+                  <span>Direct phone & WhatsApp customer leads</span>
+                </div>
+                <div class="d-flex align-center gap-2 text-white-50 text-subtitle-2 font-weight-semibold">
+                  <VIcon icon="tabler-circle-check" color="primary" size="18" />
+                  <span>Certified inventory showcasing</span>
+                </div>
+              </div>
+              
+              <VBtn
+                color="primary"
+                size="large"
+                rounded="pill"
+                to="/seller/register"
+                class="px-6 py-3 font-weight-black shadow-primary text-subtitle-1 w-100"
+                elevation="8"
+              >
+                <VIcon icon="tabler-building-store" size="20" class="me-2" />
+                Register Your Showroom
+              </VBtn>
+            </div>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <div class="d-flex align-center gap-2 mb-6 animate-fade-in">
+        <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
+        <span class="text-caption font-weight-bold text-white-50 text-uppercase tracking-wider px-3">Verified Showrooms</span>
+        <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
+      </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="d-flex flex-column align-center justify-center py-16">
         <VProgressCircular indeterminate color="primary" size="64" width="6" />
-        <h3 class="mt-4 text-h6 text-primary">Loading Verified Dealerships...</h3>
+        <h3 class="mt-4 text-h6 text-primary animate-pulse">Loading Verified Dealerships...</h3>
       </div>
 
       <!-- Error State -->
@@ -256,89 +286,91 @@ onMounted(fetchSellers)
       </div>
 
       <!-- Showrooms Grid -->
-      <VRow v-else class="showrooms-grid">
-        <VCol v-for="seller in filteredSellers" :key="seller.id" cols="12" sm="6" lg="4">
-          <VCard class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between" elevation="6">
-            <div>
-              <!-- Top details -->
-              <div class="d-flex align-center gap-4 mb-4">
-                <VAvatar size="72" color="primary" variant="tonal" class="elevation-4 overflow-hidden flex-shrink-0 border">
-                  <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; padding: 4px;" />
-                  <span v-else class="text-h4 font-weight-black">{{ (t(seller.store_name) || seller.name)?.charAt(0)?.toUpperCase() }}</span>
-                </VAvatar>
+      <div v-else class="mb-8">
+        <VRow class="showrooms-grid">
+          <VCol v-for="seller in filteredSellers" :key="seller.id" cols="12" sm="6" lg="4">
+            <VCard class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between" elevation="6">
+              <div>
+                <!-- Top details -->
+                <div class="d-flex align-center gap-4 mb-4">
+                  <VAvatar size="72" color="primary" variant="tonal" class="elevation-4 overflow-hidden flex-shrink-0 border">
+                    <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; padding: 4px;" />
+                    <span v-else class="text-h4 font-weight-black">{{ (t(seller.store_name) || seller.name)?.charAt(0)?.toUpperCase() }}</span>
+                  </VAvatar>
 
-                <div class="overflow-hidden flex-grow-1">
-                  <div class="d-flex align-center justify-space-between gap-1 mb-1">
-                    <h3 class="text-h5 font-weight-black text-white text-truncate mb-0">
-                      {{ t(seller.store_name) || seller.name }}
-                    </h3>
-                    <VChip color="amber" variant="elevated" size="x-small" class="font-weight-black tracking-widest px-2 py-0">PRO</VChip>
-                  </div>
+                  <div class="overflow-hidden flex-grow-1">
+                    <div class="d-flex align-center justify-space-between gap-1 mb-1">
+                      <h3 class="text-h5 font-weight-black text-white text-truncate mb-0">
+                        {{ t(seller.store_name) || seller.name }}
+                      </h3>
+                      <VChip color="amber" variant="elevated" size="x-small" class="font-weight-black tracking-widest px-2 py-0">PRO</VChip>
+                    </div>
 
-                  <div class="d-flex align-center gap-1 text-success font-weight-bold text-caption">
-                    <VIcon icon="tabler-discount-check-filled" size="16" />
-                    <span>Verified Annual Member</span>
-                  </div>
+                    <div class="d-flex align-center gap-1 text-success font-weight-bold text-caption">
+                      <VIcon icon="tabler-discount-check-filled" size="16" />
+                      <span>Verified Showroom</span>
+                    </div>
 
-                  <div class="d-flex align-center gap-1 text-white-50 text-caption mt-1" v-if="seller.city || seller.address">
-                    <VIcon icon="tabler-map-pin" size="14" color="error" />
-                    <span class="text-truncate font-weight-medium">{{ seller.address || t(seller.city?.name) || 'Egypt' }}</span>
+                    <div class="d-flex align-center gap-1 text-white-50 text-caption mt-1" v-if="seller.city || seller.address">
+                      <VIcon icon="tabler-map-pin" size="14" color="error" />
+                      <span class="text-truncate font-weight-medium">{{ seller.address || t(seller.city?.name) || 'Egypt' }}</span>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Bio excerpt -->
+                <p class="text-body-2 text-white-50 line-clamp-2 mb-6 font-weight-medium">
+                  {{ t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
+                </p>
               </div>
 
-              <!-- Bio excerpt -->
-              <p class="text-body-2 text-white-50 line-clamp-2 mb-6 font-weight-medium">
-                {{ t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
-              </p>
-            </div>
+              <!-- Actions -->
+              <div class="actions-wrapper mt-auto">
+                <div class="d-flex align-center gap-2 mb-3">
+                  <VBtn
+                    v-if="seller.phone"
+                    color="primary"
+                    variant="elevated"
+                    size="small"
+                    rounded="pill"
+                    class="flex-grow-1 font-weight-bold shadow-primary px-4 py-2"
+                    @click="openCallDialog(seller)"
+                  >
+                    <VIcon icon="tabler-phone" size="16" class="me-1" />
+                    Call
+                  </VBtn>
 
-            <!-- Actions -->
-            <div class="actions-wrapper mt-auto">
-              <div class="d-flex align-center gap-2 mb-3">
-                <VBtn
-                  v-if="seller.phone"
-                  color="primary"
-                  variant="elevated"
-                  size="small"
-                  rounded="pill"
-                  class="flex-grow-1 font-weight-bold shadow-primary px-4 py-2"
-                  @click="openCallDialog(seller)"
-                >
-                  <VIcon icon="tabler-phone" size="16" class="me-1" />
-                  Call
-                </VBtn>
+                  <VBtn
+                    v-if="seller.phone"
+                    color="success"
+                    variant="elevated"
+                    size="small"
+                    rounded="pill"
+                    class="flex-grow-1 font-weight-bold shadow-success px-4 py-2"
+                    :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
+                    target="_blank"
+                  >
+                    <VIcon icon="tabler-brand-whatsapp" size="16" class="me-1" />
+                    WhatsApp
+                  </VBtn>
+                </div>
 
                 <VBtn
-                  v-if="seller.phone"
-                  color="success"
-                  variant="elevated"
-                  size="small"
+                  variant="tonal"
+                  color="secondary"
+                  block
                   rounded="pill"
-                  class="flex-grow-1 font-weight-bold shadow-success px-4 py-2"
-                  :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
-                  target="_blank"
+                  class="font-weight-bold tracking-wide"
+                  :to="`/user/sellers/${seller.id}`"
                 >
-                  <VIcon icon="tabler-brand-whatsapp" size="16" class="me-1" />
-                  WhatsApp
+                  Explore Showroom
+                  <VIcon icon="tabler-arrow-right" size="18" class="ms-1" />
                 </VBtn>
               </div>
-
-              <VBtn
-                variant="tonal"
-                color="secondary"
-                block
-                rounded="pill"
-                class="font-weight-bold tracking-wide"
-                :to="`/user/sellers/${seller.id}`"
-              >
-                Explore Showroom
-                <VIcon icon="tabler-arrow-right" size="18" class="ms-1" />
-              </VBtn>
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
+            </VCard>
+          </VCol>
+        </VRow>
+      </div>
 
       <!-- Call Confirmation Modal -->
       <VDialog v-model="showCallDialog" max-width="400">
@@ -392,45 +424,64 @@ onMounted(fetchSellers)
 <style lang="scss" scoped>
 .showrooms-directory-page {
   min-height: 100vh;
-  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.1), transparent 60%),
-              radial-gradient(circle at bottom left, rgba(var(--v-theme-surface), 0.7), transparent 70%);
+  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.12), transparent 50%),
+              radial-gradient(circle at top left, rgba(var(--v-theme-surface), 0.8), transparent 60%),
+              radial-gradient(circle at bottom left, rgba(var(--v-theme-primary), 0.05), transparent 70%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1) 0%, #ff8c00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .search-sheet {
   background: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:focus-within {
-    border-color: rgba(var(--v-theme-primary), 0.6) !important;
+    border-color: rgba(var(--v-theme-primary), 0.5) !important;
     box-shadow: 0 20px 50px rgba(var(--v-theme-primary), 0.25) !important;
   }
 }
 
 .dealer-promo-card {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.25), rgba(var(--v-theme-surface), 0.8)) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15), rgba(var(--v-theme-surface), 0.9)) !important;
   backdrop-filter: blur(30px);
-  border: 1px solid rgba(var(--v-theme-primary), 0.4) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  transition: all 0.4s ease;
+
+  &.border-glow {
+    border-color: rgba(var(--v-theme-primary), 0.3) !important;
+    
+    &:hover {
+      border-color: rgba(var(--v-theme-primary), 0.6) !important;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(var(--v-theme-primary), 0.15) !important;
+      transform: translateY(-4px);
+    }
+  }
   
   &::before {
     content: '';
     position: absolute;
     top: -50%; right: -20%;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.4), transparent 70%);
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.35), transparent 70%);
     z-index: 0;
+    pointer-events: none;
   }
 }
 
 .city-chip {
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   &:hover {
     transform: translateY(-2px);
+    background-color: rgba(var(--v-theme-primary), 0.1) !important;
   }
 }
 
@@ -447,6 +498,10 @@ onMounted(fetchSellers)
   }
 }
 
+.bg-white-10 {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
 .text-white-50 {
   color: rgba(255, 255, 255, 0.7) !important;
 }
@@ -460,24 +515,19 @@ onMounted(fetchSellers)
 
 .bg-primary-subtle {
   background: rgba(var(--v-theme-primary), 0.15);
-  border: 1px solid rgba(var(--v-theme-primary), 0.3);
-}
-
-.bg-amber-subtle {
-  background: rgba(255, 179, 0, 0.15);
-  border: 1px solid rgba(255, 179, 0, 0.3);
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
 }
 
 .shadow-primary {
-  box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.4) !important;
+  box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.35) !important;
 }
 
 .shadow-success {
-  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.35) !important;
 }
 
-.max-w-700 {
-  max-width: 700px;
+.max-w-650 {
+  max-width: 650px;
 }
 
 .max-w-900 {
@@ -490,5 +540,14 @@ onMounted(fetchSellers)
 
 .tracking-wider {
   letter-spacing: 1.5px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite ease-in-out;
 }
 </style>
