@@ -723,7 +723,7 @@ watch(
                 @click="showAllFeatures = !showAllFeatures"
               >
                 <VIcon :icon="showAllFeatures ? 'tabler-chevron-up' : 'tabler-chevron-down'" class="me-2" />
-                <span>{{ showAllFeatures ? 'Show Less / عرض أقل' : 'Show More / عرض المزيد (+' + (car.features.length - 24) + ')' }}</span>
+                <span>{{ showAllFeatures ? 'Show Less' : 'Show More (+' + (car.features.length - 24) + ')' }}</span>
               </VBtn>
             </div>
           </div>
@@ -867,8 +867,8 @@ watch(
           :showViewAll="false"
           :cars="suggestedCars"
           :loading="loadingSuggested"
-          title="Similar Price Cars / سيارات بسعر متقارب"
-          subtitle="Cars with a similar price range / سيارات مقترحة بنطاق سعري مشابه"
+          title="Similar Price Cars"
+          subtitle="Cars with a similar price range"
         />
       </div>
     </div>

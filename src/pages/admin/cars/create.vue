@@ -1022,7 +1022,7 @@ const handleSubmit = async () => {
             <div class="d-flex align-center gap-2">
               <VIcon icon="tabler-wand" color="primary" size="24" class="animate-pulse" />
               <h3 class="text-subtitle-1 font-weight-bold text-primary mb-0">
-                Smart Auto-Fill from Text / تعبئة المواصفات ذكياً من نص خارجي
+                Smart Auto-Fill from Text
               </h3>
             </div>
             <span class="text-caption opacity-80 font-weight-medium">
@@ -1035,7 +1035,7 @@ const handleSubmit = async () => {
               <VTextarea
                 v-model="pastedSpecsText"
                 rows="3"
-                placeholder="انسخ النص الذي يحتوي على ماركة وموديل وسنة وسعر ومواصفات المحرك والصقه هنا لتعبئة الحقول فوراً وبضغطة واحدة..."
+                placeholder="Copy and paste text containing brand, model, year, price, and engine specs here to auto-fill fields instantly..."
                 variant="outlined"
                 hide-details
                 append-inner-icon="tabler-clipboard-text"
@@ -1049,7 +1049,7 @@ const handleSubmit = async () => {
                 @click="pastedSpecsText = ''"
                 :disabled="!pastedSpecsText"
               >
-                Clear / مسح
+                Clear
               </VBtn>
               <VBtn
                 size="small"
@@ -1058,7 +1058,7 @@ const handleSubmit = async () => {
                 :disabled="!pastedSpecsText"
                 prepend-icon="tabler-sparkles"
               >
-                Auto-Fill Form / استخراج وتعبئة تلقائية
+                Auto-Fill Form
               </VBtn>
             </VCol>
           </VRow>
@@ -1312,7 +1312,7 @@ const handleSubmit = async () => {
                 item-title="title"
                 item-value="value"
                 :return-object="false"
-                label="Engine Capacity / السعة اللترية"
+                label="Engine Capacity"
                 prepend-inner-icon="tabler-piston"
                 variant="outlined"
                 maxlength="4"
@@ -1405,7 +1405,7 @@ const handleSubmit = async () => {
           />
         </section>
         <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Color / لون السيارة</h3>
+          <h3 class="text-subtitle-1 font-weight-medium mb-4">Color</h3>
 
           <div class="d-flex flex-wrap gap-3 mb-4 align-center">
             <!-- Predefined Colors -->
@@ -1430,7 +1430,7 @@ const handleSubmit = async () => {
                 border: isCustomColor ? '3px solid #FF9F43' : '1px solid #ddd',
                 transform: isCustomColor ? 'scale(1.1)' : 'none'
               }"
-              title="Choose Custom Color / اختر لوناً مخصصاً"
+              title="Choose Custom Color"
             >
               <!-- Invisible native color input covering the entire circle -->
               <input
@@ -1448,7 +1448,7 @@ const handleSubmit = async () => {
               <VTextField
                 :model-value="form.color"
                 @input="handleColorInput"
-                label="Custom Color (Hex) / كود لون مخصص"
+                label="Custom Color (Hex)"
                 variant="outlined"
                 prepend-inner-icon="tabler-palette"
                 placeholder="e.g. #FF00FF"
