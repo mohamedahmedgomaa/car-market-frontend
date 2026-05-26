@@ -45,21 +45,21 @@ const buildImg = (path) => {
 
 const images = computed(() => {
   const imgs = car.value?.images || []
-  return imgs
-    .filter(i => i?.path)
-    .map(i => ({ ...i, url: buildImg(i.path) }))
+  return imgs.filter((i) => i?.path).map((i) => ({ ...i, url: buildImg(i.path) }))
 })
 
 const mainImage = computed(() => {
   const imgs = images.value
-  const main = imgs.find(i => Number(i.is_main) === 1) || imgs[0]
+  const main = imgs.find((i) => Number(i.is_main) === 1) || imgs[0]
   return main?.url || 'https://via.placeholder.com/1200x675?text=Car'
 })
 
 // ✅ thumbnail selection
 const selectedImage = ref(null)
 const activeImage = computed(() => selectedImage.value || mainImage.value)
-const selectImage = (url) => { selectedImage.value = url }
+const selectImage = (url) => {
+  selectedImage.value = url
+}
 
 const formatPrice = (price) => {
   const n = Number(price)
@@ -94,12 +94,12 @@ const getEngineCapacityDetails = (val) => {
     if (num < 10) {
       return {
         cc: `${Math.round(num * 1000)} CC`,
-        l: `${num}L`
+        l: `${num}L`,
       }
     }
     return {
       cc: `${num} CC`,
-      l: `${(num / 1000).toFixed(1)}L`
+      l: `${(num / 1000).toFixed(1)}L`,
     }
   }
   return { cc: `${s} CC`, l: '' }
@@ -116,7 +116,11 @@ const formatDrivetrain = (val) => {
   return val
 }
 
-const drivetrainLower = computed(() => String(car.value?.drivetrain || '').toLowerCase().trim())
+const drivetrainLower = computed(() =>
+  String(car.value?.drivetrain || '')
+    .toLowerCase()
+    .trim(),
+)
 const isFrontActive = computed(() => {
   const dt = drivetrainLower.value
   return dt.includes('fwd') || dt.includes('4wd') || dt.includes('awd') || dt.includes('4x4')
@@ -139,25 +143,31 @@ const parsedCylinders = computed(() => {
   const val = car.value?.cylinders
   if (!val) return { count: 0, layout: 'unknown', text: '—' }
   const s = String(val).trim().toUpperCase()
-  
-  if (s.includes('ELECTRIC') || s.includes('EV') || s === '0' || s.includes('HYBRID') || s.includes('كهربا')) {
+
+  if (
+    s.includes('ELECTRIC') ||
+    s.includes('EV') ||
+    s === '0' ||
+    s.includes('HYBRID') ||
+    s.includes('كهربا')
+  ) {
     return { count: 0, layout: 'electric', text: 'EV' }
   }
 
   const match = s.match(/\d+/)
   const count = match ? parseInt(match[0], 10) : 4
-  
+
   let layout = 'inline'
   if (s.includes('V') || count >= 6) {
     layout = 'v'
   } else if (s.includes('I') || s.includes('INLINE') || s.includes('L') || count < 6) {
     layout = 'inline'
   }
-  
+
   return {
     count,
     layout,
-    text: isNaN(Number(s)) ? s : `${s} Cylinders`
+    text: isNaN(Number(s)) ? s : `${s} Cylinders`,
   }
 })
 
@@ -194,7 +204,7 @@ const ensureFavFields = (c) => {
   const favArr = Array.isArray(c.favorites) ? c.favorites : []
 
   const favorites_count =
-    (c.favorites_count !== undefined && c.favorites_count !== null)
+    c.favorites_count !== undefined && c.favorites_count !== null
       ? Number(c.favorites_count)
       : favArr.length
 
@@ -204,11 +214,8 @@ const ensureFavFields = (c) => {
   } else if (c.is_favorited !== undefined && c.is_favorited !== null) {
     is_favorited = !!c.is_favorited
   } else if (userId && favArr.length) {
-    is_favorited = favArr.some(f => {
-      const id =
-        Number(f?.id) ||
-        Number(f?.user_id) ||
-        Number(f?.pivot?.user_id)
+    is_favorited = favArr.some((f) => {
+      const id = Number(f?.id) || Number(f?.user_id) || Number(f?.pivot?.user_id)
       return id === userId
     })
   }
@@ -257,7 +264,7 @@ const fetchCar = async () => {
     }
 
     car.value = ensureFavFields(data)
-    
+
     // ✅ Fetch suggestions right after car is loaded successfully
     await fetchSuggestedCars()
   } catch (e) {
@@ -310,7 +317,9 @@ const fetchSuggestedCars = async () => {
 
     // Filter out current car
     const currentCarId = Number(car.value.id)
-    const filteredList = list.filter(c => Number(c.id) !== currentCarId && c.status === 'approved')
+    const filteredList = list.filter(
+      (c) => Number(c.id) !== currentCarId && c.status === 'approved',
+    )
 
     // Take first 3 suggestions for the 3-column layout
     suggestedCars.value = filteredList.slice(0, 3)
@@ -393,14 +402,14 @@ const onResize = () => updateThumbNav()
 // ✅ Gallery Keyboard Navigation
 const nextImage = () => {
   if (!images.value.length) return
-  const currentIndex = images.value.findIndex(img => img.url === activeImage.value)
+  const currentIndex = images.value.findIndex((img) => img.url === activeImage.value)
   const nextIdx = (currentIndex + 1) % images.value.length
   selectImage(images.value[nextIdx].url)
 }
 
 const prevImage = () => {
   if (!images.value.length) return
-  const currentIndex = images.value.findIndex(img => img.url === activeImage.value)
+  const currentIndex = images.value.findIndex((img) => img.url === activeImage.value)
   const prevIdx = (currentIndex - 1 + images.value.length) % images.value.length
   selectImage(images.value[prevIdx].url)
 }
@@ -410,7 +419,7 @@ const showLightbox = ref(false)
 const lightboxIndex = ref(0)
 
 const openLightbox = () => {
-  lightboxIndex.value = images.value.findIndex(img => img.url === activeImage.value)
+  lightboxIndex.value = images.value.findIndex((img) => img.url === activeImage.value)
   showLightbox.value = true
 }
 
@@ -420,8 +429,12 @@ const closeLightbox = () => {
 
 // ✅ Call Dialog
 const showCallDialog = ref(false)
-const openCallDialog = () => { showCallDialog.value = true }
-const closeCallDialog = () => { showCallDialog.value = false }
+const openCallDialog = () => {
+  showCallDialog.value = true
+}
+const closeCallDialog = () => {
+  showCallDialog.value = false
+}
 
 // ✅ Features Show More / Less Limit (8 * 3 = 24 items)
 const showAllFeatures = ref(false)
@@ -490,7 +503,7 @@ onBeforeUnmount(() => {
 const thumbRefs = ref([])
 watch(activeImage, () => {
   nextTick(() => {
-    const activeEl = thumbRefs.value.find(el => el?.dataset?.url === activeImage.value)
+    const activeEl = thumbRefs.value.find((el) => el?.dataset?.url === activeImage.value)
     if (activeEl) {
       activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
@@ -503,7 +516,7 @@ watch(
     selectedImage.value = null
     await fetchCar()
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  },
 )
 </script>
 
@@ -544,14 +557,14 @@ watch(
               :class="{ active: img.url === activeImage }"
               @click="selectImage(img.url)"
             >
-              <img :src="img.url" alt="">
+              <img :src="img.url" alt="" />
             </div>
           </div>
 
           <!-- Main Image -->
           <div class="gallery-hero" @click="openLightbox">
             <Transition name="fade" mode="out-in">
-              <img :key="activeImage" :src="activeImage" :alt="t(car.title)" class="main-img">
+              <img :key="activeImage" :src="activeImage" :alt="t(car.title)" class="main-img" />
             </Transition>
 
             <!-- Nav Arrows -->
@@ -561,17 +574,13 @@ watch(
             <button class="nav-arrow right" @click.stop="nextImage">
               <VIcon icon="tabler-chevron-right" />
             </button>
-            
+
             <div class="expand-hint">
               <VIcon icon="tabler-arrows-maximize" size="18" />
               <span>Click to enlarge</span>
             </div>
 
-            <button
-              class="fav-float"
-              type="button"
-              @click.prevent.stop="toggleFavorite"
-            >
+            <button class="fav-float" type="button" @click.prevent.stop="toggleFavorite">
               <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="22" />
               <span class="fav-count">{{ car.favorites_count ?? 0 }}</span>
             </button>
@@ -584,23 +593,27 @@ watch(
         <Transition name="fade">
           <div v-if="showLightbox" class="lightbox-overlay" @click.self="closeLightbox">
             <div class="lightbox-content">
-              <img :src="images[lightboxIndex]?.url" class="lightbox-img">
-              
+              <img :src="images[lightboxIndex]?.url" class="lightbox-img" />
+
               <button class="lightbox-close" @click="closeLightbox">
                 <VIcon icon="tabler-x" size="24" />
               </button>
 
-              <button class="lightbox-nav left" @click="lightboxIndex = (lightboxIndex - 1 + images.length) % images.length">
+              <button
+                class="lightbox-nav left"
+                @click="lightboxIndex = (lightboxIndex - 1 + images.length) % images.length"
+              >
                 <VIcon icon="tabler-chevron-left" size="32" />
               </button>
 
-              <button class="lightbox-nav right" @click="lightboxIndex = (lightboxIndex + 1) % images.length">
+              <button
+                class="lightbox-nav right"
+                @click="lightboxIndex = (lightboxIndex + 1) % images.length"
+              >
                 <VIcon icon="tabler-chevron-right" size="32" />
               </button>
 
-              <div class="lightbox-counter">
-                {{ lightboxIndex + 1 }} / {{ images.length }}
-              </div>
+              <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ images.length }}</div>
             </div>
           </div>
         </Transition>
@@ -615,14 +628,17 @@ watch(
               <div>
                 <h1 class="text-h3 font-weight-bold mb-2">{{ t(car.title) }}</h1>
                 <div class="text-h6 opacity-70">
-                  {{ t(car.brand?.name) }} <span class="mx-2">•</span> {{ t(car.model?.name) }} <span class="mx-2">•</span> {{ car.year }}
+                  {{ t(car.brand?.name) }} <span class="mx-2">•</span> {{ t(car.model?.name) }}
+                  <span class="mx-2">•</span> {{ car.year }}
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-h3 font-weight-black text-primary mb-1">{{ formatPrice(car.price) }} EG</div>
+                <div class="text-h3 font-weight-black text-primary mb-1">
+                  {{ formatPrice(car.price) }} EG
+                </div>
                 <div class="d-flex align-center justify-end gap-2 opacity-60">
-                   <VIcon icon="tabler-map-pin" size="16" />
-                   <span>{{ t(car.city?.name) }}</span>
+                  <VIcon icon="tabler-map-pin" size="16" />
+                  <span>{{ t(car.city?.name) }}</span>
                 </div>
               </div>
             </div>
@@ -642,7 +658,13 @@ watch(
               <VIcon icon="tabler-gauge" class="mb-2" color="primary" />
               <span class="label">Mileage</span>
               <span class="val">
-                {{ car.condition === 'new' ? '0 Km' : (car.mileage ? car.mileage.toLocaleString() + ' Km' : '—') }}
+                {{
+                  car.condition === 'new'
+                    ? '0 Km'
+                    : car.mileage
+                      ? car.mileage.toLocaleString() + ' Km'
+                      : '—'
+                }}
               </span>
             </div>
 
@@ -652,7 +674,11 @@ watch(
               <span class="label">Engine Capacity</span>
               <div class="d-flex flex-column align-center">
                 <span class="val">{{ getEngineCapacityDetails(car.engine_capacity).cc }}</span>
-                <span v-if="getEngineCapacityDetails(car.engine_capacity).l" class="text-caption opacity-80 font-weight-bold mt-1" style="font-size: 14px !important; color: rgb(var(--v-theme-primary));">
+                <span
+                  v-if="getEngineCapacityDetails(car.engine_capacity).l"
+                  class="text-caption opacity-80 font-weight-bold mt-1"
+                  style="font-size: 14px !important; color: rgb(var(--v-theme-primary))"
+                >
                   {{ getEngineCapacityDetails(car.engine_capacity).l }}
                 </span>
               </div>
@@ -671,12 +697,15 @@ watch(
               <div class="cylinders-visual">
                 <!-- Inline Layout (e.g. I4, I3) -->
                 <div v-if="parsedCylinders.layout === 'inline'" class="inline-engine">
-                  <div 
-                    v-for="i in Math.min(parsedCylinders.count, 6)" 
-                    :key="i" 
+                  <div
+                    v-for="i in Math.min(parsedCylinders.count, 6)"
+                    :key="i"
                     class="cylinder-sleeve"
                   >
-                    <div class="piston-head" :style="{ animationDelay: `${(i - 1) * -0.3}s` }"></div>
+                    <div
+                      class="piston-head"
+                      :style="{ animationDelay: `${(i - 1) * -0.3}s` }"
+                    ></div>
                     <div class="piston-rod" :style="{ animationDelay: `${(i - 1) * -0.3}s` }"></div>
                   </div>
                 </div>
@@ -684,26 +713,38 @@ watch(
                 <!-- V Layout (e.g. V6, V8, V10, V12) -->
                 <div v-else-if="parsedCylinders.layout === 'v'" class="v-engine">
                   <div class="bank left-bank">
-                    <div 
-                      v-for="i in Math.min(Math.ceil(parsedCylinders.count / 2), 4)" 
-                      :key="'l'+i" 
+                    <div
+                      v-for="i in Math.min(Math.ceil(parsedCylinders.count / 2), 4)"
+                      :key="'l' + i"
                       class="cylinder-sleeve"
                     >
-                      <div class="piston-head" :style="{ animationDelay: `${(i - 1) * -0.4}s` }"></div>
-                      <div class="piston-rod" :style="{ animationDelay: `${(i - 1) * -0.4}s` }"></div>
+                      <div
+                        class="piston-head"
+                        :style="{ animationDelay: `${(i - 1) * -0.4}s` }"
+                      ></div>
+                      <div
+                        class="piston-rod"
+                        :style="{ animationDelay: `${(i - 1) * -0.4}s` }"
+                      ></div>
                     </div>
                   </div>
                   <div class="crankcase">
                     <div class="crankshaft-spinner"></div>
                   </div>
                   <div class="bank right-bank">
-                    <div 
-                      v-for="i in Math.min(Math.floor(parsedCylinders.count / 2), 4)" 
-                      :key="'r'+i" 
+                    <div
+                      v-for="i in Math.min(Math.floor(parsedCylinders.count / 2), 4)"
+                      :key="'r' + i"
                       class="cylinder-sleeve"
                     >
-                      <div class="piston-head" :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }"></div>
-                      <div class="piston-rod" :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }"></div>
+                      <div
+                        class="piston-head"
+                        :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }"
+                      ></div>
+                      <div
+                        class="piston-rod"
+                        :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }"
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -720,7 +761,7 @@ watch(
                 <!-- Fallback / Unknown -->
                 <VIcon v-else icon="tabler-engine" color="primary" size="24" />
               </div>
-              
+
               <span class="label">Cylinders</span>
               <span class="val">{{ parsedCylinders.text }}</span>
             </div>
@@ -756,7 +797,9 @@ watch(
                 </div>
               </div>
               <span class="label">Drivetrain</span>
-              <span class="val text-uppercase" style="font-size: 13px;">{{ formatDrivetrain(car.drivetrain) }}</span>
+              <span class="val text-uppercase" style="font-size: 13px">{{
+                formatDrivetrain(car.drivetrain)
+              }}</span>
             </div>
 
             <!-- Color -->
@@ -801,8 +844,13 @@ watch(
                 height="44"
                 @click="showAllFeatures = !showAllFeatures"
               >
-                <VIcon :icon="showAllFeatures ? 'tabler-chevron-up' : 'tabler-chevron-down'" class="me-2" />
-                <span>{{ showAllFeatures ? 'Show Less' : 'Show More (+' + (car.features.length - 24) + ')' }}</span>
+                <VIcon
+                  :icon="showAllFeatures ? 'tabler-chevron-up' : 'tabler-chevron-down'"
+                  class="me-2"
+                />
+                <span>{{
+                  showAllFeatures ? 'Show Less' : 'Show More (+' + (car.features.length - 24) + ')'
+                }}</span>
               </VBtn>
             </div>
           </div>
@@ -812,24 +860,40 @@ watch(
         <div class="sidebar-content">
           <VCard class="seller-card pa-6 mb-6">
             <div class="text-overline mb-4 opacity-60">Listing Owner</div>
-            
+
             <!-- Seller Profile Link -->
-            <RouterLink 
-              v-if="sellerLink" 
-              :to="sellerLink" 
+            <RouterLink
+              v-if="sellerLink"
+              :to="sellerLink"
               class="d-flex align-center gap-4 mb-8 text-decoration-none text-high-emphasis seller-profile-header"
             >
-               <VAvatar color="primary" size="64" class="text-h4 font-weight-bold elevation-4 overflow-hidden">
-                 <img v-if="car.seller?.store_logo" :src="car.seller.store_logo" alt="Seller Logo" class="w-100 h-100" style="object-fit: contain; padding: 4px;" />
-                 <span v-else>{{ (car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name)?.charAt(0)?.toUpperCase() }}</span>
-               </VAvatar>
-               <div>
-                 <div class="font-weight-bold text-h5 mb-1">{{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}</div>
-                 <div class="d-flex align-center gap-1 text-success text-caption">
-                    <VIcon icon="tabler-circle-check-filled" size="14" />
-                    Verified Dealer
-                 </div>
-               </div>
+              <VAvatar
+                color="primary"
+                size="64"
+                class="text-h4 font-weight-bold elevation-4 overflow-hidden"
+              >
+                <img
+                  v-if="car.seller?.store_logo"
+                  :src="car.seller.store_logo"
+                  alt="Seller Logo"
+                  class="w-100 h-100"
+                  style="object-fit: contain; padding: 4px"
+                />
+                <span v-else>{{
+                  (car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name)
+                    ?.charAt(0)
+                    ?.toUpperCase()
+                }}</span>
+              </VAvatar>
+              <div>
+                <div class="font-weight-bold text-h5 mb-1">
+                  {{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}
+                </div>
+                <div class="d-flex align-center gap-1 text-success text-caption">
+                  <VIcon icon="tabler-circle-check-filled" size="14" />
+                  Verified Dealer
+                </div>
+              </div>
             </RouterLink>
 
             <div class="d-flex gap-2 w-100">
@@ -868,10 +932,14 @@ watch(
               <VAvatar color="primary" variant="tonal" size="70" class="mb-4">
                 <VIcon icon="tabler-phone-calling" size="40" />
               </VAvatar>
-              
+
               <h3 class="text-h5 font-weight-bold mb-2">Call Seller</h3>
               <p class="text-body-1 opacity-70 mb-6">
-                Contact <strong>{{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}</strong> directly at:
+                Contact
+                <strong>{{
+                  car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name
+                }}</strong>
+                directly at:
               </p>
 
               <div class="phone-display mb-8">
@@ -892,20 +960,21 @@ watch(
                   Call Now
                 </VBtn>
 
-                <VBtn
-                  variant="text"
-                  block
-                  height="50"
-                  @click="closeCallDialog"
-                >
-                  Cancel
-                </VBtn>
+                <VBtn variant="text" block height="50" @click="closeCallDialog"> Cancel </VBtn>
               </div>
             </VCard>
           </VDialog>
 
           <!-- ✅ Premium Sidebar Ad Spot -->
-          <VCard variant="flat" class="pa-4 rounded-xl sidebar-ad-card mb-4 text-center relative overflow-hidden" v-if="adSlides.length > 0" style="background: rgba(var(--v-theme-surface), 0.3); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <VCard
+            variant="flat"
+            class="pa-4 rounded-xl sidebar-ad-card mb-4 text-center relative overflow-hidden"
+            v-if="adSlides.length > 0"
+            style="
+              background: rgba(var(--v-theme-surface), 0.3);
+              border: 1px solid rgba(255, 255, 255, 0.1);
+            "
+          >
             <div class="ad-label-tag">AD</div>
             <div class="ad-carousel-container">
               <Transition name="fade" mode="out-in">
@@ -919,7 +988,14 @@ watch(
             </div>
           </VCard>
 
-          <VCard variant="flat" class="pa-5 text-center rounded-xl metadata-card mb-4" style="background: rgba(var(--v-theme-surface), 0.5); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <VCard
+            variant="flat"
+            class="pa-5 text-center rounded-xl metadata-card mb-4"
+            style="
+              background: rgba(var(--v-theme-surface), 0.5);
+              border: 1px solid rgba(255, 255, 255, 0.1);
+            "
+          >
             <div class="d-flex flex-column gap-3">
               <div class="d-flex align-center justify-center gap-2">
                 <VIcon icon="tabler-hash" size="18" color="primary" />
@@ -929,7 +1005,15 @@ watch(
               <div class="d-flex align-center justify-center gap-2 opacity-70">
                 <VIcon icon="tabler-calendar-event" size="18" />
                 <span class="text-caption font-weight-medium">
-                  {{ car.created_at ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(car.created_at)) : '—' }}
+                  {{
+                    car.created_at
+                      ? new Intl.DateTimeFormat('en-GB', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                        }).format(new Date(car.created_at))
+                      : '—'
+                  }}
                 </span>
               </div>
             </div>
@@ -983,7 +1067,7 @@ watch(
   background: #000;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
   cursor: pointer;
 }
 
@@ -998,7 +1082,7 @@ watch(
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(8px);
   color: #fff;
   width: 48px;
@@ -1051,15 +1135,19 @@ watch(
   background: rgba(var(--v-theme-primary), 0.8);
 }
 
-.nav-arrow.left { left: 20px; }
-.nav-arrow.right { right: 20px; }
+.nav-arrow.left {
+  left: 20px;
+}
+.nav-arrow.right {
+  right: 20px;
+}
 
 .expand-hint {
   position: absolute;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   padding: 6px 14px;
   border-radius: 999px;
@@ -1082,7 +1170,7 @@ watch(
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
   padding: 10px 16px;
   border-radius: 16px;
@@ -1099,7 +1187,7 @@ watch(
 .lightbox-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.95);
+  background: rgba(0, 0, 0, 0.95);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -1120,7 +1208,7 @@ watch(
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  box-shadow: 0 0 50px rgba(0,0,0,0.5);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
 .lightbox-close {
@@ -1128,7 +1216,7 @@ watch(
   top: 30px;
   right: 30px;
   color: #fff;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border: 0;
   width: 50px;
   height: 50px;
@@ -1142,7 +1230,7 @@ watch(
   top: 50%;
   transform: translateY(-50%);
   color: #fff;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border: 0;
   width: 60px;
   height: 60px;
@@ -1154,9 +1242,15 @@ watch(
   transition: all 0.2s;
 }
 
-.lightbox-nav:hover { background: rgba(255,255,255,0.15); }
-.lightbox-nav.left { left: 0; }
-.lightbox-nav.right { right: 0; }
+.lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.lightbox-nav.left {
+  left: 0;
+}
+.lightbox-nav.right {
+  right: 0;
+}
 
 .lightbox-counter {
   position: absolute;
@@ -1180,7 +1274,7 @@ watch(
   width: 4px;
 }
 .vertical-thumbs::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
 
@@ -1192,7 +1286,7 @@ watch(
     height: 70px;
   }
   .gallery-hero {
-     aspect-ratio: 16/9;
+    aspect-ratio: 16/9;
   }
 }
 
@@ -1231,7 +1325,9 @@ watch(
 }
 
 @media (max-width: 900px) {
-  .content-section { grid-template-columns: 1fr; }
+  .content-section {
+    grid-template-columns: 1fr;
+  }
 }
 
 .specs-grid {
@@ -1241,8 +1337,8 @@ watch(
 }
 
 .spec-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 20px;
   text-align: center;
@@ -1250,7 +1346,7 @@ watch(
 }
 
 .spec-card:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
   transform: translateY(-4px);
 }
 
@@ -1272,7 +1368,7 @@ watch(
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .features-grid {
@@ -1282,7 +1378,7 @@ watch(
 }
 
 .feature-item {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   padding: 12px 16px;
   border-radius: 12px;
   font-size: 14px;
@@ -1314,7 +1410,7 @@ watch(
 /* Engine Cylinders Dynamic Visual */
 .cylinders-visual {
   position: relative;
-  height: 50px;
+  height: 24px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1324,23 +1420,23 @@ watch(
 /* Inline Engine Styling */
 .inline-engine {
   display: flex;
-  gap: 3px;
+  gap: 2px;
   align-items: flex-end;
-  height: 38px;
-  padding: 2px 4px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  height: 22px;
+  padding: 1px 2px;
+  background: rgba(var(--v-theme-primary), 0.05);
+  border-radius: 4px;
+  border-bottom: 1.5px solid rgba(var(--v-theme-primary), 0.4);
 }
 
 .inline-engine .cylinder-sleeve {
   position: relative;
-  width: 10px;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 6px;
+  height: 18px;
+  background: rgba(var(--v-theme-primary), 0.08);
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
   border-bottom: none;
-  border-radius: 3px 3px 0 0;
+  border-radius: 1.5px 1.5px 0 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1348,52 +1444,54 @@ watch(
 }
 
 .inline-engine .piston-head {
-  width: 8px;
-  height: 6px;
-  background: linear-gradient(180deg, #9da2b3 0%, #5d6170 100%);
-  border-radius: 1px;
+  width: 4px;
+  height: 3px;
+  background: linear-gradient(180deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.7) 100%);
+  border-radius: 0.5px;
   position: absolute;
   top: 0;
   animation: inline-stroke 1.2s infinite ease-in-out;
+  box-shadow: 0 0 3px rgba(var(--v-theme-primary), 0.4);
 }
 
 .inline-engine .piston-rod {
-  width: 2px;
-  height: 18px;
-  background: rgba(255, 255, 255, 0.4);
+  width: 1px;
+  height: 10px;
+  background: rgba(var(--v-theme-primary), 0.6);
   position: absolute;
-  top: 6px;
+  top: 3px;
   transform-origin: top center;
   animation: inline-rod-stroke 1.2s infinite ease-in-out;
 }
 
 @keyframes inline-stroke {
-  0%, 100% {
-    transform: translateY(2px);
+  0%,
+  100% {
+    transform: translateY(1px);
   }
   50% {
-    transform: translateY(18px);
+    transform: translateY(10px);
   }
 }
 
 @keyframes inline-rod-stroke {
-  0%, 100% {
-    transform: translateY(2px) rotate(0deg);
+  0%,
+  100% {
+    transform: translateY(1px) rotate(0deg);
   }
   25% {
-    transform: translateY(10px) rotate(8deg);
+    transform: translateY(5px) rotate(8deg);
   }
   50% {
-    transform: translateY(18px) rotate(0deg);
+    transform: translateY(10px) rotate(0deg);
   }
   75% {
-    transform: translateY(10px) rotate(-8deg);
+    transform: translateY(5px) rotate(-8deg);
   }
 }
 
 .spec-card:hover .inline-engine .piston-head {
-  background: linear-gradient(180deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.7) 100%);
-  box-shadow: 0 0 5px rgba(var(--v-theme-primary), 0.5);
+  box-shadow: 0 0 6px rgb(var(--v-theme-primary));
 }
 
 .spec-card:hover .inline-engine .piston-rod {
@@ -1403,8 +1501,8 @@ watch(
 /* V Engine Styling */
 .v-engine {
   position: relative;
-  width: 70px;
-  height: 48px;
+  width: 38px;
+  height: 24px;
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -1413,10 +1511,10 @@ watch(
 .v-engine .crankcase {
   position: absolute;
   bottom: 0;
-  width: 14px;
-  height: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  width: 8px;
+  height: 8px;
+  background: rgba(var(--v-theme-primary), 0.1);
+  border: 1.5px solid rgba(var(--v-theme-primary), 0.4);
   border-radius: 50%;
   z-index: 10;
   display: flex;
@@ -1425,39 +1523,39 @@ watch(
 }
 
 .v-engine .crankshaft-spinner {
-  width: 6px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.4);
+  width: 3px;
+  height: 3px;
+  background: rgb(var(--v-theme-primary));
   border-radius: 50%;
   animation: spin 1.2s infinite linear;
 }
 
 .v-engine .bank {
   position: absolute;
-  bottom: 6px;
+  bottom: 2px;
   display: flex;
-  gap: 2px;
+  gap: 1px;
   transform-origin: bottom center;
 }
 
 .v-engine .bank.left-bank {
-  transform: rotate(-30deg) translateX(-12px);
+  transform: rotate(-30deg) translateX(-6px);
   left: 2px;
 }
 
 .v-engine .bank.right-bank {
-  transform: rotate(30deg) translateX(12px);
+  transform: rotate(30deg) translateX(6px);
   right: 2px;
 }
 
 .v-engine .cylinder-sleeve {
   position: relative;
-  width: 8px;
-  height: 26px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 5px;
+  height: 14px;
+  background: rgba(var(--v-theme-primary), 0.08);
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
   border-bottom: none;
-  border-radius: 2px 2px 0 0;
+  border-radius: 1px 1px 0 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1465,57 +1563,63 @@ watch(
 }
 
 .v-engine .piston-head {
-  width: 6px;
-  height: 5px;
-  background: linear-gradient(180deg, #9da2b3 0%, #5d6170 100%);
-  border-radius: 1px;
+  width: 3px;
+  height: 2.5px;
+  background: linear-gradient(180deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.7) 100%);
+  border-radius: 0.5px;
   position: absolute;
   top: 0;
   animation: v-stroke 1.2s infinite ease-in-out;
+  box-shadow: 0 0 3px rgba(var(--v-theme-primary), 0.4);
 }
 
 .v-engine .piston-rod {
-  width: 1.5px;
-  height: 16px;
-  background: rgba(255, 255, 255, 0.4);
+  width: 0.8px;
+  height: 9px;
+  background: rgba(var(--v-theme-primary), 0.6);
   position: absolute;
-  top: 5px;
+  top: 2.5px;
   animation: v-rod-stroke 1.2s infinite ease-in-out;
 }
 
 @keyframes v-stroke {
-  0%, 100% {
-    transform: translateY(1px);
+  0%,
+  100% {
+    transform: translateY(0.5px);
   }
   50% {
-    transform: translateY(15px);
+    transform: translateY(7px);
   }
 }
 
 @keyframes v-rod-stroke {
-  0%, 100% {
-    transform: translateY(1px);
+  0%,
+  100% {
+    transform: translateY(0.5px);
   }
   50% {
-    transform: translateY(15px);
+    transform: translateY(7px);
   }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spec-card:hover .v-engine .piston-head {
-  background: linear-gradient(180deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.7) 100%);
-  box-shadow: 0 0 5px rgba(var(--v-theme-primary), 0.5);
+  box-shadow: 0 0 6px rgb(var(--v-theme-primary));
 }
 .spec-card:hover .v-engine .piston-rod {
   background: rgb(var(--v-theme-primary));
 }
 .spec-card:hover .v-engine .crankcase {
   border-color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 8px rgba(var(--v-theme-primary), 0.3);
+  box-shadow: 0 0 6px rgb(var(--v-theme-primary));
 }
 .spec-card:hover .v-engine .crankshaft-spinner {
   background: rgb(var(--v-theme-primary));
@@ -1524,8 +1628,8 @@ watch(
 /* Electric / EV Styling */
 .ev-engine {
   position: relative;
-  width: 45px;
-  height: 45px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1533,61 +1637,69 @@ watch(
 
 .ev-engine .battery-body {
   position: relative;
-  width: 24px;
-  height: 38px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 2px;
+  width: 14px;
+  height: 22px;
+  border: 1.5px solid rgba(var(--v-theme-primary), 0.4);
+  border-radius: 4px;
+  padding: 1px;
   display: flex;
   flex-direction: column-reverse;
-  gap: 2px;
+  gap: 1px;
+  background-color: rgba(var(--v-theme-primary), 0.05);
 }
 
 .ev-engine .battery-body::before {
   content: '';
   position: absolute;
-  top: -6px;
+  top: -4px;
   left: 50%;
   transform: translateX(-50%);
-  width: 8px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 1px;
+  width: 4px;
+  height: 2px;
+  background: rgba(var(--v-theme-primary), 0.4);
+  border-radius: 0.5px;
 }
 
 .ev-engine .battery-bar {
   width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  height: 4px;
+  background: rgba(var(--v-theme-primary), 0.15);
+  border-radius: 1px;
   transition: all 0.3s;
 }
 
-.ev-engine .battery-bar:nth-child(1) { animation: charge-bar 1.5s infinite 0s; }
-.ev-engine .battery-bar:nth-child(2) { animation: charge-bar 1.5s infinite 0.3s; }
-.ev-engine .battery-bar:nth-child(3) { animation: charge-bar 1.5s infinite 0.6s; }
+.ev-engine .battery-bar:nth-child(1) {
+  animation: charge-bar 1.5s infinite 0s;
+}
+.ev-engine .battery-bar:nth-child(2) {
+  animation: charge-bar 1.5s infinite 0.3s;
+}
+.ev-engine .battery-bar:nth-child(3) {
+  animation: charge-bar 1.5s infinite 0.6s;
+}
 
 @keyframes charge-bar {
-  0%, 100% {
-    background: rgba(255, 255, 255, 0.1);
+  0%,
+  100% {
+    background: rgba(var(--v-theme-primary), 0.15);
   }
   50% {
     background: rgb(var(--v-theme-primary));
-    box-shadow: 0 0 8px rgb(var(--v-theme-primary));
+    box-shadow: 0 0 6px rgb(var(--v-theme-primary));
   }
 }
 
 .spec-card:hover .ev-engine .battery-body,
 .spec-card:hover .ev-engine .battery-body::before {
   border-color: rgb(var(--v-theme-primary));
-  background-color: rgba(var(--v-theme-primary), 0.05);
+  background-color: rgba(var(--v-theme-primary), 0.1);
 }
 
 /* Custom Drivetrain 4-Wheel Visual */
 .drivetrain-visual {
   position: relative;
-  width: 40px;
-  height: 50px;
+  width: 24px;
+  height: 24px;
   margin: 0 auto 12px;
   display: flex;
   flex-direction: column;
@@ -1597,9 +1709,9 @@ watch(
 
 .chassis-line {
   position: absolute;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
+  top: 3px;
+  bottom: 3px;
+  width: 1.5px;
   background: rgba(255, 255, 255, 0.15);
   left: 50%;
   transform: translateX(-50%);
@@ -1608,8 +1720,8 @@ watch(
 
 .axle {
   position: relative;
-  width: 32px;
-  height: 10px;
+  width: 20px;
+  height: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1618,9 +1730,9 @@ watch(
 
 .axle-bar {
   position: absolute;
-  left: 4px;
-  right: 4px;
-  height: 2px;
+  left: 2px;
+  right: 2px;
+  height: 1.5px;
   background: rgba(255, 255, 255, 0.15);
   top: 50%;
   transform: translateY(-50%);
@@ -1628,31 +1740,35 @@ watch(
 
 .axle.active .axle-bar {
   background: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 8px rgb(var(--v-theme-primary));
+  box-shadow: 0 0 4px rgb(var(--v-theme-primary));
 }
 
 .wheel {
-  width: 6px;
-  height: 10px;
+  width: 4px;
+  height: 6px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  border-radius: 1px;
   transition: all 0.3s ease;
 }
 
 .wheel.active {
   background: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 10px rgb(var(--v-theme-primary));
+  box-shadow: 0 0 6px rgb(var(--v-theme-primary));
   transform: scale(1.1);
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-.leading-relaxed { line-height: 1.8; }
+.leading-relaxed {
+  line-height: 1.8;
+}
 
 .sidebar-ad-card {
   height: 200px;
