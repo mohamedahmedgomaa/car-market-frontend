@@ -347,9 +347,9 @@ watch(
                 <span class="text-primary">
                   {{ car.condition === 'new' ? 'New' : 'Used' }}
                 </span>
-                <template v-if="car.condition === 'used' && car.kilometers">
-                  <span class="mx-2">•</span>
-                  <span>{{ car.kilometers.toLocaleString() }} km</span>
+                <template v-if="car.condition === 'used' && car.mileage">
+                  <span class="mx-2">|</span>
+                  <span class="text-primary">{{ Number(car.mileage).toLocaleString() }}</span>
                 </template>
               </div>
             </div>
@@ -560,11 +560,12 @@ watch(
   opacity: 0.9;
 }
 .car-card__info {
-  font-size: 13px;
+  font-size: 14px;
   color: #fff;
   opacity: 0.8;
   display: flex;
   align-items: center;
+  font-weight: 600;
 }
 .border-t {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
