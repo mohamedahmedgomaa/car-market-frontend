@@ -877,7 +877,7 @@ watch(
                   :src="car.seller.store_logo"
                   alt="Seller Logo"
                   class="w-100 h-100"
-                  style="object-fit: contain; padding: 4px"
+                  style="object-fit: cover;"
                 />
                 <span v-else>{{
                   (car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name)

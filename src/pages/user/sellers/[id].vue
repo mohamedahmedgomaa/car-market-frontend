@@ -412,10 +412,9 @@ onMounted(fetchSeller)
   overflow: hidden;
 
   :deep(img) {
-    object-fit: contain !important;
+    object-fit: cover !important;
     width: 100% !important;
     height: 100% !important;
-    padding: 4px;
   }
 }
 
