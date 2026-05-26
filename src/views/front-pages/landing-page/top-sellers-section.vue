@@ -73,7 +73,7 @@ const display = computed(() => sellers.value || [])
         >
           <div class="row">
             <VAvatar size="44" style="overflow: hidden;">
-              <img v-if="s.store_logo" :src="s.store_logo" alt="Seller" style="object-fit: contain; width: 100%; height: 100%; padding: 2px;" />
+              <img v-if="s.store_logo" :src="s.store_logo" alt="Seller" style="object-fit: cover; width: 100%; height: 100%;" />
               <span v-else>{{ (s.name || 'S')[0] }}</span>
             </VAvatar>
 
