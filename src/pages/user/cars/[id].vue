@@ -135,6 +135,32 @@ const formatCylinders = (val) => {
   return `${s} Cylinders`
 }
 
+const parsedCylinders = computed(() => {
+  const val = car.value?.cylinders
+  if (!val) return { count: 0, layout: 'unknown', text: '—' }
+  const s = String(val).trim().toUpperCase()
+  
+  if (s.includes('ELECTRIC') || s.includes('EV') || s === '0' || s.includes('HYBRID') || s.includes('كهربا')) {
+    return { count: 0, layout: 'electric', text: 'EV' }
+  }
+
+  const match = s.match(/\d+/)
+  const count = match ? parseInt(match[0], 10) : 4
+  
+  let layout = 'inline'
+  if (s.includes('V') || count >= 6) {
+    layout = 'v'
+  } else if (s.includes('I') || s.includes('INLINE') || s.includes('L') || count < 6) {
+    layout = 'inline'
+  }
+  
+  return {
+    count,
+    layout,
+    text: isNaN(Number(s)) ? s : `${s} Cylinders`
+  }
+})
+
 const formatHorsepower = (val) => {
   if (!val) return '—'
   const s = String(val).trim()
@@ -640,10 +666,63 @@ watch(
             </div>
 
             <!-- Cylinders -->
-            <div class="spec-card">
-              <VIcon icon="tabler-engine" class="mb-2" color="primary" />
+            <div class="spec-card d-flex flex-column align-center justify-center">
+              <!-- Engine Cylinders Dynamic Visual -->
+              <div class="cylinders-visual">
+                <!-- Inline Layout (e.g. I4, I3) -->
+                <div v-if="parsedCylinders.layout === 'inline'" class="inline-engine">
+                  <div 
+                    v-for="i in Math.min(parsedCylinders.count, 6)" 
+                    :key="i" 
+                    class="cylinder-sleeve"
+                  >
+                    <div class="piston-head" :style="{ animationDelay: `${(i - 1) * -0.3}s` }"></div>
+                    <div class="piston-rod" :style="{ animationDelay: `${(i - 1) * -0.3}s` }"></div>
+                  </div>
+                </div>
+
+                <!-- V Layout (e.g. V6, V8, V10, V12) -->
+                <div v-else-if="parsedCylinders.layout === 'v'" class="v-engine">
+                  <div class="bank left-bank">
+                    <div 
+                      v-for="i in Math.min(Math.ceil(parsedCylinders.count / 2), 4)" 
+                      :key="'l'+i" 
+                      class="cylinder-sleeve"
+                    >
+                      <div class="piston-head" :style="{ animationDelay: `${(i - 1) * -0.4}s` }"></div>
+                      <div class="piston-rod" :style="{ animationDelay: `${(i - 1) * -0.4}s` }"></div>
+                    </div>
+                  </div>
+                  <div class="crankcase">
+                    <div class="crankshaft-spinner"></div>
+                  </div>
+                  <div class="bank right-bank">
+                    <div 
+                      v-for="i in Math.min(Math.floor(parsedCylinders.count / 2), 4)" 
+                      :key="'r'+i" 
+                      class="cylinder-sleeve"
+                    >
+                      <div class="piston-head" :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }"></div>
+                      <div class="piston-rod" :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Electric / EV Layout -->
+                <div v-else-if="parsedCylinders.layout === 'electric'" class="ev-engine">
+                  <div class="battery-body">
+                    <div class="battery-bar"></div>
+                    <div class="battery-bar"></div>
+                    <div class="battery-bar"></div>
+                  </div>
+                </div>
+
+                <!-- Fallback / Unknown -->
+                <VIcon v-else icon="tabler-engine" color="primary" size="24" />
+              </div>
+              
               <span class="label">Cylinders</span>
-              <span class="val">{{ formatCylinders(car.cylinders) }}</span>
+              <span class="val">{{ parsedCylinders.text }}</span>
             </div>
 
             <!-- Transmission -->
@@ -1230,6 +1309,278 @@ watch(
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 24px !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Engine Cylinders Dynamic Visual */
+.cylinders-visual {
+  position: relative;
+  height: 50px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+/* Inline Engine Styling */
+.inline-engine {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 38px;
+  padding: 2px 4px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.inline-engine .cylinder-sleeve {
+  position: relative;
+  width: 10px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inline-engine .piston-head {
+  width: 8px;
+  height: 6px;
+  background: linear-gradient(180deg, #9da2b3 0%, #5d6170 100%);
+  border-radius: 1px;
+  position: absolute;
+  top: 0;
+  animation: inline-stroke 1.2s infinite ease-in-out;
+}
+
+.inline-engine .piston-rod {
+  width: 2px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.4);
+  position: absolute;
+  top: 6px;
+  transform-origin: top center;
+  animation: inline-rod-stroke 1.2s infinite ease-in-out;
+}
+
+@keyframes inline-stroke {
+  0%, 100% {
+    transform: translateY(2px);
+  }
+  50% {
+    transform: translateY(18px);
+  }
+}
+
+@keyframes inline-rod-stroke {
+  0%, 100% {
+    transform: translateY(2px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(10px) rotate(8deg);
+  }
+  50% {
+    transform: translateY(18px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(10px) rotate(-8deg);
+  }
+}
+
+.spec-card:hover .inline-engine .piston-head {
+  background: linear-gradient(180deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.7) 100%);
+  box-shadow: 0 0 5px rgba(var(--v-theme-primary), 0.5);
+}
+
+.spec-card:hover .inline-engine .piston-rod {
+  background: rgb(var(--v-theme-primary));
+}
+
+/* V Engine Styling */
+.v-engine {
+  position: relative;
+  width: 70px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.v-engine .crankcase {
+  position: absolute;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v-engine .crankshaft-spinner {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: spin 1.2s infinite linear;
+}
+
+.v-engine .bank {
+  position: absolute;
+  bottom: 6px;
+  display: flex;
+  gap: 2px;
+  transform-origin: bottom center;
+}
+
+.v-engine .bank.left-bank {
+  transform: rotate(-30deg) translateX(-12px);
+  left: 2px;
+}
+
+.v-engine .bank.right-bank {
+  transform: rotate(30deg) translateX(12px);
+  right: 2px;
+}
+
+.v-engine .cylinder-sleeve {
+  position: relative;
+  width: 8px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.v-engine .piston-head {
+  width: 6px;
+  height: 5px;
+  background: linear-gradient(180deg, #9da2b3 0%, #5d6170 100%);
+  border-radius: 1px;
+  position: absolute;
+  top: 0;
+  animation: v-stroke 1.2s infinite ease-in-out;
+}
+
+.v-engine .piston-rod {
+  width: 1.5px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.4);
+  position: absolute;
+  top: 5px;
+  animation: v-rod-stroke 1.2s infinite ease-in-out;
+}
+
+@keyframes v-stroke {
+  0%, 100% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(15px);
+  }
+}
+
+@keyframes v-rod-stroke {
+  0%, 100% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(15px);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spec-card:hover .v-engine .piston-head {
+  background: linear-gradient(180deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.7) 100%);
+  box-shadow: 0 0 5px rgba(var(--v-theme-primary), 0.5);
+}
+.spec-card:hover .v-engine .piston-rod {
+  background: rgb(var(--v-theme-primary));
+}
+.spec-card:hover .v-engine .crankcase {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 8px rgba(var(--v-theme-primary), 0.3);
+}
+.spec-card:hover .v-engine .crankshaft-spinner {
+  background: rgb(var(--v-theme-primary));
+}
+
+/* Electric / EV Styling */
+.ev-engine {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ev-engine .battery-body {
+  position: relative;
+  width: 24px;
+  height: 38px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 2px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+.ev-engine .battery-body::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 1px;
+}
+
+.ev-engine .battery-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.ev-engine .battery-bar:nth-child(1) { animation: charge-bar 1.5s infinite 0s; }
+.ev-engine .battery-bar:nth-child(2) { animation: charge-bar 1.5s infinite 0.3s; }
+.ev-engine .battery-bar:nth-child(3) { animation: charge-bar 1.5s infinite 0.6s; }
+
+@keyframes charge-bar {
+  0%, 100% {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    background: rgb(var(--v-theme-primary));
+    box-shadow: 0 0 8px rgb(var(--v-theme-primary));
+  }
+}
+
+.spec-card:hover .ev-engine .battery-body,
+.spec-card:hover .ev-engine .battery-body::before {
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-primary), 0.05);
 }
 
 /* Custom Drivetrain 4-Wheel Visual */
