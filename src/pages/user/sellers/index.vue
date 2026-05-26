@@ -8,10 +8,18 @@ const loading = ref(true)
 const error = ref('')
 const sellers = ref([])
 const searchQuery = ref('')
-const selectedCity = ref('All')
 
-// Common Egyptian automotive hubs for quick filtering
-const popularCities = ['All', 'Mansoura', 'Cairo', 'Alexandria', 'Giza', 'Tanta', 'Kafr El Sheikh', 'Port Said', 'Ismailia']
+// Arabic-English semantic translation mapping for intelligent search & filtering
+const cityTranslations = {
+  'mansoura': ['mansoura', 'المنصورة'],
+  'cairo': ['cairo', 'القاهرة'],
+  'alexandria': ['alexandria', 'الإسماعيلية', 'الاسماعيلية', 'الإسكندرية', 'الاسكندرية'],
+  'giza': ['giza', 'الجيزة'],
+  'tanta': ['tanta', 'طنطا'],
+  'kafr el sheikh': ['kafr el sheikh', 'كفر الشيخ'],
+  'port said': ['port said', 'بورسعيد'],
+  'ismailia': ['ismailia', 'الإسماعيلية', 'الاسماعيلية']
+}
 
 const t = (val) => {
   if (!val) return ''
@@ -38,18 +46,7 @@ const fetchSellers = async () => {
 const filteredSellers = computed(() => {
   let result = sellers.value
 
-  // City Filter
-  if (selectedCity.value !== 'All') {
-    const cityQ = selectedCity.value.toLowerCase()
-    result = result.filter(s => {
-      const cityEn = (s.city?.name?.en || '').toLowerCase()
-      const cityAr = (s.city?.name?.ar || '').toLowerCase()
-      const address = (t(s.address) || '').toLowerCase()
-      return cityEn.includes(cityQ) || cityAr.includes(cityQ) || address.includes(cityQ)
-    })
-  }
-
-  // Smart Intelligent Search Query Filter (Matches Name, Address, City, Area/Neighborhood, Description in AR/EN)
+  // Smart Intelligent Semantic Search Filter (Matches Name, Address, City, Neighborhood, Bio in EN & AR)
   if (searchQuery.value.trim()) {
     const tokens = searchQuery.value.toLowerCase().trim().split(/\s+/).filter(Boolean)
 
@@ -80,7 +77,18 @@ const filteredSellers = computed(() => {
 
         // Intelligent Matching: ALL query tokens must match AT LEAST ONE searchable field
         return tokens.every(token => {
-          return searchableFields.some(field => field.includes(token))
+          // Expand search token semantically if it's a known city
+          let expandedTokens = [token]
+          for (const [key, values] of Object.entries(cityTranslations)) {
+            if (key === token || values.includes(token)) {
+              expandedTokens = [key, ...values]
+              break
+            }
+          }
+
+          return expandedTokens.some(tkn => {
+            return searchableFields.some(field => field.includes(tkn))
+          })
         })
       })
     }
@@ -160,14 +168,14 @@ onMounted(fetchSellers)
               Your comprehensive destination to explore certified automotive dealers. Search by name, city, or neighborhood to locate verified showrooms and browse premium inventories.
             </p>
 
-            <!-- Search input -->
+            <!-- Ultra-Premium Unified Search Bar -->
             <VSheet class="search-sheet rounded-pill px-4 py-2 elevation-8 mb-6 mx-auto mx-md-0" max-width="650">
               <div class="d-flex align-center">
                 <VIcon icon="tabler-search" color="primary" class="ms-3 me-2" size="24" />
                 
                 <VTextField
                   v-model="searchQuery"
-                  placeholder="Search for any showroom, city, district, or neighborhood..."
+                  placeholder="Search showrooms by name, city, neighborhood..."
                   variant="plain"
                   hide-details
                   density="comfortable"
@@ -193,20 +201,37 @@ onMounted(fetchSellers)
               </div>
             </VSheet>
 
-            <!-- Quick City Filter Chips -->
-            <div class="city-chips d-flex align-center justify-center justify-md-start flex-wrap gap-2 max-w-900">
-              <span class="text-caption text-uppercase font-weight-bold text-white-50 me-2 align-self-center">Location Hubs:</span>
-              <VChip
-                v-for="city in popularCities"
-                :key="city"
-                :color="selectedCity === city ? 'primary' : 'default'"
-                :variant="selectedCity === city ? 'elevated' : 'tonal'"
-                class="city-chip font-weight-bold px-4 py-2 rounded-pill"
-                size="large"
-                @click="selectedCity = city"
-              >
-                {{ city }}
-              </VChip>
+            <!-- Ultra-Sleek Trust & Stats Bar -->
+            <div class="d-flex align-center justify-center justify-md-start flex-wrap gap-4 mt-6 animate-fade-in">
+              <div class="stat-badge d-flex align-center gap-2 px-4 py-2 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-lg bg-primary-subtle px-2 py-1.5">
+                  <VIcon icon="tabler-discount-check" color="primary" size="18" />
+                </div>
+                <div class="d-flex flex-column text-start">
+                  <span class="text-caption font-weight-black text-white leading-tight">120+ Dealers</span>
+                  <span class="text-xxs text-white-50 leading-none">Verified Showrooms</span>
+                </div>
+              </div>
+
+              <div class="stat-badge d-flex align-center gap-2 px-4 py-2 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-lg bg-success-subtle px-2 py-1.5">
+                  <VIcon icon="tabler-map-pin" color="success" size="18" />
+                </div>
+                <div class="d-flex flex-column text-start">
+                  <span class="text-caption font-weight-black text-white leading-tight">Egypt-wide</span>
+                  <span class="text-xxs text-white-50 leading-none">Active Cities</span>
+                </div>
+              </div>
+
+              <div class="stat-badge d-flex align-center gap-2 px-4 py-2 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-lg bg-warning-subtle px-2 py-1.5">
+                  <VIcon icon="tabler-circle-check" color="warning" size="18" />
+                </div>
+                <div class="d-flex flex-column text-start">
+                  <span class="text-caption font-weight-black text-white leading-tight">100% Secure</span>
+                  <span class="text-xxs text-white-50 leading-none">Direct Connection</span>
+                </div>
+              </div>
             </div>
           </div>
         </VCol>
@@ -265,7 +290,7 @@ onMounted(fetchSellers)
       <div v-else-if="filteredSellers.length === 0" class="text-center py-16 animate-fade-in">
         <VIcon icon="tabler-building-store" size="80" class="mb-4 opacity-20" />
         <h3 class="text-h5 text-white-50 font-weight-bold">No verified showrooms match your location or search.</h3>
-        <VBtn variant="tonal" color="primary" class="mt-4 px-6 font-weight-bold" rounded="pill" @click="searchQuery = ''; selectedCity = 'All'">
+        <VBtn variant="tonal" color="primary" class="mt-4 px-6 font-weight-bold" rounded="pill" @click="searchQuery = ''">
           Reset Filters
         </VBtn>
       </div>
@@ -469,12 +494,36 @@ onMounted(fetchSellers)
   }
 }
 
-.city-chip {
-  cursor: pointer;
-  transition: all 0.2s ease;
+.bg-white-5 {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(8px);
+}
+
+.border-white-10 {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.bg-success-subtle {
+  background: rgba(76, 175, 80, 0.15) !important;
+  border: 1px solid rgba(76, 175, 80, 0.25) !important;
+}
+
+.bg-warning-subtle {
+  background: rgba(255, 193, 7, 0.15) !important;
+  border: 1px solid rgba(255, 193, 7, 0.25) !important;
+}
+
+.text-xxs {
+  font-size: 0.65rem !important;
+}
+
+.stat-badge {
+  transition: all 0.3s ease;
   &:hover {
-    transform: translateY(-2px);
-    background-color: rgba(var(--v-theme-primary), 0.1) !important;
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(var(--v-theme-primary), 0.3) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
   }
 }
 
