@@ -498,7 +498,7 @@ onMounted(async () => {
                   type="button"
                   class="horizontal-toggle-btn"
                   :class="{ active: draft.type === 'car' }"
-                  @click="draft.type = 'car'; applyFilters();"
+                  @click="draft.type = 'car'"
                 >
                   Cars
                 </button>
@@ -506,7 +506,7 @@ onMounted(async () => {
                   type="button"
                   class="horizontal-toggle-btn"
                   :class="{ active: draft.type === 'motorcycle' }"
-                  @click="draft.type = 'motorcycle'; applyFilters();"
+                  @click="draft.type = 'motorcycle'"
                 >
                   Bikes
                 </button>
@@ -524,7 +524,7 @@ onMounted(async () => {
                 density="comfortable"
                 hide-details
                 class="premium-input-field"
-                @update:model-value="applyFilters"
+                @update:model-value="draft.modelId = null"
               >
                 <template #item="{ props, item }">
                   <VListItem v-bind="props" :title="t(item.raw.name)" />
@@ -547,7 +547,6 @@ onMounted(async () => {
                 density="comfortable"
                 hide-details
                 class="premium-input-field"
-                @update:model-value="applyFilters"
               >
                 <template #item="{ props, item }">
                   <VListItem v-bind="props" :title="t(item.raw.name)" />
