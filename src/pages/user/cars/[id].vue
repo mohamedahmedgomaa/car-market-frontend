@@ -768,7 +768,7 @@ watch(
                 <span
                   v-if="getEngineCapacityDetails(car.engine_capacity).l"
                   class="text-caption opacity-80 font-weight-bold mt-1"
-                  style="font-size: 14px !important; color: rgb(var(--v-theme-primary))"
+                  style="font-size: 14px !important; color: #ffffff"
                 >
                   {{ getEngineCapacityDetails(car.engine_capacity).l }}
                 </span>
@@ -829,191 +829,93 @@ watch(
 
             <!-- Cylinders -->
             <div class="spec-card d-flex flex-column align-center justify-center">
-              <!-- Engine Cylinders Dynamic Visual -->
-              <div class="cylinders-visual">
+              <!-- Engine Cylinders Dynamic Graphical Visual -->
+              <div class="cylinders-graphic-container mb-2">
                 <!-- Inline Layout (e.g. I4, I3) -->
-                <div v-if="parsedCylinders.layout === 'inline'" class="inline-engine">
-                  <!-- Realistic SVG Piston -->
-                  <svg
-                    v-for="i in Math.min(parsedCylinders.count, 6)"
-                    :key="i"
-                    class="cylinder-svg"
-                    viewBox="0 0 40 80"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <defs>
-                      <linearGradient id="piston-metal" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#8a95a5" />
-                        <stop offset="25%" stop-color="#cfd6df" />
-                        <stop offset="50%" stop-color="#ffffff" />
-                        <stop offset="75%" stop-color="#b0b9c6" />
-                        <stop offset="100%" stop-color="#697382" />
-                      </linearGradient>
-                      <linearGradient id="rod-metal" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#555d6b" />
-                        <stop offset="50%" stop-color="#a3acb9" />
-                        <stop offset="100%" stop-color="#3d434d" />
-                      </linearGradient>
-                      <linearGradient id="sleeve-grad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="rgba(var(--v-theme-primary), 0.15)" />
-                        <stop offset="100%" stop-color="rgba(var(--v-theme-primary), 0.02)" />
-                      </linearGradient>
-                    </defs>
-
-                    <!-- Sleeve -->
-                    <rect class="sleeve" x="4" y="8" width="32" height="42" rx="3" fill="url(#sleeve-grad)" stroke="rgba(var(--v-theme-primary), 0.25)" stroke-width="0.8" />
-                    <!-- Rotation Guide -->
-                    <circle cx="20" cy="62" r="12" fill="none" stroke="rgba(var(--v-theme-primary), 0.1)" stroke-width="0.5" stroke-dasharray="1.5 1.5" />
-
-                    <!-- Rod -->
-                    <g class="rod-group" :style="{ animationDelay: `${(i - 1) * -0.3}s` }">
-                      <path d="M 18,14 L 16,50 A 4,4 0 0,0 24,50 L 22,14 Z" fill="url(#rod-metal)" />
-                      <circle cx="20" cy="14" r="2.5" fill="#333" stroke="#666" stroke-width="0.5" />
-                      <circle cx="20" cy="50" r="3.5" fill="#222" stroke="#555" stroke-width="0.5" />
-                    </g>
-
-                    <!-- Piston Head -->
-                    <g class="piston-group" :style="{ animationDelay: `${(i - 1) * -0.3}s` }">
-                      <rect x="6" y="2" width="28" height="15" rx="1" fill="url(#piston-metal)" />
-                      <rect x="5.5" y="4" width="29" height="1" fill="#1b1e24" />
-                      <rect x="5.5" y="7" width="29" height="1" fill="#1b1e24" />
-                      <rect x="5.5" y="10" width="29" height="1" fill="#1b1e24" />
-                      <rect x="13" y="11" width="14" height="4" fill="#4a525d" rx="0.5" />
-                      <circle cx="20" cy="14" r="2" fill="#12141a" />
-                    </g>
-
-                    <!-- Crank Lobe -->
-                    <g class="crank-group" :style="{ animationDelay: `${(i - 1) * -0.3}s` }">
-                      <path d="M 12,62 A 8,8 0 0,0 28,62 L 20,50 Z" fill="url(#rod-metal)" opacity="0.85" />
-                      <circle cx="20" cy="62" r="3.5" fill="#111" stroke="#444" stroke-width="0.8" />
-                      <circle cx="20" cy="50" r="2" fill="#fff" />
-                    </g>
-                  </svg>
+                <div v-if="parsedCylinders.layout === 'inline'" class="flat-inline-engine">
+                  <div class="pistons-row">
+                    <svg
+                      v-for="i in Math.min(parsedCylinders.count, 6)"
+                      :key="i"
+                      class="flat-piston-svg"
+                      viewBox="0 0 12 28"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect x="1" y="2" width="10" height="18" rx="1" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.3" />
+                      <g :style="{ transform: i % 2 === 0 ? 'translateY(4px)' : 'translateY(0px)' }">
+                        <rect x="2" y="4" width="8" height="5" rx="0.75" fill="currentColor" />
+                        <line x1="6" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="6" cy="20" r="1.5" fill="currentColor" />
+                      </g>
+                    </svg>
+                  </div>
+                  <div class="crankshaft-line"></div>
                 </div>
 
                 <!-- V Layout (e.g. V6, V8, V10, V12) -->
-                <div v-else-if="parsedCylinders.layout === 'v'" class="v-engine">
-                  <div class="bank left-bank">
+                <div v-else-if="parsedCylinders.layout === 'v'" class="flat-v-engine">
+                  <!-- Left Bank -->
+                  <div class="v-bank left-bank">
                     <svg
                       v-for="i in Math.min(Math.ceil(parsedCylinders.count / 2), 4)"
                       :key="'l' + i"
-                      class="cylinder-svg"
-                      viewBox="0 0 40 80"
+                      class="flat-piston-svg"
+                      viewBox="0 0 12 28"
+                      fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <defs>
-                        <linearGradient id="piston-metal-v" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stop-color="#8a95a5" />
-                          <stop offset="25%" stop-color="#cfd6df" />
-                          <stop offset="50%" stop-color="#ffffff" />
-                          <stop offset="75%" stop-color="#b0b9c6" />
-                          <stop offset="100%" stop-color="#697382" />
-                        </linearGradient>
-                        <linearGradient id="rod-metal-v" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stop-color="#555d6b" />
-                          <stop offset="50%" stop-color="#a3acb9" />
-                          <stop offset="100%" stop-color="#3d434d" />
-                        </linearGradient>
-                        <linearGradient id="sleeve-grad-v" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stop-color="rgba(var(--v-theme-primary), 0.15)" />
-                          <stop offset="100%" stop-color="rgba(var(--v-theme-primary), 0.02)" />
-                        </linearGradient>
-                      </defs>
-
-                      <rect class="sleeve" x="4" y="8" width="32" height="42" rx="3" fill="url(#sleeve-grad-v)" stroke="rgba(var(--v-theme-primary), 0.25)" stroke-width="0.8" />
-                      <circle cx="20" cy="62" r="12" fill="none" stroke="rgba(var(--v-theme-primary), 0.1)" stroke-width="0.5" stroke-dasharray="1.5 1.5" />
-
-                      <g class="rod-group" :style="{ animationDelay: `${(i - 1) * -0.4}s` }">
-                        <path d="M 18,14 L 16,50 A 4,4 0 0,0 24,50 L 22,14 Z" fill="url(#rod-metal-v)" />
-                        <circle cx="20" cy="14" r="2.5" fill="#333" stroke="#666" stroke-width="0.5" />
-                        <circle cx="20" cy="50" r="3.5" fill="#222" stroke="#555" stroke-width="0.5" />
-                      </g>
-
-                      <g class="piston-group" :style="{ animationDelay: `${(i - 1) * -0.4}s` }">
-                        <rect x="6" y="2" width="28" height="15" rx="1" fill="url(#piston-metal-v)" />
-                        <rect x="5.5" y="4" width="29" height="1" fill="#1b1e24" />
-                        <rect x="5.5" y="7" width="29" height="1" fill="#1b1e24" />
-                        <rect x="5.5" y="10" width="29" height="1" fill="#1b1e24" />
-                        <rect x="13" y="11" width="14" height="4" fill="#4a525d" rx="0.5" />
-                        <circle cx="20" cy="14" r="2" fill="#12141a" />
-                      </g>
-
-                      <g class="crank-group" :style="{ animationDelay: `${(i - 1) * -0.4}s` }">
-                        <path d="M 12,62 A 8,8 0 0,0 28,62 L 20,50 Z" fill="url(#rod-metal-v)" opacity="0.85" />
-                        <circle cx="20" cy="62" r="3.5" fill="#111" stroke="#444" stroke-width="0.8" />
-                        <circle cx="20" cy="50" r="2" fill="#fff" />
+                      <rect x="1" y="2" width="10" height="18" rx="1" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.3" />
+                      <g :style="{ transform: i % 2 === 0 ? 'translateY(4px)' : 'translateY(0px)' }">
+                        <rect x="2" y="4" width="8" height="5" rx="0.75" fill="currentColor" />
+                        <line x1="6" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="6" cy="20" r="1.5" fill="currentColor" />
                       </g>
                     </svg>
                   </div>
 
-                  <div class="crankcase">
-                    <div class="crankshaft-spinner"></div>
+                  <!-- Central Crankcase -->
+                  <div class="v-crankcase">
+                    <div class="v-hub"></div>
                   </div>
 
-                  <div class="bank right-bank">
+                  <!-- Right Bank -->
+                  <div class="v-bank right-bank">
                     <svg
                       v-for="i in Math.min(Math.floor(parsedCylinders.count / 2), 4)"
                       :key="'r' + i"
-                      class="cylinder-svg"
-                      viewBox="0 0 40 80"
+                      class="flat-piston-svg"
+                      viewBox="0 0 12 28"
+                      fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <defs>
-                        <linearGradient id="piston-metal-v-r" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stop-color="#8a95a5" />
-                          <stop offset="25%" stop-color="#cfd6df" />
-                          <stop offset="50%" stop-color="#ffffff" />
-                          <stop offset="75%" stop-color="#b0b9c6" />
-                          <stop offset="100%" stop-color="#697382" />
-                        </linearGradient>
-                        <linearGradient id="rod-metal-v-r" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stop-color="#555d6b" />
-                          <stop offset="50%" stop-color="#a3acb9" />
-                          <stop offset="100%" stop-color="#3d434d" />
-                        </linearGradient>
-                        <linearGradient id="sleeve-grad-v-r" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stop-color="rgba(var(--v-theme-primary), 0.15)" />
-                          <stop offset="100%" stop-color="rgba(var(--v-theme-primary), 0.02)" />
-                        </linearGradient>
-                      </defs>
-
-                      <rect class="sleeve" x="4" y="8" width="32" height="42" rx="3" fill="url(#sleeve-grad-v-r)" stroke="rgba(var(--v-theme-primary), 0.25)" stroke-width="0.8" />
-                      <circle cx="20" cy="62" r="12" fill="none" stroke="rgba(var(--v-theme-primary), 0.1)" stroke-width="0.5" stroke-dasharray="1.5 1.5" />
-
-                      <g class="rod-group" :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }">
-                        <path d="M 18,14 L 16,50 A 4,4 0 0,0 24,50 L 22,14 Z" fill="url(#rod-metal-v-r)" />
-                        <circle cx="20" cy="14" r="2.5" fill="#333" stroke="#666" stroke-width="0.5" />
-                        <circle cx="20" cy="50" r="3.5" fill="#222" stroke="#555" stroke-width="0.5" />
-                      </g>
-
-                      <g class="piston-group" :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }">
-                        <rect x="6" y="2" width="28" height="15" rx="1" fill="url(#piston-metal-v-r)" />
-                        <rect x="5.5" y="4" width="29" height="1" fill="#1b1e24" />
-                        <rect x="5.5" y="7" width="29" height="1" fill="#1b1e24" />
-                        <rect x="5.5" y="10" width="29" height="1" fill="#1b1e24" />
-                        <rect x="13" y="11" width="14" height="4" fill="#4a525d" rx="0.5" />
-                        <circle cx="20" cy="14" r="2" fill="#12141a" />
-                      </g>
-
-                      <g class="crank-group" :style="{ animationDelay: `${(i - 1) * -0.4 - 0.2}s` }">
-                        <path d="M 12,62 A 8,8 0 0,0 28,62 L 20,50 Z" fill="url(#rod-metal-v-r)" opacity="0.85" />
-                        <circle cx="20" cy="62" r="3.5" fill="#111" stroke="#444" stroke-width="0.8" />
-                        <circle cx="20" cy="50" r="2" fill="#fff" />
+                      <rect x="1" y="2" width="10" height="18" rx="1" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.3" />
+                      <g :style="{ transform: i % 2 === 0 ? 'translateY(0px)' : 'translateY(4px)' }">
+                        <rect x="2" y="4" width="8" height="5" rx="0.75" fill="currentColor" />
+                        <line x1="6" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="6" cy="20" r="1.5" fill="currentColor" />
                       </g>
                     </svg>
                   </div>
                 </div>
 
                 <!-- Electric / EV Layout -->
-                <div v-else-if="parsedCylinders.layout === 'electric'" class="ev-engine">
-                  <div class="battery-body">
-                    <div class="battery-bar"></div>
-                    <div class="battery-bar"></div>
-                    <div class="battery-bar"></div>
-                  </div>
+                <div v-else-if="parsedCylinders.layout === 'electric'" class="flat-ev-engine">
+                  <svg
+                    class="ev-icon"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect x="3" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="2" />
+                    <rect x="19" y="10" width="2" height="4" rx="0.5" fill="currentColor" />
+                    <path d="M12 8L9.5 12H11.5L11 15L14.5 10H12.5L13 8H12Z" fill="currentColor" stroke="currentColor" stroke-width="0.5" />
+                  </svg>
                 </div>
 
-                <!-- Fallback / Unknown -->
+                <!-- Fallback -->
                 <VIcon v-else icon="tabler-engine" color="primary" size="24" />
               </div>
 
@@ -1689,230 +1591,134 @@ watch(
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Engine Cylinders Dynamic Visual */
-.cylinders-visual {
-  position: relative;
-  height: 60px; /* Generous premium height */
+/* Cylinders Graphic Visual Container */
+.cylinders-graphic-container {
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-  width: 100%;
-}
-
-/* Cylinder SVG */
-.cylinder-svg {
-  width: 28px;
-  height: 56px;
+  position: relative;
   overflow: visible;
+}
+
+/* Flat Piston SVG Styling */
+.flat-piston-svg {
+  width: 5px;
+  height: 14px;
+  color: rgb(var(--v-theme-primary));
   transition: all 0.3s ease;
+  overflow: visible;
 }
 
-/* Animations */
-.cylinder-svg .piston-group {
-  animation: piston-stroke 1.2s infinite ease-in-out;
-}
-.cylinder-svg .rod-group {
-  animation: rod-sway 1.2s infinite ease-in-out;
-  transform-origin: 20px 14px;
-}
-.cylinder-svg .crank-group {
-  animation: crank-spin 1.2s infinite linear;
-  transform-origin: 20px 62px;
-}
-
-/* Hover Speed-up (Revving!) */
-.spec-card:hover .cylinder-svg .piston-group {
-  animation-duration: 0.5s;
-}
-.spec-card:hover .cylinder-svg .rod-group {
-  animation-duration: 0.5s;
-}
-.spec-card:hover .cylinder-svg .crank-group {
-  animation-duration: 0.5s;
-}
-
-@keyframes piston-stroke {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(22px); /* High fidelity stroke depth */
-  }
-}
-
-@keyframes rod-sway {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  25% {
-    transform: translateY(11px) rotate(14deg); /* Swings with crankshaft rotation */
-  }
-  50% {
-    transform: translateY(22px) rotate(0deg);
-  }
-  75% {
-    transform: translateY(11px) rotate(-14deg);
-  }
-}
-
-@keyframes crank-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Inline Engine Styling */
-.inline-engine {
+/* Flat Inline Engine layout */
+.flat-inline-engine {
   display: flex;
-  gap: 3px;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 2px;
+  position: relative;
+  width: 24px;
+  height: 24px;
 }
 
-/* V Engine Styling */
-.v-engine {
+.flat-inline-engine .pistons-row {
+  display: flex;
+  gap: 1.5px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.flat-inline-engine .crankshaft-line {
+  width: 100%;
+  height: 1px;
+  background: rgb(var(--v-theme-primary));
+  margin-top: -3px;
+  border-radius: 0.5px;
+  opacity: 0.8;
+  z-index: 1;
+}
+
+/* Flat V Engine layout */
+.flat-v-engine {
   position: relative;
-  width: 110px;
-  height: 60px;
+  width: 24px;
+  height: 24px;
   display: flex;
   justify-content: center;
   align-items: flex-end;
 }
 
-.v-engine .bank {
+.flat-v-engine .v-bank {
   position: absolute;
-  bottom: 6px;
+  bottom: 2px;
   display: flex;
   gap: 1px;
   transform-origin: bottom center;
+  z-index: 2;
 }
 
-.v-engine .bank.left-bank {
-  transform: rotate(-30deg) translateX(-12px);
+.flat-v-engine .v-bank.left-bank {
+  transform: rotate(-30deg) translateX(-4px);
   left: 2px;
 }
 
-.v-engine .bank.right-bank {
-  transform: rotate(30deg) translateX(12px);
+.flat-v-engine .v-bank.right-bank {
+  transform: rotate(30deg) translateX(4px);
   right: 2px;
 }
 
-.v-engine .cylinder-svg {
-  width: 18px; /* Slightly scaled for compact V configuration */
-  height: 36px;
+.flat-v-engine .v-bank .flat-piston-svg {
+  width: 4px;
+  height: 11px;
 }
 
-/* Shared central crankcase for V Engine */
-.v-engine .crankcase {
+.flat-v-engine .v-crankcase {
   position: absolute;
-  bottom: -4px;
-  width: 14px;
-  height: 14px;
-  background: #191c26;
-  border: 1.5px solid rgb(var(--v-theme-primary));
+  bottom: -2px;
+  width: 6px;
+  height: 6px;
+  background: #1e2230;
+  border: 1px solid rgb(var(--v-theme-primary));
   border-radius: 50%;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 6px rgba(var(--v-theme-primary), 0.4);
+  box-shadow: 0 0 3px rgba(var(--v-theme-primary), 0.3);
 }
 
-.v-engine .crankshaft-spinner {
-  width: 5px;
-  height: 5px;
+.flat-v-engine .v-hub {
+  width: 2px;
+  height: 2px;
   background: rgb(var(--v-theme-primary));
   border-radius: 50%;
-  animation: spin 1.2s infinite linear;
 }
 
-.spec-card:hover .v-engine .crankshaft-spinner {
-  animation-duration: 0.5s;
-}
-
-/* Electric / EV Styling */
-.ev-engine {
-  position: relative;
-  width: 40px;
-  height: 50px;
+/* Flat EV Engine layout */
+.flat-ev-engine {
+  color: rgb(var(--v-theme-primary));
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 24px;
+  height: 24px;
 }
 
-.ev-engine .battery-body {
-  position: relative;
-  width: 22px;
-  height: 38px;
-  border: 2px solid rgba(var(--v-theme-primary), 0.4);
-  border-radius: 6px;
-  padding: 2px;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
-  background-color: rgba(var(--v-theme-primary), 0.05);
-  box-shadow: 0 0 10px rgba(var(--v-theme-primary), 0.1);
-  transition: all 0.3s ease;
+.flat-ev-engine .ev-icon {
+  width: 20px;
+  height: 20px;
 }
 
-.ev-engine .battery-body::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 8px;
-  height: 3px;
-  background: rgba(var(--v-theme-primary), 0.4);
-  border-radius: 1px;
-  transition: all 0.3s ease;
+/* spec-card hover effects to glow up the whole visual! */
+.spec-card:hover .flat-piston-svg,
+.spec-card:hover .flat-ev-engine .ev-icon {
+  filter: drop-shadow(0 0 4px rgb(var(--v-theme-primary)));
 }
 
-.ev-engine .battery-bar {
-  width: 100%;
-  height: 8px;
-  background: rgba(var(--v-theme-primary), 0.15);
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-.ev-engine .battery-bar:nth-child(1) {
-  animation: charge-bar 1.5s infinite 0s;
-}
-.ev-engine .battery-bar:nth-child(2) {
-  animation: charge-bar 1.5s infinite 0.3s;
-}
-.ev-engine .battery-bar:nth-child(3) {
-  animation: charge-bar 1.5s infinite 0.6s;
-}
-
-@keyframes charge-bar {
-  0%, 100% {
-    background: rgba(var(--v-theme-primary), 0.15);
-  }
-  50% {
-    background: rgb(var(--v-theme-primary));
-    box-shadow: 0 0 6px rgb(var(--v-theme-primary));
-  }
-}
-
-.spec-card:hover .ev-engine .battery-body {
-  border-color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.4);
-}
-.spec-card:hover .ev-engine .battery-body::before {
-  background: rgb(var(--v-theme-primary));
-}
-.spec-card:hover .ev-engine .battery-bar:nth-child(1),
-.spec-card:hover .ev-engine .battery-bar:nth-child(2),
-.spec-card:hover .ev-engine .battery-bar:nth-child(3) {
-  animation-duration: 0.6s;
+.spec-card:hover .flat-inline-engine .crankshaft-line,
+.spec-card:hover .flat-v-engine .v-crankcase {
+  box-shadow: 0 0 4px rgb(var(--v-theme-primary));
 }
 
 /* Custom Rearing Horse styling */
