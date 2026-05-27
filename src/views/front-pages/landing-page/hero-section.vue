@@ -391,11 +391,12 @@ onBeforeUnmount(() => {
 
               <!-- Brand & Model -->
               <div class="form-group">
-                <VSelect
+                <VAutocomplete
                   v-model="filters.brandId"
                   :items="brandsList"
                   item-title="name"
                   item-value="id"
+                  maxlength="30"
                   label="Select Brand"
                   density="compact"
                   variant="outlined"
