@@ -139,6 +139,7 @@ const draft = ref({
   transmission: null,
   fuelType: null,
   drivetrain: null,
+  isImport: null,
   featureIds: [],
 })
 
@@ -195,6 +196,7 @@ const syncDraftFromQuery = () => {
     transmission: q['filter[transmission]'] ? String(firstQueryVal(q['filter[transmission]'])) : null,
     fuelType: q['filter[fuel_type]'] ? String(firstQueryVal(q['filter[fuel_type]'])) : null,
     drivetrain: q['filter[drivetrain]'] ? String(firstQueryVal(q['filter[drivetrain]'])) : null,
+    isImport: q['filter[is_import]'] !== undefined && q['filter[is_import]'] !== null ? String(firstQueryVal(q['filter[is_import]'])) : null,
     featureIds: q['filter[feature_ids]'] ? String(firstQueryVal(q['filter[feature_ids]'])).split(',').map(Number).filter(Boolean) : [],
   }
 }
@@ -217,6 +219,7 @@ const buildParams = (p = 1) => {
   if (d.transmission) params['filter[transmission]'] = d.transmission
   if (d.fuelType) params['filter[fuel_type]'] = d.fuelType
   if (d.drivetrain) params['filter[drivetrain]'] = d.drivetrain
+  if (d.isImport !== null && d.isImport !== '') params['filter[is_import]'] = d.isImport
   if (d.featureIds?.length) params['filter[feature_ids]'] = d.featureIds.join(',')
   
   putBetween(params, 'year_between', d.yearFrom, d.yearTo)
@@ -312,6 +315,7 @@ const applyFilters = () => {
   if (d.transmission) query['filter[transmission]'] = d.transmission; else delete query['filter[transmission]']
   if (d.fuelType) query['filter[fuel_type]'] = d.fuelType; else delete query['filter[fuel_type]']
   if (d.drivetrain) query['filter[drivetrain]'] = d.drivetrain; else delete query['filter[drivetrain]']
+  if (d.isImport !== null && d.isImport !== '') query['filter[is_import]'] = d.isImport; else delete query['filter[is_import]']
   if (d.featureIds?.length) query['filter[feature_ids]'] = d.featureIds.join(','); else delete query['filter[feature_ids]']
 
   putBetween(query, 'year_between', d.yearFrom, d.yearTo)
@@ -339,6 +343,7 @@ const resetAll = () => {
     transmission: null,
     fuelType: null,
     drivetrain: null,
+    isImport: null,
     featureIds: [],
   }
   router.push({ path: '/user/cars', query: {} })
@@ -778,6 +783,31 @@ onMounted(async () => {
                     />
                   </div>
                 </div>
+
+                <!-- Card 8: Vehicle Source -->
+                <div class="filter-card">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-world" class="filter-icon" />
+                    <span class="filter-title">Source</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <VSelect
+                      v-model="draft.isImport"
+                      :items="[
+                        { title: 'Local (وكيل / محلي)', value: '0' },
+                        { title: 'Imported (وارد الخارج)', value: '1' }
+                      ]"
+                      item-value="value"
+                      item-title="title"
+                      label="Source"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input-field"
+                    />
+                  </div>
+                </div>
               </div>
 
               <!-- Centered Search Button Row -->
@@ -1028,6 +1058,25 @@ onMounted(async () => {
                       item-value="value"
                       item-title="title"
                       label="Drivetrain"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                    />
+                  </div>
+
+                  <!-- Source -->
+                  <div class="mb-4">
+                    <VSelect
+                      v-model="draft.isImport"
+                      :items="[
+                        { title: 'Local (وكيل / محلي)', value: '0' },
+                        { title: 'Imported (وارد الخارج)', value: '1' }
+                      ]"
+                      item-value="value"
+                      item-title="title"
+                      label="Source"
                       clearable
                       variant="outlined"
                       density="comfortable"
