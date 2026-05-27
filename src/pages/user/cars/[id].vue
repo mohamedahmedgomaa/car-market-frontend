@@ -295,9 +295,9 @@ const fetchSuggestedCars = async () => {
 
   try {
     const currentPrice = Number(car.value.price)
-    // 20% range
-    const minPrice = Math.max(0, Math.round(currentPrice * 0.8))
-    const maxPrice = Math.round(currentPrice * 1.2)
+    // 10% range (more precise for "similar price" cars)
+    const minPrice = Math.max(0, Math.round(currentPrice * 0.9))
+    const maxPrice = Math.round(currentPrice * 1.1)
 
     const res = await carsUserApi.getAll({
       'filter[price_between]': `${minPrice}.${maxPrice}`,
