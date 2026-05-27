@@ -835,78 +835,10 @@ watch(
 
             <!-- Cylinders -->
             <div class="spec-card d-flex flex-column align-center justify-center">
-              <!-- Engine Cylinders Dynamic Graphical Visual -->
+              <!-- Engine Cylinders Graphic Visual -->
               <div class="cylinders-graphic-container mb-2">
-                <!-- Inline Layout (e.g. I4, I3) -->
-                <div v-if="parsedCylinders.layout === 'inline'" class="flat-inline-engine">
-                  <div class="pistons-row">
-                    <svg
-                      v-for="i in Math.min(parsedCylinders.count, 6)"
-                      :key="i"
-                      class="flat-piston-svg"
-                      viewBox="0 0 12 28"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect x="1" y="2" width="10" height="18" rx="1" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.3" />
-                      <g :style="{ transform: i % 2 === 0 ? 'translateY(4px)' : 'translateY(0px)' }">
-                        <rect x="2" y="4" width="8" height="5" rx="0.75" fill="currentColor" />
-                        <line x1="6" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        <circle cx="6" cy="20" r="1.5" fill="currentColor" />
-                      </g>
-                    </svg>
-                  </div>
-                  <div class="crankshaft-line"></div>
-                </div>
-
-                <!-- V Layout (e.g. V6, V8, V10, V12) -->
-                <div v-else-if="parsedCylinders.layout === 'v'" class="flat-v-engine">
-                  <!-- Left Bank -->
-                  <div class="v-bank left-bank">
-                    <svg
-                      v-for="i in Math.min(Math.ceil(parsedCylinders.count / 2), 4)"
-                      :key="'l' + i"
-                      class="flat-piston-svg"
-                      viewBox="0 0 12 28"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect x="1" y="2" width="10" height="18" rx="1" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.3" />
-                      <g :style="{ transform: i % 2 === 0 ? 'translateY(4px)' : 'translateY(0px)' }">
-                        <rect x="2" y="4" width="8" height="5" rx="0.75" fill="currentColor" />
-                        <line x1="6" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        <circle cx="6" cy="20" r="1.5" fill="currentColor" />
-                      </g>
-                    </svg>
-                  </div>
-
-                  <!-- Central Crankcase -->
-                  <div class="v-crankcase">
-                    <div class="v-hub"></div>
-                  </div>
-
-                  <!-- Right Bank -->
-                  <div class="v-bank right-bank">
-                    <svg
-                      v-for="i in Math.min(Math.floor(parsedCylinders.count / 2), 4)"
-                      :key="'r' + i"
-                      class="flat-piston-svg"
-                      viewBox="0 0 12 28"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect x="1" y="2" width="10" height="18" rx="1" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.3" />
-                      <g :style="{ transform: i % 2 === 0 ? 'translateY(0px)' : 'translateY(4px)' }">
-                        <rect x="2" y="4" width="8" height="5" rx="0.75" fill="currentColor" />
-                        <line x1="6" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        <circle cx="6" cy="20" r="1.5" fill="currentColor" />
-                      </g>
-                    </svg>
-                  </div>
-                </div>
-
                 <!-- Electric / EV Layout -->
-                <div v-else-if="parsedCylinders.layout === 'electric'" class="flat-ev-engine">
+                <div v-if="parsedCylinders.layout === 'electric'" class="flat-ev-engine">
                   <svg
                     class="ev-icon"
                     viewBox="0 0 24 24"
@@ -921,8 +853,54 @@ watch(
                   </svg>
                 </div>
 
-                <!-- Fallback -->
-                <VIcon v-else icon="tabler-engine" color="primary" size="24" />
+                <!-- Professional 2-Cylinder V-Twin Layout (Combustion Engines) -->
+                <div v-else class="flat-v2-engine">
+                  <svg
+                    class="v2-engine-svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <mask id="piston-mask">
+                        <!-- Keep everything in the piston area -->
+                        <rect x="-4" y="-18" width="8" height="8" fill="white" />
+                        <!-- Cut out the wrist pin hole -->
+                        <circle cx="0" cy="-11.8" r="0.8" fill="black" />
+                        <!-- Cut out the piston ring grooves -->
+                        <rect x="-4" y="-14.6" width="8" height="0.6" fill="black" />
+                        <rect x="-4" y="-13.3" width="8" height="0.6" fill="black" />
+                      </mask>
+                    </defs>
+
+                    <!-- Left Bank (Rotated -35 deg) -->
+                    <g transform="translate(12, 19) rotate(-35)">
+                      <!-- Cylinder Liner (Dashed Outline) -->
+                      <rect x="-4.5" y="-18" width="9" height="13" rx="1.5" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.35" fill="none" />
+                      <!-- Connecting Rod -->
+                      <line x1="0" y1="0" x2="0" y2="-11.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                      <!-- Piston Head (Masked to show grooves & pin hole) -->
+                      <rect x="-3.5" y="-16" width="7" height="5.5" rx="0.5" fill="currentColor" mask="url(#piston-mask)" />
+                    </g>
+
+                    <!-- Right Bank (Rotated 35 deg) -->
+                    <g transform="translate(12, 19) rotate(35)">
+                      <!-- Cylinder Liner (Dashed Outline) -->
+                      <rect x="-4.5" y="-18" width="9" height="13" rx="1.5" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.35" fill="none" />
+                      <!-- Connecting Rod -->
+                      <line x1="0" y1="0" x2="0" y2="-11.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                      <!-- Piston Head (Masked to show grooves & pin hole) -->
+                      <rect x="-3.5" y="-16" width="7" height="5.5" rx="0.5" fill="currentColor" mask="url(#piston-mask)" />
+                    </g>
+
+                    <!-- Crankshaft Counterweight pointing straight down -->
+                    <path d="M 8.5 19 A 3.5 3.5 0 0 0 15.5 19 Z" fill="currentColor" />
+                    <!-- Crankcase outer border -->
+                    <circle cx="12" cy="19" r="3.5" stroke="currentColor" stroke-width="1.5" fill="none" />
+                    <!-- Inner crankshaft hub -->
+                    <circle cx="12" cy="19" r="1.2" fill="currentColor" />
+                  </svg>
+                </div>
               </div>
 
               <span class="label">Cylinders</span>
@@ -1608,97 +1586,23 @@ watch(
   overflow: visible;
 }
 
-/* Flat Piston SVG Styling */
-.flat-piston-svg {
-  width: 5px;
-  height: 14px;
+/* Flat V2 Engine Layout */
+.flat-v2-engine {
   color: rgb(var(--v-theme-primary));
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   overflow: visible;
 }
 
-/* Flat Inline Engine layout */
-.flat-inline-engine {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+.v2-engine-svg {
   width: 24px;
   height: 24px;
-}
-
-.flat-inline-engine .pistons-row {
-  display: flex;
-  gap: 1.5px;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.flat-inline-engine .crankshaft-line {
-  width: 100%;
-  height: 1px;
-  background: rgb(var(--v-theme-primary));
-  margin-top: -3px;
-  border-radius: 0.5px;
-  opacity: 0.8;
-  z-index: 1;
-}
-
-/* Flat V Engine layout */
-.flat-v-engine {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-
-.flat-v-engine .v-bank {
-  position: absolute;
-  bottom: 2px;
-  display: flex;
-  gap: 1px;
-  transform-origin: bottom center;
-  z-index: 2;
-}
-
-.flat-v-engine .v-bank.left-bank {
-  transform: rotate(-30deg) translateX(-4px);
-  left: 2px;
-}
-
-.flat-v-engine .v-bank.right-bank {
-  transform: rotate(30deg) translateX(4px);
-  right: 2px;
-}
-
-.flat-v-engine .v-bank .flat-piston-svg {
-  width: 4px;
-  height: 11px;
-}
-
-.flat-v-engine .v-crankcase {
-  position: absolute;
-  bottom: -2px;
-  width: 6px;
-  height: 6px;
-  background: #1e2230;
-  border: 1px solid rgb(var(--v-theme-primary));
-  border-radius: 50%;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 3px rgba(var(--v-theme-primary), 0.3);
-}
-
-.flat-v-engine .v-hub {
-  width: 2px;
-  height: 2px;
-  background: rgb(var(--v-theme-primary));
-  border-radius: 50%;
+  color: currentColor;
+  transition: all 0.3s ease;
+  overflow: visible;
 }
 
 /* Flat EV Engine layout */
@@ -1717,14 +1621,9 @@ watch(
 }
 
 /* spec-card hover effects to glow up the whole visual! */
-.spec-card:hover .flat-piston-svg,
+.spec-card:hover .v2-engine-svg,
 .spec-card:hover .flat-ev-engine .ev-icon {
   filter: drop-shadow(0 0 4px rgb(var(--v-theme-primary)));
-}
-
-.spec-card:hover .flat-inline-engine .crankshaft-line,
-.spec-card:hover .flat-v-engine .v-crankcase {
-  box-shadow: 0 0 4px rgb(var(--v-theme-primary));
 }
 
 /* Custom Rearing Horse styling */
