@@ -1580,6 +1580,18 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-refresh"
               />
             </VCol>
+
+            <VCol cols="12" md="3">
+              <VSelect
+                v-model="form.is_import"
+                :items="[
+                  { title: 'Local (وكيل)', value: false },
+                  { title: 'Imported (استيراد الخارج)', value: true }
+                ]"
+                label="Source"
+                prepend-inner-icon="tabler-world"
+              />
+            </VCol>
           </VRow>
         </section>
 

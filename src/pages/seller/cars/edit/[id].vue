@@ -41,6 +41,7 @@ const form = ref({
   drivetrain: '',
   color: '#000000',
   condition: 'used',
+  is_import: false,
 
   cylinders: null,
   engine_capacity: null,
@@ -931,6 +932,7 @@ const loadCar = async () => {
   form.value.fuel_type = car.fuel_type ?? ''
   form.value.drivetrain = car.drivetrain ?? ''
   form.value.condition = car.condition ?? 'used'
+  form.value.is_import = !!car.is_import
   form.value.cylinders = car.cylinders ?? null
   form.value.engine_capacity = car.engine_capacity ?? null
 
@@ -1373,6 +1375,17 @@ const handleSubmit = async () => {
                 v-model="form.condition"
                 :items="['new','used']"
                 label="Condition"
+              />
+            </VCol>
+
+            <VCol cols="12" md="3">
+              <VSelect
+                v-model="form.is_import"
+                :items="[
+                  { title: 'Local (وكيل)', value: false },
+                  { title: 'Imported (استيراد الخارج)', value: true }
+                ]"
+                label="Source"
               />
             </VCol>
           </VRow>

@@ -811,6 +811,13 @@ watch(
                 <span>{{ car.color || '—' }}</span>
               </div>
             </div>
+
+            <!-- Source -->
+            <div class="spec-card">
+              <VIcon icon="tabler-world" class="mb-2" color="primary" />
+              <span class="label">Source</span>
+              <span class="val">{{ car.is_import ? 'Imported' : 'Local' }}</span>
+            </div>
           </div>
 
           <!-- Description -->

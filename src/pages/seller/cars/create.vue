@@ -36,6 +36,7 @@ const form = ref({
   drivetrain: '',
   color: '',
   condition: 'used',
+  is_import: false,
   cylinders: null,
   engine_capacity: null,
 
@@ -1172,6 +1173,17 @@ const handleSubmit = async () => {
                 v-model="form.condition"
                 :items="['new','used']"
                 label="Condition"
+              />
+            </VCol>
+
+            <VCol cols="12" md="3">
+              <VSelect
+                v-model="form.is_import"
+                :items="[
+                  { title: 'Local (وكيل)', value: false },
+                  { title: 'Imported (استيراد الخارج)', value: true }
+                ]"
+                label="Source"
               />
             </VCol>
           </VRow>
