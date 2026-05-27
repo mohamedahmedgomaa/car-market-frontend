@@ -406,6 +406,13 @@ watch(() => draft.value.brandId, async (val) => {
   } catch { draftModels.value = [] }
 }, { immediate: true })
 
+const customBrandFilter = (value, queryText, item) => {
+  const nameEn = String(item.raw?.name?.en || item.raw?.name || '').toLowerCase()
+  const nameAr = String(item.raw?.name?.ar || '').toLowerCase()
+  const q = String(queryText).toLowerCase()
+  return nameEn.includes(q) || nameAr.includes(q)
+}
+
 const filteredBrands = computed(() => {
   const type = draft.value.type || 'car'
   const items = brands.value || []
@@ -515,10 +522,13 @@ onMounted(async () => {
 
             <!-- 3. Brand Select -->
             <div class="search-col search-col-brand">
-              <VSelect
+              <VAutocomplete
                 v-model="draft.brandId"
                 :items="filteredBrands"
                 item-value="id"
+                :item-title="b => t(b.name)"
+                :custom-filter="customBrandFilter"
+                maxlength="30"
                 label="Brand"
                 variant="outlined"
                 density="comfortable"
@@ -532,7 +542,7 @@ onMounted(async () => {
                 <template #selection="{ item }">
                   {{ t(item.raw.name) }}
                 </template>
-              </VSelect>
+              </VAutocomplete>
             </div>
 
             <!-- 4. Model Select -->
@@ -914,15 +924,19 @@ onMounted(async () => {
 
               <!-- Brand & Model -->
               <div class="mb-3">
-                <VSelect
+                <VAutocomplete
                   v-model="draft.brandId"
                   :items="filteredBrands"
                   item-value="id"
+                  :item-title="b => t(b.name)"
+                  :custom-filter="customBrandFilter"
+                  maxlength="30"
                   label="Brand"
                   variant="outlined"
                   density="comfortable"
                   hide-details
                   class="premium-input mb-3"
+                  @update:model-value="draft.modelId = null"
                 >
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="t(item.raw.name)" />
@@ -930,7 +944,7 @@ onMounted(async () => {
                   <template #selection="{ item }">
                     {{ t(item.raw.name) }}
                   </template>
-                </VSelect>
+                </VAutocomplete>
 
                 <VSelect
                   v-model="draft.modelId"
