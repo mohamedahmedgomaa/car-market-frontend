@@ -739,7 +739,7 @@ watch(
           <div class="specs-grid mb-8">
             <!-- Condition -->
             <div class="spec-card">
-              <VIcon icon="tabler-award" class="mb-2" color="primary" />
+              <VIcon icon="tabler-shield-check" class="mb-2" color="primary" />
               <span class="label">Condition</span>
               <span class="val">{{ car.condition === 'new' ? 'New' : 'Used' }}</span>
             </div>
