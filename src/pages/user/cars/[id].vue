@@ -438,8 +438,45 @@ const closeCallDialog = () => {
 
 // ✅ Features Show More / Less Limit (8 * 3 = 24 items)
 const showAllFeatures = ref(false)
-const displayedFeatures = computed(() => {
+
+const HIGHLIGHT_KEYWORDS = [
+  'استيراد الخارج', 'imported', 'وارد الخارج',
+  'ذوي الهمم', 'people of determination', 'معاقين',
+  'حوادث', 'accident history', 'حادث', 'accident',
+  'تاكسي', 'taxi', 'أجرة', 'اجره',
+  'كسر زيرو', 'like new', 'mint', 'زيرو',
+  'فابريكا بالكامل', 'original paint', 'فابريكا', 'فبريكا',
+  'قابلة للبدل', 'exchangeable', 'بدل', 'exchange',
+  'تكملة أقساط', 'tkmlet aqsat', 'تكملة اقساط', 'أقساط', 'اقساط',
+  'تجاري', 'commercial', 'فان', 'اتوبيس', 'أتوبيس',
+  'في الضمان', 'under warranty', 'ضمان', 'الضمان', 'warranty',
+  'صيانات توكيل', 'dealer maintained', 'صيانة توكيل', 'توكيل',
+  'إطارات جديدة', 'new tires', 'كاوتش جديد', 'اطارات جديدة',
+  'تيل فرامل جديد', 'new brake pads', 'تيل جديد',
+  'صيانة حديثة', 'recent service', 'سيرفيس كامل',
+  'أول مالك', 'first owner', 'اول مالك',
+  'رخصة باسم البائع', 'license in seller', 'رخصة باسمي', 'رخصه باسم البائع',
+  'فيلم حماية', 'protection film', 'ppf', 'فيلم حمايه', 'حماية',
+  'نانو سيراميك', 'nano ceramic', 'نانو'
+]
+
+const carHighlights = computed(() => {
   const all = car.value?.features || []
+  return all.filter(f => {
+    const en = (f.name?.en || f.name || '').toLowerCase()
+    const ar = (f.name?.ar || f.name || '').toLowerCase()
+    return HIGHLIGHT_KEYWORDS.some(k => en.includes(k) || ar.includes(k) || k.includes(en) || k.includes(ar))
+  })
+})
+
+const carStandardFeatures = computed(() => {
+  const all = car.value?.features || []
+  const highlightIds = carHighlights.value.map(h => h.id)
+  return all.filter(f => !highlightIds.includes(f.id))
+})
+
+const displayedFeatures = computed(() => {
+  const all = carStandardFeatures.value
   if (showAllFeatures.value) return all
   return all.slice(0, 24)
 })
@@ -829,11 +866,27 @@ watch(
             <p class="text-body-1 opacity-80 leading-relaxed">{{ t(car.description) }}</p>
           </VCard>
 
+          <!-- Highlights (خصائص إضافية) -->
+          <div class="highlights-section mb-8" v-if="carHighlights.length">
+            <h3 class="text-h5 font-weight-bold mb-4 d-flex align-center gap-2">
+              <VIcon icon="tabler-square-check" color="primary" />
+              خصائص إضافية / Additional Specs
+            </h3>
+            <div class="highlights-detail-grid">
+              <div v-for="h in carHighlights" :key="h.id" class="highlight-detail-item">
+                <div class="detail-checkmark">
+                  <VIcon icon="tabler-check" size="14" color="white" />
+                </div>
+                <span class="detail-label">{{ t(h.name) }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Features -->
-          <div class="features-section mb-8" v-if="car.features?.length">
+          <div class="features-section mb-8" v-if="carStandardFeatures.length">
             <h3 class="text-h5 font-weight-bold mb-4 d-flex align-center gap-2">
               <VIcon icon="tabler-list-check" color="primary" />
-              Features & Equipment
+              Features & Equipment / تجهيزات السيارة
             </h3>
             <div class="features-grid">
               <div v-for="f in displayedFeatures" :key="f.id" class="feature-item">
@@ -843,7 +896,7 @@ watch(
             </div>
 
             <!-- Show More / Less button -->
-            <div v-if="car.features.length > 24" class="text-center mt-6">
+            <div v-if="carStandardFeatures.length > 24" class="text-center mt-6">
               <VBtn
                 variant="tonal"
                 color="primary"
@@ -856,7 +909,7 @@ watch(
                   class="me-2"
                 />
                 <span>{{
-                  showAllFeatures ? 'Show Less' : 'Show More (+' + (car.features.length - 24) + ')'
+                  showAllFeatures ? 'Show Less' : 'Show More (+' + (carStandardFeatures.length - 24) + ')'
                 }}</span>
               </VBtn>
             </div>
@@ -1814,5 +1867,50 @@ watch(
   height: 100%;
   background-size: cover;
   background-position: center;
+}
+
+/* Highlights styling */
+.highlights-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  background: rgba(var(--v-theme-primary), 0.03);
+  border: 1px solid rgba(var(--v-theme-primary), 0.08);
+  border-radius: 16px;
+}
+
+.highlight-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(var(--v-theme-surface), 0.4);
+  border: 1px solid rgba(128, 128, 128, 0.12);
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+
+.highlight-detail-item:hover {
+  border-color: rgba(var(--v-theme-primary), 0.3);
+  background: rgba(var(--v-theme-primary), 0.02);
+  transform: translateY(-1px);
+}
+
+.detail-checkmark {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background-color: rgb(var(--v-theme-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(var(--v-theme-primary), 0.3);
+}
+
+.detail-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 </style>
