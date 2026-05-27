@@ -90,21 +90,24 @@ const normalizeCars = (data) => {
 // Options
 // -------------------------
 const transmissionOptions = [
-  { title: 'Automatic', value: 'automatic', icon: '⚙️' },
-  { title: 'Manual', value: 'manual', icon: '🕹️' },
+  { title: 'Automatic', value: 'automatic' },
+  { title: 'Manual', value: 'manual' },
 ]
 
 const fuelOptions = [
-  { title: 'Petrol', value: 'petrol', icon: '⛽' },
-  { title: 'Diesel', value: 'diesel', icon: '🛢️' },
-  { title: 'Hybrid', value: 'hybrid', icon: '🔋' },
-  { title: 'Electric', value: 'electric', icon: '⚡' },
+  { title: 'Petrol', value: 'petrol' },
+  { title: 'Diesel', value: 'diesel' },
+  { title: 'Hybrid', value: 'hybrid' },
+  { title: 'Mild Hybrid (MHEV)', value: 'mild_hybrid' },
+  { title: 'REEV', value: 'reev' },
+  { title: 'Electric (EV)', value: 'electric' },
 ]
 
 const drivetrainOptions = [
   { title: 'FWD', value: 'fwd' },
   { title: 'RWD', value: 'rwd' },
   { title: 'AWD', value: 'awd' },
+  { title: '4x4', value: '4wd' },
 ]
 
 // -------------------------
@@ -119,6 +122,7 @@ const page = ref(1)
 const brands = ref([])
 const draftModels = ref([])
 const features = ref([])
+const isAdvancedOpen = ref(false)
 
 const draft = ref({
   q: '',
@@ -290,11 +294,16 @@ const onMileageInput = (val, key) => {
 }
 
 const applyFilters = () => {
+  const idValue = draft.value.q?.trim()
+  if (idValue && /^\d+$/.test(idValue)) {
+    router.push(`/user/cars/${idValue}`)
+    return
+  }
+
   const query = { ...route.query }
   delete query.page // Reset to first page on filter change
 
   const d = draft.value
-  // ... rest same ...
   if (d.q) query['filter[global]'] = d.q; else delete query['filter[global]']
   if (d.type) query['filter[type]'] = d.type; else delete query['filter[type]']
   if (d.condition) query['filter[condition]'] = d.condition; else delete query['filter[condition]']
@@ -338,6 +347,12 @@ const resetAll = () => {
 const isMobileFilterOpen = ref(false)
 
 const handleApplyMobile = () => {
+  const idValue = draft.value.q?.trim()
+  if (idValue && /^\d+$/.test(idValue)) {
+    router.push(`/user/cars/${idValue}`)
+    isMobileFilterOpen.value = false
+    return
+  }
   applyFilters()
   isMobileFilterOpen.value = false
 }
@@ -452,9 +467,340 @@ onMounted(async () => {
 <template>
   <section class="cars-page">
     <VContainer>
+      <!-- Premium Horizontal Search Deck (Desktop only) -->
+      <div class="d-none d-md-block mb-8">
+        <div class="premium-horizontal-search">
+          <!-- Main Search Row -->
+          <div class="search-main-row">
+            <!-- 1. Global Search -->
+            <div class="search-col search-col-query">
+              <VTextField
+                v-model="draft.q"
+                placeholder="Search by ID..."
+                prepend-inner-icon="tabler-search"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input-field"
+                @keyup.enter="applyFilters"
+              />
+            </div>
+
+            <!-- 2. Type Toggle (العربية ولا بايك) -->
+            <div class="search-col search-col-type">
+              <div class="horizontal-toggle">
+                <button
+                  type="button"
+                  class="horizontal-toggle-btn"
+                  :class="{ active: draft.type === 'car' }"
+                  @click="draft.type = 'car'; applyFilters();"
+                >
+                  Cars
+                </button>
+                <button
+                  type="button"
+                  class="horizontal-toggle-btn"
+                  :class="{ active: draft.type === 'motorcycle' }"
+                  @click="draft.type = 'motorcycle'; applyFilters();"
+                >
+                  Bikes
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. Brand Select -->
+            <div class="search-col search-col-brand">
+              <VSelect
+                v-model="draft.brandId"
+                :items="filteredBrands"
+                item-value="id"
+                label="Brand"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input-field"
+                @update:model-value="applyFilters"
+              >
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props" :title="t(item.raw.name)" />
+                </template>
+                <template #selection="{ item }">
+                  {{ t(item.raw.name) }}
+                </template>
+              </VSelect>
+            </div>
+
+            <!-- 4. Model Select -->
+            <div class="search-col search-col-model">
+              <VSelect
+                v-model="draft.modelId"
+                :items="draftModels"
+                item-value="id"
+                :disabled="!draft.brandId"
+                label="Model"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input-field"
+                @update:model-value="applyFilters"
+              >
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props" :title="t(item.raw.name)" />
+                </template>
+                <template #selection="{ item }">
+                  {{ t(item.raw.name) }}
+                </template>
+              </VSelect>
+            </div>
+
+            <!-- Action Buttons (Reset and Advanced Filter) -->
+            <div class="search-col search-col-actions">
+              <VBtn
+                variant="tonal"
+                height="44"
+                color="secondary"
+                class="horizontal-reset-btn px-4"
+                title="Reset All"
+                @click="resetAll"
+              >
+                <VIcon icon="tabler-refresh" />
+              </VBtn>
+
+              <VBtn
+                variant="tonal"
+                height="44"
+                color="secondary"
+                class="horizontal-advanced-btn px-4"
+                :class="{ active: isAdvancedOpen }"
+                @click="isAdvancedOpen = !isAdvancedOpen"
+              >
+                <VIcon :icon="isAdvancedOpen ? 'tabler-chevron-up' : 'tabler-adjustments-horizontal'" />
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Advanced Collapsible Section -->
+          <VExpandTransition>
+            <div v-show="isAdvancedOpen" class="search-advanced-panel">
+              <div class="advanced-panel-grid">
+                <!-- Card 1: Condition -->
+                <div class="filter-card">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-car" class="filter-icon" />
+                    <span class="filter-title">Condition</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <div class="premium-toggle premium-toggle--three">
+                      <button
+                        type="button"
+                        class="premium-toggle__btn"
+                        :class="{ active: draft.condition === '' }"
+                        @click="draft.condition = ''"
+                      >
+                        All
+                      </button>
+                      <button
+                        type="button"
+                        class="premium-toggle__btn"
+                        :class="{ active: draft.condition === 'used' }"
+                        @click="draft.condition = 'used'"
+                      >
+                        Used
+                      </button>
+                      <button
+                        type="button"
+                        class="premium-toggle__btn"
+                        :class="{ active: draft.condition === 'new' }"
+                        @click="draft.condition = 'new'"
+                      >
+                        New
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Price Range -->
+                <div class="filter-card">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-currency-dollar" class="filter-icon" />
+                    <span class="filter-title">Price Range (EG)</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <div class="d-flex gap-2">
+                      <VTextField
+                        v-model="displayDraftPriceFrom"
+                        placeholder="Min"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details
+                        class="premium-input-field"
+                        @keypress="isNumberKey"
+                        maxlength="11"
+                      />
+                      <VTextField
+                        v-model="displayDraftPriceTo"
+                        placeholder="Max"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details
+                        class="premium-input-field"
+                        @keypress="isNumberKey"
+                        maxlength="11"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Year Range -->
+                <div class="filter-card">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-calendar" class="filter-icon" />
+                    <span class="filter-title">Year</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <div class="d-flex gap-2">
+                      <VSelect
+                        v-model="draft.yearFrom"
+                        :items="Array.from({ length: 26 }, (_, i) => 2025 - i)"
+                        label="From"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details
+                        class="premium-input-field"
+                      />
+                      <VSelect
+                        v-model="draft.yearTo"
+                        :items="Array.from({ length: 26 }, (_, i) => 2025 - i).filter(y => !draft.yearFrom || y >= draft.yearFrom)"
+                        label="To"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details
+                        class="premium-input-field"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 4: Mileage -->
+                <div class="filter-card">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-road" class="filter-icon" />
+                    <span class="filter-title">Mileage (km)</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <div class="d-flex gap-2">
+                      <VTextField
+                        v-model="displayDraftMileageFrom"
+                        placeholder="Min"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details
+                        class="premium-input-field"
+                        maxlength="7"
+                        @keypress="isNumberKey"
+                      />
+                      <VTextField
+                        v-model="displayDraftMileageTo"
+                        placeholder="Max"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details
+                        class="premium-input-field"
+                        maxlength="7"
+                        @keypress="isNumberKey"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 5: Transmission -->
+                <div class="filter-card">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-settings" class="filter-icon" />
+                    <span class="filter-title">Transmission</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <VSelect
+                      v-model="draft.transmission"
+                      :items="transmissionOptions"
+                      item-value="value"
+                      item-title="title"
+                      label="Transmission"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input-field"
+                    />
+                  </div>
+                </div>
+
+                <!-- Card 6: Fuel Type -->
+                <div class="filter-card">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-gas-station" class="filter-icon" />
+                    <span class="filter-title">Fuel Type</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <VSelect
+                      v-model="draft.fuelType"
+                      :items="fuelOptions"
+                      item-value="value"
+                      item-title="title"
+                      label="Fuel Type"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input-field"
+                    />
+                  </div>
+                </div>
+
+                <!-- Card 7: Drivetrain -->
+                <div class="filter-card" v-if="draft.type === 'car'">
+                  <div class="filter-card-header">
+                    <VIcon icon="tabler-propeller" class="filter-icon" />
+                    <span class="filter-title">Drivetrain</span>
+                  </div>
+                  <div class="filter-card-body">
+                    <VSelect
+                      v-model="draft.drivetrain"
+                      :items="drivetrainOptions"
+                      item-value="value"
+                      item-title="title"
+                      label="Drivetrain"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input-field"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Centered Search Button Row -->
+              <div class="d-flex justify-center mt-6 pt-4" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                <VBtn
+                  color="primary"
+                  height="46"
+                  min-width="240"
+                  class="horizontal-search-btn px-8"
+                  prepend-icon="tabler-sparkles"
+                  @click="applyFilters"
+                >
+                  Search Vehicles
+                </VBtn>
+              </div>
+            </div>
+          </VExpandTransition>
+        </div>
+      </div>
+
       <VRow>
-        <!-- Sidebar Filters -->
-        <VCol cols="12" md="4" lg="3" class="position-relative">
+        <!-- Mobile Sidebar Filters (Drawer on Mobile, hidden on Desktop) -->
+        <VCol cols="12" class="d-md-none position-relative">
           <!-- Backdrop for Mobile Drawer -->
           <div
             v-if="isMobileFilterOpen"
@@ -471,267 +817,254 @@ onMounted(async () => {
 
             <!-- Scrollable Content on Mobile -->
             <div class="filter-scroll-content">
+              <!-- Global Text Search on Mobile -->
+              <div class="mb-4">
+                <VTextField
+                  v-model="draft.q"
+                  placeholder="Search by ID..."
+                  prepend-inner-icon="tabler-search"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  class="premium-input"
+                  @keyup.enter="handleApplyMobile"
+                />
+              </div>
+
               <!-- Type Toggle -->
-            <div class="mb-4">
-              <div class="premium-toggle">
-                <button
-                  type="button"
-                  class="premium-toggle__btn"
-                  :class="{ active: draft.type === 'car' }"
-                  @click="draft.type = 'car'"
-                >
-                  Cars
-                </button>
-                <button
-                  type="button"
-                  class="premium-toggle__btn"
-                  :class="{ active: draft.type === 'motorcycle' }"
-                  @click="draft.type = 'motorcycle'"
-                >
-                  Bikes
-                </button>
-              </div>
-            </div>
-
-            <!-- Condition Toggle -->
-            <div class="mb-3">
-              <div class="premium-toggle premium-toggle--three">
-                <button
-                  type="button"
-                  class="premium-toggle__btn"
-                  :class="{ active: draft.condition === '' }"
-                  @click="draft.condition = ''"
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  class="premium-toggle__btn"
-                  :class="{ active: draft.condition === 'used' }"
-                  @click="draft.condition = 'used'"
-                >
-                  Used
-                </button>
-                <button
-                  type="button"
-                  class="premium-toggle__btn"
-                  :class="{ active: draft.condition === 'new' }"
-                  @click="draft.condition = 'new'"
-                >
-                  New
-                </button>
-              </div>
-            </div>
-
-            <!-- Brand & Model -->
-            <div class="mb-3">
-              <VSelect
-                v-model="draft.brandId"
-                :items="filteredBrands"
-                item-value="id"
-                label="Brand"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                class="premium-input mb-3"
-              >
-                <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="t(item.raw.name)" />
-                </template>
-                <template #selection="{ item }">
-                  {{ t(item.raw.name) }}
-                </template>
-              </VSelect>
-
-              <VSelect
-                v-model="draft.modelId"
-                :items="draftModels"
-                item-value="id"
-                :disabled="!draft.brandId"
-                label="Model"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                class="premium-input"
-              >
-                <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="t(item.raw.name)" />
-                </template>
-                <template #selection="{ item }">
-                  {{ t(item.raw.name) }}
-                </template>
-              </VSelect>
-            </div>
-
-            <!-- Price -->
-            <div class="mb-4">
-              <div class="input-label-mini">Price (EG)</div>
-              <VRow dense>
-                <VCol cols="6">
-                  <VTextField
-                    v-model="displayDraftPriceFrom"
-                    placeholder="Min"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    class="premium-input"
-                    @keypress="isNumberKey"
-                    maxlength="11"
-                  />
-                </VCol>
-                <VCol cols="6">
-                  <VTextField
-                    v-model="displayDraftPriceTo"
-                    placeholder="Max"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    class="premium-input"
-                    @keypress="isNumberKey"
-                    maxlength="11"
-                  />
-                </VCol>
-              </VRow>
-            </div>
-
-            <!-- Year -->
-            <div class="mb-4">
-              <div class="input-label-mini">Year</div>
-              <VRow dense>
-                <VCol cols="6">
-                  <VSelect
-                    v-model="draft.yearFrom"
-                    :items="Array.from({ length: 26 }, (_, i) => 2025 - i)"
-                    label="From"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    class="premium-input"
-                  />
-                </VCol>
-                <VCol cols="6">
-                  <VSelect
-                    v-model="draft.yearTo"
-                    :items="Array.from({ length: 26 }, (_, i) => 2025 - i).filter(y => !draft.yearFrom || y >= draft.yearFrom)"
-                    label="To"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    class="premium-input"
-                  />
-                </VCol>
-              </VRow>
-            </div>
-
-            <!-- Advanced Filters -->
-            <div class="advanced-filters-section mt-6">
-              <div class="input-label-mini mb-2">Technical Details</div>
-              
-              <div class="technical-details-section">
-                <!-- Transmission -->
-                <div class="mb-4">
-                  <div class="input-label-mini">Transmission</div>
-                  <div class="transmission-grid">
-                    <button
-                      v-for="opt in transmissionOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="transmission-btn"
-                      :class="{ active: draft.transmission === opt.value }"
-                      @click="draft.transmission = draft.transmission === opt.value ? null : opt.value"
-                    >
-                      <span class="trans-icon">{{ opt.icon }}</span>
-                      <span class="trans-title">{{ opt.title }}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Fuel Type -->
-                <div class="mb-4">
-                  <div class="input-label-mini">Fuel Type</div>
-                  <div class="fuel-type-grid">
-                    <button
-                      v-for="opt in fuelOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="fuel-type-btn"
-                      :class="{ active: draft.fuelType === opt.value }"
-                      @click="draft.fuelType = draft.fuelType === opt.value ? null : opt.value"
-                    >
-                      <span class="fuel-icon">{{ opt.icon }}</span>
-                      <span class="fuel-title">{{ opt.title }}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Drivetrain -->
-                <div class="mb-4" v-if="draft.type === 'car'">
-                  <div class="input-label-mini">Drivetrain</div>
-                  <div class="drivetrain-grid">
-                    <button
-                      v-for="opt in drivetrainOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="drivetrain-btn"
-                      :class="{ active: draft.drivetrain === opt.value }"
-                      @click="draft.drivetrain = draft.drivetrain === opt.value ? null : opt.value"
-                    >
-                      <span class="drive-title">{{ opt.title }}</span>
-                    </button>
-                  </div>
+              <div class="mb-4">
+                <div class="premium-toggle">
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: draft.type === 'car' }"
+                    @click="draft.type = 'car'"
+                  >
+                    Cars
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: draft.type === 'motorcycle' }"
+                    @click="draft.type = 'motorcycle'"
+                  >
+                    Bikes
+                  </button>
                 </div>
               </div>
 
-              <div class="input-label-mini mb-1">Mileage (km)</div>
-              <VRow dense class="mb-3">
-                <VCol cols="6">
-                  <VTextField
-                    v-model="displayDraftMileageFrom"
-                    placeholder="Min"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    class="premium-input"
-                    maxlength="7"
-                    @keypress="isNumberKey"
-                  />
-                </VCol>
-                <VCol cols="6">
-                  <VTextField
-                    v-model="displayDraftMileageTo"
-                    placeholder="Max"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    class="premium-input"
-                    maxlength="7"
-                    @keypress="isNumberKey"
-                  />
-                </VCol>
-              </VRow>
+              <!-- Condition Toggle -->
+              <div class="mb-3">
+                <div class="premium-toggle premium-toggle--three">
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: draft.condition === '' }"
+                    @click="draft.condition = ''"
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: draft.condition === 'used' }"
+                    @click="draft.condition = 'used'"
+                  >
+                    Used
+                  </button>
+                  <button
+                    type="button"
+                    class="premium-toggle__btn"
+                    :class="{ active: draft.condition === 'new' }"
+                    @click="draft.condition = 'new'"
+                  >
+                    New
+                  </button>
+                </div>
+              </div>
 
-              <VSelect
-                v-model="draft.featureIds"
-                :items="filteredFeatures"
-                item-value="id"
-                label="Features"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                multiple
-                chips
-                clearable
-                class="premium-input mb-4"
-              >
-                <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="t(item.raw.name)" />
-                </template>
-                <template #selection="{ item }">
-                  <VChip size="x-small">{{ t(item.raw.name) }}</VChip>
-                </template>
-              </VSelect>
-            </div>
-            
+              <!-- Brand & Model -->
+              <div class="mb-3">
+                <VSelect
+                  v-model="draft.brandId"
+                  :items="filteredBrands"
+                  item-value="id"
+                  label="Brand"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  class="premium-input mb-3"
+                >
+                  <template #item="{ props, item }">
+                    <VListItem v-bind="props" :title="t(item.raw.name)" />
+                  </template>
+                  <template #selection="{ item }">
+                    {{ t(item.raw.name) }}
+                  </template>
+                </VSelect>
+
+                <VSelect
+                  v-model="draft.modelId"
+                  :items="draftModels"
+                  item-value="id"
+                  :disabled="!draft.brandId"
+                  label="Model"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  class="premium-input"
+                >
+                  <template #item="{ props, item }">
+                    <VListItem v-bind="props" :title="t(item.raw.name)" />
+                  </template>
+                  <template #selection="{ item }">
+                    {{ t(item.raw.name) }}
+                  </template>
+                </VSelect>
+              </div>
+
+              <!-- Price -->
+              <div class="mb-4">
+                <div class="input-label-mini">Price (EG)</div>
+                <VRow dense>
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="displayDraftPriceFrom"
+                      placeholder="Min"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                      @keypress="isNumberKey"
+                      maxlength="11"
+                    />
+                  </VCol>
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="displayDraftPriceTo"
+                      placeholder="Max"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                      @keypress="isNumberKey"
+                      maxlength="11"
+                    />
+                  </VCol>
+                </VRow>
+              </div>
+
+              <!-- Year -->
+              <div class="mb-4">
+                <div class="input-label-mini">Year</div>
+                <VRow dense>
+                  <VCol cols="6">
+                    <VSelect
+                      v-model="draft.yearFrom"
+                      :items="Array.from({ length: 26 }, (_, i) => 2025 - i)"
+                      label="From"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                    />
+                  </VCol>
+                  <VCol cols="6">
+                    <VSelect
+                      v-model="draft.yearTo"
+                      :items="Array.from({ length: 26 }, (_, i) => 2025 - i).filter(y => !draft.yearFrom || y >= draft.yearFrom)"
+                      label="To"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                    />
+                  </VCol>
+                </VRow>
+              </div>
+
+              <!-- Advanced Filters -->
+              <div class="advanced-filters-section mt-6">
+                <div class="input-label-mini mb-2">Technical Details</div>
+                
+                <div class="technical-details-section">
+                  <!-- Transmission -->
+                  <div class="mb-4">
+                    <VSelect
+                      v-model="draft.transmission"
+                      :items="transmissionOptions"
+                      item-value="value"
+                      item-title="title"
+                      label="Transmission"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                    />
+                  </div>
+
+                  <!-- Fuel Type -->
+                  <div class="mb-4">
+                    <VSelect
+                      v-model="draft.fuelType"
+                      :items="fuelOptions"
+                      item-value="value"
+                      item-title="title"
+                      label="Fuel Type"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                    />
+                  </div>
+
+                  <!-- Drivetrain -->
+                  <div class="mb-4" v-if="draft.type === 'car'">
+                    <VSelect
+                      v-model="draft.drivetrain"
+                      :items="drivetrainOptions"
+                      item-value="value"
+                      item-title="title"
+                      label="Drivetrain"
+                      clearable
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                    />
+                  </div>
+                </div>
+
+                <div class="input-label-mini mb-1">Mileage (km)</div>
+                <VRow dense class="mb-3">
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="displayDraftMileageFrom"
+                      placeholder="Min"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                      maxlength="7"
+                      @keypress="isNumberKey"
+                    />
+                  </VCol>
+                  <VCol cols="6">
+                    <VTextField
+                      v-model="displayDraftMileageTo"
+                      placeholder="Max"
+                      variant="outlined"
+                      density="comfortable"
+                      hide-details
+                      class="premium-input"
+                      maxlength="7"
+                      @keypress="isNumberKey"
+                    />
+                  </VCol>
+                </VRow>
+              </div>
             </div> <!-- Close filter-scroll-content -->
 
             <div class="filter-actions">
@@ -747,7 +1080,7 @@ onMounted(async () => {
         </VCol>
 
         <!-- Results -->
-        <VCol cols="12" md="8" lg="9">
+        <VCol cols="12">
           <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05)">
             <div class="d-flex align-center justify-space-between mb-8">
               <div>
@@ -820,11 +1153,313 @@ onMounted(async () => {
 <style scoped>
 .cars-page { padding: 40px 0; min-height: 100vh; }
 
+/* Premium Horizontal Search Deck Styles */
+.premium-horizontal-search {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 20px 24px;
+  margin-bottom: 30px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.premium-horizontal-search:hover {
+  border-color: rgba(var(--v-theme-primary), 0.15);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+}
+
+.search-main-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.search-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-col-query {
+  flex: 2;
+}
+
+.search-col-brand,
+.search-col-model {
+  flex: 1.2;
+}
+
+.search-col-type {
+  flex: 1.2;
+  max-width: 200px;
+}
+
+.search-col-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Integrated Outlined Cohesion for all Vuetify 3 inputs */
+.premium-input-field :deep(.v-field) {
+  border-radius: 12px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 44px !important;
+  display: flex;
+  align-items: center;
+}
+
+.premium-input-field :deep(.v-field__outline) {
+  --v-field-border-opacity: 1 !important;
+  color: rgba(255, 255, 255, 0.08) !important;
+  transition: color 0.3s ease;
+}
+
+.premium-input-field :deep(.v-field:hover .v-field__outline) {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.premium-input-field :deep(.v-field--focused .v-field__outline) {
+  color: rgba(var(--v-theme-primary), 1) !important;
+}
+
+.premium-input-field :deep(.v-field__input) {
+  min-height: 44px !important;
+  height: 44px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  align-items: center;
+  color: #fff !important;
+  font-size: 14px;
+}
+
+.premium-input-field :deep(.v-label) {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 14px;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.premium-input-field :deep(.v-field--active .v-label) {
+  top: 0 !important;
+  transform: translateY(-60%) scale(0.75) !important;
+}
+
+.premium-input-field :deep(.v-field__append-inner),
+.premium-input-field :deep(.v-field__prepend-inner) {
+  align-items: center;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  height: 44px !important;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Type Toggle Bar */
+.horizontal-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 2px;
+  gap: 2px;
+  height: 44px;
+  width: 100%;
+}
+
+.horizontal-toggle-btn {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+}
+
+.horizontal-toggle-btn.active {
+  opacity: 1;
+  background: rgba(var(--v-theme-primary), 1);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
+}
+
+/* Premium Outlined Cohesive Action Buttons */
+.horizontal-search-btn {
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.horizontal-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.5) !important;
+}
+
+.horizontal-advanced-btn,
+.horizontal-reset-btn {
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.horizontal-advanced-btn:hover,
+.horizontal-advanced-btn.active,
+.horizontal-reset-btn:hover {
+  background: rgba(var(--v-theme-primary), 0.1) !important;
+  border-color: rgba(var(--v-theme-primary), 0.5) !important;
+  color: rgba(var(--v-theme-primary), 1) !important;
+}
+
+.horizontal-advanced-btn.active {
+  background: rgba(var(--v-theme-primary), 0.15) !important;
+}
+
+/* Collapsible Advanced Panel Styles */
+.search-advanced-panel {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.advanced-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Beautiful Rounded Filter Cards (مربعات مخصصة لكل فلتر) */
+.filter-card {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 18px;
+  padding: 18px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.filter-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(var(--v-theme-primary), 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.filter-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filter-card-header .filter-icon {
+  color: rgba(var(--v-theme-primary), 0.9);
+  font-size: 16px;
+}
+
+.filter-card-header .filter-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.filter-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Dynamic Column Spanning */
+.fuel-type-card {
+  grid-column: span 2;
+}
+
+/* High Performance Symmetrical Button Grids inside Cards */
+.transmission-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px;
+}
+
+.fuel-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) !important; /* Perfect 3 columns layout */
+  gap: 8px;
+}
+
+.drivetrain-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px;
+}
+
+.fuel-type-btn, .transmission-btn, .drivetrain-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  height: 42px;
+}
+
+.fuel-type-btn:hover, .transmission-btn:hover, .drivetrain-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.fuel-type-btn.active, .transmission-btn.active, .drivetrain-btn.active {
+  background: rgba(var(--v-theme-primary), 0.15);
+  border-color: rgba(var(--v-theme-primary), 1);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.25);
+  font-weight: 700;
+}
+
+.fuel-icon, .trans-icon {
+  font-size: 14px;
+}
+
+.trans-title, .fuel-title, .drive-title {
+  white-space: nowrap;
+}
+
+/* Mobile Sidebar Drawer styling fallback */
 .premium-search-box {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
-  padding: 16px; /* Reduced from 24px */
+  padding: 16px;
   position: sticky;
   top: 100px;
   max-height: calc(100vh - 120px);
@@ -878,7 +1513,7 @@ onMounted(async () => {
   border-radius: 12px;
   padding: 3px;
   gap: 3px;
-  height: 42px; /* Reduced from 50px */
+  height: 42px;
 }
 
 .premium-toggle__btn {
@@ -947,19 +1582,19 @@ onMounted(async () => {
     right: 0 !important;
     top: auto !important;
     z-index: 1001 !important;
-    height: 80vh !important; /* Fixed height for flex layout to work correctly */
+    height: 80vh !important;
     max-height: 80vh !important;
     border-radius: 32px 32px 0 0 !important;
-    background: #0f1620 !important; /* Premium dark background */
+    background: #0f1620 !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-bottom: none !important;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
     transform: translateY(110%);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    padding: 24px 20px 0 20px !important; /* Bottom padding is managed by the flex footer */
+    padding: 24px 20px 0 20px !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow-y: hidden !important; /* The scroll-content handles scrolling */
+    overflow-y: hidden;
   }
 
   .premium-search-box.is-open {
@@ -987,7 +1622,7 @@ onMounted(async () => {
     background: #0f1620 !important;
     padding: 16px 0 24px 0 !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    margin: 0 -20px !important; /* Extend borders full width */
+    margin: 0 -20px !important;
     padding-left: 20px !important;
     padding-right: 20px !important;
     z-index: 10;
@@ -1014,54 +1649,6 @@ onMounted(async () => {
 
 .mobile-floating-btn:active {
   transform: scale(0.95);
-}
-
-/* Fuel Type, Transmission, Drivetrain Custom Grids */
-.transmission-grid, .fuel-type-grid, .drivetrain-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.fuel-type-btn, .transmission-btn, .drivetrain-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-}
-
-.fuel-type-btn:hover, .transmission-btn:hover, .drivetrain-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-.fuel-type-btn:active, .transmission-btn:active, .drivetrain-btn:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.fuel-type-btn.active, .transmission-btn.active, .drivetrain-btn.active {
-  background: rgba(var(--v-theme-primary), 0.15);
-  border-color: rgba(var(--v-theme-primary), 1);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.2);
-  font-weight: 700;
-}
-
-.fuel-icon, .trans-icon {
-  font-size: 15px;
 }
 
 .trans-title, .fuel-title, .drive-title {
