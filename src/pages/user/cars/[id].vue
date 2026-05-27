@@ -866,18 +866,16 @@ watch(
             <p class="text-body-1 opacity-80 leading-relaxed">{{ t(car.description) }}</p>
           </VCard>
 
-          <!-- Highlights (خصائص إضافية) -->
-          <div class="highlights-section mb-8" v-if="carHighlights.length">
+          <!-- Equipment (Additional Specs) -->
+          <div class="features-section mb-8" v-if="carHighlights.length">
             <h3 class="text-h5 font-weight-bold mb-4 d-flex align-center gap-2">
               <VIcon icon="tabler-square-check" color="primary" />
-              خصائص إضافية / Additional Specs
+              Additional Specs (Equipment)
             </h3>
-            <div class="highlights-detail-grid">
-              <div v-for="h in carHighlights" :key="h.id" class="highlight-detail-item">
-                <div class="detail-checkmark">
-                  <VIcon icon="tabler-check" size="14" color="white" />
-                </div>
-                <span class="detail-label">{{ t(h.name) }}</span>
+            <div class="features-grid">
+              <div v-for="h in carHighlights" :key="h.id" class="feature-item highlight-item-premium">
+                <VIcon icon="tabler-circle-check-filled" size="18" class="me-2 text-primary" />
+                {{ t(h.name) }}
               </div>
             </div>
           </div>
@@ -886,7 +884,7 @@ watch(
           <div class="features-section mb-8" v-if="carStandardFeatures.length">
             <h3 class="text-h5 font-weight-bold mb-4 d-flex align-center gap-2">
               <VIcon icon="tabler-list-check" color="primary" />
-              Features & Equipment / تجهيزات السيارة
+              Features
             </h3>
             <div class="features-grid">
               <div v-for="f in displayedFeatures" :key="f.id" class="feature-item">
@@ -1869,48 +1867,18 @@ watch(
   background-position: center;
 }
 
-/* Highlights styling */
-.highlights-detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 16px;
-  padding: 20px;
-  background: rgba(var(--v-theme-primary), 0.03);
-  border: 1px solid rgba(var(--v-theme-primary), 0.08);
-  border-radius: 16px;
+/* Premium Highlight Item styles for Equipment */
+.highlight-item-premium {
+  border: 1.5px solid rgba(var(--v-theme-primary), 0.25) !important;
+  background: rgba(var(--v-theme-primary), 0.04) !important;
+  font-weight: 700 !important;
+  color: rgba(var(--v-theme-on-surface), 0.95) !important;
+  transition: all 0.2s ease-in-out;
 }
 
-.highlight-detail-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(var(--v-theme-surface), 0.4);
-  border: 1px solid rgba(128, 128, 128, 0.12);
-  border-radius: 12px;
-  transition: all 0.25s ease;
-}
-
-.highlight-detail-item:hover {
-  border-color: rgba(var(--v-theme-primary), 0.3);
-  background: rgba(var(--v-theme-primary), 0.02);
+.highlight-item-premium:hover {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background: rgba(var(--v-theme-primary), 0.08) !important;
   transform: translateY(-1px);
-}
-
-.detail-checkmark {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  background-color: rgb(var(--v-theme-primary));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(var(--v-theme-primary), 0.3);
-}
-
-.detail-label {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 </style>

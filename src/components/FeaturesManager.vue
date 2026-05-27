@@ -323,11 +323,11 @@ const getFeatureName = (f) => {
   <div class="features-manager-card">
     <VCard variant="outlined" class="pa-4 rounded-lg border-opacity-25 bg-surface">
       
-      <!-- ================= Section 1: الخصائص الإضافية (Highlights / Additional Specs) ================= -->
+      <!-- ================= Section 1: Additional Specs (Equipment) ================= -->
       <div class="mb-6">
         <div class="d-flex align-center gap-2 mb-3">
           <VIcon icon="tabler-square-check" color="primary" size="20" />
-          <span class="text-subtitle-1 font-weight-bold">خصائص إضافية / Additional Specs</span>
+          <span class="text-subtitle-1 font-weight-bold">Additional Specs (Equipment)</span>
         </div>
         
         <div class="highlights-checkbox-grid">
@@ -349,23 +349,23 @@ const getFeatureName = (f) => {
 
       <VDivider class="my-4" opacity="0.1" />
 
-      <!-- ================= Section 2: تجهيزات وميزات السيارة (Standard Features & Equipment) ================= -->
+      <!-- ================= Section 2: Standard Features & Equipment ================= -->
       <div>
         <!-- Header -->
         <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-3">
           <div class="d-flex align-center gap-2">
             <VIcon icon="tabler-list-check" color="primary" size="18" />
-            <span class="text-caption font-weight-bold">تجهيزات وميزات السيارة / Standard Features</span>
+            <span class="text-caption font-weight-bold">Standard Features</span>
           </div>
           <div class="d-flex align-center gap-2 flex-wrap">
             <VBtn variant="text" size="x-small" color="primary" @click="selectAll">
-              Select All / اختيار الكل
+              Select All
             </VBtn>
             <VBtn variant="text" size="x-small" color="secondary" @click="deselectAll">
-              Clear / مسح التحديد
+              Clear
             </VBtn>
             <VBtn variant="flat" size="x-small" color="primary" prepend-inner-icon="tabler-plus" @click="bulkDialog = true">
-              Bulk Paste / إضافة جماعية
+              Bulk Paste
             </VBtn>
           </div>
         </div>
@@ -376,7 +376,7 @@ const getFeatureName = (f) => {
             <VTextField
               v-model="filterQuery"
               density="compact"
-              :placeholder="isCollapsed ? 'Click arrow on right to show list / اضغط على السهم باليمين لعرض القائمة' : 'Search existing options... / ابحث في الخيارات الحالية...'"
+              :placeholder="isCollapsed ? 'Click arrow on right to show list' : 'Search existing options...'"
               prepend-inner-icon="tabler-search"
               variant="outlined"
               hide-details
@@ -390,7 +390,7 @@ const getFeatureName = (f) => {
               icon
               size="x-small"
               @click="isCollapsed = !isCollapsed"
-              :title="isCollapsed ? 'Expand / إظهار الخيارات' : 'Collapse / إخفاء الخيارات'"
+              :title="isCollapsed ? 'Expand' : 'Collapse'"
               :class="{ 'animate-pulse': isCollapsed }"
             >
               <VIcon :icon="isCollapsed ? 'tabler-chevron-down' : 'tabler-chevron-up'" size="16" />
@@ -402,7 +402,7 @@ const getFeatureName = (f) => {
                 Selected: <VChip color="primary" size="x-small" class="px-2">{{ selectedIds.filter(id => !highlightIds.includes(id)).length }}</VChip> of {{ standardFeaturesList.length }} options
               </div>
               <div v-if="isCollapsed" class="text-caption text-warning font-weight-bold animate-pulse-text">
-                (اضغط السهم لعرض الإضافات ↗)
+                (Click arrow to expand list ↗)
               </div>
             </div>
           </VCol>
@@ -438,7 +438,7 @@ const getFeatureName = (f) => {
         <div class="quick-paste-row mt-3 pa-3 rounded bg-surface-variant-opacity border">
           <div class="text-caption font-weight-bold mb-1 d-flex align-center gap-2">
             <VIcon icon="tabler-tags" size="16" color="primary" />
-            <span>YouTube Tag Style Paste / كتابة أو لصق سريع للخيارات</span>
+            <span>YouTube Tag Style Paste</span>
           </div>
           <p class="text-caption text-muted mb-2">
             Paste options separated by commas (e.g. <code>Sunroof, Leather Seats, Bluetooth</code>) or write your own. If they exist, they will be selected automatically.
@@ -458,7 +458,7 @@ const getFeatureName = (f) => {
             </VCol>
             <VCol cols="12" sm="2">
               <VBtn block color="primary" height="38" size="small" @click="handleBulkPaste">
-                Add / إضافة
+                Add
               </VBtn>
             </VCol>
           </VRow>
@@ -470,7 +470,7 @@ const getFeatureName = (f) => {
             <div class="d-flex align-center gap-2">
               <VIcon icon="tabler-alert-triangle" color="warning" size="18" />
               <span class="text-caption font-weight-bold warning-text">
-                New Options Found ({{ missingFeatures.length }}) / خيارات جديدة غير مسجلة
+                New Options Found ({{ missingFeatures.length }})
               </span>
             </div>
             <VBtn
@@ -479,7 +479,7 @@ const getFeatureName = (f) => {
               :loading="isCreatingFeatures"
               @click="createAllMissingFeatures"
             >
-              Create All & Select / إضافة الكل وتحديدهم
+              Create All & Select
             </VBtn>
           </div>
 
@@ -493,7 +493,7 @@ const getFeatureName = (f) => {
                 <span class="font-weight-bold text-caption text-primary">Tag: "{{ item.name }}"</span>
                 <div class="d-flex align-center gap-1">
                   <VBtn size="x-small" color="primary" variant="tonal" @click="createMissingFeature(idx)">
-                    Create & Select / حفظ
+                    Create & Select
                   </VBtn>
                   <VBtn size="x-small" icon="tabler-x" variant="text" color="error" @click="removeMissing(idx)" />
                 </div>
@@ -503,7 +503,7 @@ const getFeatureName = (f) => {
                 <VCol cols="12">
                   <VTextField
                     v-model="item.name"
-                    label="Feature Name / اسم الإضافة"
+                    label="Feature Name"
                     density="compact"
                     variant="outlined"
                     hide-details
@@ -529,7 +529,7 @@ const getFeatureName = (f) => {
       <VCard class="pa-5 rounded-xl">
         <h3 class="text-subtitle-1 font-weight-bold mb-2 d-flex align-center gap-2">
           <VIcon icon="tabler-clipboard-text" color="primary" />
-          Bulk Paste Features / إضافة جماعية للخيارات
+          Bulk Paste Features
         </h3>
         <p class="text-caption text-muted mb-3">
           Paste a raw block of text (from Excel, another website, or specifications). We will automatically scan and parse all comma, newline, tab, or semicolon separated words into individual tags.
@@ -544,9 +544,9 @@ const getFeatureName = (f) => {
         />
 
         <div class="d-flex justify-end gap-3">
-          <VBtn variant="outlined" color="secondary" size="small" @click="bulkDialog = false">Cancel / إلغاء</VBtn>
+          <VBtn variant="outlined" color="secondary" size="small" @click="bulkDialog = false">Cancel</VBtn>
           <VBtn color="primary" size="small" @click="() => { handleBulkPaste(); bulkDialog = false; }">
-            Analyze & Import / تحليل واستيراد
+            Analyze & Import
           </VBtn>
         </div>
       </VCard>
