@@ -718,18 +718,24 @@ watch(
             <div class="d-flex justify-space-between align-center flex-wrap gap-4">
               <div>
                 <h1 class="text-h3 font-weight-bold mb-2">{{ t(car.title) }}</h1>
-                <div class="text-h6 opacity-70">
-                  {{ t(car.brand?.name) }} <span class="mx-2">•</span> {{ t(car.model?.name) }}
-                  <span class="mx-2">•</span> {{ car.year }}
+                <div class="text-h6 opacity-70 d-inline-flex align-center flex-wrap gap-1">
+                  <span>{{ t(car.brand?.name) }}</span>
+                  <span class="mx-2">•</span>
+                  <span>{{ t(car.model?.name) }}</span>
+                  <span class="mx-2">•</span>
+                  <span>{{ car.year }}</span>
+                  <template v-if="car.city?.name">
+                    <span class="mx-2">•</span>
+                    <span class="d-inline-flex align-center gap-1">
+                      <VIcon icon="tabler-map-pin" size="16" color="primary" class="mt-n0_5" />
+                      <span>{{ t(car.city?.name) }}</span>
+                    </span>
+                  </template>
                 </div>
               </div>
               <div class="text-right">
                 <div class="text-h3 font-weight-black text-primary mb-1">
                   {{ formatPrice(car.price) }} EG
-                </div>
-                <div class="d-flex align-center justify-end gap-2 opacity-60">
-                  <VIcon icon="tabler-map-pin" size="16" />
-                  <span>{{ t(car.city?.name) }}</span>
                 </div>
               </div>
             </div>
