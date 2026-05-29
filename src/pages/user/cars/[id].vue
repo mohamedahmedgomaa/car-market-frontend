@@ -751,8 +751,47 @@ watch(
             </div>
 
             <!-- Mileage -->
-            <div class="spec-card">
-              <VIcon icon="tabler-gauge" class="mb-2" color="primary" />
+            <div class="spec-card d-flex flex-column align-center justify-center">
+              <svg
+                class="mileage-road-svg mb-2"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!-- Left solid lane boundary -->
+                <path
+                  d="M5 20L10 4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <!-- Right solid lane boundary -->
+                <path
+                  d="M19 20L14 4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <!-- Center dashed lane divider with perspective spacing -->
+                <path
+                  d="M12 20V15"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M12 12V9"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M12 6V5"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
               <span class="label">Mileage</span>
               <span class="val">
                 {{
@@ -1636,6 +1675,18 @@ watch(
 }
 
 .spec-card:hover .horse-svg {
+  filter: drop-shadow(0 0 6px rgb(var(--v-theme-primary)));
+}
+
+/* Custom Mileage Road styling */
+.mileage-road-svg {
+  width: 24px;
+  height: 24px;
+  color: rgb(var(--v-theme-primary));
+  transition: all 0.3s ease;
+}
+
+.spec-card:hover .mileage-road-svg {
   filter: drop-shadow(0 0 6px rgb(var(--v-theme-primary)));
 }
 
