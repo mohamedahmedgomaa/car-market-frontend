@@ -1,24 +1,26 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import sellerUserApi from '@/api/user/sellerUserApi.js'
+import cityUserApi from '@/api/user/cityUserApi.js'
 
 definePage({ meta: { layout: 'front', public: true } })
 
 const loading = ref(true)
 const error = ref('')
 const sellers = ref([])
-const searchQuery = ref('')
+const cities = ref([])
 
-// Arabic-English semantic translation mapping for intelligent search & filtering
-const cityTranslations = {
-  'mansoura': ['mansoura', 'المنصورة'],
-  'cairo': ['cairo', 'القاهرة'],
-  'alexandria': ['alexandria', 'الإسماعيلية', 'الاسماعيلية', 'الإسكندرية', 'الاسكندرية'],
-  'giza': ['giza', 'الجيزة'],
-  'tanta': ['tanta', 'طنطا'],
-  'kafr el sheikh': ['kafr el sheikh', 'كفر الشيخ'],
-  'port said': ['port said', 'بورسعيد'],
-  'ismailia': ['ismailia', 'الإسماعيلية', 'الاسماعيلية']
+// Filters state
+const filters = ref({
+  storeName: '',
+  cityId: null,
+  neighborhood: ''
+})
+
+const resetFilters = () => {
+  filters.value.storeName = ''
+  filters.value.cityId = null
+  filters.value.neighborhood = ''
 }
 
 const t = (val) => {
@@ -31,7 +33,6 @@ const fetchSellers = async () => {
   loading.value = true
   error.value = ''
   try {
-    // Fetch all active showrooms without the incorrect 'status' filter
     const res = await sellerUserApi.getAll({ perPage: 100 })
     const payload = res.data?.data ?? res.data ?? []
     sellers.value = Array.isArray(payload) ? payload : payload.data ?? []
@@ -43,55 +44,53 @@ const fetchSellers = async () => {
   }
 }
 
+const fetchCities = async () => {
+  try {
+    const res = await cityUserApi.getAll({ perPage: 100 })
+    const payload = res.data?.data ?? res.data ?? []
+    cities.value = Array.isArray(payload) ? payload : payload.data ?? []
+  } catch (err) {
+    console.error('Failed to fetch cities:', err)
+  }
+}
+
 const filteredSellers = computed(() => {
   let result = sellers.value
 
-  // Smart Intelligent Semantic Search Filter (Matches Name, Address, City, Neighborhood, Bio in EN & AR)
-  if (searchQuery.value.trim()) {
-    const tokens = searchQuery.value.toLowerCase().trim().split(/\s+/).filter(Boolean)
+  // 1. Showroom Name Filter
+  if (filters.value.storeName.trim()) {
+    const q = filters.value.storeName.toLowerCase().trim()
+    result = result.filter(s => {
+      const nameEn = (s.store_name?.en || s.name || '').toLowerCase()
+      const nameAr = (s.store_name?.ar || '').toLowerCase()
+      const nameStr = (typeof s.store_name === 'string' ? s.store_name : '').toLowerCase()
+      return nameEn.includes(q) || nameAr.includes(q) || nameStr.includes(q)
+    })
+  }
 
-    if (tokens.length > 0) {
-      result = result.filter(s => {
-        // Collect all searchable strings for this showroom
-        const nameEn = (s.store_name?.en || s.name || '').toLowerCase()
-        const nameAr = (s.store_name?.ar || '').toLowerCase()
-        const descEn = (s.store_description?.en || s.bio || '').toLowerCase()
-        const descAr = (s.store_description?.ar || '').toLowerCase()
-        const cityEn = (s.city?.name?.en || '').toLowerCase()
-        const cityAr = (s.city?.name?.ar || '').toLowerCase()
-        
-        // Handle address translatable or plain string
-        const addressEn = (s.address?.en || '').toLowerCase()
-        const addressAr = (s.address?.ar || '').toLowerCase()
-        const addressStr = (typeof s.address === 'string' ? s.address : '').toLowerCase()
-        const nameStr = (typeof s.store_name === 'string' ? s.store_name : '').toLowerCase()
-        const descStr = (typeof s.store_description === 'string' ? s.store_description : '').toLowerCase()
+  // 2. Governorate Filter (cityId)
+  if (filters.value.cityId) {
+    result = result.filter(s => s.city_id === filters.value.cityId || s.city?.id === filters.value.cityId)
+  }
 
-        const searchableFields = [
-          nameEn, nameAr, nameStr,
-          descEn, descAr, descStr,
-          cityEn, cityAr,
-          addressEn, addressAr, addressStr,
-          s.phone || ''
-        ]
+  // 3. City/Neighborhood Filter
+  if (filters.value.neighborhood.trim()) {
+    const q = filters.value.neighborhood.toLowerCase().trim()
+    result = result.filter(s => {
+      const addressEn = (s.address?.en || '').toLowerCase()
+      const addressAr = (s.address?.ar || '').toLowerCase()
+      const addressStr = (typeof s.address === 'string' ? s.address : '').toLowerCase()
+      const descEn = (s.store_description?.en || s.bio || '').toLowerCase()
+      const descAr = (s.store_description?.ar || '').toLowerCase()
+      const descStr = (typeof s.store_description === 'string' ? s.store_description : '').toLowerCase()
+      
+      const cityEn = (s.city?.name?.en || '').toLowerCase()
+      const cityAr = (s.city?.name?.ar || '').toLowerCase()
 
-        // Intelligent Matching: ALL query tokens must match AT LEAST ONE searchable field
-        return tokens.every(token => {
-          // Expand search token semantically if it's a known city
-          let expandedTokens = [token]
-          for (const [key, values] of Object.entries(cityTranslations)) {
-            if (key === token || values.includes(token)) {
-              expandedTokens = [key, ...values]
-              break
-            }
-          }
-
-          return expandedTokens.some(tkn => {
-            return searchableFields.some(field => field.includes(tkn))
-          })
-        })
-      })
-    }
+      return addressEn.includes(q) || addressAr.includes(q) || addressStr.includes(q) ||
+             descEn.includes(q) || descAr.includes(q) || descStr.includes(q) ||
+             cityEn.includes(q) || cityAr.includes(q)
+    })
   }
 
   return result
@@ -108,26 +107,46 @@ const locateNearMe = () => {
         const lat = pos.coords.latitude
         const lon = pos.coords.longitude
         
+        let targetName = 'Cairo'
         // Smart Egyptian latitude/longitude boundaries
         if (lat >= 30.9 && lat <= 31.2 && lon >= 31.2 && lon <= 31.6) {
-          searchQuery.value = 'Mansoura'
+          targetName = 'Mansoura'
         } else if (lat >= 29.8 && lat <= 30.3 && lon >= 30.8 && lon <= 31.6) {
-          searchQuery.value = 'Cairo'
+          targetName = 'Cairo'
         } else if (lat >= 31.0 && lat <= 31.4 && lon >= 29.6 && lon <= 30.1) {
-          searchQuery.value = 'Alexandria'
+          targetName = 'Alexandria'
+        }
+
+        // Set the filter cityId by matching targetName
+        const matched = cities.value.find(c => {
+          const nameEn = (c.name?.en || c.name || '').toLowerCase()
+          return nameEn.includes(targetName.toLowerCase())
+        })
+        
+        if (matched) {
+          filters.value.cityId = matched.id
         } else {
-          searchQuery.value = 'Cairo' // default Egypt hub
+          filters.value.neighborhood = targetName
         }
       },
       (err) => {
         isLocating.value = false
-        searchQuery.value = 'Cairo' // default fallback on permission error
+        // fallback
+        const matched = cities.value.find(c => {
+          const nameEn = (c.name?.en || c.name || '').toLowerCase()
+          return nameEn.includes('cairo')
+        })
+        if (matched) filters.value.cityId = matched.id
       },
       { timeout: 5000 }
     )
   } else {
     isLocating.value = false
-    searchQuery.value = 'Cairo'
+    const matched = cities.value.find(c => {
+      const nameEn = (c.name?.en || c.name || '').toLowerCase()
+      return nameEn.includes('cairo')
+    })
+    if (matched) filters.value.cityId = matched.id
   }
 }
 
@@ -145,14 +164,17 @@ const closeCallDialog = () => {
   selectedSellerForCall.value = null
 }
 
-onMounted(fetchSellers)
+onMounted(() => {
+  fetchSellers()
+  fetchCities()
+})
 </script>
 
 <template>
   <div class="showrooms-directory-page py-12">
     <VContainer>
       <!-- Premium Split Hero Layout (Above the Fold) -->
-      <VRow class="align-center mb-12" no-gutters>
+      <VRow class="align-center mb-8" no-gutters>
         <!-- Left: Search & Discovery for Buyers -->
         <VCol cols="12" md="8" class="pe-md-10 mb-8 mb-md-0">
           <div class="header-section text-center text-md-start animate-fade-in">
@@ -168,41 +190,8 @@ onMounted(fetchSellers)
               Your comprehensive destination to explore certified automotive dealers. Search by name, city, or neighborhood to locate verified showrooms and browse premium inventories.
             </p>
 
-            <!-- Ultra-Premium Unified Search Bar -->
-            <VSheet class="search-sheet rounded-pill px-4 py-2 elevation-8 mb-6 mx-auto mx-md-0" max-width="650">
-              <div class="d-flex align-center">
-                <VIcon icon="tabler-search" color="primary" class="ms-3 me-2" size="24" />
-                
-                <VTextField
-                  v-model="searchQuery"
-                  placeholder="Search showrooms by name, city, neighborhood..."
-                  variant="plain"
-                  hide-details
-                  density="comfortable"
-                  class="showroom-search-input text-subtitle-1 font-weight-medium flex-grow-1"
-                >
-                  <template #append-inner v-if="searchQuery">
-                    <VBtn icon="tabler-x" size="small" variant="text" @click="searchQuery = ''" />
-                  </template>
-                </VTextField>
-
-                <VBtn
-                  color="primary"
-                  variant="elevated"
-                  rounded="pill"
-                  class="px-5 font-weight-bold shadow-primary text-subtitle-1 ms-2"
-                  height="44"
-                  :loading="isLocating"
-                  @click="locateNearMe"
-                >
-                  <VIcon icon="tabler-map-pin-up" size="20" class="me-2" />
-                  Near Me
-                </VBtn>
-              </div>
-            </VSheet>
-
             <!-- Ultra-Sleek Trust & Stats Bar -->
-            <div class="d-flex align-center justify-center justify-md-start flex-wrap gap-4 mt-6 animate-fade-in">
+            <div class="d-flex align-center justify-center justify-md-start flex-wrap gap-4 animate-fade-in">
               <div class="stat-badge d-flex align-center gap-2 px-4 py-2 rounded-xl bg-white-5 border-white-10">
                 <div class="d-flex align-center justify-center rounded-lg bg-primary-subtle px-2 py-1.5">
                   <VIcon icon="tabler-discount-check" color="primary" size="18" />
@@ -236,7 +225,7 @@ onMounted(fetchSellers)
           </div>
         </VCol>
 
-        <!-- Right: Premium Partnership Card for Showroom Owners & Agencies (Sleeker & More Compact!) -->
+        <!-- Right: Premium Partnership Card for Showroom Owners & Agencies -->
         <VCol cols="12" md="4">
           <VCard class="dealer-promo-card pa-6 rounded-2xl elevation-10 overflow-hidden relative border-glow">
             <div class="d-flex flex-column gap-3 relative z-1">
@@ -269,6 +258,91 @@ onMounted(fetchSellers)
         </VCol>
       </VRow>
 
+      <!-- Premium Structured Search Deck (Spanning Full Width) -->
+      <div class="premium-horizontal-search mb-10 animate-fade-in">
+        <div class="search-main-row">
+          <!-- 1. Showroom Name Field -->
+          <div class="search-col search-col-name">
+            <VTextField
+              v-model="filters.storeName"
+              placeholder="Showroom Name / اسم المعرض..."
+              prepend-inner-icon="tabler-building-store"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              class="premium-input-field"
+              clearable
+            />
+          </div>
+
+          <!-- 2. Governorate Field (العاصمة والمحافظات) -->
+          <div class="search-col search-col-governorate">
+            <VAutocomplete
+              v-model="filters.cityId"
+              :items="cities"
+              item-value="id"
+              :item-title="c => t(c.name)"
+              placeholder="Governorate / المحافظة..."
+              prepend-inner-icon="tabler-map"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              class="premium-input-field"
+              clearable
+            >
+              <template #item="{ props, item }">
+                <VListItem v-bind="props" :title="t(item.raw.name)" />
+              </template>
+              <template #selection="{ item }">
+                {{ t(item.raw.name) }}
+              </template>
+            </VAutocomplete>
+          </div>
+
+          <!-- 3. City/Area/Neighborhood Field -->
+          <div class="search-col search-col-city">
+            <VTextField
+              v-model="filters.neighborhood"
+              placeholder="City or Area / مكان المدينة..."
+              prepend-inner-icon="tabler-map-pin"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              class="premium-input-field"
+              clearable
+            />
+          </div>
+
+          <!-- 4. Action Buttons (Near Me and Reset Filters) -->
+          <div class="search-col-actions">
+            <VBtn
+              color="primary"
+              variant="elevated"
+              class="px-5 font-weight-bold shadow-primary text-subtitle-2"
+              height="44"
+              rounded="lg"
+              :loading="isLocating"
+              @click="locateNearMe"
+            >
+              <VIcon icon="tabler-map-pin-up" size="20" class="me-1" />
+              Near Me
+            </VBtn>
+
+            <VBtn
+              variant="tonal"
+              height="44"
+              color="secondary"
+              class="px-4"
+              rounded="lg"
+              title="Reset Filters"
+              @click="resetFilters"
+            >
+              <VIcon icon="tabler-refresh" />
+            </VBtn>
+          </div>
+        </div>
+      </div>
+
       <div class="d-flex align-center gap-2 mb-6 animate-fade-in">
         <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
         <span class="text-caption font-weight-bold text-white-50 text-uppercase tracking-wider px-3">Verified Showrooms</span>
@@ -290,7 +364,7 @@ onMounted(fetchSellers)
       <div v-else-if="filteredSellers.length === 0" class="text-center py-16 animate-fade-in">
         <VIcon icon="tabler-building-store" size="80" class="mb-4 opacity-20" />
         <h3 class="text-h5 text-white-50 font-weight-bold">No verified showrooms match your location or search.</h3>
-        <VBtn variant="tonal" color="primary" class="mt-4 px-6 font-weight-bold" rounded="pill" @click="searchQuery = ''">
+        <VBtn variant="tonal" color="primary" class="mt-4 px-6 font-weight-bold" rounded="pill" @click="resetFilters">
           Reset Filters
         </VBtn>
       </div>
@@ -453,19 +527,6 @@ onMounted(fetchSellers)
   -webkit-text-fill-color: transparent;
 }
 
-.search-sheet {
-  background: rgba(0, 0, 0, 0.45) !important;
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:focus-within {
-    border-color: rgba(var(--v-theme-primary), 0.5) !important;
-    box-shadow: 0 20px 50px rgba(var(--v-theme-primary), 0.25) !important;
-  }
-}
-
 .dealer-promo-card {
   background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15), rgba(var(--v-theme-surface), 0.9)) !important;
   backdrop-filter: blur(30px);
@@ -591,5 +652,140 @@ onMounted(fetchSellers)
 
 .animate-pulse {
   animation: pulse 2s infinite ease-in-out;
+}
+
+/* Premium Horizontal Search Deck Styles */
+.premium-horizontal-search {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 20px 24px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.premium-horizontal-search:hover {
+  border-color: rgba(var(--v-theme-primary), 0.15);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+}
+
+.search-main-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.search-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-col-name {
+  flex: 1.5;
+}
+
+.search-col-governorate {
+  flex: 1.2;
+}
+
+.search-col-city {
+  flex: 1.2;
+}
+
+.search-col-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Integrated Outlined Cohesion for all Vuetify 3 inputs */
+.premium-input-field :deep(.v-field) {
+  border-radius: 12px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 44px !important;
+  display: flex;
+  align-items: center;
+}
+
+.premium-input-field :deep(.v-field__outline) {
+  --v-field-border-opacity: 1 !important;
+  color: rgba(255, 255, 255, 0.08) !important;
+  transition: color 0.3s ease;
+}
+
+.premium-input-field :deep(.v-field:hover .v-field__outline) {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.premium-input-field :deep(.v-field--focused .v-field__outline) {
+  color: rgba(var(--v-theme-primary), 1) !important;
+}
+
+.premium-input-field :deep(.v-field__input) {
+  min-height: 44px !important;
+  height: 44px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  align-items: center;
+  color: #fff !important;
+  font-size: 14px;
+}
+
+.premium-input-field :deep(.v-label) {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 14px;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.premium-input-field :deep(.v-field--active .v-label) {
+  top: 0 !important;
+  transform: translateY(-60%) scale(0.75) !important;
+}
+
+.premium-input-field :deep(.v-field__append-inner),
+.premium-input-field :deep(.v-field__prepend-inner) {
+  align-items: center;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  height: 44px !important;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+@media (max-width: 959px) {
+  .search-main-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .search-col {
+    width: 100%;
+  }
+  
+  .search-col-actions {
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  
+  .search-col-actions > button {
+    flex: 1;
+  }
 }
 </style>
