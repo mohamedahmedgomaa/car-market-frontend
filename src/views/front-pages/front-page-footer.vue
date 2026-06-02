@@ -82,19 +82,44 @@ onMounted(fetchTopCars)
     <div class="footer-top pt-11" :style="{ 'background-image': `url(${footerBg})` }">
       <VContainer>
         <VRow>
-          <!-- 👉 Brand / About -->
-          <VCol cols="12" md="4">
+          <!-- 👉 Brand / About (Column 1) -->
+          <VCol cols="12" md="3" sm="6">
             <div class="mb-4">
-              <div class="app-logo mb-6">
-                <VNodeRenderer v-if="themeConfig.app.logo" :nodes="themeConfig.app.logo" />
-                <h1 class="app-logo-title text-white">
-                  {{ themeConfig.app.title }}
+              <!-- Gorgeous Brand Logo with SVG Shield/Car badge -->
+              <div class="app-logo mb-5">
+                <div class="logo-icon-wrapper">
+                  <svg viewBox="0 0 100 100" class="brand-svg-logo">
+                    <!-- Shield outline -->
+                    <polygon points="50,15 85,35 85,75 50,95 15,75 15,35" fill="none" stroke="url(#logo-glow)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                    <!-- Sports Car silhouette -->
+                    <path d="M30,55 C35,42 45,38 50,38 C55,38 65,42 70,55 C72,60 68,64 64,64 L36,64 C32,64 28,60 30,55 Z" fill="url(#logo-grad)" />
+                    <!-- Speed/Chassis lines -->
+                    <path d="M25,65 H75 M35,48 L42,52 M65,48 L58,52" stroke="#FFF" stroke-width="3.5" stroke-linecap="round" opacity="0.8" />
+                    <defs>
+                      <linearGradient id="logo-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(var(--v-theme-primary), 1)" />
+                        <stop offset="100%" stop-color="#ff9f43" />
+                      </linearGradient>
+                      <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="100%" stop-color="rgba(var(--v-theme-primary), 1)" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+                <h1 class="logo-title font-weight-black">
+                  Negm<span class="text-primary-glow">Cars</span>
                 </h1>
               </div>
 
-              <!-- ✅ Follow Us (Moved here) -->
-              <div class="mb-8">
-                <h6 class="footer-title text-subtitle-2 font-weight-bold mb-4 opacity-60">
+              <!-- Brand tagline -->
+              <p class="brand-description opacity-70 mb-5">
+                Egypt's premier automotive marketplace. Connecting buyers, sellers, and verified showrooms with intelligence and trust.
+              </p>
+
+              <!-- ✅ Follow Us -->
+              <div class="mb-4">
+                <h6 class="footer-title text-subtitle-2 font-weight-bold mb-3 opacity-60">
                   Follow Our Updates
                 </h6>
                 <div class="d-flex gap-x-3">
@@ -110,12 +135,53 @@ onMounted(fetchTopCars)
                   </a>
                 </div>
               </div>
-
             </div>
           </VCol>
 
-          <!-- 👉 Legal Info -->
-          <VCol md="4" sm="6" cols="12">
+          <!-- 👉 Download Our Apps (Column 2) -->
+          <VCol cols="12" md="3" sm="6">
+            <div class="footer-links">
+              <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+                <VIcon icon="tabler-device-mobile" size="20" color="primary" />
+                <span>Download Our App</span>
+              </h6>
+              
+              <p class="text-body-2 opacity-60 mb-5 leading-relaxed">
+                Enjoy the ultimate vehicle trading experience anytime, anywhere. Get our apps for iOS and Android.
+              </p>
+
+              <div class="d-flex flex-column gap-y-3">
+                <!-- App Store Button -->
+                <a href="#" class="app-download-btn">
+                  <div class="app-icon">
+                    <svg viewBox="0 0 384 512" fill="currentColor">
+                      <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-48-20.1-77.5-19.6-37.4.5-74.3 21.8-94 54.8-41 67.3-10.7 168.2 28.7 224.4 19.9 28.2 43.1 59.6 74.1 58.4 29.4-1.2 40.3-19 75.8-19 35.4 0 45.6 19 75.8 18.3 31.1-.5 51.1-28.5 70-55.7 22.1-31.9 30.9-63 31.3-64.6-.6-.2-60.4-23.2-61-91.8zM245.8 91.4c24.1-29 40.3-69.1 35.8-109.1-34.4 1.4-76.3 22.8-101 51.6-21.1 24.6-39.7 65.5-34.7 104.9 38.3 3 76.8-18.6 99.9-47.4z" />
+                    </svg>
+                  </div>
+                  <div class="app-text">
+                    <span class="app-subtitle">Download on the</span>
+                    <span class="app-title">App Store</span>
+                  </div>
+                </a>
+
+                <!-- Google Play Button -->
+                <a href="#" class="app-download-btn">
+                  <div class="app-icon">
+                    <svg viewBox="0 0 512 512" fill="currentColor">
+                      <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58-33.2-65.2 65.2 65.2 65.2 58-33.2c22.3-12.7 22.3-34.3 0-47zM385.4 337.5L104.6 499l220.7-126.5 60.1-60.1z" />
+                    </svg>
+                  </div>
+                  <div class="app-text">
+                    <span class="app-subtitle">GET IT ON</span>
+                    <span class="app-title">Google Play</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </VCol>
+
+          <!-- 👉 Legal Info (Column 3) -->
+          <VCol md="3" sm="6" cols="12">
             <div class="footer-links">
               <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-info-circle" size="20" color="primary" />
@@ -128,7 +194,7 @@ onMounted(fetchTopCars)
                   <span class="text-white font-weight-bold text-subtitle-1">Registered Platform</span>
                 </div>
                 <p class="text-body-2 opacity-60 mb-5 leading-relaxed">
-                  NegmCars is a legally registered company and platform in the Arab Republic of Egypt, ensuring safe and trusted transactions.
+                  NegmCars is a legally registered company in Egypt, ensuring highly trusted transactions.
                 </p>
                 <div class="tax-info-grid">
                   <div class="tax-item">
@@ -144,9 +210,9 @@ onMounted(fetchTopCars)
             </div>
           </VCol>
 
-          <!-- 👉 Contact Info -->
-          <VCol cols="12" md="4" sm="6">
-            <div class="ps-md-12">
+          <!-- 👉 Contact Info (Column 4) -->
+          <VCol cols="12" md="3" sm="6">
+            <div class="ps-md-6">
               <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-headset" size="20" color="primary" />
                 <span>Get in Touch</span>
@@ -326,5 +392,118 @@ onMounted(fetchTopCars)
 .footer {
   position: relative;
   z-index: 10;
+}
+
+// ----------------------------------------------------
+// Redesigned Brand Header and app-logo Styles
+// ----------------------------------------------------
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon-wrapper {
+  background: rgba(var(--v-theme-primary), 0.08);
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 30px rgba(var(--v-theme-primary), 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: rotate(5deg) scale(1.08);
+    background: rgba(var(--v-theme-primary), 0.15);
+    border-color: rgba(var(--v-theme-primary), 0.4);
+    box-shadow: 0 8px 35px rgba(var(--v-theme-primary), 0.25);
+  }
+}
+
+.brand-svg-logo {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 2px 8px rgba(var(--v-theme-primary), 0.3));
+}
+
+.logo-title {
+  font-size: 1.8rem;
+  letter-spacing: 0.5px;
+  color: #fff;
+  
+  .text-primary-glow {
+    color: rgba(var(--v-theme-primary), 1);
+    text-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.45);
+  }
+}
+
+.brand-description {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+// Download Buttons
+.app-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  color: #fff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  .app-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: all 0.3s ease;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .app-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .app-subtitle {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+    font-weight: 500;
+  }
+
+  .app-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(var(--v-theme-primary), 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.15), 0 0 15px rgba(var(--v-theme-primary), 0.1);
+    
+    .app-icon {
+      color: rgba(var(--v-theme-primary), 1);
+      transform: scale(1.1);
+    }
+  }
 }
 </style>
