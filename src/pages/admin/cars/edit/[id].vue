@@ -297,84 +297,236 @@ const handleParseSpecs = async () => {
   // Helper to normalize values
   const cleanVal = (v) => v.replace(/^['"\s]+|['"\s]+$/g, '').trim()
 
-  // First: try line-by-line key-value parsing
+  // Defined keys and their synonyms
+  const keysList = [
+    { field: 'type', synonyms: ['type', 'النوع', 'نوع المركبة', 'نوع'] },
+    { field: 'seller_id', synonyms: ['seller', 'المعلن', 'البائع', 'اسم المعلن', 'اسم البائع', 'تاجر'] },
+    { field: 'brand_id', synonyms: ['brand', 'الماركة', 'الشركة', 'ماركة', 'شركة'] },
+    { field: 'model_id', synonyms: ['model', 'الموديل', 'موديل', 'طراز'] },
+    { field: 'country_id', synonyms: ['country', 'البلد', 'الدولة', 'بلد', 'دولة'] },
+    { field: 'city_id', synonyms: ['city', 'المدينة', 'مدينة', 'المحافظة'] },
+    { field: 'title_ar', synonyms: ['title arabic', 'title ar', 'العنوان العربي', 'الاسم العربي', 'عنوان عربي'] },
+    { field: 'title_en', synonyms: ['title english', 'title en', 'العنوان الانجليزي', 'الاسم الانجليزي', 'عنوان انجليزي'] },
+    { field: 'description_ar', synonyms: ['description arabic', 'description ar', 'الوصف العربي', 'الوصف', 'وصف عربي'] },
+    { field: 'description_en', synonyms: ['description english', 'description en', 'الوصف الانجليزي', 'وصف انجليزي'] },
+    { field: 'price', synonyms: ['price', 'price (eg)', 'السعر', 'سعر'] },
+    { field: 'year', synonyms: ['year', 'السنة', 'سنة', 'سنة الصنع', 'عام'] },
+    { field: 'mileage', synonyms: ['mileage', 'mileage (km)', 'الممشى', 'ممشى', 'العداد', 'عداد', 'المسافة المقطوعة'] },
+    { field: 'horsepower', synonyms: ['horsepower', 'horsepower (hp)', 'hp', 'القوة الحصانية', 'قوة الحصان', 'حصان'] },
+    { field: 'torque', synonyms: ['torque', 'torque (nm)', 'العزم', 'عزم الدوران', 'نيوتن', 'العزم (نيوتن)'] },
+    { field: 'engine_capacity', synonyms: ['engine capacity', 'engine', 'سعة المحرك', 'المحرك', 'سعة'] },
+    { field: 'cylinders', synonyms: ['cylinders', 'سلندر', 'السلندرات', 'عدد السلندرات'] },
+    { field: 'transmission', synonyms: ['transmission', 'ناقل الحركة', 'الفتيس', 'ناقل'] },
+    { field: 'fuel_type', synonyms: ['fuel type', 'fuel', 'نوع الوقود', 'الوقود'] },
+    { field: 'drivetrain', synonyms: ['drivetrain', 'نظام الدفع', 'الدفع'] },
+    { field: 'condition', synonyms: ['condition', 'الحالة', 'حالة السيارة', 'الحالة العامة', 'used'] },
+    { field: 'color', synonyms: ['color', 'اللون', 'لون'] },
+    { field: 'custom_color', synonyms: ['custom color', 'custom color (hex)', 'اللون المخصص', 'لون مخصص'] },
+    { field: 'phone_number', synonyms: ['phone', 'phone number', 'phone number for calls', 'تليفون', 'الهاتف', 'رقم الهاتف', 'الجوال', 'موبايل', 'رقم الموبايل', 'رقم التليفون', 'رقم التليفون للمكالمات'] },
+    { field: 'whatsapp_number', synonyms: ['whatsapp', 'whatsapp number', 'واتساب', 'رقم الواتساب', 'رقم الواتس'] },
+    { field: 'is_best_deal', synonyms: ['featured ad', 'best deal', 'مميز', 'إعلان مميز', 'اعلان مميز'] },
+    { field: 'is_global_ad', synonyms: ['homepage promotion', 'top placement', 'global ad', 'إعلان عالمي'] },
+    { field: 'is_urgent', synonyms: ['urgent sale', 'urgent', 'بيع عاجل', 'عاجل'] }
+  ]
+
+  // Intelligent multi-line parser
   const lines = text.split(/\r?\n/)
   const keyValueMap = {}
-  
+  let currentField = null
+
   lines.forEach(line => {
-    const parts = line.match(/^\s*(.+?)\s*[:=-]\s*(.+?)\s*$/)
-    if (parts && parts.length >= 3) {
-      const k = parts[1].toLowerCase().trim()
-      const v = cleanVal(parts[2])
-      keyValueMap[k] = v
+    // Check if the line matches Key: Value
+    const match = line.match(/^\s*(.+?)\s*[:=-]\s*(.*)$/)
+    if (match) {
+      const potentialKey = match[1].toLowerCase().trim()
+      const value = match[2].trim()
+
+      // Check if it matches any synonym
+      let foundField = null
+      for (const item of keysList) {
+        if (item.synonyms.includes(potentialKey)) {
+          foundField = item.field
+          break
+        }
+      }
+
+      if (foundField) {
+        currentField = foundField
+        keyValueMap[currentField] = cleanVal(value)
+        return
+      }
+    }
+
+    // If it's a continuation of a multi-line field
+    if (currentField && line.trim() !== '') {
+      if (keyValueMap[currentField] === '') {
+        keyValueMap[currentField] = cleanVal(line)
+      } else {
+        keyValueMap[currentField] += '\n' + cleanVal(line)
+      }
     }
   })
 
-  // 1. Brand & Model Match
-  let brandValue = keyValueMap['brand'] || keyValueMap['الماركة'] || keyValueMap['الشركة'] || keyValueMap['ماركة']
-  if (!brandValue) {
-    // If not found in keys, search globally in text
-    const matchedBrand = brands.value.find(b => {
-      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase()
-      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase()
-      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-    })
-    if (matchedBrand) {
-      form.value.brand_id = matchedBrand.id
+  // 1. Type
+  if (keyValueMap['type'] && 'type' in form.value) {
+    const val = keyValueMap['type'].toLowerCase()
+    if (val.includes('car') || val.includes('سيار')) {
+      form.value.type = 'car'
       matchedCount++
-      extractedDetails.push(`Brand: ${matchedBrand.name?.en ?? matchedBrand.name}`)
-      await loadModels()
-    }
-  } else {
-    const brandLower = brandValue.toLowerCase()
-    const matchedBrand = brands.value.find(b => {
-      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase()
-      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase()
-      return nameEn === brandLower || nameAr === brandLower || nameEn.includes(brandLower) || nameAr.includes(brandLower)
-    })
-    if (matchedBrand) {
-      form.value.brand_id = matchedBrand.id
+      extractedDetails.push('Type: Car')
+    } else if (val.includes('motorcycle') || val.includes('دراج')) {
+      form.value.type = 'motorcycle'
       matchedCount++
-      extractedDetails.push(`Brand: ${matchedBrand.name?.en ?? matchedBrand.name}`)
-      await loadModels()
+      extractedDetails.push('Type: Motorcycle')
     }
   }
 
-  // Model Match
-  let modelValue = keyValueMap['model'] || keyValueMap['الموديل'] || keyValueMap['موديل'] || keyValueMap['طراز']
-  if (form.value.brand_id && models.value.length) {
+  // 2. Seller
+  if (keyValueMap['seller_id'] && 'seller_id' in form.value && sellers.value?.length) {
+    const sVal = keyValueMap['seller_id'].toLowerCase().trim()
+    const foundSeller = sellers.value.find(s => {
+      const name = String(s.name ?? '').toLowerCase()
+      return name.includes(sVal) || sVal.includes(name)
+    })
+    if (foundSeller) {
+      form.value.seller_id = foundSeller.id
+      matchedCount++
+      extractedDetails.push(`Seller: ${foundSeller.name}`)
+    }
+  }
+
+  // 3. Brand
+  let brandValue = keyValueMap['brand_id']
+  let matchedBrand = null
+  if (brandValue && brands.value?.length) {
+    const brandLower = brandValue.toLowerCase().trim()
+    matchedBrand = brands.value.find(b => {
+      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase().trim()
+      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase().trim()
+      return nameEn === brandLower || nameAr === brandLower || nameEn.includes(brandLower) || nameAr.includes(brandLower) || brandLower.includes(nameEn) || brandLower.includes(nameAr)
+    })
+  }
+  if (!matchedBrand && brands.value?.length) {
+    matchedBrand = brands.value.find(b => {
+      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase().trim()
+      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase().trim()
+      if (nameEn.length <= 1 && nameAr.length <= 1) return false
+      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+    })
+  }
+  if (matchedBrand) {
+    form.value.brand_id = matchedBrand.id
+    matchedCount++
+    extractedDetails.push(`Brand: ${matchedBrand.name?.en ?? matchedBrand.name}`)
+    await loadModels()
+  }
+
+  // 4. Model
+  let modelValue = keyValueMap['model_id']
+  if (form.value.brand_id && models.value?.length) {
+    let matchedModel = null
     if (modelValue) {
-      const modelLower = modelValue.toLowerCase()
-      const matchedModel = models.value.find(m => {
-        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase()
-        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase()
-        return nameEn === modelLower || nameAr === modelLower || nameEn.includes(modelLower) || nameAr.includes(modelLower)
+      const modelLower = modelValue.toLowerCase().trim()
+      matchedModel = models.value.find(m => {
+        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase().trim()
+        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase().trim()
+        return nameEn === modelLower || nameAr === modelLower || modelLower.includes(nameEn) || modelLower.includes(nameAr) || nameEn.includes(modelLower) || nameAr.includes(modelLower)
       })
-      if (matchedModel) {
-        form.value.model_id = matchedModel.id
-        matchedCount++
-        extractedDetails.push(`Model: ${matchedModel.name?.en ?? matchedModel.name}`)
-      }
-    } else {
-      // Global search for model
-      const matchedModel = models.value.find(m => {
-        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase()
-        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase()
+    }
+    if (!matchedModel) {
+      matchedModel = models.value.find(m => {
+        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase().trim()
+        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase().trim()
         if (nameEn.length <= 1 && nameAr.length <= 1) return false
         return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
       })
-      if (matchedModel) {
-        form.value.model_id = matchedModel.id
+    }
+    if (matchedModel) {
+      form.value.model_id = matchedModel.id
+      matchedCount++
+      extractedDetails.push(`Model: ${matchedModel.name?.en ?? matchedModel.name}`)
+    }
+  }
+
+  // 5. Country & City
+  let countryValue = keyValueMap['country_id']
+  let matchedCountry = null
+  if (countryValue && countries.value?.length) {
+    const cSearch = countryValue.toLowerCase().trim()
+    matchedCountry = countries.value.find(c => {
+      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase().trim()
+      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase().trim()
+      return nameEn === cSearch || nameAr === cSearch || nameEn.includes(cSearch) || nameAr.includes(cSearch) || cSearch.includes(nameEn) || cSearch.includes(nameAr)
+    })
+  }
+  if (!matchedCountry && countries.value?.length) {
+    matchedCountry = countries.value.find(c => {
+      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
+      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+      if (nameEn.length <= 1 && nameAr.length <= 1) return false
+      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+    })
+  }
+  if (matchedCountry) {
+    form.value.country_id = matchedCountry.id
+    matchedCount++
+    extractedDetails.push(`Country: ${matchedCountry.name?.en ?? matchedCountry.name}`)
+    await loadCities()
+
+    let cityValue = keyValueMap['city_id']
+    if (cities.value?.length) {
+      let matchedCity = null
+      if (cityValue) {
+        const cSearch = cityValue.toLowerCase().trim()
+        matchedCity = cities.value.find(c => {
+          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase().trim()
+          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase().trim()
+          return nameEn === cSearch || nameAr === cSearch || nameEn.includes(cSearch) || nameAr.includes(cSearch) || cSearch.includes(nameEn) || cSearch.includes(nameAr)
+        })
+      }
+      if (!matchedCity) {
+        matchedCity = cities.value.find(c => {
+          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
+          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+          if (nameEn.length <= 1 && nameAr.length <= 1) return false
+          return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+        })
+      }
+      if (matchedCity) {
+        form.value.city_id = matchedCity.id
         matchedCount++
-        extractedDetails.push(`Model: ${matchedModel.name?.en ?? matchedModel.name}`)
+        extractedDetails.push(`City: ${matchedCity.name?.en ?? matchedCity.name}`)
       }
     }
   }
 
-  // 2. Year
-  let yearValue = keyValueMap['year'] || keyValueMap['السنة'] || keyValueMap['سنة'] || keyValueMap['سنة الصنع'] || keyValueMap['عام']
-  if (yearValue) {
-    const yNum = parseInt(yearValue.replace(/\D/g, ''))
+  // 6. Title Arabic & English
+  if (keyValueMap['title_ar']) {
+    form.value.title_ar = keyValueMap['title_ar'].slice(0, 150)
+    matchedCount++
+    extractedDetails.push('Title Arabic')
+  }
+  if (keyValueMap['title_en']) {
+    form.value.title_en = keyValueMap['title_en'].slice(0, 150)
+    matchedCount++
+    extractedDetails.push('Title English')
+  }
+
+  // 7. Description Arabic & English
+  if (keyValueMap['description_ar']) {
+    form.value.description_ar = keyValueMap['description_ar'].slice(0, 2000)
+    matchedCount++
+    extractedDetails.push('Description Arabic')
+  }
+  if (keyValueMap['description_en']) {
+    form.value.description_en = keyValueMap['description_en'].slice(0, 2000)
+    matchedCount++
+    extractedDetails.push('Description English')
+  }
+
+  // 8. Year
+  if (keyValueMap['year']) {
+    const yNum = parseInt(keyValueMap['year'].replace(/\D/g, ''))
     if (yNum && yNum >= 1900 && yNum <= 2030) {
       form.value.year = yNum
       matchedCount++
@@ -389,22 +541,22 @@ const handleParseSpecs = async () => {
     }
   }
 
-  // 3. Price
-  let priceValue = keyValueMap['price'] || keyValueMap['السعر'] || keyValueMap['سعر']
-  if (priceValue) {
-    const millionMatch = priceValue.match(/(\d+(?:\.\d+)?)\s*مليون/)
+  // 9. Price
+  if (keyValueMap['price'] && keyValueMap['price'] !== '—') {
+    const val = keyValueMap['price']
+    const millionMatch = val.match(/(\d+(?:\.\d+)?)\s*مليون/)
     if (millionMatch) {
       form.value.price = parseFloat(millionMatch[1]) * 1000000
       matchedCount++
       extractedDetails.push(`Price: ${millionMatch[1]} Million`)
     } else {
-      const thousandMatch = priceValue.match(/(\d+(?:\.\d+)?)\s*(?:ألف|الف|k)/i)
+      const thousandMatch = val.match(/(\d+(?:\.\d+)?)\s*(?:ألف|الف|k)/i)
       if (thousandMatch) {
         form.value.price = parseFloat(thousandMatch[1]) * 1000
         matchedCount++
         extractedDetails.push(`Price: ${thousandMatch[1]}k`)
       } else {
-        const cleanPrice = Number(priceValue.replace(/,/g, '').replace(/\D/g, ''))
+        const cleanPrice = Number(val.replace(/,/g, '').replace(/\D/g, ''))
         if (cleanPrice) {
           form.value.price = cleanPrice
           matchedCount++
@@ -412,40 +564,18 @@ const handleParseSpecs = async () => {
         }
       }
     }
-  } else {
-    const millionMatch = text.match(/(\d+(?:\.\d+)?)\s*مليون/)
-    if (millionMatch) {
-      form.value.price = parseFloat(millionMatch[1]) * 1000000
-      matchedCount++
-      extractedDetails.push(`Price: ${millionMatch[1]} Million`)
-    } else {
-      const thousandMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:ألف|الف|k)/i)
-      if (thousandMatch) {
-        form.value.price = parseFloat(thousandMatch[1]) * 1000
-        matchedCount++
-        extractedDetails.push(`Price: ${thousandMatch[1]}k`)
-      } else {
-        const cleanText = text.replace(/,/g, '')
-        const prices = cleanText.match(/\b(5[0-9]\d{3}|[6-9]\d{4}|\d{6,8})\b/g)
-        if (prices && prices.length) {
-          form.value.price = Number(prices[0])
-          matchedCount++
-          extractedDetails.push(`Price: ${prices[0]}`)
-        }
-      }
-    }
   }
 
-  // 4. Mileage
-  let mileageValue = keyValueMap['mileage'] || keyValueMap['الممشى'] || keyValueMap['ممشى'] || keyValueMap['العداد'] || keyValueMap['عداد']
-  if (mileageValue) {
-    const cleanMileage = Number(mileageValue.replace(/,/g, '').replace(/\D/g, ''))
+  // 10. Mileage
+  if (keyValueMap['mileage'] && keyValueMap['mileage'] !== '—') {
+    const val = keyValueMap['mileage']
+    const cleanMileage = Number(val.replace(/,/g, '').replace(/\D/g, ''))
     if (cleanMileage || cleanMileage === 0) {
       form.value.mileage = cleanMileage
       matchedCount++
       extractedDetails.push(`Mileage: ${cleanMileage}`)
     }
-  } else {
+  } else if (!keyValueMap['mileage']) {
     const cleanTextNoCommas = text.replace(/,/g, '')
     const mileageMatch = cleanTextNoCommas.match(/\b(\d+)\s*(?:كم|km|كيلو|عداد)/i)
     if (mileageMatch) {
@@ -455,30 +585,25 @@ const handleParseSpecs = async () => {
     }
   }
 
-  // 5. Engine Capacity
-  let engineValue = keyValueMap['engine capacity'] || keyValueMap['engine'] || keyValueMap['سعة المحرك'] || keyValueMap['المحرك'] || keyValueMap['سعة']
+  // 11. Engine Capacity
+  let engineValue = keyValueMap['engine_capacity']
   if (engineValue) {
-    const cleanEngine = engineValue.replace(/cc|سي سي|سي|لتر|l/gi, '').trim()
-    form.value.engine_capacity = cleanEngine
-    matchedCount++
-    extractedDetails.push(`Engine: ${cleanEngine}`)
-  } else {
-    const ccMatch = text.match(/\b(\d{3,4})\s*(?:cc|سي|سعة|محرك)/i)
-    const literMatch = text.match(/\b(\d\.\d)\s*(?:l|لتر|liters)/i)
-    if (ccMatch) {
-      form.value.engine_capacity = ccMatch[1]
-      matchedCount++
-      extractedDetails.push(`Engine: ${ccMatch[1]} CC`)
-    } else if (literMatch) {
+    const literMatch = engineValue.match(/(\d+(?:\.\d+)?)\s*(?:l|لتر|liters)/i)
+    if (literMatch) {
       const liters = parseFloat(literMatch[1])
-      form.value.engine_capacity = String(liters * 1000)
+      form.value.engine_capacity = String(Math.round(liters * 1000))
       matchedCount++
-      extractedDetails.push(`Engine: ${liters * 1000} CC`)
+      extractedDetails.push(`Engine: ${form.value.engine_capacity} CC`)
+    } else {
+      const cleanEngine = engineValue.replace(/cc|سي سي|سي/gi, '').trim()
+      form.value.engine_capacity = cleanEngine
+      matchedCount++
+      extractedDetails.push(`Engine: ${cleanEngine} CC`)
     }
   }
 
-  // 6. Cylinders
-  let cylindersValue = keyValueMap['cylinders'] || keyValueMap['سلندر'] || keyValueMap['السلندرات'] || keyValueMap['عدد السلندرات']
+  // 12. Cylinders
+  let cylindersValue = keyValueMap['cylinders']
   if (cylindersValue) {
     const code = cylindersValue.toUpperCase().trim()
     const validCylinders = ['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']
@@ -496,68 +621,30 @@ const handleParseSpecs = async () => {
         extractedDetails.push(`Cylinders: ${form.value.cylinders}`)
       }
     }
-  } else {
-    const cylMatch = text.match(/\b(2|3|4|5|6|8|10|12|16)\s*(?:سلندر|cylinder|cyl)/i)
-    const vMatch = text.match(/\b([viw]\d{1,2})\b/i)
-    if (cylMatch) {
-      const num = cylMatch[1]
-      const mapping = { '2': 'I2', '3': 'I3', '4': 'I4', '5': 'I5', '6': 'V6', '8': 'V8', '10': 'V10', '12': 'V12', '16': 'W16' }
-      form.value.cylinders = mapping[num] || null
-      if (form.value.cylinders) {
-        matchedCount++
-        extractedDetails.push(`Cylinders: ${form.value.cylinders}`)
-      }
-    } else if (vMatch) {
-      const code = vMatch[1].toUpperCase()
-      const validCylinders = ['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']
-      if (validCylinders.includes(code)) {
-        form.value.cylinders = code
-        matchedCount++
-        extractedDetails.push(`Cylinders: ${code}`)
-      }
-    }
   }
 
-  // 7. Horsepower
-  let hpValue = keyValueMap['horsepower'] || keyValueMap['القوة الحصانية'] || keyValueMap['قوة الحصان'] || keyValueMap['حصان']
+  // 13. Horsepower
+  let hpValue = keyValueMap['horsepower']
   if (hpValue) {
     let cleanHp = toNumOrNull(hpValue, 4)
     if (cleanHp !== null && cleanHp > 3000) cleanHp = 3000
     form.value.horsepower = cleanHp === null ? '' : cleanHp
     matchedCount++
     extractedDetails.push(`Horsepower: ${form.value.horsepower}`)
-  } else {
-    const hpMatch = text.match(/\b(\d+)\s*(?:hp|حصان|قوة|horsepower)/i)
-    if (hpMatch) {
-      let cleanHp = toNumOrNull(hpMatch[1], 4)
-      if (cleanHp !== null && cleanHp > 3000) cleanHp = 3000
-      form.value.horsepower = cleanHp === null ? '' : cleanHp
-      matchedCount++
-      extractedDetails.push(`Horsepower: ${form.value.horsepower} HP`)
-    }
   }
 
-  // 8. Torque
-  let torqueValue = keyValueMap['torque'] || keyValueMap['العزم'] || keyValueMap['عزم الدوران'] || keyValueMap['نيوتن']
+  // 14. Torque
+  let torqueValue = keyValueMap['torque']
   if (torqueValue) {
     let cleanTorque = toNumOrNull(torqueValue, 5)
     if (cleanTorque !== null && cleanTorque > 15000) cleanTorque = 15000
     form.value.torque = cleanTorque === null ? '' : cleanTorque
     matchedCount++
     extractedDetails.push(`Torque: ${form.value.torque}`)
-  } else {
-    const torqueMatch = text.match(/\b(\d+)\s*(?:nm|نيوتن|عزم|torque)/i)
-    if (torqueMatch) {
-      let cleanTorque = toNumOrNull(torqueMatch[1], 5)
-      if (cleanTorque !== null && cleanTorque > 15000) cleanTorque = 15000
-      form.value.torque = cleanTorque === null ? '' : cleanTorque
-      matchedCount++
-      extractedDetails.push(`Torque: ${form.value.torque} Nm`)
-    }
   }
 
-  // 9. Transmission
-  let transValue = keyValueMap['transmission'] || keyValueMap['ناقل الحركة'] || keyValueMap['الفتيس'] || keyValueMap['ناقل']
+  // 15. Transmission
+  let transValue = keyValueMap['transmission']
   if (transValue) {
     const tLower = transValue.toLowerCase()
     if (tLower.includes('auto') || tLower.includes('اوتوماتيك')) {
@@ -569,20 +656,10 @@ const handleParseSpecs = async () => {
       matchedCount++
       extractedDetails.push('Transmission: Manual')
     }
-  } else {
-    if (/اوتوماتيك|auto/i.test(text)) {
-      form.value.transmission = 'automatic'
-      matchedCount++
-      extractedDetails.push('Transmission: Automatic')
-    } else if (/مانيوال|يدوي|manual/i.test(text)) {
-      form.value.transmission = 'manual'
-      matchedCount++
-      extractedDetails.push('Transmission: Manual')
-    }
   }
 
-  // 10. Fuel Type
-  let fuelValue = keyValueMap['fuel type'] || keyValueMap['fuel'] || keyValueMap['نوع الوقود'] || keyValueMap['الوقود']
+  // 16. Fuel Type
+  let fuelValue = keyValueMap['fuel_type']
   if (fuelValue) {
     const fLower = fuelValue.toLowerCase()
     if (fLower.includes('petrol') || fLower.includes('بنزين') || fLower.includes('gas')) {
@@ -602,53 +679,25 @@ const handleParseSpecs = async () => {
       matchedCount++
       extractedDetails.push('Fuel: Hybrid')
     }
-  } else {
-    if (/بنزين|petrol|gas/i.test(text)) {
-      form.value.fuel_type = 'petrol'
-      matchedCount++
-      extractedDetails.push('Fuel: Petrol')
-    } else if (/ديزل|سولار|diesel/i.test(text)) {
-      form.value.fuel_type = 'diesel'
-      matchedCount++
-      extractedDetails.push('Fuel: Diesel')
-    } else if (/كهرباء|electric|ev/i.test(text)) {
-      form.value.fuel_type = 'electric'
-      matchedCount++
-      extractedDetails.push('Fuel: Electric')
-    } else if (/هايبرد|هجين|hybrid/i.test(text)) {
-      form.value.fuel_type = 'hybrid'
-      matchedCount++
-      extractedDetails.push('Fuel: Hybrid')
-    }
   }
 
-  // 11. Condition
-  let condValue = keyValueMap['condition'] || keyValueMap['الحالة'] || keyValueMap['حالة السيارة']
+  // 17. Condition
+  let condValue = keyValueMap['condition']
   if (condValue) {
     const cLower = condValue.toLowerCase()
     if (cLower.includes('new') || cLower.includes('جديد') || cLower.includes('زيرو')) {
       form.value.condition = 'new'
       matchedCount++
       extractedDetails.push('Condition: New')
-    } else if (cLower.includes('used') || cLower.includes('مستعمل')) {
-      form.value.condition = 'used'
-      matchedCount++
-      extractedDetails.push('Condition: Used')
-    }
-  } else {
-    if (/جديد|زيرو|new/i.test(text)) {
-      form.value.condition = 'new'
-      matchedCount++
-      extractedDetails.push('Condition: New')
-    } else if (/مستعمل|used/i.test(text)) {
+    } else if (cLower.includes('used') || cLower.includes('مستعمل') || cLower.includes('excellent') || cLower.includes('ممتاز')) {
       form.value.condition = 'used'
       matchedCount++
       extractedDetails.push('Condition: Used')
     }
   }
 
-  // 12. Drivetrain
-  let driveValue = keyValueMap['drivetrain'] || keyValueMap['نظام الدفع'] || keyValueMap['الدفع']
+  // 18. Drivetrain
+  let driveValue = keyValueMap['drivetrain']
   if (driveValue) {
     const dLower = driveValue.toLowerCase()
     if (dLower.includes('fwd') || dLower.includes('أمامي') || dLower.includes('امامي')) {
@@ -664,156 +713,62 @@ const handleParseSpecs = async () => {
       matchedCount++
       extractedDetails.push('Drivetrain: AWD')
     }
-  } else {
-    if (/جر أمامي|أمامي|fwd/i.test(text)) {
-      form.value.drivetrain = 'fwd'
-      matchedCount++
-      extractedDetails.push('Drivetrain: FWD')
-    } else if (/دفع خلفي|خلفي|rwd/i.test(text)) {
-      form.value.drivetrain = 'rwd'
-      matchedCount++
-      extractedDetails.push('Drivetrain: RWD')
-    } else if (/دفع رباعي|رباعي|awd|4wd/i.test(text)) {
-      form.value.drivetrain = 'awd'
-      matchedCount++
-      extractedDetails.push('Drivetrain: AWD/4WD')
-    }
   }
 
-  // 13. Color
-  let colorValue = keyValueMap['color'] || keyValueMap['اللون'] || keyValueMap['لون']
-  if (colorValue) {
-    const matchedColor = commonColors.find(c => c.name.toLowerCase() === colorValue.toLowerCase())
+  // 19. Color & Custom Color
+  let colorValue = keyValueMap['color']
+  let customColorValue = keyValueMap['custom_color']
+  let finalColor = null
+  if (customColorValue && /^#[0-9A-F]{6}$/i.test(customColorValue.trim())) {
+    finalColor = customColorValue.trim()
+  } else if (colorValue) {
+    const cSearch = colorValue.toLowerCase().trim()
+    const matchedColor = commonColors.find(c => c.name.toLowerCase() === cSearch)
     if (matchedColor) {
-      form.value.color = matchedColor.hex
+      finalColor = matchedColor.hex
+    } else if (/^#[0-9A-F]{6}$/i.test(colorValue.trim())) {
+      finalColor = colorValue.trim()
+    }
+  }
+  if (finalColor) {
+    form.value.color = finalColor
+    matchedCount++
+    extractedDetails.push(`Color: ${finalColor}`)
+  }
+
+  // 20. Phone & WhatsApp
+  if (keyValueMap['phone_number']) {
+    const cleanPhone = keyValueMap['phone_number'].replace(/[^\d+]/g, '')
+    if (cleanPhone && !cleanPhone.includes('X') && !cleanPhone.includes('x')) {
+      form.value.phone_number = cleanPhone
       matchedCount++
-      extractedDetails.push(`Color: ${matchedColor.name}`)
-    } else if (/^#[0-9A-F]{6}$/i.test(colorValue)) {
-      form.value.color = colorValue
+      extractedDetails.push(`Phone: ${cleanPhone}`)
+    }
+  }
+  if (keyValueMap['whatsapp_number']) {
+    const cleanWa = keyValueMap['whatsapp_number'].replace(/[^\d+]/g, '')
+    if (cleanWa && !cleanWa.includes('X') && !cleanWa.includes('x')) {
+      form.value.whatsapp_number = cleanWa
       matchedCount++
-      extractedDetails.push(`Color: ${colorValue}`)
+      extractedDetails.push(`WhatsApp: ${cleanWa}`)
     }
   }
 
-  // 14. Title Arabic
-  let titleArValue = keyValueMap['title arabic'] || keyValueMap['title ar'] || keyValueMap['العنوان العربي'] || keyValueMap['الاسم العربي']
-  if (titleArValue) {
-    form.value.title_ar = titleArValue.slice(0, 150)
+  // 21. Promotions (Featured / Homepage)
+  if (keyValueMap['is_best_deal'] && 'is_best_deal' in form.value) {
+    const val = keyValueMap['is_best_deal'].toUpperCase()
+    form.value.is_best_deal = (val === 'ON' || val === 'YES' || val === '1' || val === 'TRUE')
     matchedCount++
-    extractedDetails.push('Title Arabic Matched')
+    extractedDetails.push(`Featured Ad: ${form.value.is_best_deal}`)
   }
-
-  // 15. Title English
-  let titleEnValue = keyValueMap['title english'] || keyValueMap['title en'] || keyValueMap['العنوان الانجليزي'] || keyValueMap['الاسم الانجليزي']
-  if (titleEnValue) {
-    form.value.title_en = titleEnValue.slice(0, 150)
+  if (keyValueMap['is_global_ad'] && 'is_global_ad' in form.value) {
+    const val = keyValueMap['is_global_ad'].toUpperCase()
+    form.value.is_global_ad = (val === 'ON' || val === 'YES' || val === '1' || val === 'TRUE')
     matchedCount++
-    extractedDetails.push('Title English Matched')
+    extractedDetails.push(`Homepage Promotion: ${form.value.is_global_ad}`)
   }
 
-  // 16. Description Arabic
-  let descArValue = keyValueMap['description arabic'] || keyValueMap['description ar'] || keyValueMap['الوصف العربي']
-  if (descArValue) {
-    form.value.description_ar = descArValue.slice(0, 2000)
-    matchedCount++
-    extractedDetails.push('Description Arabic Matched')
-  }
-
-  // 17. Description English
-  let descEnValue = keyValueMap['description english'] || keyValueMap['description en'] || keyValueMap['الوصف الانجليزي']
-  if (descEnValue) {
-    form.value.description_en = descEnValue.slice(0, 2000)
-    matchedCount++
-    extractedDetails.push('Description English Matched')
-  }
-
-  // 18. Country & City Match
-  let countryValue = keyValueMap['country'] || keyValueMap['البلد'] || keyValueMap['الدولة'] || keyValueMap['بلد'] || keyValueMap['دولة']
-  let cityValue = keyValueMap['city'] || keyValueMap['المدينة'] || keyValueMap['مدينة'] || keyValueMap['المحافظة']
-
-  let matchedCountry = null
-  if (countryValue) {
-    matchedCountry = countries.value.find(c => {
-      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
-      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
-      const search = countryValue.toLowerCase().trim()
-      return nameEn === search || nameAr === search || nameEn.includes(search) || nameAr.includes(search)
-    })
-  } else {
-    matchedCountry = countries.value.find(c => {
-      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
-      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
-      if (nameEn.length <= 1 && nameAr.length <= 1) return false
-      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-    })
-  }
-
-  if (matchedCountry) {
-    form.value.country_id = matchedCountry.id
-    matchedCount++
-    extractedDetails.push(`Country: ${matchedCountry.name?.en ?? matchedCountry.name}`)
-    
-    await loadCities()
-    if (cities.value.length) {
-      let matchedCity = null
-      if (cityValue) {
-        const search = cityValue.toLowerCase().trim()
-        matchedCity = cities.value.find(c => {
-          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
-          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
-          return nameEn === search || nameAr === search || nameEn.includes(search) || nameAr.includes(search)
-        })
-      } else {
-        matchedCity = cities.value.find(c => {
-          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
-          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
-          if (nameEn.length <= 1 && nameAr.length <= 1) return false
-          return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-        })
-      }
-      
-      if (matchedCity) {
-        form.value.city_id = matchedCity.id
-        matchedCount++
-        extractedDetails.push(`City: ${matchedCity.name?.en ?? matchedCity.name}`)
-      }
-    }
-  }
-
-  // 19. Phone Number
-  let phoneValue = keyValueMap['phone'] || keyValueMap['phone number'] || keyValueMap['تليفون'] || keyValueMap['الهاتف'] || keyValueMap['رقم الهاتف'] || keyValueMap['الجوال'] || keyValueMap['موبايل'] || keyValueMap['رقم الموبايل'] || keyValueMap['رقم التليفون']
-  if (phoneValue) {
-    const cleanPhone = phoneValue.replace(/[^\d+]/g, '')
-    form.value.phone_number = cleanPhone
-    matchedCount++
-    extractedDetails.push(`Phone: ${cleanPhone}`)
-  } else {
-    const phoneMatch = text.match(/\b(01[0-25]\d{8}|002\d{10}|\+20\d{10})\b/)
-    if (phoneMatch) {
-      form.value.phone_number = phoneMatch[1]
-      matchedCount++
-      extractedDetails.push(`Phone: ${phoneMatch[1]}`)
-    }
-  }
-
-  // 20. WhatsApp Number
-  let whatsappValue = keyValueMap['whatsapp'] || keyValueMap['whatsapp number'] || keyValueMap['واتساب'] || keyValueMap['رقم الواتساب']
-  if (whatsappValue) {
-    const cleanWa = whatsappValue.replace(/[^\d+]/g, '')
-    form.value.whatsapp_number = cleanWa
-    matchedCount++
-    extractedDetails.push(`WhatsApp: ${cleanWa}`)
-  } else {
-    const waMatch = text.match(/\b(01[0-25]\d{8}|002\d{10}|\+20\d{10})\b/g)
-    if (waMatch && waMatch.length > 0) {
-      const num = waMatch[waMatch.length - 1]
-      form.value.whatsapp_number = num
-      matchedCount++
-      extractedDetails.push(`WhatsApp: ${num}`)
-    }
-  }
-
-  // 21. Features / Options Match
+  // 22. Features / Options Match
   if (features.value && features.value.length) {
     const matchedFeatures = []
     features.value.forEach(f => {
@@ -821,6 +776,28 @@ const handleParseSpecs = async () => {
       const nameAr = String(f.name?.ar ?? f.name ?? '').toLowerCase().trim()
       if (nameEn.length > 2 && text.toLowerCase().includes(nameEn)) {
         if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
+      } else if (nameAr.length > 2 && text.toLowerCase().includes(nameAr)) {
+        if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
+      }
+    })
+    
+    if (matchedFeatures.length > 0) {
+      form.value.features = matchedFeatures
+      matchedCount += matchedFeatures.length
+      extractedDetails.push(`Features: ${matchedFeatures.length} matched`)
+    }
+  }
+
+  if (matchedCount > 0) {
+    specsFeedbackMessage.value = `Successfully extracted ${matchedCount} fields: ${extractedDetails.join(', ')}`
+  } else {
+    specsFeedbackMessage.value = `No matching specifications found in the pasted text. Please make sure the text contains standard car specs.`
+  }
+
+  setTimeout(() => {
+    specsFeedbackMessage.value = ''
+  }, 8000)
+}d)) matchedFeatures.push(f.id)
       } else if (nameAr.length > 2 && text.toLowerCase().includes(nameAr)) {
         if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
       }
