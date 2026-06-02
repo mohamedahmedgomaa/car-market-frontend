@@ -174,27 +174,30 @@ onMounted(() => {
   <div class="showrooms-directory-page py-12">
     <VContainer>
       <!-- Premium Split Hero Layout (Above the Fold) -->
-      <VRow class="align-center mb-8" no-gutters>
+      <VRow class="align-center mb-6" no-gutters>
         <!-- Left: Search & Discovery for Buyers -->
-        <VCol cols="12" md="8" class="pe-md-10 mb-8 mb-md-0">
+        <VCol cols="12" md="8" class="pe-md-10 mb-6 mb-md-0">
           <div class="header-section text-center text-md-start animate-fade-in">
-            <div class="d-inline-flex align-center gap-2 px-4 py-1.5 rounded-pill bg-primary-subtle mb-4 border border-primary-20">
-              <VIcon icon="tabler-building-store" size="18" color="primary" />
+            <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle mb-3 border border-primary-20">
+              <VIcon icon="tabler-building-store" size="16" color="primary" />
               <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">Showrooms Directory</span>
             </div>
             
-            <h1 class="text-h2 font-weight-black text-white mb-4 leading-tight">
-              Find & Search Any <span class="text-gradient">Showroom</span> in Egypt
+            <h1 class="text-h3 font-weight-black text-white mb-2 leading-tight">
+              Discover Egypt's <span class="text-gradient">Premier Showrooms</span>
             </h1>
-            <p class="text-h6 text-white-50 max-w-650 font-weight-medium mb-8" style="line-height: 1.6;">
-              Your comprehensive destination to explore certified automotive dealers. Search by name, city, or neighborhood to locate verified showrooms and browse premium inventories.
+            <div class="text-subtitle-1 font-weight-bold text-primary-subtle mb-4 font-arabic" dir="rtl" style="font-family: 'Cairo', sans-serif !important;">
+              ابحث عن أفضل معارض السيارات المعتمدة في مصر
+            </div>
+            <p class="text-body-2 text-white-50 max-w-650 font-weight-medium mb-6" style="line-height: 1.5;">
+              Explore certified automotive dealerships nationwide. Locate verified showrooms, browse premium inventories, and connect directly with verified owners.
             </p>
 
             <!-- Ultra-Sleek Trust & Stats Bar -->
-            <div class="d-flex align-center justify-center justify-md-start flex-wrap gap-4 animate-fade-in">
-              <div class="stat-badge d-flex align-center gap-2 px-4 py-2 rounded-xl bg-white-5 border-white-10">
-                <div class="d-flex align-center justify-center rounded-lg bg-primary-subtle px-2 py-1.5">
-                  <VIcon icon="tabler-discount-check" color="primary" size="18" />
+            <div class="d-flex align-center justify-center justify-md-start flex-wrap gap-3 animate-fade-in">
+              <div class="stat-badge d-flex align-center gap-2 px-3.5 py-1.5 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-lg bg-primary-subtle px-1.5 py-1">
+                  <VIcon icon="tabler-discount-check" color="primary" size="16" />
                 </div>
                 <div class="d-flex flex-column text-start">
                   <span class="text-caption font-weight-black text-white leading-tight">120+ Dealers</span>
@@ -202,9 +205,9 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="stat-badge d-flex align-center gap-2 px-4 py-2 rounded-xl bg-white-5 border-white-10">
-                <div class="d-flex align-center justify-center rounded-lg bg-success-subtle px-2 py-1.5">
-                  <VIcon icon="tabler-map-pin" color="success" size="18" />
+              <div class="stat-badge d-flex align-center gap-2 px-3.5 py-1.5 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-lg bg-success-subtle px-1.5 py-1">
+                  <VIcon icon="tabler-map-pin" color="success" size="16" />
                 </div>
                 <div class="d-flex flex-column text-start">
                   <span class="text-caption font-weight-black text-white leading-tight">Egypt-wide</span>
@@ -212,9 +215,9 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="stat-badge d-flex align-center gap-2 px-4 py-2 rounded-xl bg-white-5 border-white-10">
-                <div class="d-flex align-center justify-center rounded-lg bg-warning-subtle px-2 py-1.5">
-                  <VIcon icon="tabler-circle-check" color="warning" size="18" />
+              <div class="stat-badge d-flex align-center gap-2 px-3.5 py-1.5 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-lg bg-warning-subtle px-1.5 py-1">
+                  <VIcon icon="tabler-circle-check" color="warning" size="16" />
                 </div>
                 <div class="d-flex flex-column text-start">
                   <span class="text-caption font-weight-black text-white leading-tight">100% Secure</span>
@@ -227,18 +230,18 @@ onMounted(() => {
 
         <!-- Right: Premium Partnership Card for Showroom Owners & Agencies -->
         <VCol cols="12" md="4">
-          <VCard class="dealer-promo-card pa-6 rounded-2xl elevation-10 overflow-hidden relative border-glow">
-            <div class="d-flex flex-column gap-3 relative z-1">
-              <div class="d-inline-flex align-center gap-1.5 px-3 py-1 rounded-pill bg-primary-subtle text-primary text-caption font-weight-bold align-self-start">
-                <VIcon icon="tabler-rocket" size="14" /> Dealership Partnership
+          <VCard class="dealer-promo-card pa-5 rounded-2xl elevation-10 overflow-hidden relative border-glow">
+            <div class="d-flex flex-column gap-2 relative z-1">
+              <div class="d-inline-flex align-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-primary-subtle text-primary text-caption font-weight-bold align-self-start">
+                <VIcon icon="tabler-rocket" size="12" /> Dealership Partnership
               </div>
               
-              <h2 class="text-h5 font-weight-black text-white leading-tight">
+              <h2 class="text-h6 font-weight-black text-white leading-tight">
                 Own a Showroom?
               </h2>
               
-              <p class="text-caption text-white-50 mb-2 font-weight-medium" style="line-height: 1.5;">
-                Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Display your inventory and receive direct qualified buyer leads.
+              <p class="text-caption text-white-50 mb-1 font-weight-medium" style="line-height: 1.4;">
+                Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Display your inventory and receive direct buyer leads.
               </p>
               
               <VBtn
@@ -246,11 +249,11 @@ onMounted(() => {
                 size="large"
                 rounded="pill"
                 to="/seller/register"
-                class="px-5 font-weight-black shadow-primary text-subtitle-2 w-100"
-                height="44"
+                class="px-4 font-weight-black shadow-primary text-subtitle-2 w-100"
+                height="40"
                 elevation="8"
               >
-                <VIcon icon="tabler-building-store" size="18" class="me-2" />
+                <VIcon icon="tabler-building-store" size="16" class="me-2" />
                 Register Showroom
               </VBtn>
             </div>
@@ -258,8 +261,8 @@ onMounted(() => {
         </VCol>
       </VRow>
 
-      <!-- Premium Structured Search Deck (Spanning Full Width) -->
-      <div class="premium-horizontal-search mb-10 animate-fade-in">
+      <!-- Premium Structured Search Deck (Spanning Full Width - Compact!) -->
+      <div class="premium-horizontal-search mb-8 animate-fade-in">
         <div class="search-main-row">
           <!-- 1. Showroom Name Field -->
           <div class="search-col search-col-name">
@@ -275,7 +278,7 @@ onMounted(() => {
             />
           </div>
 
-          <!-- 2. Governorate Field (العاصمة والمحافظات) -->
+          <!-- 2. Governorate Field -->
           <div class="search-col search-col-governorate">
             <VAutocomplete
               v-model="filters.cityId"
@@ -399,11 +402,16 @@ onMounted(() => {
                       <span>Verified Showroom</span>
                     </div>
 
-                    <div class="d-flex align-center gap-1 text-white-50 text-caption mt-1">
-                      <VIcon icon="tabler-map-pin" size="14" color="error" />
-                      <span class="text-truncate font-weight-medium">
-                        {{ t(seller.city?.name) ? (t(seller.city?.name) + (t(seller.address) ? ' - ' + t(seller.address) : '')) : (t(seller.address) || 'Egypt') }}
-                      </span>
+                    <!-- Beautiful Custom Location Tags -->
+                    <div class="d-flex align-center flex-wrap gap-2 mt-2">
+                      <div class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-70 text-xxs font-weight-black border-white-10">
+                        <VIcon icon="tabler-map-pin-filled" size="11" color="primary" />
+                        <span>{{ t(seller.city?.name) || 'Egypt' }}</span>
+                      </div>
+                      <div v-if="t(seller.address)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-50 text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.address)">
+                        <VIcon icon="tabler-map-pin" size="11" color="white-50" />
+                        <span>{{ t(seller.address) }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -578,6 +586,10 @@ onMounted(() => {
   font-size: 0.65rem !important;
 }
 
+.text-white-70 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
 .stat-badge {
   transition: all 0.3s ease;
   &:hover {
@@ -654,13 +666,13 @@ onMounted(() => {
   animation: pulse 2s infinite ease-in-out;
 }
 
-/* Premium Horizontal Search Deck Styles */
+/* Premium Horizontal Search Deck Styles - Very Compact! */
 .premium-horizontal-search {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 20px 24px;
+  border-radius: 20px;
+  padding: 12px 18px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
@@ -766,6 +778,10 @@ onMounted(() => {
 
 .gap-4 {
   gap: 16px;
+}
+
+.font-arabic {
+  font-family: 'Cairo', 'Inter', sans-serif !important;
 }
 
 @media (max-width: 959px) {
