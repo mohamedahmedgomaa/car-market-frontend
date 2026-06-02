@@ -227,14 +227,14 @@ const logout = async () => {
 
         <!-- Title -->
         <div class="d-flex align-center">
-          <VAppBarTitle class="me-6">
+          <VAppBarTitle class="me-sm-6 me-1 logo-title-wrapper">
             <RouterLink
               to="/"
               class="d-flex gap-x-4"
               :class="$vuetify.display.mdAndUp ? 'd-block' : 'd-block'"
               style="text-decoration: none;"
             >
-              <h1 class="app-logo-title" style="font-size: 1.75rem; font-weight: 800; letter-spacing: 0.5px; color: rgb(var(--v-theme-primary));">NegmCars</h1>
+              <h1 class="app-logo-title">NegmCars</h1>
             </RouterLink>
           </VAppBarTitle>
 
@@ -307,10 +307,10 @@ const logout = async () => {
             color="primary"
             variant="elevated"
             to="/login"
-            class="ms-3 auth-main-btn px-6"
+            class="ms-sm-3 ms-1 auth-main-btn"
             rounded="xl"
           >
-            <VIcon icon="tabler-user-circle" class="me-2" size="20" />
+            <VIcon icon="tabler-user-circle" class="auth-btn-icon me-sm-2 me-1" size="20" />
             Login
           </VBtn>
         </template>
@@ -319,10 +319,10 @@ const logout = async () => {
           <VBtn
             variant="tonal"
             to="/user/profile"
-            class="ms-3 px-6"
+            class="ms-sm-3 ms-1 profile-main-btn"
             rounded="xl"
           >
-            <VIcon icon="tabler-user" class="me-2" size="20" />
+            <VIcon icon="tabler-user" class="auth-btn-icon me-sm-2 me-1" size="20" />
             Profile
           </VBtn>
 
@@ -330,7 +330,7 @@ const logout = async () => {
             icon
             variant="text"
             color="error"
-            class="ms-2"
+            class="ms-sm-2 ms-1 logout-btn"
             @click="logout"
           >
             <VIcon icon="tabler-logout" size="22" />
@@ -362,16 +362,16 @@ const logout = async () => {
 }
 
 .app-bar-light {
-  border: 2px solid rgba(var(--v-theme-surface), 68%);
+  border: 2px solid rgba(var(--v-theme-surface), 0.68);
   border-radius: 0.5rem;
-  background-color: rgba(var(--v-theme-surface), 38%);
+  background-color: rgba(var(--v-theme-surface), 0.38);
   transition: all 0.1s ease-in-out;
 }
 
 .app-bar-dark {
-  border: 2px solid rgba(var(--v-theme-surface), 68%);
+  border: 2px solid rgba(var(--v-theme-surface), 0.68);
   border-radius: 0.5rem;
-  background-color: rgba(255, 255, 255, 4%);
+  background-color: rgba(255, 255, 255, 0.04);
   transition: all 0.1s ease-in-out;
 }
 
@@ -380,6 +380,67 @@ const logout = async () => {
   border-radius: 0.5rem;
   background-color: rgb(var(--v-theme-surface)) !important;
   transition: all 0.1s ease-in-out;
+}
+
+.app-logo-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: rgb(var(--v-theme-primary));
+  transition: all 0.2s ease;
+
+  @media (max-width: 600px) {
+    font-size: 1.3rem !important;
+  }
+}
+
+.auth-main-btn {
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: none !important;
+  height: 44px !important;
+  padding-inline: 24px !important;
+  box-shadow: 0 8px 20px -6px rgba(var(--v-theme-primary), 0.4) !important;
+  transition: all 0.3s ease !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -6px rgba(var(--v-theme-primary), 0.5) !important;
+  }
+
+  @media (max-width: 600px) {
+    height: 36px !important;
+    padding-inline: 12px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+.profile-main-btn {
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: none !important;
+  height: 44px !important;
+  padding-inline: 24px !important;
+  transition: all 0.3s ease !important;
+
+  @media (max-width: 600px) {
+    height: 36px !important;
+    padding-inline: 12px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+.auth-btn-icon {
+  @media (max-width: 600px) {
+    size: 16px !important;
+  }
+}
+
+.logout-btn {
+  @media (max-width: 600px) {
+    width: 32px !important;
+    height: 32px !important;
+  }
 }
 
 /* ✅ نفس حجم Vuexy الأصلي */
@@ -397,12 +458,20 @@ const logout = async () => {
 .front-page-navbar {
   .v-toolbar__content {
     padding-inline: 30px !important; /* ✅ نفس الأصل */
+
+    @media (max-width: 600px) {
+      padding-inline: 12px !important; /* ✅ Less padding on mobile to prevent clipping */
+    }
   }
 
   .v-toolbar {
     inset-inline: 0 !important;
     margin-block-start: 1rem !important;
     margin-inline: auto !important;
+
+    @media (max-width: 600px) {
+      margin-block-start: 0.5rem !important;
+    }
   }
 }
 
@@ -442,22 +511,8 @@ const logout = async () => {
 @media (max-width: 600px) {
   .front-page-navbar {
     .v-toolbar {
-      max-inline-size: calc(100% - 32px);
+      max-inline-size: calc(100% - 24px) !important; /* Let it expand slightly more on very small screens */
     }
-  }
-}
-
-.auth-main-btn {
-  font-weight: 700 !important;
-  letter-spacing: 0.5px !important;
-  text-transform: none !important;
-  height: 44px !important;
-  box-shadow: 0 8px 20px -6px rgba(var(--v-theme-primary), 0.4) !important;
-  transition: all 0.3s ease !important;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 25px -6px rgba(var(--v-theme-primary), 0.5) !important;
   }
 }
 

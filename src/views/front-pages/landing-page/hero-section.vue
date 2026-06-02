@@ -883,8 +883,45 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 600px) {
+  .premium-search-card {
+    padding: 16px !important;
+    border-radius: 24px !important;
+  }
   .search-form-grid {
     grid-template-columns: 1fr;
+    gap: 12px 10px !important;
+  }
+  .group-label {
+    font-size: 10px !important;
+    letter-spacing: 1px !important;
+  }
+  .toggle-btn {
+    height: 34px !important;
+    font-size: 12px !important;
+  }
+  .premium-input :deep(.v-field) {
+    height: 38px !important;
+    border-radius: 12px !important;
+  }
+  .premium-input :deep(.v-field__input) {
+    min-height: 38px !important;
+    font-size: 13px !important;
+  }
+  .premium-id-input :deep(.v-field) {
+    height: 38px !important;
+  }
+  .premium-id-input :deep(.v-field__input) {
+    min-height: 38px !important;
+    font-size: 0.8rem !important;
+  }
+  .search-actions-row {
+    gap: 8px !important;
+    margin-top: 16px !important;
+  }
+  .search-main-btn, .sell-side-btn {
+    height: 42px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
   }
 }
 

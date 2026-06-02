@@ -167,6 +167,14 @@ onMounted(() => {
   padding: 5px;
   gap: 5px;
   backdrop-filter: blur(10px);
+
+  @media (max-width: 600px) {
+    width: 100%;
+    justify-content: space-between;
+    border-radius: 12px;
+    padding: 3px;
+    gap: 3px;
+  }
 }
 
 .type-btn {
@@ -181,6 +189,14 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   opacity: 0.6;
+
+  @media (max-width: 600px) {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px !important;
+    font-size: 13px;
+    border-radius: 9px;
+  }
 }
 
 .type-btn:hover {

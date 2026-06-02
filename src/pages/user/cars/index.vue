@@ -1702,15 +1702,20 @@ onMounted(async () => {
 .mobile-floating-btn {
   font-weight: 800 !important;
   text-transform: none !important;
-  font-size: 15px !important;
+  font-size: 14px !important;
   letter-spacing: 0.5px !important;
-  box-shadow: 0 10px 30px rgba(var(--v-theme-primary), 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  transition: all 0.3s ease !important;
+  background: rgba(var(--v-theme-primary), 0.9) !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 8px 32px rgba(var(--v-theme-primary), 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  color: #fff !important;
 }
 
 .mobile-floating-btn:active {
   transform: scale(0.95);
+  background: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 12px 36px rgba(var(--v-theme-primary), 0.6) !important;
 }
 
 .trans-title, .fuel-title, .drive-title {
