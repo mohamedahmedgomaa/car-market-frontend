@@ -10,6 +10,7 @@ import featureAdminApi from '../../../api/admin/carFeatureAdminApi.js'
 import countryAdminApi from '../../../api/admin/countryAdminApi.js'
 import cityAdminApi from '../../../api/admin/cityAdminApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
+import { customBrandFilter } from '@/utils/brandTranslations.js'
 
 const router = useRouter()
 
@@ -1069,6 +1070,7 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-building-factory"
                 variant="outlined"
                 @update:modelValue="loadModels"
+                :custom-filter="customBrandFilter"
                 :error="!!fieldError('brand_id').length"
                 :error-messages="fieldError('brand_id')"
               />

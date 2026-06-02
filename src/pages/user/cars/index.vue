@@ -6,6 +6,7 @@ import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
 import featureUserApi from '@/api/user/carFeatureUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
+import { customBrandFilter } from '@/utils/brandTranslations.js'
 
 definePage({
   meta: { layout: 'front', public: true },
@@ -406,12 +407,7 @@ watch(() => draft.value.brandId, async (val) => {
   } catch { draftModels.value = [] }
 }, { immediate: true })
 
-const customBrandFilter = (value, queryText, item) => {
-  const nameEn = String(item.raw?.name?.en || item.raw?.name || '').toLowerCase()
-  const nameAr = String(item.raw?.name?.ar || '').toLowerCase()
-  const q = String(queryText).toLowerCase()
-  return nameEn.includes(q) || nameAr.includes(q)
-}
+
 
 const filteredBrands = computed(() => {
   const type = draft.value.type || 'car'

@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import api from '@/api/index.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
+import { customBrandFilter } from '@/utils/brandTranslations.js'
 
 const theme = useTheme()
 const router = useRouter()
@@ -210,7 +211,7 @@ const fetchBrands = async () => {
   try {
     const res = await brandUserApi.getAll()
     const data = res.data?.data || res.data || []
-    brandsList.value = data.map((b) => ({ id: b.id, name: t(b.name) }))
+    brandsList.value = data.map((b) => ({ id: b.id, name: t(b.name), originalName: b.name }))
   } catch (err) {
     console.error('Error fetching brands:', err)
   }
@@ -401,6 +402,7 @@ onBeforeUnmount(() => {
                   density="compact"
                   variant="outlined"
                   hide-details
+                  :custom-filter="customBrandFilter"
                   class="premium-input"
                 />
               </div>
