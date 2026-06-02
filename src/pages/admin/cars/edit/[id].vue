@@ -797,28 +797,6 @@ const handleParseSpecs = async () => {
   setTimeout(() => {
     specsFeedbackMessage.value = ''
   }, 8000)
-}d)) matchedFeatures.push(f.id)
-      } else if (nameAr.length > 2 && text.toLowerCase().includes(nameAr)) {
-        if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
-      }
-    })
-    
-    if (matchedFeatures.length > 0) {
-      form.value.features = matchedFeatures
-      matchedCount += matchedFeatures.length
-      extractedDetails.push(`Features: ${matchedFeatures.length} matched`)
-    }
-  }
-
-  if (matchedCount > 0) {
-    specsFeedbackMessage.value = `Successfully extracted ${matchedCount} fields: ${extractedDetails.join(', ')}`
-  } else {
-    specsFeedbackMessage.value = `No matching specifications found in the pasted text. Please make sure the text contains standard car specs.`
-  }
-
-  setTimeout(() => {
-    specsFeedbackMessage.value = ''
-  }, 8000)
 }
 
 /* ================= Helpers ================= */
