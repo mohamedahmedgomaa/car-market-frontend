@@ -508,6 +508,21 @@ onMounted(async () => {
     features.value = fRes.data?.data || fRes.data || []
   } catch {}
 })
+
+const activeAdvancedFiltersCount = computed(() => {
+  let count = 0
+  const d = draft.value
+  if (d.condition !== '') count++
+  if (d.priceFrom !== null || d.priceTo !== null) count++
+  if (d.yearFrom !== null || d.yearTo !== null) count++
+  if (d.mileageFrom !== null || d.mileageTo !== null) count++
+  if (d.transmission !== null) count++
+  if (d.fuelType !== null) count++
+  if (d.drivetrain !== null) count++
+  if (d.adCategory !== '') count++
+  if (d.featureIds && d.featureIds.length > 0) count++
+  return count
+})
 </script>
 
 <template>
@@ -618,11 +633,21 @@ onMounted(async () => {
                 variant="tonal"
                 height="44"
                 color="secondary"
-                class="horizontal-advanced-btn px-4"
+                class="horizontal-advanced-btn px-5"
                 :class="{ active: isAdvancedOpen }"
                 @click="isAdvancedOpen = !isAdvancedOpen"
               >
-                <VIcon :icon="isAdvancedOpen ? 'tabler-chevron-up' : 'tabler-adjustments-horizontal'" />
+                <VIcon
+                  :icon="isAdvancedOpen ? 'tabler-chevron-up' : 'tabler-adjustments-horizontal'"
+                  class="me-1"
+                />
+                <span>{{ isAdvancedOpen ? 'Less Filters' : 'More Filters' }}</span>
+                <span
+                  v-if="activeAdvancedFiltersCount > 0"
+                  class="filter-count-badge ms-1"
+                >
+                  {{ activeAdvancedFiltersCount }}
+                </span>
               </VBtn>
             </div>
           </div>
@@ -1241,7 +1266,13 @@ onMounted(async () => {
       class="px-6 mobile-floating-btn"
       @click="isMobileFilterOpen = true"
     >
-      Filters
+      <span>Filters</span>
+      <span
+        v-if="activeAdvancedFiltersCount > 0"
+        class="filter-count-badge filter-count-badge--mobile ms-2"
+      >
+        {{ activeAdvancedFiltersCount }}
+      </span>
     </VBtn>
   </div>
 </template>
@@ -1269,7 +1300,7 @@ onMounted(async () => {
 .search-main-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   flex-wrap: nowrap;
 }
 
@@ -1279,24 +1310,24 @@ onMounted(async () => {
 }
 
 .search-col-query {
-  flex: 2;
+  flex: 1.3;
 }
 
 .search-col-brand,
 .search-col-model {
-  flex: 1.2;
+  flex: 0.85;
 }
 
 .search-col-type {
-  flex: 1.2;
-  max-width: 200px;
+  flex: 0.85;
+  max-width: 150px;
 }
 
 .search-col-actions {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
 }
 
 /* Integrated Outlined Cohesion for all Vuetify 3 inputs */
@@ -1413,6 +1444,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 13px !important;
 }
 
 .horizontal-advanced-btn:hover,
@@ -1754,5 +1786,24 @@ onMounted(async () => {
 
 .trans-title, .fuel-title, .drive-title {
   white-space: nowrap;
+}
+
+/* filter count badge styling */
+.filter-count-badge {
+  background: rgba(var(--v-theme-primary), 1);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-count-badge--mobile {
+  background: #fff;
+  color: rgb(var(--v-theme-primary)) !important;
 }
 </style>
