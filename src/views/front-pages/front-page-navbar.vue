@@ -90,7 +90,7 @@ const logout = async () => {
           <RouterLink
             to="/user/cars"
             class="nav-link font-weight-medium"
-            :class="route.path === '/user/cars' && !route.query.sort && !route.query['filter[type]'] ? 'active-link' : ''"
+            :class="route.path === '/user/cars' && route.query['filter[type]'] !== 'motorcycle' ? 'active-link' : ''"
             @click="sidebar = false"
           >
             Cars
@@ -243,7 +243,7 @@ const logout = async () => {
             <RouterLink
               to="/user/cars"
               class="nav-link font-weight-bold py-2 px-2"
-              :class="route.path === '/user/cars' && !route.query.sort && !route.query['filter[type]'] ? 'active-link' : ''"
+              :class="route.path === '/user/cars' && route.query['filter[type]'] !== 'motorcycle' ? 'active-link' : ''"
             >
               Cars
             </RouterLink>
