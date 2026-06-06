@@ -336,8 +336,10 @@ watch(
               <!-- ✅ Brand & Model -->
               <div class="car-card__meta mb-1 opacity-90">
                 <span class="font-weight-bold">{{ t(car.brand?.name) }}</span>
-                <span class="mx-1">•</span>
+                <span class="mx-2">|</span>
                 <span>{{ t(car.model?.name) }}</span>
+                <span class="mx-2">|</span>
+                <span>{{ Number(car.is_import) === 1 ? 'Imported' : 'Local' }}</span>
               </div>
 
               <!-- ✅ Year & Condition -->
@@ -558,6 +560,7 @@ watch(
   color: #fff;
   opacity: 0.9;
 }
+
 .car-card__info {
   font-size: 14px;
   color: #fff;
