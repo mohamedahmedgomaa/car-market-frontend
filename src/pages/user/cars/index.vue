@@ -140,7 +140,7 @@ const draft = ref({
   transmission: null,
   fuelType: null,
   drivetrain: null,
-  isImport: null,
+  adCategory: '',
   featureIds: [],
 })
 
@@ -182,6 +182,17 @@ const syncDraftFromQuery = () => {
   const p = parseBetweenFromQuery(q, 'price_between')
   const m = parseBetweenFromQuery(q, 'mileage_between')
 
+  let adCat = ''
+  if (q['filter[is_featured]'] === '1') {
+    adCat = 'featured'
+  } else if (q['filter[is_best_deal]'] === '1') {
+    adCat = 'best_deal'
+  } else if (q['filter[is_import]'] === '1') {
+    adCat = 'imported'
+  } else if (q['filter[is_import]'] === '0') {
+    adCat = 'local'
+  }
+
   draft.value = {
     q: String(firstQueryVal(q['filter[global]']) || ''),
     type: String(firstQueryVal(q['filter[type]']) || 'car'),
@@ -197,7 +208,7 @@ const syncDraftFromQuery = () => {
     transmission: q['filter[transmission]'] ? String(firstQueryVal(q['filter[transmission]'])) : null,
     fuelType: q['filter[fuel_type]'] ? String(firstQueryVal(q['filter[fuel_type]'])) : null,
     drivetrain: q['filter[drivetrain]'] ? String(firstQueryVal(q['filter[drivetrain]'])) : null,
-    isImport: q['filter[is_import]'] !== undefined && q['filter[is_import]'] !== null ? String(firstQueryVal(q['filter[is_import]'])) : null,
+    adCategory: adCat,
     featureIds: q['filter[feature_ids]'] ? String(firstQueryVal(q['filter[feature_ids]'])).split(',').map(Number).filter(Boolean) : [],
   }
 }
@@ -220,7 +231,18 @@ const buildParams = (p = 1) => {
   if (d.transmission) params['filter[transmission]'] = d.transmission
   if (d.fuelType) params['filter[fuel_type]'] = d.fuelType
   if (d.drivetrain) params['filter[drivetrain]'] = d.drivetrain
-  if (d.isImport !== null && d.isImport !== '') params['filter[is_import]'] = d.isImport
+  
+  // Set corresponding backend filter
+  if (d.adCategory === 'featured') {
+    params['filter[is_featured]'] = '1'
+  } else if (d.adCategory === 'best_deal') {
+    params['filter[is_best_deal]'] = '1'
+  } else if (d.adCategory === 'imported') {
+    params['filter[is_import]'] = '1'
+  } else if (d.adCategory === 'local') {
+    params['filter[is_import]'] = '0'
+  }
+
   if (d.featureIds?.length) params['filter[feature_ids]'] = d.featureIds.join(',')
   
   putBetween(params, 'year_between', d.yearFrom, d.yearTo)
@@ -316,7 +338,23 @@ const applyFilters = () => {
   if (d.transmission) query['filter[transmission]'] = d.transmission; else delete query['filter[transmission]']
   if (d.fuelType) query['filter[fuel_type]'] = d.fuelType; else delete query['filter[fuel_type]']
   if (d.drivetrain) query['filter[drivetrain]'] = d.drivetrain; else delete query['filter[drivetrain]']
-  if (d.isImport !== null && d.isImport !== '') query['filter[is_import]'] = d.isImport; else delete query['filter[is_import]']
+  
+  // Clean old parameters
+  delete query['filter[is_import]']
+  delete query['filter[is_featured]']
+  delete query['filter[is_best_deal]']
+
+  // Map to corresponding router query parameter
+  if (d.adCategory === 'featured') {
+    query['filter[is_featured]'] = '1'
+  } else if (d.adCategory === 'best_deal') {
+    query['filter[is_best_deal]'] = '1'
+  } else if (d.adCategory === 'imported') {
+    query['filter[is_import]'] = '1'
+  } else if (d.adCategory === 'local') {
+    query['filter[is_import]'] = '0'
+  }
+
   if (d.featureIds?.length) query['filter[feature_ids]'] = d.featureIds.join(','); else delete query['filter[feature_ids]']
 
   putBetween(query, 'year_between', d.yearFrom, d.yearTo)
@@ -344,7 +382,7 @@ const resetAll = () => {
     transmission: null,
     fuelType: null,
     drivetrain: null,
-    isImport: null,
+    adCategory: '',
     featureIds: [],
   }
   router.push({ path: '/user/cars', query: {} })
@@ -596,7 +634,7 @@ onMounted(async () => {
                 <!-- Card 1: Condition -->
                 <div class="filter-card">
                   <div class="filter-card-header">
-                    <VIcon icon="tabler-car" class="filter-icon" />
+                    <VIcon icon="tabler-shield-check" class="filter-icon" />
                     <span class="filter-title">Condition</span>
                   </div>
                   <div class="filter-card-body">
@@ -735,7 +773,6 @@ onMounted(async () => {
                       :items="transmissionOptions"
                       item-value="value"
                       item-title="title"
-                      label="Transmission"
                       clearable
                       variant="outlined"
                       density="comfortable"
@@ -757,7 +794,6 @@ onMounted(async () => {
                       :items="fuelOptions"
                       item-value="value"
                       item-title="title"
-                      label="Fuel Type"
                       clearable
                       variant="outlined"
                       density="comfortable"
@@ -779,7 +815,6 @@ onMounted(async () => {
                       :items="drivetrainOptions"
                       item-value="value"
                       item-title="title"
-                      label="Drivetrain"
                       clearable
                       variant="outlined"
                       density="comfortable"
@@ -789,23 +824,24 @@ onMounted(async () => {
                   </div>
                 </div>
 
-                <!-- Card 8: Vehicle Source -->
+                <!-- Card 8: Classification -->
                 <div class="filter-card">
                   <div class="filter-card-header">
-                    <VIcon icon="tabler-world" class="filter-icon" />
-                    <span class="filter-title">Source</span>
+                    <VIcon icon="tabler-tags" class="filter-icon" />
+                    <span class="filter-title">Classification</span>
                   </div>
                   <div class="filter-card-body">
                     <VSelect
-                      v-model="draft.isImport"
+                      v-model="draft.adCategory"
                       :items="[
-                        { title: 'Local (وكيل / محلي)', value: '0' },
-                        { title: 'Imported (وارد الخارج)', value: '1' }
+                        { title: 'All', value: '' },
+                        { title: 'Featured Only', value: 'featured' },
+                        { title: 'Best Deals Only', value: 'best_deal' },
+                        { title: 'Imported Only', value: 'imported' },
+                        { title: 'Local Only', value: 'local' }
                       ]"
                       item-value="value"
                       item-title="title"
-                      label="Source"
-                      clearable
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1075,18 +1111,20 @@ onMounted(async () => {
                     />
                   </div>
 
-                  <!-- Source -->
+                  <!-- Classification -->
                   <div class="mb-4">
                     <VSelect
-                      v-model="draft.isImport"
+                      v-model="draft.adCategory"
                       :items="[
-                        { title: 'Local (وكيل / محلي)', value: '0' },
-                        { title: 'Imported (وارد الخارج)', value: '1' }
+                        { title: 'All', value: '' },
+                        { title: 'Featured Only', value: 'featured' },
+                        { title: 'Best Deals Only', value: 'best_deal' },
+                        { title: 'Imported Only', value: 'imported' },
+                        { title: 'Local Only', value: 'local' }
                       ]"
                       item-value="value"
                       item-title="title"
-                      label="Source"
-                      clearable
+                      label="Classification"
                       variant="outlined"
                       density="comfortable"
                       hide-details
