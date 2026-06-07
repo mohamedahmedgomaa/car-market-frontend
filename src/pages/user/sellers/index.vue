@@ -192,19 +192,19 @@ onMounted(() => {
 
             <!-- Ultra-Sleek Trust & Stats Bar -->
             <div class="d-flex align-center justify-center justify-md-start flex-wrap gap-3 animate-fade-in">
-              <div class="stat-badge d-flex align-center gap-2 px-3.5 py-1.5 rounded-xl bg-white-5 border-white-10">
-                <div class="d-flex align-center justify-center rounded-lg bg-primary-subtle px-1.5 py-1">
-                  <VIcon icon="tabler-discount-check" color="primary" size="16" />
+              <div class="stat-badge d-flex align-center gap-3 px-4 py-2 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-circle bg-primary-subtle" style="width: 36px; height: 36px; min-width: 36px;">
+                  <VIcon icon="tabler-building-store" color="primary" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
-                  <span class="text-caption font-weight-black text-white leading-tight">120+ Dealers</span>
-                  <span class="text-xxs text-white-50 leading-none">Verified Showrooms</span>
+                  <span class="text-caption font-weight-black text-white leading-tight">{{ sellers.length || 0 }} Showrooms</span>
+                  <span class="text-xxs text-white-50 leading-none">Verified Dealers</span>
                 </div>
               </div>
 
-              <div class="stat-badge d-flex align-center gap-2 px-3.5 py-1.5 rounded-xl bg-white-5 border-white-10">
-                <div class="d-flex align-center justify-center rounded-lg bg-success-subtle px-1.5 py-1">
-                  <VIcon icon="tabler-map-pin" color="success" size="16" />
+              <div class="stat-badge d-flex align-center gap-3 px-4 py-2 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-circle bg-success-subtle" style="width: 36px; height: 36px; min-width: 36px;">
+                  <VIcon icon="tabler-map-pin" color="success" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
                   <span class="text-caption font-weight-black text-white leading-tight">Egypt-wide</span>
@@ -212,9 +212,9 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="stat-badge d-flex align-center gap-2 px-3.5 py-1.5 rounded-xl bg-white-5 border-white-10">
-                <div class="d-flex align-center justify-center rounded-lg bg-warning-subtle px-1.5 py-1">
-                  <VIcon icon="tabler-circle-check" color="warning" size="16" />
+              <div class="stat-badge d-flex align-center gap-3 px-4 py-2 rounded-xl bg-white-5 border-white-10">
+                <div class="d-flex align-center justify-center rounded-circle bg-warning-subtle" style="width: 36px; height: 36px; min-width: 36px;">
+                  <VIcon icon="tabler-shield-check" color="warning" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
                   <span class="text-caption font-weight-black text-white leading-tight">100% Secure</span>
@@ -626,8 +626,8 @@ onMounted(() => {
 }
 
 .bg-primary-subtle {
-  background: rgba(var(--v-theme-primary), 0.15);
-  border: 1px solid rgba(var(--v-theme-primary), 0.25);
+  background: rgba(var(--v-theme-primary), 0.15) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.25) !important;
 }
 
 .shadow-primary {
