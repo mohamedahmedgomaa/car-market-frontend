@@ -183,12 +183,9 @@ onMounted(() => {
               <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">Showrooms Directory</span>
             </div>
             
-            <h1 class="text-h3 font-weight-black text-white mb-2 leading-tight">
+            <h1 class="text-h3 font-weight-black text-white mb-4 leading-tight">
               Discover Egypt's <span class="text-gradient">Premier Showrooms</span>
             </h1>
-            <div class="text-subtitle-1 font-weight-bold text-primary-subtle mb-4 font-arabic" dir="rtl" style="font-family: 'Cairo', sans-serif !important;">
-              ابحث عن أفضل معارض السيارات المعتمدة في مصر
-            </div>
             <p class="text-body-2 text-white-50 max-w-650 font-weight-medium mb-6" style="line-height: 1.5;">
               Explore certified automotive dealerships nationwide. Locate verified showrooms, browse premium inventories, and connect directly with verified owners.
             </p>
