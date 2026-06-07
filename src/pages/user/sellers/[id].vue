@@ -110,10 +110,19 @@ onMounted(fetchSeller)
                     </div>
 
                     <!-- City & Location line -->
-                    <div class="location-line d-flex align-center justify-center justify-md-start gap-2 mt-2 mb-3">
+                    <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-3">
                       <VIcon icon="tabler-map-pin" color="error" size="20" />
-                      <span class="text-subtitle-1 text-white font-weight-medium">
-                        {{ t(seller.address) || (seller.city ? t(seller.city.name) : 'Egypt, Mansoura, Hay Elgamaa') }}
+                      <span class="text-subtitle-1 text-white font-weight-black">
+                        {{ seller.city ? t(seller.city.name) : 'Egypt' }}
+                      </span>
+                      <span v-if="t(seller.district)" class="text-subtitle-1 text-white-70 font-weight-bold">
+                        • {{ t(seller.district) }}
+                      </span>
+                      <span v-if="t(seller.street)" class="text-subtitle-1 text-white-50 font-weight-medium">
+                        • {{ t(seller.street) }}
+                      </span>
+                      <span v-if="t(seller.address)" class="text-subtitle-1 text-white-50 font-weight-medium">
+                        ({{ t(seller.address) }})
                       </span>
                       <VChip
                         size="small"
@@ -123,7 +132,7 @@ onMounted(fetchSeller)
                         @click="openMap"
                         prepend-icon="tabler-map"
                       >
-                        Open Map
+                        Open Map / الموقع
                       </VChip>
                     </div>
 

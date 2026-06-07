@@ -80,6 +80,15 @@ const filteredSellers = computed(() => {
       const addressEn = (s.address?.en || '').toLowerCase()
       const addressAr = (s.address?.ar || '').toLowerCase()
       const addressStr = (typeof s.address === 'string' ? s.address : '').toLowerCase()
+      
+      const districtEn = (s.district?.en || '').toLowerCase()
+      const districtAr = (s.district?.ar || '').toLowerCase()
+      const districtStr = (typeof s.district === 'string' ? s.district : '').toLowerCase()
+
+      const streetEn = (s.street?.en || '').toLowerCase()
+      const streetAr = (s.street?.ar || '').toLowerCase()
+      const streetStr = (typeof s.street === 'string' ? s.street : '').toLowerCase()
+
       const descEn = (s.store_description?.en || s.bio || '').toLowerCase()
       const descAr = (s.store_description?.ar || '').toLowerCase()
       const descStr = (typeof s.store_description === 'string' ? s.store_description : '').toLowerCase()
@@ -88,6 +97,8 @@ const filteredSellers = computed(() => {
       const cityAr = (s.city?.name?.ar || '').toLowerCase()
 
       return addressEn.includes(q) || addressAr.includes(q) || addressStr.includes(q) ||
+             districtEn.includes(q) || districtAr.includes(q) || districtStr.includes(q) ||
+             streetEn.includes(q) || streetAr.includes(q) || streetStr.includes(q) ||
              descEn.includes(q) || descAr.includes(q) || descStr.includes(q) ||
              cityEn.includes(q) || cityAr.includes(q)
     })
@@ -405,10 +416,27 @@ onMounted(() => {
                         <VIcon icon="tabler-map-pin-filled" size="11" color="primary" />
                         <span>{{ t(seller.city?.name) || 'Egypt' }}</span>
                       </div>
-                      <div v-if="t(seller.address)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-50 text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.address)">
-                        <VIcon icon="tabler-map-pin" size="11" color="white-50" />
-                        <span>{{ t(seller.address) }}</span>
+                      
+                      <div v-if="t(seller.district)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-50 text-xxs font-weight-bold border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.district)">
+                        <VIcon icon="tabler-building" size="11" color="white-50" />
+                        <span>{{ t(seller.district) }}</span>
                       </div>
+
+                      <div v-if="t(seller.street)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-50 text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.street)">
+                        <VIcon icon="tabler-road" size="11" color="white-50" />
+                        <span>{{ t(seller.street) }}</span>
+                      </div>
+
+                      <a
+                        v-if="seller.map_url"
+                        :href="seller.map_url"
+                        target="_blank"
+                        class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-primary-subtle text-primary text-xxs font-weight-black border border-primary-20 text-decoration-none hover-scale"
+                        @click.stop
+                      >
+                        <VIcon icon="tabler-map" size="11" />
+                        <span>Map / الموقع</span>
+                      </a>
                     </div>
                   </div>
                 </div>

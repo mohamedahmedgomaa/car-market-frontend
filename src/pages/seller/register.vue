@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { VForm } from 'vuetify/components/VForm'
 import sellerApi from '@/api/sellerApi.js'
+import cityUserApi from '@/api/user/cityUserApi.js'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
 
@@ -22,6 +23,28 @@ const errorMessage = ref('')
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 
+const cities = ref([])
+
+const fetchCities = async () => {
+  try {
+    const res = await cityUserApi.getAll({ perPage: 100 })
+    const payload = res.data?.data ?? res.data ?? []
+    cities.value = Array.isArray(payload) ? payload : payload.data ?? []
+  } catch (err) {
+    console.error('Failed to fetch cities:', err)
+  }
+}
+
+onMounted(() => {
+  fetchCities()
+})
+
+const t = (val) => {
+  if (!val) return ''
+  if (typeof val === 'string') return val
+  return val.en || val.ar || ''
+}
+
 const form = ref({
   name: '',
   email: '',
@@ -40,6 +63,13 @@ const form = ref({
   business_license: '',
   bank_account: '',
   tax_number: '',
+
+  city_id: null,
+  district_en: '',
+  district_ar: '',
+  street_en: '',
+  street_ar: '',
+  map_url: '',
 
   store_logo: null, // File
   tax_card_image: null, // File
@@ -85,6 +115,12 @@ const handleRegister = async () => {
     if (form.value.business_license) fd.append('business_license', form.value.business_license)
     if (form.value.bank_account) fd.append('bank_account', form.value.bank_account)
     if (form.value.tax_number) fd.append('tax_number', form.value.tax_number)
+    if (form.value.city_id) fd.append('city_id', form.value.city_id)
+    if (form.value.district_en) fd.append('district_en', form.value.district_en)
+    if (form.value.district_ar) fd.append('district_ar', form.value.district_ar)
+    if (form.value.street_en) fd.append('street_en', form.value.street_en)
+    if (form.value.street_ar) fd.append('street_ar', form.value.street_ar)
+    if (form.value.map_url) fd.append('map_url', form.value.map_url)
 
     // Image/File uploads
     if (form.value.store_logo instanceof File) {
@@ -240,10 +276,43 @@ const handleRegister = async () => {
             </VCol>
 
             <VCol cols="12" md="6">
-              <label class="input-label">Address (English)</label>
+              <label class="input-label">Governorate / المحافظة</label>
+              <VAutocomplete
+                v-model="form.city_id"
+                :items="cities"
+                item-value="id"
+                :item-title="c => t(c.name)"
+                placeholder="Select Governorate / اختر المحافظة"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              >
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props" :title="t(item.raw.name)" />
+                </template>
+                <template #selection="{ item }">
+                  {{ t(item.raw.name) }}
+                </template>
+              </VAutocomplete>
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">Location Link / رابط اللوكيشن</label>
               <VTextField
-                v-model="form.address_en"
-                placeholder="Showroom address"
+                v-model="form.map_url"
+                placeholder="Ex: https://maps.google.com/..."
+                variant="outlined"
+                density="comfortable"
+                append-inner-icon="tabler-map-pin"
+                class="premium-input"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">City/Area (English)</label>
+              <VTextField
+                v-model="form.district_en"
+                placeholder="Ex: Heliopolis"
                 variant="outlined"
                 density="comfortable"
                 class="premium-input"
@@ -251,7 +320,53 @@ const handleRegister = async () => {
             </VCol>
 
             <VCol cols="12" md="6">
-              <label class="input-label">عنوان المعرض (عربي)</label>
+              <label class="input-label">المدينة/المنطقة (عربي)</label>
+              <VTextField
+                v-model="form.district_ar"
+                placeholder="مثال: مصر الجديدة"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                dir="rtl"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">Street Name (English)</label>
+              <VTextField
+                v-model="form.street_en"
+                placeholder="Ex: El-Thawra St."
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">اسم الشارع (عربي)</label>
+              <VTextField
+                v-model="form.street_ar"
+                placeholder="مثال: شارع الثورة"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                dir="rtl"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">Detailed Address (English)</label>
+              <VTextField
+                v-model="form.address_en"
+                placeholder="Detailed showroom address"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">العنوان بالتفصيل (عربي)</label>
               <VTextField
                 v-model="form.address_ar"
                 placeholder="عنوان المعرض بالتفصيل"
