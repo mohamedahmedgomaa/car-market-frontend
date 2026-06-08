@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { VForm } from 'vuetify/components/VForm'
 import sellerApi from '@/api/sellerApi.js'
 import cityUserApi from '@/api/user/cityUserApi.js'
+import governorateUserApi from '@/api/user/governorateUserApi.js'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
 
@@ -23,11 +24,23 @@ const errorMessage = ref('')
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 
+const governorates = ref([])
 const cities = ref([])
+const filteredCities = ref([])
+
+const fetchGovernorates = async () => {
+  try {
+    const res = await governorateUserApi.getAll({ perPage: 100 })
+    const payload = res.data?.data ?? res.data ?? []
+    governorates.value = Array.isArray(payload) ? payload : payload.data ?? []
+  } catch (err) {
+    console.error('Failed to fetch governorates:', err)
+  }
+}
 
 const fetchCities = async () => {
   try {
-    const res = await cityUserApi.getAll({ perPage: 100 })
+    const res = await cityUserApi.getAll({ perPage: 1000 })
     const payload = res.data?.data ?? res.data ?? []
     cities.value = Array.isArray(payload) ? payload : payload.data ?? []
   } catch (err) {
@@ -35,8 +48,18 @@ const fetchCities = async () => {
   }
 }
 
-onMounted(() => {
-  fetchCities()
+watch(() => form.value.governorate_id, (newGovId) => {
+  form.value.city_id = null
+  if (newGovId) {
+    filteredCities.value = cities.value.filter(c => c.governorate_id === newGovId)
+  } else {
+    filteredCities.value = []
+  }
+})
+
+onMounted(async () => {
+  await fetchGovernorates()
+  await fetchCities()
 })
 
 const t = (val) => {
@@ -64,6 +87,7 @@ const form = ref({
   bank_account: '',
   tax_number: '',
 
+  governorate_id: null,
   city_id: null,
   district_en: '',
   district_ar: '',
@@ -115,6 +139,7 @@ const handleRegister = async () => {
     if (form.value.business_license) fd.append('business_license', form.value.business_license)
     if (form.value.bank_account) fd.append('bank_account', form.value.bank_account)
     if (form.value.tax_number) fd.append('tax_number', form.value.tax_number)
+    if (form.value.governorate_id) fd.append('governorate_id', form.value.governorate_id)
     if (form.value.city_id) fd.append('city_id', form.value.city_id)
     if (form.value.district_en) fd.append('district_en', form.value.district_en)
     if (form.value.district_ar) fd.append('district_ar', form.value.district_ar)
@@ -278,14 +303,36 @@ const handleRegister = async () => {
             <VCol cols="12" md="6">
               <label class="input-label">Governorate / المحافظة</label>
               <VAutocomplete
-                v-model="form.city_id"
-                :items="cities"
+                v-model="form.governorate_id"
+                :items="governorates"
                 item-value="id"
-                :item-title="c => t(c.name)"
+                :item-title="g => t(g.name)"
                 placeholder="Select Governorate / اختر المحافظة"
                 variant="outlined"
                 density="comfortable"
                 class="premium-input"
+              >
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props" :title="t(item.raw.name)" />
+                </template>
+                <template #selection="{ item }">
+                  {{ t(item.raw.name) }}
+                </template>
+              </VAutocomplete>
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">City / المدينة</label>
+              <VAutocomplete
+                v-model="form.city_id"
+                :items="filteredCities"
+                item-value="id"
+                :item-title="c => t(c.name)"
+                placeholder="Select City / اختر المدينة"
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                :disabled="!form.governorate_id"
               >
                 <template #item="{ props, item }">
                   <VListItem v-bind="props" :title="t(item.raw.name)" />

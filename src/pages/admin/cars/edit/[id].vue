@@ -8,6 +8,7 @@ import brandAdminApi from '../../../../api/admin/brandAdminApi.js'
 import modelAdminApi from '../../../../api/admin/modelAdminApi.js'
 import featureAdminApi from '../../../../api/admin/carFeatureAdminApi.js'
 import countryAdminApi from '../../../../api/admin/countryAdminApi.js'
+import governorateAdminApi from '../../../../api/admin/governorateAdminApi.js'
 import cityAdminApi from '../../../../api/admin/cityAdminApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
 
@@ -24,6 +25,7 @@ const form = ref({
   model_id: null,
 
   country_id: null,
+  governorate_id: null,
   city_id: null,
 
   title_ar: '',
@@ -80,6 +82,7 @@ const brands = ref([])
 const models = ref([])
 const features = ref([])
 const countries = ref([])
+const governorates = ref([])
 const cities = ref([])
 
 const loading = ref(false)
@@ -95,6 +98,7 @@ const refSeller = ref()
 const refBrand = ref()
 const refModel = ref()
 const refCountry = ref()
+const refGovernorate = ref()
 const refCity = ref()
 const refTitleAr = ref()
 const refTitleEn = ref()
@@ -828,15 +832,37 @@ const loadModels = async (keepCurrent = false) => {
   }
 }
 
-const loadCities = async (keepCurrent = false) => {
+const loadGovernorates = async (keepCurrent = false) => {
   if (!form.value.country_id) {
+    governorates.value = []
+    if (!keepCurrent) form.value.governorate_id = null
+    return
+  }
+
+  const current = form.value.governorate_id
+  const res = await governorateAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
+  governorates.value = res.data.data || []
+
+  if (keepCurrent && current) {
+    const exists = governorates.value.some(g => g.id === current)
+    form.value.governorate_id = exists ? current : null
+  } else {
+    form.value.governorate_id = null
+    if (governorates.value.length > 0) {
+      focusNext(refGovernorate.value)
+    }
+  }
+}
+
+const loadCities = async (keepCurrent = false) => {
+  if (!form.value.governorate_id) {
     cities.value = []
     if (!keepCurrent) form.value.city_id = null
     return
   }
 
   const current = form.value.city_id
-  const res = await cityAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
+  const res = await cityAdminApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
   cities.value = res.data.data || []
 
   if (keepCurrent && current) {
@@ -990,13 +1016,15 @@ const loadCar = async () => {
   form.value.model_id = car.model_id
 
   form.value.country_id = car.country_id
+  form.value.governorate_id = car.governorate_id
   form.value.city_id = car.city_id
 
   // ✅ load dependent lists WITHOUT wiping selected values
   await Promise.all([
     loadModels(true),
-    loadCities(true),
+    loadGovernorates(true),
   ])
+  await loadCities(true)
 
   // Titles / Descriptions
   form.value.title_ar = car.title?.ar || ''
@@ -1284,7 +1312,7 @@ const handleSubmit = async () => {
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Location</h3>
 
           <VRow dense>
-            <VCol cols="12" md="6">
+            <VCol cols="12" md="4">
               <VSelect
                 ref="refCountry"
                 v-model="form.country_id"
@@ -1294,13 +1322,30 @@ const handleSubmit = async () => {
                 label="Country"
                 prepend-inner-icon="tabler-world"
                 variant="outlined"
-                @update:modelValue="() => loadCities(false)"
+                @update:modelValue="() => loadGovernorates(false)"
                 :error="!!fieldError('country_id').length"
                 :error-messages="fieldError('country_id')"
               />
             </VCol>
 
-            <VCol cols="12" md="6">
+            <VCol cols="12" md="4">
+              <VSelect
+                ref="refGovernorate"
+                v-model="form.governorate_id"
+                :items="governorates"
+                :item-title="g => safeItemTitle(g)"
+                item-value="id"
+                label="Governorate"
+                prepend-inner-icon="tabler-map"
+                variant="outlined"
+                :disabled="!form.country_id || !governorates.length"
+                @update:modelValue="() => loadCities(false)"
+                :error="!!fieldError('governorate_id').length"
+                :error-messages="fieldError('governorate_id')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
               <VSelect
                 ref="refCity"
                 v-model="form.city_id"
@@ -1310,7 +1355,7 @@ const handleSubmit = async () => {
                 label="City"
                 prepend-inner-icon="tabler-map-pin"
                 variant="outlined"
-                :disabled="!form.country_id || !cities.length"
+                :disabled="!form.governorate_id || !cities.length"
                 :error="!!fieldError('city_id').length"
                 :error-messages="fieldError('city_id')"
                 @update:modelValue="focusNext(refTitleAr.value)"

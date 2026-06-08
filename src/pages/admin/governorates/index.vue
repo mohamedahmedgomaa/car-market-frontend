@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import cityAdminApi from '../../../api/admin/cityAdminApi.js'
+import governorateAdminApi from '../../../api/admin/governorateAdminApi.js'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -13,13 +13,13 @@ const total = ref(0)
 const perPage = 10
 
 const deleteDialog = ref(false)
-const selectedSeller = ref(null)
+const selectedItem = ref(null)
 const deleting = ref(false)
 
 const fetchLists = async (page = 1) => {
   loading.value = true
   try {
-    const res = await cityAdminApi.getAll({
+    const res = await governorateAdminApi.getAll({
       page,
       'filter[global]': search.value || undefined,
       perPage,
@@ -36,16 +36,16 @@ const fetchLists = async (page = 1) => {
 }
 
 const confirmDelete = (data) => {
-  selectedSeller.value = data
+  selectedItem.value = data
   deleteDialog.value = true
 }
 
 const handleDelete = async () => {
-  if (!selectedSeller.value) return
+  if (!selectedItem.value) return
   deleting.value = true
   try {
-    await cityAdminApi.delete(selectedSeller.value.id)
-    lists.value = lists.value.filter(s => s.id !== selectedSeller.value.id)
+    await governorateAdminApi.delete(selectedItem.value.id)
+    lists.value = lists.value.filter(s => s.id !== selectedItem.value.id)
     total.value -= 1
     deleteDialog.value = false
   } catch (err) {
@@ -55,16 +55,7 @@ const handleDelete = async () => {
   }
 }
 
-const handleEdit = (id) => router.push(`/admin/cities/edit/${id}`)
-
-const toggleActive = async (data) => {
-  try {
-    data.is_active = data.is_active ? 0 : 1
-    await cityAdminApi.update(data.id, { is_active: data.is_active })
-  } catch (err) {
-    console.error('Toggle failed:', err.response?.data || err.message)
-  }
-}
+const handleEdit = (id) => router.push(`/admin/governorates/edit/${id}`)
 
 watch(search, () => fetchLists(1))
 onMounted(() => fetchLists())
@@ -81,15 +72,15 @@ const showingText = computed(() => {
 <template>
   <div class="p-4">
     <div class="flex items-center justify-between mb-6 gap-4">
-      <h2 class="text-2xl font-semibold text-gray-100">Cities List</h2>
+      <h2 class="text-2xl font-semibold text-gray-100">Governorates List</h2>
 
       <VBtn
         color="primary"
         class="rounded-lg font-medium text-white px-5 py-2 flex items-center gap-2"
-        @click="$router.push('/admin/cities/create')"
+        @click="$router.push('/admin/governorates/create')"
       >
         <VIcon icon="tabler-plus" start />
-        Add New City
+        Add New Governorate
       </VBtn>
     </div>
 
@@ -107,11 +98,10 @@ const showingText = computed(() => {
     </div>
 
     <VTable v-if="!loading">
-      <!-- إضافة رأس العمود -->
       <thead>
       <tr>
         <th>ID</th>
-        <th>Governorate</th>
+        <th>Country</th>
         <th>Name Ar</th>
         <th>Name En</th>
         <th class="text-center">Actions</th>
@@ -121,7 +111,7 @@ const showingText = computed(() => {
       <tbody>
       <tr v-for="data in lists" :key="data.id">
         <td>{{ data.id }}</td>
-        <td>{{ data.governorate?.name?.en || data.governorate?.name || '-' }}</td>
+        <td>{{ data.country?.name?.en || data.country?.name || '-' }}</td>
 
         <td>{{ data.name?.ar || data.name || '-' }}</td>
         <td>{{ data.name?.en || data.name || '-' }}</td>
@@ -149,7 +139,7 @@ const showingText = computed(() => {
         </VCardTitle>
         <VCardText class="text-center text-gray-600">
           Are you sure you want to delete
-          <strong>{{ selectedSeller?.name }}</strong>?
+          <strong>{{ selectedItem?.name?.en || selectedItem?.name }}</strong>?
         </VCardText>
 
         <VCardActions class="justify-center gap-2 pb-4">

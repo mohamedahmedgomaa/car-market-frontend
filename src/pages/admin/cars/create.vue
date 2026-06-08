@@ -8,6 +8,7 @@ import brandAdminApi from '../../../api/admin/brandAdminApi.js'
 import modelAdminApi from '../../../api/admin/modelAdminApi.js'
 import featureAdminApi from '../../../api/admin/carFeatureAdminApi.js'
 import countryAdminApi from '../../../api/admin/countryAdminApi.js'
+import governorateAdminApi from '../../../api/admin/governorateAdminApi.js'
 import cityAdminApi from '../../../api/admin/cityAdminApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
 import { customBrandFilter } from '@/utils/brandTranslations.js'
@@ -21,6 +22,7 @@ const form = ref({
   model_id: null,
 
   country_id: null,
+  governorate_id: null,
   city_id: null,
 
   title_ar: '',
@@ -64,6 +66,7 @@ const brands = ref([])
 const models = ref([])
 const features = ref([])
 const countries = ref([])
+const governorates = ref([])
 const cities = ref([])
 
 const imagePreviews = ref([])
@@ -81,6 +84,7 @@ const refSeller = ref()
 const refBrand = ref()
 const refModel = ref()
 const refCountry = ref()
+const refGovernorate = ref()
 const refCity = ref()
 const refTitleAr = ref()
 const refTitleEn = ref()
@@ -829,11 +833,26 @@ const loadModels = async () => {
   }
 }
 
-const loadCities = async () => {
+const loadGovernorates = async () => {
+  form.value.governorate_id = null
   form.value.city_id = null
+  governorates.value = []
+  cities.value = []
   if (!form.value.country_id) return
 
-  const res = await cityAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
+  const res = await governorateAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
+  governorates.value = res.data.data
+  if (governorates.value.length > 0) {
+    focusNext(refGovernorate.value)
+  }
+}
+
+const loadCities = async () => {
+  form.value.city_id = null
+  cities.value = []
+  if (!form.value.governorate_id) return
+
+  const res = await cityAdminApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
   cities.value = res.data.data
   if (cities.value.length > 0) {
     focusNext(refCity.value)
@@ -1099,7 +1118,7 @@ const handleSubmit = async () => {
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Location</h3>
 
           <VRow dense>
-            <VCol cols="12" md="6">
+            <VCol cols="12" md="4">
               <VAutocomplete
                 ref="refCountry"
                 v-model="form.country_id"
@@ -1109,13 +1128,29 @@ const handleSubmit = async () => {
                 label="Country"
                 prepend-inner-icon="tabler-world"
                 variant="outlined"
-                @update:modelValue="loadCities"
+                @update:modelValue="loadGovernorates"
                 :error="!!fieldError('country_id').length"
                 :error-messages="fieldError('country_id')"
               />
             </VCol>
 
-            <VCol cols="12" md="6">
+            <VCol cols="12" md="4">
+              <VAutocomplete
+                ref="refGovernorate"
+                v-model="form.governorate_id"
+                :items="governorates"
+                :item-title="g => g.name.en"
+                item-value="id"
+                label="Governorate"
+                prepend-inner-icon="tabler-map"
+                variant="outlined"
+                @update:modelValue="loadCities"
+                :error="!!fieldError('governorate_id').length"
+                :error-messages="fieldError('governorate_id')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
               <VAutocomplete
                 ref="refCity"
                 v-model="form.city_id"

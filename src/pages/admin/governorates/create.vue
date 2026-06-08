@@ -1,25 +1,19 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-import cityAdminApi from '../../../../api/admin/cityAdminApi.js'
-import countryAdminApi from '../../../../api/admin/countryAdminApi.js'
-import governorateAdminApi from '../../../../api/admin/governorateAdminApi.js'
+import governorateAdminApi from '../../../api/admin/governorateAdminApi.js'
+import countryAdminApi from '../../../api/admin/countryAdminApi.js'
 
-const route = useRoute()
 const router = useRouter()
 
 const form = ref({
   name_ar: '',
   name_en: '',
   country_id: null,
-  governorate_id: null,
 })
 
 const countries = ref([])
-const governorates = ref([])
-const filteredGovernorates = ref([])
-const isInitialLoad = ref(true)
 
 const loading = ref(false)
 const error = ref('')
@@ -38,52 +32,8 @@ const fetchCountries = async () => {
   }
 }
 
-const fetchGovernorates = async () => {
-  try {
-    const res = await governorateAdminApi.getAll({ perPage: 1000 })
-    governorates.value = res.data.data || res.data
-  } catch (e) {
-    console.error('Failed to load governorates', e)
-  }
-}
-
-const fetchCity = async () => {
-  loading.value = true
-  try {
-    const res = await cityAdminApi.getById(route.params.id)
-    const data = res.data.data
-
-    form.value.name_ar = data.name?.ar || ''
-    form.value.name_en = data.name?.en || ''
-    form.value.country_id = data.country_id || null
-    form.value.governorate_id = data.governorate_id || null
-
-    if (data.country_id) {
-      filteredGovernorates.value = governorates.value.filter(g => g.country_id === data.country_id)
-    }
-
-    setTimeout(() => {
-      isInitialLoad.value = false
-    }, 100)
-  } catch (err) {
-    console.error(err)
-    snackbarMessage.value = 'Failed to load city data.'
-    snackbarColor.value = 'error'
-    snackbar.value = true
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(() => form.value.country_id, (newCountryId) => {
-  if (!isInitialLoad.value) {
-    form.value.governorate_id = null
-  }
-  if (newCountryId) {
-    filteredGovernorates.value = governorates.value.filter(g => g.country_id === newCountryId)
-  } else {
-    filteredGovernorates.value = []
-  }
+onMounted(() => {
+  fetchCountries()
 })
 
 const handleSubmit = async () => {
@@ -100,14 +50,14 @@ const handleSubmit = async () => {
       }
     }
 
-    await cityAdminApi.update(route.params.id, formData)
+    await governorateAdminApi.create(formData)
 
-    snackbarMessage.value = 'City updated successfully!'
+    snackbarMessage.value = 'Data created successfully!'
     snackbarColor.value = 'success'
     snackbar.value = true
 
     setTimeout(() => {
-      router.push('/admin/cities')
+      router.push('/admin/governorates')
     }, 1500)
   } catch (err) {
     console.error(err)
@@ -120,32 +70,24 @@ const handleSubmit = async () => {
       error.value = 'An unexpected error occurred.'
     }
 
-    snackbarMessage.value = 'Failed to update city. Please check your inputs.'
+    snackbarMessage.value = 'Failed to create governorate. Please check your inputs.'
     snackbarColor.value = 'error'
     snackbar.value = true
   } finally {
     loading.value = false
   }
 }
-
-// =====================
-onMounted(async () => {
-  await fetchCountries()
-  await fetchGovernorates()
-  await fetchCity()
-})
 </script>
 
 <template>
   <div class="flex justify-center items-start min-h-screen py-12 px-4">
     <VCard class="w-full max-w-lg p-10 rounded-2xl shadow-lg">
-
       <!-- Title -->
       <h2
         class="text-2xl font-semibold mb-8 text-center flex items-center justify-center gap-2 mt-4"
       >
-        <VIcon icon="tabler-edit" color="primary" size="24" />
-        Edit City
+        <VIcon icon="tabler-plus" color="primary" size="24" />
+        Add New Governorate
       </h2>
 
       <VForm @submit.prevent="handleSubmit" class="space-y-7 ma-5">
@@ -156,7 +98,7 @@ onMounted(async () => {
           <VSelect
             v-model="form.country_id"
             :items="countries"
-            :item-title="country => country.name?.en || country.name"
+            :item-title="country => country.name.en"
             item-value="id"
             variant="outlined"
             density="comfortable"
@@ -169,26 +111,6 @@ onMounted(async () => {
           />
         </div>
 
-        <!-- Governorate -->
-        <div>
-          <label class="block text-sm font-medium mb-2">Governorate</label>
-          <VSelect
-            v-model="form.governorate_id"
-            :items="filteredGovernorates"
-            :item-title="gov => gov.name?.en || gov.name"
-            item-value="id"
-            variant="outlined"
-            density="comfortable"
-            placeholder="Select governorate"
-            prepend-inner-icon="tabler-map"
-            :error="!!errors.governorate_id"
-            :error-messages="errors.governorate_id"
-            hide-details="auto"
-            :disabled="!form.country_id"
-            required
-          />
-        </div>
-
         <!-- Name Arabic -->
         <div>
           <label class="block text-sm font-medium mb-2">Name Arabic</label>
@@ -196,8 +118,8 @@ onMounted(async () => {
             v-model="form.name_ar"
             variant="outlined"
             density="comfortable"
-            placeholder="Enter city name arabic"
-            prepend-inner-icon="tabler-map-pin"
+            placeholder="Enter governorate name arabic"
+            prepend-inner-icon="tabler-map"
             :error="!!errors.name_ar"
             :error-messages="errors.name_ar"
             hide-details="auto"
@@ -212,8 +134,8 @@ onMounted(async () => {
             v-model="form.name_en"
             variant="outlined"
             density="comfortable"
-            placeholder="Enter city name english"
-            prepend-inner-icon="tabler-map-pin"
+            placeholder="Enter governorate name english"
+            prepend-inner-icon="tabler-map"
             :error="!!errors.name_en"
             :error-messages="errors.name_en"
             hide-details="auto"
@@ -232,7 +154,7 @@ onMounted(async () => {
             Cancel
           </VBtn>
           <VBtn color="primary" :loading="loading" type="submit">
-            Update City
+            Save
           </VBtn>
         </div>
       </VForm>

@@ -43,6 +43,11 @@ export default [
         icon: { icon: 'tabler-flag', size: 24 }
       },
       {
+        title: 'Governorates',
+        to: { name: 'admin-governorates' },
+        icon: { icon: 'tabler-map', size: 24 }
+      },
+      {
         title: 'Cities',
         to: { name: 'admin-cities' },
         icon: { icon: 'tabler-map-pin', size: 24 }

@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import cityAdminApi from '../../../api/admin/cityAdminApi.js'
 import countryAdminApi from '../../../api/admin/countryAdminApi.js'
+import governorateAdminApi from '../../../api/admin/governorateAdminApi.js'
 
 const router = useRouter()
 
@@ -11,9 +12,12 @@ const form = ref({
   name_ar: '',
   name_en: '',
   country_id: null,
+  governorate_id: null,
 })
 
 const countries = ref([])
+const governorates = ref([])
+const filteredGovernorates = ref([])
 
 const loading = ref(false)
 const error = ref('')
@@ -32,8 +36,27 @@ const fetchCountries = async () => {
   }
 }
 
+const fetchGovernorates = async () => {
+  try {
+    const res = await governorateAdminApi.getAll({ perPage: 1000 })
+    governorates.value = res.data.data || res.data
+  } catch (e) {
+    console.error('Failed to load governorates', e)
+  }
+}
+
+watch(() => form.value.country_id, (newCountryId) => {
+  form.value.governorate_id = null
+  if (newCountryId) {
+    filteredGovernorates.value = governorates.value.filter(g => g.country_id === newCountryId)
+  } else {
+    filteredGovernorates.value = []
+  }
+})
+
 onMounted(() => {
   fetchCountries()
+  fetchGovernorates()
 })
 
 const handleSubmit = async () => {
@@ -98,7 +121,7 @@ const handleSubmit = async () => {
           <VSelect
             v-model="form.country_id"
             :items="countries"
-            :item-title="country => country.name.en"
+            :item-title="country => country.name?.en || country.name"
             item-value="id"
             variant="outlined"
             density="comfortable"
@@ -107,6 +130,26 @@ const handleSubmit = async () => {
             :error="!!errors.country_id"
             :error-messages="errors.country_id"
             hide-details="auto"
+            required
+          />
+        </div>
+
+        <!-- Governorate -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Governorate</label>
+          <VSelect
+            v-model="form.governorate_id"
+            :items="filteredGovernorates"
+            :item-title="gov => gov.name?.en || gov.name"
+            item-value="id"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Select governorate"
+            prepend-inner-icon="tabler-map"
+            :error="!!errors.governorate_id"
+            :error-messages="errors.governorate_id"
+            hide-details="auto"
+            :disabled="!form.country_id"
             required
           />
         </div>
