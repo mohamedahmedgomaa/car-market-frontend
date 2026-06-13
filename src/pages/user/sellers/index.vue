@@ -1,7 +1,8 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import sellerUserApi from '@/api/user/sellerUserApi.js'
 import cityUserApi from '@/api/user/cityUserApi.js'
+import governorateUserApi from '@/api/user/governorateUserApi.js'
 
 definePage({ meta: { layout: 'front', public: true } })
 
@@ -9,16 +10,25 @@ const loading = ref(true)
 const error = ref('')
 const sellers = ref([])
 const cities = ref([])
+const governorates = ref([])
+const filteredCities = computed(() => {
+  if (filters.value.governorateId) {
+    return cities.value.filter(c => c.governorate_id === filters.value.governorateId)
+  }
+  return cities.value
+})
 
 // Filters state
 const filters = ref({
   storeName: '',
+  governorateId: null,
   cityId: null,
   neighborhood: ''
 })
 
 const resetFilters = () => {
   filters.value.storeName = ''
+  filters.value.governorateId = null
   filters.value.cityId = null
   filters.value.neighborhood = ''
 }
@@ -27,6 +37,17 @@ const t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
+}
+
+const getCombinedName = (nameObj) => {
+  if (!nameObj) return ''
+  if (typeof nameObj === 'string') return nameObj
+  const en = nameObj.en || ''
+  const ar = nameObj.ar || ''
+  if (en && ar) {
+    return `${en} / ${ar}`
+  }
+  return en || ar || ''
 }
 
 const fetchSellers = async () => {
@@ -44,15 +65,43 @@ const fetchSellers = async () => {
   }
 }
 
+const fetchGovernorates = async () => {
+  try {
+    const res = await governorateUserApi.getAll({ perPage: 100 })
+    const payload = res.data?.data ?? res.data ?? []
+    governorates.value = Array.isArray(payload) ? payload : payload.data ?? []
+  } catch (err) {
+    console.error('Failed to fetch governorates:', err)
+  }
+}
+
 const fetchCities = async () => {
   try {
-    const res = await cityUserApi.getAll({ perPage: 100 })
+    const res = await cityUserApi.getAll({ perPage: 1000 })
     const payload = res.data?.data ?? res.data ?? []
     cities.value = Array.isArray(payload) ? payload : payload.data ?? []
   } catch (err) {
     console.error('Failed to fetch cities:', err)
   }
 }
+
+watch(() => filters.value.governorateId, (newGovId) => {
+  if (filters.value.cityId) {
+    const currentCity = cities.value.find(c => c.id === filters.value.cityId)
+    if (!currentCity || currentCity.governorate_id !== newGovId) {
+      filters.value.cityId = null
+    }
+  }
+})
+
+watch(() => filters.value.cityId, (newCityId) => {
+  if (newCityId) {
+    const selectedCity = cities.value.find(c => c.id === newCityId)
+    if (selectedCity && selectedCity.governorate_id && filters.value.governorateId !== selectedCity.governorate_id) {
+      filters.value.governorateId = selectedCity.governorate_id
+    }
+  }
+})
 
 const filteredSellers = computed(() => {
   let result = sellers.value
@@ -68,12 +117,17 @@ const filteredSellers = computed(() => {
     })
   }
 
-  // 2. Governorate Filter (cityId)
+  // 2. Governorate Filter
+  if (filters.value.governorateId) {
+    result = result.filter(s => s.governorate_id === filters.value.governorateId || s.governorate?.id === filters.value.governorateId)
+  }
+
+  // 3. City Filter
   if (filters.value.cityId) {
     result = result.filter(s => s.city_id === filters.value.cityId || s.city?.id === filters.value.cityId)
   }
 
-  // 3. City/Neighborhood Filter
+  // 4. City/Neighborhood Filter
   if (filters.value.neighborhood.trim()) {
     const q = filters.value.neighborhood.toLowerCase().trim()
     result = result.filter(s => {
@@ -135,6 +189,7 @@ const locateNearMe = () => {
         })
         
         if (matched) {
+          filters.value.governorateId = matched.governorate_id
           filters.value.cityId = matched.id
         } else {
           filters.value.neighborhood = targetName
@@ -147,7 +202,10 @@ const locateNearMe = () => {
           const nameEn = (c.name?.en || c.name || '').toLowerCase()
           return nameEn.includes('cairo')
         })
-        if (matched) filters.value.cityId = matched.id
+        if (matched) {
+          filters.value.governorateId = matched.governorate_id
+          filters.value.cityId = matched.id
+        }
       },
       { timeout: 5000 }
     )
@@ -157,7 +215,10 @@ const locateNearMe = () => {
       const nameEn = (c.name?.en || c.name || '').toLowerCase()
       return nameEn.includes('cairo')
     })
-    if (matched) filters.value.cityId = matched.id
+    if (matched) {
+      filters.value.governorateId = matched.governorate_id
+      filters.value.cityId = matched.id
+    }
   }
 }
 
@@ -177,6 +238,7 @@ const closeCallDialog = () => {
 
 onMounted(() => {
   fetchSellers()
+  fetchGovernorates()
   fetchCities()
 })
 </script>
@@ -289,10 +351,10 @@ onMounted(() => {
           <!-- 2. Governorate Field -->
           <div class="search-col search-col-governorate">
             <VAutocomplete
-              v-model="filters.cityId"
-              :items="cities"
+              v-model="filters.governorateId"
+              :items="governorates"
               item-value="id"
-              :item-title="c => t(c.name)"
+              :item-title="g => getCombinedName(g.name)"
               placeholder="Governorate / المحافظة..."
               prepend-inner-icon="tabler-map"
               variant="outlined"
@@ -302,20 +364,44 @@ onMounted(() => {
               clearable
             >
               <template #item="{ props, item }">
-                <VListItem v-bind="props" :title="t(item.raw.name)" />
+                <VListItem v-bind="props" :title="getCombinedName(item.raw.name)" />
               </template>
               <template #selection="{ item }">
-                {{ t(item.raw.name) }}
+                {{ getCombinedName(item.raw.name) }}
               </template>
             </VAutocomplete>
           </div>
 
-          <!-- 3. City/Area/Neighborhood Field -->
+          <!-- 3. City Field -->
           <div class="search-col search-col-city">
+            <VAutocomplete
+              v-model="filters.cityId"
+              :items="filteredCities"
+              item-value="id"
+              :item-title="c => getCombinedName(c.name)"
+              placeholder="City / المدينة..."
+              prepend-inner-icon="tabler-map-pin"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              class="premium-input-field"
+              clearable
+            >
+              <template #item="{ props, item }">
+                <VListItem v-bind="props" :title="getCombinedName(item.raw.name)" />
+              </template>
+              <template #selection="{ item }">
+                {{ getCombinedName(item.raw.name) }}
+              </template>
+            </VAutocomplete>
+          </div>
+
+          <!-- 4. Area/Neighborhood Field -->
+          <div class="search-col search-col-neighborhood">
             <VTextField
               v-model="filters.neighborhood"
-              placeholder="City or Area / مكان المدينة..."
-              prepend-inner-icon="tabler-map-pin"
+              placeholder="Area or Street / المنطقة أو الشارع..."
+              prepend-inner-icon="tabler-road"
               variant="outlined"
               density="comfortable"
               hide-details
@@ -728,6 +814,10 @@ onMounted(() => {
 }
 
 .search-col-city {
+  flex: 1.2;
+}
+
+.search-col-neighborhood {
   flex: 1.2;
 }
 
