@@ -10,7 +10,7 @@ const search = ref('')
 const currentPage = ref(1)
 const lastPage = ref(1)
 const total = ref(0)
-const perPage = 10
+const perPage = 100
 
 const deleteDialog = ref(false)
 const selectedSeller = ref(null)
