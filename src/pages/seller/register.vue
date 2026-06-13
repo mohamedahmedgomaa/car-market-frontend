@@ -17,6 +17,37 @@ definePage({
 
 const router = useRouter()
 
+const form = ref({
+  name: '',
+  email: '',
+  phone: '',
+  address_en: '',
+  address_ar: '',
+
+  password: '',
+  password_confirmation: '',
+
+  store_name_en: '',
+  store_name_ar: '',
+  store_description_en: '',
+  store_description_ar: '',
+
+  business_license: '',
+  bank_account: '',
+  tax_number: '',
+
+  governorate_id: null,
+  city_id: null,
+  district_en: '',
+  district_ar: '',
+  street_en: '',
+  street_ar: '',
+  map_url: '',
+
+  store_logo: null, // File
+  tax_card_image: null, // File
+})
+
 const formRef = ref()
 const loading = ref(false)
 const errorMessage = ref('')
@@ -67,37 +98,6 @@ const t = (val) => {
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
 }
-
-const form = ref({
-  name: '',
-  email: '',
-  phone: '',
-  address_en: '',
-  address_ar: '',
-
-  password: '',
-  password_confirmation: '',
-
-  store_name_en: '',
-  store_name_ar: '',
-  store_description_en: '',
-  store_description_ar: '',
-
-  business_license: '',
-  bank_account: '',
-  tax_number: '',
-
-  governorate_id: null,
-  city_id: null,
-  district_en: '',
-  district_ar: '',
-  street_en: '',
-  street_ar: '',
-  map_url: '',
-
-  store_logo: null, // File
-  tax_card_image: null, // File
-})
 
 // Validation rules
 const required = v => !!String(v ?? '').trim() || 'Required'

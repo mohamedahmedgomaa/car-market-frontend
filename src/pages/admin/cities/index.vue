@@ -1,4 +1,4 @@
-<script setup>
+٢٢٢<script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import cityAdminApi from '../../../api/admin/cityAdminApi.js'
 import { useRouter } from 'vue-router'
