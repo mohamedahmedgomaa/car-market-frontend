@@ -10,6 +10,9 @@ export default {
   create(payload) {
     return api.post('/admin/cities', payload)
   },
+  createBulk(payload) {
+    return api.post('/admin/cities/bulk', payload)
+  },
   update(id, payload) {
     if (payload instanceof FormData) {
       payload.append('_method', 'PATCH')
