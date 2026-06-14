@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import sellerAdminApi from '../../../api/admin/sellerAdminApi.js'
+import cityUserApi from '@/api/user/cityUserApi.js'
+import governorateUserApi from '@/api/user/governorateUserApi.js'
 
 const router = useRouter()
 
@@ -17,7 +19,13 @@ const form = ref({
   store_description_en: '',
   bank_account: '',
   is_verified: false,
-  store_logo: null, // مضاف للرفع
+  store_logo: null,
+  governorate_id: null,
+  city_id: null,
+  address_ar: '',
+  address_en: '',
+  map_url: '',
+  sort_order: 0,
 })
 
 const loading = ref(false)
@@ -28,6 +36,45 @@ const errors = ref({})
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('success')
+
+const governorates = ref([])
+const cities = ref([])
+const filteredCities = ref([])
+
+const fetchGovernorates = async () => {
+  try {
+    const res = await governorateUserApi.getAll({ perPage: 100 })
+    const payload = res.data?.data ?? res.data ?? []
+    governorates.value = Array.isArray(payload) ? payload : payload.data ?? []
+  } catch (err) {
+    console.error('Failed to fetch governorates:', err)
+  }
+}
+
+const fetchCities = async () => {
+  try {
+    const res = await cityUserApi.getAll({ perPage: 1000 })
+    const payload = res.data?.data ?? res.data ?? []
+    cities.value = Array.isArray(payload) ? payload : payload.data ?? []
+  } catch (err) {
+    console.error('Failed to fetch cities:', err)
+  }
+}
+
+const t = (val) => {
+  if (!val) return ''
+  if (typeof val === 'string') return val
+  return val.en || val.ar || ''
+}
+
+watch(() => form.value.governorate_id, (newGovId) => {
+  form.value.city_id = null
+  if (newGovId) {
+    filteredCities.value = cities.value.filter(c => c.governorate_id === newGovId)
+  } else {
+    filteredCities.value = []
+  }
+})
 
 // ✅ Handle File Change
 const handleLogoChange = (event) => {
@@ -48,10 +95,10 @@ const handleSubmit = async () => {
   try {
     const formData = new FormData()
     for (const key in form.value) {
-      if (form.value[key] !== null) {
-        // ✅ Force is_verified to be true/false
+      if (form.value[key] !== null && form.value[key] !== undefined) {
+        // ✅ Force is_verified to be 1 or 0
         if (key === 'is_verified') {
-          formData.append(key, form.value[key] ? '1' : '0') // Laravel يفهم 1 و 0 كـ Boolean
+          formData.append(key, form.value[key] ? '1' : '0')
         } else {
           formData.append(key, form.value[key])
         }
@@ -84,6 +131,11 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+onMounted(async () => {
+  await fetchGovernorates()
+  await fetchCities()
+})
 
 </script>
 
@@ -222,6 +274,117 @@ const handleSubmit = async () => {
             :error="!!errors.bank_account"
             :error-messages="errors.bank_account"
             hide-details="auto"
+          />
+        </div>
+
+        <!-- Governorate / المحافظة -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Governorate / المحافظة</label>
+          <VAutocomplete
+            v-model="form.governorate_id"
+            :items="governorates"
+            item-value="id"
+            :item-title="g => t(g.name)"
+            placeholder="Select Governorate / اختر المحافظة"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            :error="!!errors.governorate_id"
+            :error-messages="errors.governorate_id"
+          >
+            <template #item="{ props, item }">
+              <VListItem v-bind="props" :title="t(item.raw.name)" />
+            </template>
+            <template #selection="{ item }">
+              {{ t(item.raw.name) }}
+            </template>
+          </VAutocomplete>
+        </div>
+
+        <!-- City / المدينة -->
+        <div>
+          <label class="block text-sm font-medium mb-2">City / المدينة</label>
+          <VAutocomplete
+            v-model="form.city_id"
+            :items="filteredCities"
+            item-value="id"
+            :item-title="c => t(c.name)"
+            placeholder="Select City / اختر المدينة"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            :disabled="!form.governorate_id"
+            :error="!!errors.city_id"
+            :error-messages="errors.city_id"
+          >
+            <template #item="{ props, item }">
+              <VListItem v-bind="props" :title="t(item.raw.name)" />
+            </template>
+            <template #selection="{ item }">
+              {{ t(item.raw.name) }}
+            </template>
+          </VAutocomplete>
+        </div>
+
+        <!-- Location Link / رابط اللوكيشن -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Location Link / رابط اللوكيشن</label>
+          <VTextField
+            v-model="form.map_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://maps.google.com/..."
+            prepend-inner-icon="tabler-map-pin"
+            hide-details="auto"
+            :error="!!errors.map_url"
+            :error-messages="errors.map_url"
+          />
+        </div>
+
+        <!-- Detailed Address (English) -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Detailed Address (English)</label>
+          <VTextField
+            v-model="form.address_en"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Detailed showroom address in English"
+            prepend-inner-icon="tabler-map"
+            hide-details="auto"
+            :error="!!errors.address_en"
+            :error-messages="errors.address_en"
+          />
+        </div>
+
+        <!-- العنوان بالتفصيل (عربي) -->
+        <div>
+          <label class="block text-sm font-medium mb-2">العنوان بالتفصيل (عربي)</label>
+          <VTextField
+            v-model="form.address_ar"
+            variant="outlined"
+            density="comfortable"
+            placeholder="عنوان المعرض بالتفصيل بالعربي"
+            prepend-inner-icon="tabler-map"
+            hide-details="auto"
+            dir="rtl"
+            :error="!!errors.address_ar"
+            :error-messages="errors.address_ar"
+          />
+        </div>
+
+        <!-- Sort Order / ترتيب الظهور -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Sort Order / ترتيب الظهور (الأكبر يظهر أولاً)</label>
+          <VTextField
+            v-model="form.sort_order"
+            type="number"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: 0, 10, 100"
+            prepend-inner-icon="tabler-arrows-sort"
+            hide-details="auto"
+            :error="!!errors.sort_order"
+            :error-messages="errors.sort_order"
           />
         </div>
 

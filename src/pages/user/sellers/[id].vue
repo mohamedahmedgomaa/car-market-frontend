@@ -113,7 +113,9 @@ onMounted(fetchSeller)
                     <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-3">
                       <VIcon icon="tabler-map-pin" color="error" size="20" />
                       <span class="text-subtitle-1 text-white font-weight-black">
-                        {{ seller.city ? t(seller.city.name) : 'Egypt' }}
+                        {{ seller.governorate ? t(seller.governorate.name) : '' }}
+                        {{ seller.governorate && seller.city ? ' - ' : '' }}
+                        {{ seller.city ? t(seller.city.name) : (!seller.governorate ? 'Egypt' : '') }}
                       </span>
                       <span v-if="t(seller.district)" class="text-subtitle-1 text-white-70 font-weight-bold">
                         • {{ t(seller.district) }}

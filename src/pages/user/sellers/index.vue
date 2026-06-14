@@ -500,7 +500,11 @@ onMounted(() => {
                     <div class="d-flex align-center flex-wrap gap-2 mt-2">
                       <div class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-70 text-xxs font-weight-black border-white-10">
                         <VIcon icon="tabler-map-pin-filled" size="11" color="primary" />
-                        <span>{{ t(seller.city?.name) || 'Egypt' }}</span>
+                        <span>
+                          {{ seller.governorate ? t(seller.governorate.name) : '' }}
+                          {{ seller.governorate && seller.city ? ' - ' : '' }}
+                          {{ seller.city ? t(seller.city.name) : (!seller.governorate ? 'Egypt' : '') }}
+                        </span>
                       </div>
                       
                       <div v-if="t(seller.district)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-50 text-xxs font-weight-bold border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.district)">
