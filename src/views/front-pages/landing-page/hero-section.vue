@@ -550,24 +550,28 @@ onBeforeUnmount(() => {
             <div class="ad-label">AD</div>
             <div class="ad-carousel-wrapper">
               <Transition name="fade" mode="out-in">
-                <div v-if="slides.length > 0" :key="slideIndex" class="ad-slide">
-                  <div
-                    class="ad-image"
-                    :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
-                  />
+                <div v-if="slides.length > 0" :key="slideIndex" class="ad-slide-wrapper">
+                  <a :href="slides[slideIndex].link" target="_blank" class="ad-slide">
+                    <div
+                      class="ad-image animate-ken-burns"
+                      :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
+                    />
+                    <div class="ad-overlay"></div>
+                  </a>
                 </div>
                 <div
                   v-else
                   class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-8 h-100"
                 >
+                  <div class="placeholder-glow"></div>
                   <VIcon
                     icon="tabler-photo-spark"
                     size="80"
                     color="primary"
-                    class="opacity-10 mb-4"
+                    class="text-glow mb-4"
                   />
-                  <h4 class="text-h5 font-weight-bold mb-2">Ad Space</h4>
-                  <p class="text-body-2 opacity-50 max-w-400">أضف إعلانك هنا ليصل لآلاف المهتمين</p>
+                  <h4 class="text-h5 font-weight-black mb-2 text-white">Ad Space</h4>
+                  <p class="text-body-2 opacity-70 max-w-400 text-white">أضف إعلانك هنا ليصل لآلاف المهتمين</p>
                   <Transition name="fade" mode="out-in">
                     <div v-if="showAdPhone" class="phone-display-box mt-6">
                       <VIcon icon="tabler-phone-call" size="20" class="me-2 text-primary" />
@@ -586,6 +590,17 @@ onBeforeUnmount(() => {
                   </Transition>
                 </div>
               </Transition>
+
+              <!-- Indicators -->
+              <div v-if="slides.length > 1" class="carousel-indicators">
+                <span
+                  v-for="(slide, idx) in slides"
+                  :key="idx"
+                  class="indicator-dot"
+                  :class="{ active: idx === slideIndex }"
+                  @click="slideIndex = idx"
+                ></span>
+              </div>
             </div>
           </VCard>
         </div>
@@ -596,10 +611,12 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .hero {
-  padding-block: 20px;
+  padding-block: 40px;
   min-height: auto;
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .hero--dark {
@@ -609,82 +626,101 @@ onBeforeUnmount(() => {
 /* Main Grid */
 .hero-main-grid {
   display: grid;
-  grid-template-columns: 500px 1fr;
-  gap: 30px;
+  grid-template-columns: 480px 1fr;
+  gap: 32px;
   align-items: stretch;
+  width: 100%;
 }
 
 /* Search Card */
 .premium-search-card {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 24, 40, 0.65) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 32px !important;
-  padding: 24px;
+  padding: 28px !important;
   height: 100%;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 20px 50px rgba(0, 0, 0, 0.45) !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
+/* Welcome Chip */
+:deep(.v-chip.v-chip--variant-flat) {
+  background: rgba(255, 107, 0, 0.12) !important;
+  color: #FF6B00 !important;
+  border: 1px solid rgba(255, 107, 0, 0.25) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.5px;
+  border-radius: 8px !important;
+}
+
+/* Search by ID Input */
 .premium-id-input :deep(.v-field) {
-  border-radius: 9999px !important;
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(var(--v-theme-primary), 0.25) !important;
-  height: 40px !important;
-  transition: all 0.3s ease;
+  border-radius: 16px !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  height: 44px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .premium-id-input :deep(.v-field__input) {
-  font-size: 0.88rem !important;
-  font-weight: 800;
+  font-size: 0.9rem !important;
+  font-weight: 700;
   letter-spacing: 0.5px;
-  color: rgb(var(--v-theme-primary)) !important;
+  color: #fff !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  min-height: 40px !important;
+  min-height: 44px !important;
 }
 
 .premium-id-input :deep(.v-field--focused) {
-  background: rgba(var(--v-theme-primary), 0.08) !important;
-  border-color: rgb(var(--v-theme-primary)) !important;
-  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.25);
+  background: rgba(0, 0, 0, 0.35) !important;
+  border-color: #FF6B00 !important;
+  box-shadow: 0 0 15px rgba(255, 107, 0, 0.25) !important;
 }
 
 .premium-id-input :deep(.v-icon) {
-  color: rgb(var(--v-theme-primary));
-  opacity: 0.7;
+  color: #FF6B00;
+  opacity: 0.8;
   transition: all 0.2s;
 }
 
 .premium-id-input :deep(.v-field--focused .v-icon) {
   opacity: 1;
+  transform: scale(1.1);
 }
 
+/* Grid Layout for Inputs */
 .search-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px 16px;
+  gap: 16px 14px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .group-label {
-  font-size: 11px;
-  font-weight: 900;
+  font-size: 10px;
+  font-weight: 850;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  margin-left: 4px;
-  color: rgba(255, 255, 255, 0.6);
+  margin-left: 2px;
+  color: rgba(255, 255, 255, 0.45);
 }
 
+/* Toggle Pill Buttons */
 .premium-toggle-group {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 3px;
-  gap: 3px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -692,65 +728,97 @@ onBeforeUnmount(() => {
   flex: 1;
   border: 0;
   background: transparent;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 9px;
-  height: 38px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 10px;
+  height: 34px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.6;
-}
 
-.toggle-btn.active {
-  background: rgba(var(--v-theme-primary), 1);
-  opacity: 1;
-  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.4);
-  color: #fff;
+  &.active {
+    background: linear-gradient(135deg, #FF6B00 0%, #FF3E1D 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35) !important;
+    opacity: 1;
+  }
+
+  &:hover:not(.active) {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.03);
+  }
 }
 
 .toggle-btn--small {
-  height: 32px;
+  height: 30px;
   font-size: 11px;
 }
 
+/* Vuetify Input Fields */
 .premium-input :deep(.v-field) {
-  border-radius: 14px !important;
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  height: 40px !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  height: 44px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  &:hover {
+    border-color: rgba(255, 107, 0, 0.3) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+  }
 }
 
 .premium-input :deep(.v-field__input) {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  min-height: 40px !important;
+  min-height: 44px !important;
+  font-size: 0.9rem !important;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .premium-input :deep(.v-field--focused) {
-  border-color: rgba(var(--v-theme-primary), 1) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.2);
+  border-color: #FF6B00 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 0 15px rgba(255, 107, 0, 0.2) !important;
 }
 
+.premium-input :deep(.v-label) {
+  font-size: 0.85rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Buttons */
 .search-main-btn {
-  border-radius: 16px !important;
-  font-weight: 900 !important;
+  border-radius: 18px !important;
+  font-weight: 850 !important;
   text-transform: none !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
   letter-spacing: 0.5px;
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1), #ff5722) !important;
-  transition: all 0.3s ease !important;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF3E1D 100%) !important;
+  color: white !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.5) !important;
+    box-shadow: 0 10px 25px rgba(255, 107, 0, 0.5) !important;
   }
 }
 
 .sell-side-btn {
-  border-radius: 16px !important;
-  font-weight: 700 !important;
+  border-radius: 18px !important;
+  font-weight: 800 !important;
   text-transform: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: white !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px);
+  }
 }
 
 .reset-btn-v2 {
@@ -758,11 +826,15 @@ onBeforeUnmount(() => {
   height: 36px !important;
   min-width: 36px !important;
   border-radius: 12px !important;
-  background: rgba(var(--v-theme-primary), 0.1) !important;
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   &:hover {
-    background: rgba(var(--v-theme-primary), 1) !important;
-    color: white !important;
+    background: rgba(255, 107, 0, 0.15) !important;
+    border-color: rgba(255, 107, 0, 0.35) !important;
+    color: #FF6B00 !important;
     transform: rotate(180deg);
   }
 }
@@ -770,9 +842,9 @@ onBeforeUnmount(() => {
 /* Ad Area */
 .premium-ad-card {
   height: 100%;
-  min-height: 460px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 480px;
+  background: rgba(20, 24, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 32px !important;
   position: relative;
   overflow: hidden;
@@ -780,40 +852,11 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
-.phone-display-box {
-  background: rgba(var(--v-theme-primary), 0.1);
-  border: 1px solid rgba(var(--v-theme-primary), 0.3);
-  padding: 12px 24px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.1);
-}
-
-.contact-btn-pulse {
-  animation: pulse-border 2s infinite;
-  border-radius: 12px !important;
-}
-
-@keyframes pulse-border {
-  0% {
-    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(var(--v-theme-primary), 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0);
-  }
-}
-
 .ad-label {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(var(--v-theme-primary), 0.9);
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 107, 0, 0.95);
   color: white;
   padding: 6px 14px;
   border-radius: 99px;
@@ -821,6 +864,7 @@ onBeforeUnmount(() => {
   font-weight: 900;
   letter-spacing: 2px;
   z-index: 10;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
 }
 
 .ad-carousel-wrapper {
@@ -829,14 +873,19 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.ad-slide {
+.ad-slide-wrapper {
   position: absolute;
   inset: 0;
   height: 100%;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+}
+
+.ad-slide {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .ad-image {
@@ -845,6 +894,21 @@ onBeforeUnmount(() => {
   background-size: cover;
   background-position: center;
   z-index: 1;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ken Burns Effect */
+.animate-ken-burns {
+  animation: kenBurnsAnimation 10s ease-in-out infinite alternate;
+}
+
+@keyframes kenBurnsAnimation {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.12);
+  }
 }
 
 .ad-overlay {
@@ -852,17 +916,107 @@ onBeforeUnmount(() => {
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.85) 0%,
-    rgba(0, 0, 0, 0.2) 60%,
+    rgba(15, 17, 26, 0.9) 0%,
+    rgba(15, 17, 26, 0.3) 60%,
     transparent 100%
   );
   z-index: 2;
 }
 
-.ad-content {
+/* Carousel Indicators */
+.carousel-indicators {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.indicator-dot {
+  width: 20px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.active {
+    background: #FF6B00;
+    width: 36px;
+    box-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+  }
+}
+
+/* Placeholder Ad */
+.placeholder-ad {
   position: relative;
-  z-index: 3;
-  padding: 32px !important;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 107, 0, 0.1) 0%, rgba(15, 17, 26, 0.95) 100%);
+  height: 100%;
+
+  .placeholder-glow {
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 140%;
+    background: radial-gradient(circle at center, rgba(255, 107, 0, 0.05) 0%, transparent 60%);
+    animation: pulseGlow 8s infinite alternate;
+    pointer-events: none;
+  }
+
+  .text-glow {
+    filter: drop-shadow(0 0 15px rgba(255, 107, 0, 0.4));
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.phone-display-box {
+  background: rgba(255, 107, 0, 0.12);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  padding: 12px 24px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 107, 0, 0.15);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.contact-btn-pulse {
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 107, 0, 0.4) !important;
+  background: rgba(255, 107, 0, 0.06) !important;
+  color: #FF6B00 !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 107, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0);
+  }
 }
 
 /* Hide number input spinners */
@@ -886,7 +1040,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 600px) {
   .premium-search-card {
-    padding: 16px !important;
+    padding: 20px !important;
     border-radius: 24px !important;
   }
   .search-form-grid {
@@ -902,26 +1056,26 @@ onBeforeUnmount(() => {
     font-size: 12px !important;
   }
   .premium-input :deep(.v-field) {
-    height: 38px !important;
+    height: 40px !important;
     border-radius: 12px !important;
   }
   .premium-input :deep(.v-field__input) {
-    min-height: 38px !important;
+    min-height: 40px !important;
     font-size: 13px !important;
   }
   .premium-id-input :deep(.v-field) {
-    height: 38px !important;
+    height: 40px !important;
   }
   .premium-id-input :deep(.v-field__input) {
-    min-height: 38px !important;
-    font-size: 0.8rem !important;
+    min-height: 40px !important;
+    font-size: 0.85rem !important;
   }
   .search-actions-row {
     gap: 8px !important;
     margin-top: 16px !important;
   }
   .search-main-btn, .sell-side-btn {
-    height: 42px !important;
+    height: 44px !important;
     font-size: 15px !important;
     border-radius: 12px !important;
   }
@@ -936,3 +1090,6 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 </style>
+
+
+

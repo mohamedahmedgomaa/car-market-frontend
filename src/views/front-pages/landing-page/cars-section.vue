@@ -471,61 +471,63 @@ watch(
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(20, 24, 40, 0.55);
+  backdrop-filter: blur(10px);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
 }
 .car-card:hover {
-  transform: translateY(-8px) scale(1.01);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  transform: translateY(-6px);
+  background: rgba(25, 30, 50, 0.75);
+  border-color: rgba(255, 107, 0, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* ✅ Best Deal Border */
 .car-card--best-deal {
   border-color: #ff4d4d !important;
-  box-shadow: 0 0 20px rgba(255, 77, 77, 0.15);
+  box-shadow: 0 0 20px rgba(255, 77, 77, 0.1);
 }
 .car-card--best-deal:hover {
-  box-shadow: 0 0 30px rgba(255, 77, 77, 0.3);
+  box-shadow: 0 0 30px rgba(255, 77, 77, 0.2);
 }
 
 /* ✅ Featured Border */
 .car-card--featured {
-  border-color: #f1c40f !important;
-  box-shadow: 0 0 20px rgba(241, 196, 15, 0.15);
+  border-color: #FF6B00 !important;
+  box-shadow: 0 0 20px rgba(255, 107, 0, 0.1);
 }
 .car-card--featured:hover {
-  box-shadow: 0 0 30px rgba(241, 196, 15, 0.3);
+  box-shadow: 0 0 30px rgba(255, 107, 0, 0.25);
 }
 
 /* ✅ Global Ad Border (Orange) */
 .car-card--global {
   border-color: #ff9f43 !important;
-  box-shadow: 0 0 20px rgba(255, 159, 67, 0.2);
+  box-shadow: 0 0 20px rgba(255, 159, 67, 0.1);
 }
 .car-card--global:hover {
-  box-shadow: 0 0 30px rgba(255, 159, 67, 0.4);
+  box-shadow: 0 0 30px rgba(255, 159, 67, 0.25);
 }
 
 /* ✅ Import Border */
 .car-card--import {
   border-color: #00d2ff !important;
-  box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
 }
 .car-card--import:hover {
-  box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
 }
 
 .car-card__image {
   position: relative;
   width: 100%;
   aspect-ratio: 16/10;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -537,6 +539,10 @@ watch(
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.car-card:hover .car-card__image img {
+  transform: scale(1.06);
 }
 
 /* لو مفيش صورة */
@@ -547,7 +553,7 @@ watch(
 }
 
 .car-card__body {
-  padding: 14px;
+  padding: 18px;
   flex-grow: 1;
 }
 .car-card__title {
@@ -556,28 +562,28 @@ watch(
 }
 
 .car-card__meta {
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
-  opacity: 0.9;
+  opacity: 0.7;
 }
 
 .car-card__info {
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
   opacity: 0.8;
   display: flex;
   align-items: center;
-  font-weight: 600;
+  font-weight: 700;
 }
 .border-t {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .car-card__location {
   display: flex;
   align-items: center;
   font-size: 11px;
   color: #fff;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 /* ✅ footer: price + date */
@@ -590,8 +596,8 @@ watch(
 .car-card__price {
   font-weight: 900;
   font-size: 20px;
-  color: #fff;
-  background: linear-gradient(135deg, #28a745, #51cf66);
+  color: #FF6B00;
+  background: linear-gradient(135deg, #FF6B00, #FFA800);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -600,31 +606,39 @@ watch(
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #fff; /* Return to white */
-  opacity: 0.7;
+  color: #fff;
+  opacity: 0.6;
   font-size: 11px;
   white-space: nowrap;
 }
 .car-card__dateIcon {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 /* fav */
 .fav-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 38px;
-  height: 38px;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
   border-radius: 12px;
   border: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(6px);
-  color: #fff;
+  background: rgba(15, 17, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fav-btn:hover {
+  background: rgba(255, 107, 0, 0.15);
+  border-color: rgba(255, 107, 0, 0.3);
+  color: #FF6B00;
+  transform: scale(1.05);
 }
 .fav-btn--static {
   position: static;
@@ -634,23 +648,23 @@ watch(
 /* ✅ Badges Styles */
 .car-card__badges {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   z-index: 5;
 }
 
 .badge-item {
   display: flex;
   align-items: center;
-  padding: 4px 10px; /* More compact */
-  border-radius: 6px 20px 20px 6px;
-  font-size: 10px; /* Smaller font */
-  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px 14px 14px 6px;
+  font-size: 9px;
+  font-weight: 850;
   color: #fff;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
   text-transform: uppercase;
   backdrop-filter: blur(4px);
   white-space: nowrap;
@@ -658,26 +672,26 @@ watch(
 
 .badge-best-deal {
   background: linear-gradient(135deg, #ff4d4d, #d63031);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(214, 48, 49, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(214, 48, 49, 0.35);
 }
 
 .badge-featured {
-  background: linear-gradient(135deg, #f1c40f, #f39c12);
-  color: #000;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+  background: linear-gradient(135deg, #FF6B00, #FFA800);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.35);
 }
 
 .badge-import {
   background: linear-gradient(135deg, #00d2ff, #3a7bd5);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .badge-global {
   background: linear-gradient(135deg, #ff9f43, #ff6b6b);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 15px rgba(255, 159, 67, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(255, 159, 67, 0.4);
   color: #fff;
 }
 </style>

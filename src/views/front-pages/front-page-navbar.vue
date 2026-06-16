@@ -344,50 +344,70 @@ const logout = async () => {
 <style lang="scss" scoped>
 
 .nav-link {
-  font-size: 1.05rem;
-  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+  font-size: 0.95rem;
+  font-weight: 750;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  padding: 8px 16px;
+  border-radius: 99px;
 
   &:not(:hover) {
-    color: rgb(var(--v-theme-on-surface));
+    color: rgba(255, 255, 255, 0.8) !important;
   }
 
   &:hover {
-    color: rgb(var(--v-theme-primary));
+    color: #FF6B00 !important;
+    background: rgba(255, 107, 0, 0.08);
     transform: translateY(-1px);
   }
 }
 
 .active-link {
-  color: rgb(var(--v-theme-primary)) !important;
+  color: #FF6B00 !important;
+  background: rgba(255, 107, 0, 0.12);
 }
 
 .app-bar-light {
-  border: 2px solid rgba(var(--v-theme-surface), 0.68);
-  border-radius: 0.5rem;
-  background-color: rgba(var(--v-theme-surface), 0.38);
-  transition: all 0.1s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 99px !important;
+  background-color: rgba(15, 17, 26, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-bar-dark {
-  border: 2px solid rgba(var(--v-theme-surface), 0.68);
-  border-radius: 0.5rem;
-  background-color: rgba(255, 255, 255, 0.04);
-  transition: all 0.1s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 99px !important;
+  background-color: rgba(15, 17, 26, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-bar-scrolled {
-  border: 2px solid rgb(var(--v-theme-surface));
-  border-radius: 0.5rem;
-  background-color: rgb(var(--v-theme-surface)) !important;
-  transition: all 0.1s ease-in-out;
+  border: 1px solid rgba(255, 107, 0, 0.15) !important;
+  border-radius: 99px !important;
+  background-color: rgba(15, 17, 26, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 107, 0, 0.05) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-logo-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: rgb(var(--v-theme-primary));
-  transition: all 0.2s ease;
+  font-size: 1.65rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #FF6B00 0%, #FFA800 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 8px rgba(255, 107, 0, 0.15));
+
+  &:hover {
+    transform: scale(1.04);
+    filter: drop-shadow(0 4px 12px rgba(255, 107, 0, 0.35));
+  }
 
   @media (max-width: 600px) {
     font-size: 1.3rem !important;
@@ -395,17 +415,20 @@ const logout = async () => {
 }
 
 .auth-main-btn {
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   letter-spacing: 0.5px !important;
   text-transform: none !important;
-  height: 44px !important;
-  padding-inline: 24px !important;
-  box-shadow: 0 8px 20px -6px rgba(var(--v-theme-primary), 0.4) !important;
-  transition: all 0.3s ease !important;
+  height: 42px !important;
+  padding-inline: 22px !important;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF3E1D 100%) !important;
+  color: white !important;
+  border-radius: 99px !important;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 25px -6px rgba(var(--v-theme-primary), 0.5) !important;
+    box-shadow: 0 8px 25px rgba(255, 107, 0, 0.55) !important;
   }
 
   @media (max-width: 600px) {
@@ -416,12 +439,22 @@ const logout = async () => {
 }
 
 .profile-main-btn {
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   letter-spacing: 0.5px !important;
   text-transform: none !important;
-  height: 44px !important;
-  padding-inline: 24px !important;
-  transition: all 0.3s ease !important;
+  height: 42px !important;
+  padding-inline: 22px !important;
+  border-radius: 99px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: white !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px);
+  }
 
   @media (max-width: 600px) {
     height: 36px !important;
@@ -437,6 +470,10 @@ const logout = async () => {
 }
 
 .logout-btn {
+  transition: all 0.2s ease;
+  &:hover {
+    transform: scale(1.1);
+  }
   @media (max-width: 600px) {
     width: 32px !important;
     height: 32px !important;
@@ -451,6 +488,7 @@ const logout = async () => {
   block-size: 5rem;
   content: '';
   inline-size: 100%;
+  pointer-events: none;
 }
 </style>
 
