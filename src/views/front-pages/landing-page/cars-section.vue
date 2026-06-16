@@ -145,7 +145,7 @@ const displayCars = computed(() => {
   const list = props.cars !== null ? props.cars : localCars.value
   if (!list || !Array.isArray(list)) return []
 
-  // ✅ Apply Priority Sort: 1. is_global_ad, 2. is_featured, 3. created_at DESC
+  // ✅ Apply Priority Sort: 1. is_global_ad, 2. is_featured, 3. is_best_deal, 4. is_import, 5. created_at DESC
   return [...list].sort((a, b) => {
     // 1. Global Ad priority
     if (Number(b.is_global_ad) !== Number(a.is_global_ad)) {
@@ -157,7 +157,17 @@ const displayCars = computed(() => {
       return Number(b.is_featured) - Number(a.is_featured)
     }
 
-    // 3. Newest first (if dates are available)
+    // 3. Best Deal priority
+    if (Number(b.is_best_deal) !== Number(a.is_best_deal)) {
+      return Number(b.is_best_deal) - Number(a.is_best_deal)
+    }
+
+    // 4. Import priority
+    if (Number(b.is_import) !== Number(a.is_import)) {
+      return Number(b.is_import) - Number(a.is_import)
+    }
+
+    // 5. Newest first (if dates are available)
     if (a.created_at && b.created_at) {
       return new Date(b.created_at) - new Date(a.created_at)
     }
