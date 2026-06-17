@@ -303,6 +303,32 @@ const nextSlide = () => {
   slideIndex.value = (slideIndex.value + 1) % len
 }
 
+/* =========================
+   ✅ Video Playback Controls (Ad Space)
+========================= */
+const adVideoRef = ref(null)
+const isMuted = ref(true)
+const isPlaying = ref(true)
+
+const toggleMute = () => {
+  if (adVideoRef.value) {
+    adVideoRef.value.muted = !adVideoRef.value.muted
+    isMuted.value = adVideoRef.value.muted
+  }
+}
+
+const togglePlay = () => {
+  if (adVideoRef.value) {
+    if (adVideoRef.value.paused) {
+      adVideoRef.value.play()
+      isPlaying.value = true
+    } else {
+      adVideoRef.value.pause()
+      isPlaying.value = false
+    }
+  }
+}
+
 onMounted(() => {
   fetchBanners()
   fetchBrands()
@@ -544,64 +570,109 @@ onBeforeUnmount(() => {
           </VCard>
         </div>
 
-        <!-- Right: Ad Area -->
-        <div class="hero-ad-area animate-fade-in-up" style="animation-delay: 0.3s">
-          <VCard class="premium-ad-card animate-float" elevation="10">
-            <div class="ad-label">AD</div>
-            <div class="ad-carousel-wrapper">
-              <Transition name="fade" mode="out-in">
-                <div v-if="slides.length > 0" :key="slideIndex" class="ad-slide-wrapper">
-                  <a :href="slides[slideIndex].link" target="_blank" class="ad-slide">
-                    <div
-                      class="ad-image animate-ken-burns"
-                      :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
-                    />
-                  </a>
-                </div>
-                <div
-                  v-else
-                  class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-8 h-100"
-                >
-                  <div class="placeholder-glow"></div>
-                  <VIcon
-                    icon="tabler-photo-spark"
-                    size="80"
-                    color="primary"
-                    class="text-glow mb-4"
-                  />
-                  <h4 class="text-h5 font-weight-black mb-2 text-white">Ad Space</h4>
-                  <p class="text-body-2 opacity-70 max-w-400 text-white">أضف إعلانك هنا ليصل لآلاف المهتمين</p>
-                  <Transition name="fade" mode="out-in">
-                    <div v-if="showAdPhone" class="phone-display-box mt-6">
-                      <VIcon icon="tabler-phone-call" size="20" class="me-2 text-primary" />
-                      <span class="text-h6 font-weight-black">01551552993</span>
-                    </div>
-                    <VBtn
-                      v-else
-                      variant="outlined"
+        <!-- Right: Ads Column -->
+        <div class="hero-ads-column">
+          <!-- Top: Image Ad Area -->
+          <div class="hero-ad-area animate-fade-in-up" style="animation-delay: 0.2s">
+            <VCard class="premium-ad-card animate-float" elevation="10">
+              <div class="ad-label">AD</div>
+              <div class="ad-carousel-wrapper">
+                <Transition name="fade" mode="out-in">
+                  <div v-if="slides.length > 0" :key="slideIndex" class="ad-slide-wrapper">
+                    <a :href="slides[slideIndex].link" target="_blank" class="ad-slide">
+                      <div
+                        class="ad-image animate-ken-burns"
+                        :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
+                      />
+                    </a>
+                  </div>
+                  <div
+                    v-else
+                    class="placeholder-ad d-flex flex-column align-center justify-center text-center pa-8 h-100"
+                  >
+                    <div class="placeholder-glow"></div>
+                    <VIcon
+                      icon="tabler-photo-spark"
+                      size="80"
                       color="primary"
-                      size="small"
-                      class="mt-6 contact-btn-pulse"
-                      @click="showAdPhone = true"
-                    >
-                      Contact Us
-                    </VBtn>
-                  </Transition>
-                </div>
-              </Transition>
+                      class="text-glow mb-4"
+                    />
+                    <h4 class="text-h5 font-weight-black mb-2 text-white">Ad Space</h4>
+                    <p class="text-body-2 opacity-70 max-w-400 text-white">أضف إعلانك هنا ليصل لآلاف المهتمين</p>
+                    <Transition name="fade" mode="out-in">
+                      <div v-if="showAdPhone" class="phone-display-box mt-6">
+                        <VIcon icon="tabler-phone-call" size="20" class="me-2 text-primary" />
+                        <span class="text-h6 font-weight-black">01551552993</span>
+                      </div>
+                      <VBtn
+                        v-else
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        class="mt-6 contact-btn-pulse"
+                        @click="showAdPhone = true"
+                      >
+                        Contact Us
+                      </VBtn>
+                    </Transition>
+                  </div>
+                </Transition>
 
-              <!-- Indicators -->
-              <div v-if="slides.length > 1" class="carousel-indicators">
-                <span
-                  v-for="(slide, idx) in slides"
-                  :key="idx"
-                  class="indicator-dot"
-                  :class="{ active: idx === slideIndex }"
-                  @click="slideIndex = idx"
-                ></span>
+                <!-- Indicators -->
+                <div v-if="slides.length > 1" class="carousel-indicators">
+                  <span
+                    v-for="(slide, idx) in slides"
+                    :key="idx"
+                    class="indicator-dot"
+                    :class="{ active: idx === slideIndex }"
+                    @click="slideIndex = idx"
+                  ></span>
+                </div>
               </div>
-            </div>
-          </VCard>
+            </VCard>
+          </div>
+
+          <!-- Bottom: Video Ad Area -->
+          <div class="hero-video-area animate-fade-in-up" style="animation-delay: 0.3s">
+            <VCard class="premium-video-card animate-float" elevation="10">
+              <div class="video-label">PROMO</div>
+              <div class="video-player-wrapper">
+                <video
+                  ref="adVideoRef"
+                  src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  class="ad-video"
+                ></video>
+                
+                <!-- Video Controls Overlay -->
+                <div class="video-controls">
+                  <VBtn
+                    icon
+                    variant="text"
+                    color="white"
+                    size="small"
+                    @click="togglePlay"
+                    class="control-btn"
+                  >
+                    <VIcon :icon="isPlaying ? 'tabler-pause' : 'tabler-play'" />
+                  </VBtn>
+                  <VBtn
+                    icon
+                    variant="text"
+                    color="white"
+                    size="small"
+                    @click="toggleMute"
+                    class="control-btn"
+                  >
+                    <VIcon :icon="isMuted ? 'tabler-volume-off' : 'tabler-volume'" />
+                  </VBtn>
+                </div>
+              </div>
+            </VCard>
+          </div>
         </div>
       </div>
     </VContainer>
@@ -625,10 +696,27 @@ onBeforeUnmount(() => {
 /* Main Grid */
 .hero-main-grid {
   display: grid;
-  grid-template-columns: 480px 1fr;
+  grid-template-columns: 1.3fr 1fr;
   gap: 32px;
   align-items: stretch;
   width: 100%;
+}
+
+.hero-search-area {
+  height: 100%;
+}
+
+.hero-ads-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.hero-ad-area,
+.hero-video-area {
+  flex: 1;
+  height: 100%;
 }
 
 /* Search Card */
@@ -841,7 +929,7 @@ onBeforeUnmount(() => {
 /* Ad Area */
 .premium-ad-card {
   height: 100%;
-  min-height: 480px;
+  min-height: 270px;
   background: rgba(20, 24, 40, 0.6) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 32px !important;
@@ -850,6 +938,73 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
 }
+
+.premium-video-card {
+  height: 100%;
+  min-height: 270px;
+  background: rgba(20, 24, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 32px !important;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-label {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(var(--v-theme-primary), 0.95);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.4);
+}
+
+.video-player-wrapper {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.ad-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-controls {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  background: rgba(15, 17, 26, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-btn {
+  opacity: 0.8;
+  transition: all 0.2s;
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
 
 .ad-label {
   position: absolute;
@@ -1017,12 +1172,36 @@ onBeforeUnmount(() => {
   -moz-appearance: textfield;
 }
 
+@media (min-width: 1201px) and (max-width: 1450px) {
+  .hero-main-grid {
+    grid-template-columns: 1.25fr 1fr;
+    gap: 24px;
+  }
+}
+
 @media (max-width: 1200px) {
   .hero__container {
     padding-inline: 16px;
   }
   .hero-main-grid {
     grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .hero-ads-column {
+    flex-direction: row;
+    gap: 24px;
+  }
+  .premium-ad-card, .premium-video-card {
+    min-height: 320px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-ads-column {
+    flex-direction: column;
+  }
+  .premium-ad-card, .premium-video-card {
+    min-height: 260px !important;
   }
 }
 
