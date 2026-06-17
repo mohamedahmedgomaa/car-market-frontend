@@ -112,6 +112,7 @@ const buildQuery = () => {
   if (filters.value.condition) q['filter[condition]'] = filters.value.condition
   if (filters.value.brandId) q['filter[brand_id]'] = filters.value.brandId
   if (filters.value.modelId) q['filter[model_id]'] = filters.value.modelId
+  if (smartSearch.value) q['filter[global]'] = smartSearch.value
 
   putBetween(q, 'km_between', filters.value.kmMin, filters.value.kmMax)
 
@@ -128,6 +129,7 @@ const buildQuery = () => {
 
 // ✅ Search Ad by ID
 const searchId = ref('')
+const smartSearch = ref('')
 
 const handleIdInput = (val) => {
   if (!val) {
@@ -174,6 +176,7 @@ const onSearch = () => {
 
 const resetFilters = () => {
   searchId.value = ''
+  smartSearch.value = ''
   filters.value = {
     type: 'car',
     condition: '',
@@ -377,20 +380,35 @@ onBeforeUnmount(() => {
               />
             </div>
 
-            <!-- ✅ Search by ID -->
-            <div class="mb-5">
+            <!-- ✅ Search Inputs (Smart Search & Search by ID) -->
+            <div class="mb-5 d-flex gap-3 align-center search-inputs-row">
+              <!-- Smart Search -->
+              <VTextField
+                v-model="smartSearch"
+                placeholder="ابحث بالماركة، الموديل أو السنة (مثال: BMW M5 2025)"
+                density="compact"
+                variant="outlined"
+                hide-details
+                prepend-inner-icon="tabler-search"
+                @keydown.enter.prevent="onSearch"
+                class="premium-id-input smart-search-input"
+                dir="rtl"
+              />
+
+              <!-- Search by ID -->
               <VTextField
                 v-model="searchId"
-                placeholder="Search by ID"
+                placeholder="رقم الإعلان"
                 density="compact"
                 variant="outlined"
                 hide-details
                 maxlength="8"
                 prepend-inner-icon="tabler-hash"
-                append-inner-icon="tabler-search"
                 @keydown.enter.prevent="onSearch"
                 @update:model-value="handleIdInput"
-                class="premium-id-input"
+                class="premium-id-input search-id-input"
+                style="max-width: 130px; min-width: 110px;"
+                dir="rtl"
               />
             </div>
 
@@ -1258,6 +1276,22 @@ onBeforeUnmount(() => {
     height: 44px !important;
     font-size: 15px !important;
     border-radius: 12px !important;
+  }
+}
+
+.search-inputs-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .search-inputs-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .search-id-input {
+    max-width: 100% !important;
   }
 }
 
