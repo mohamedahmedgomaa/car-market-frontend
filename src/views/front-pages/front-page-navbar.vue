@@ -242,7 +242,7 @@ const logout = async () => {
           <div class="text-base align-center d-none d-md-flex gap-x-4 ms-6">
             <RouterLink
               to="/user/cars"
-              class="nav-link font-weight-bold py-2 px-2"
+              class="nav-link font-weight-bold"
               :class="route.path === '/user/cars' && route.query['filter[type]'] !== 'motorcycle' ? 'active-link' : ''"
             >
               Cars
@@ -250,7 +250,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/best-deals"
-              class="nav-link font-weight-bold py-2 px-2"
+              class="nav-link font-weight-bold"
               :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
             >
               Best Deals
@@ -258,7 +258,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/negm-sooq"
-              class="nav-link font-weight-bold py-2 px-2"
+              class="nav-link font-weight-bold"
               :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
             >
               Import Cars
@@ -266,7 +266,7 @@ const logout = async () => {
 
             <RouterLink
               :to="{ path: '/user/cars', query: { 'filter[type]': 'motorcycle', sort: '-created_at' } }"
-              class="nav-link font-weight-bold py-2 px-2"
+              class="nav-link font-weight-bold"
               :class="route.path === '/user/cars' && route.query['filter[type]'] === 'motorcycle' ? 'active-link' : ''"
             >
               Bikes
@@ -274,7 +274,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/sell"
-              class="nav-link font-weight-bold py-2 px-2"
+              class="nav-link font-weight-bold"
               :class="route.path === '/user/sell' ? 'active-link' : ''"
             >
               Sell
@@ -282,7 +282,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/favorites"
-              class="nav-link font-weight-bold py-2 px-2"
+              class="nav-link font-weight-bold"
               :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
             >
               Favorites
@@ -290,7 +290,7 @@ const logout = async () => {
 
             <RouterLink
               to="/user/sellers"
-              class="nav-link font-weight-bold py-2 px-2"
+              class="nav-link font-weight-bold"
               :class="route.path === '/user/sellers' ? 'active-link' : ''"
             >
               Showrooms
@@ -348,23 +348,28 @@ const logout = async () => {
   font-weight: 750;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 99px;
+  border: 1px solid transparent;
 
-  &:not(:hover) {
+  &:not(:hover):not(.active-link) {
     color: rgba(255, 255, 255, 0.8) !important;
   }
 
-  &:hover {
+  &:hover:not(.active-link) {
     color: #FF6B00 !important;
     background: rgba(255, 107, 0, 0.08);
+    border-color: rgba(255, 107, 0, 0.2);
     transform: translateY(-1px);
   }
 }
 
 .active-link {
-  color: #FF6B00 !important;
-  background: rgba(255, 107, 0, 0.12);
+  color: #FFF !important;
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.24) 0%, rgba(255, 62, 29, 0.12) 100%) !important;
+  border-color: rgba(255, 107, 0, 0.55) !important;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.25), inset 0 0 8px rgba(255, 107, 0, 0.1) !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
 }
 
 .app-bar-light {
