@@ -556,7 +556,6 @@ onBeforeUnmount(() => {
                       class="ad-image animate-ken-burns"
                       :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
                     />
-                    <div class="ad-overlay"></div>
                   </a>
                 </div>
                 <div
@@ -911,17 +910,6 @@ onBeforeUnmount(() => {
   }
 }
 
-.ad-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(15, 17, 26, 0.9) 0%,
-    rgba(15, 17, 26, 0.3) 60%,
-    transparent 100%
-  );
-  z-index: 2;
-}
 
 /* Carousel Indicators */
 .carousel-indicators {
