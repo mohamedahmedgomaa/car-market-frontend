@@ -2,13 +2,16 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSellerAuth } from '@/stores/sellerAuth'
+import { useUserAuth } from '@/stores/userAuth'
 
 definePage({ meta: { layout: 'front', public: true } })
 
 const router = useRouter()
 const sellerAuth = useSellerAuth()
+const userAuth = useUserAuth()
 
 const isSellerLoggedIn = computed(() => !!sellerAuth.token)
+const isUserLoggedIn = computed(() => !!userAuth.token)
 const sellerData = computed(() => {
   if (!isSellerLoggedIn.value) return null
   try {
@@ -168,8 +171,66 @@ const valueProps = [
           </div>
         </template>
 
+        <template v-else-if="isUserLoggedIn">
+          <!-- Logged in as normal user but not seller -->
+          <div class="d-inline-flex align-center gap-2 px-4 py-1 rounded-pill bg-amber-subtle mb-4">
+            <VIcon icon="tabler-alert-circle" size="18" color="amber-darken-1" />
+            <span class="text-caption font-weight-bold text-amber-darken-1 text-uppercase tracking-wider">
+              Seller Account Required
+            </span>
+          </div>
+
+          <h1 class="text-h2 font-weight-black text-white mb-3">
+            Upgrade to Seller Profile
+          </h1>
+          <p class="text-h6 text-white-50 max-w-700 mx-auto font-weight-medium mb-8">
+            You are logged in as an individual. To start listing and selling your cars on NegmCars, please register your showroom/seller profile.
+          </p>
+
+          <!-- Call to Action Card for Upgrading/Registering as Seller -->
+          <VCard class="cta-card max-w-850 mx-auto pa-8 rounded-3xl elevation-12 border relative overflow-hidden mb-12">
+            <div class="d-flex flex-column flex-md-row align-center justify-space-between gap-6 relative z-1">
+              <div class="text-center text-md-start">
+                <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
+                  <VIcon icon="tabler-shield-check" size="16" /> Verified Seller Status
+                </div>
+                <h2 class="text-h4 font-weight-black text-white mb-2">Create Your Seller Account</h2>
+                <p class="text-subtitle-1 text-white-50 mb-0">
+                  Fill in your showroom or personal seller details to unlock the vehicle listing features immediately.
+                </p>
+              </div>
+
+              <div class="d-flex flex-column gap-3 flex-shrink-0 w-100 w-md-auto">
+                <VBtn
+                  color="primary"
+                  size="x-large"
+                  rounded="pill"
+                  to="/seller/register"
+                  class="px-8 py-3 font-weight-black shadow-primary text-subtitle-1"
+                  elevation="8"
+                >
+                  <VIcon icon="tabler-user-plus" size="22" class="me-2" />
+                  Register as Seller
+                </VBtn>
+
+                <VBtn
+                  variant="outlined"
+                  color="white"
+                  size="large"
+                  rounded="pill"
+                  to="/seller/login"
+                  class="font-weight-bold text-subtitle-2"
+                >
+                  <VIcon icon="tabler-login" size="18" class="me-2" />
+                  Log in as Seller
+                </VBtn>
+              </div>
+            </div>
+          </VCard>
+        </template>
+
         <template v-else>
-          <!-- Guest / User Onboarding greeting -->
+          <!-- Guest / Not Logged In at all -->
           <div class="d-inline-flex align-center gap-2 px-4 py-1 rounded-pill bg-amber-subtle mb-4">
             <VIcon icon="tabler-rocket" size="18" color="amber-darken-1" />
             <span class="text-caption font-weight-bold text-amber-darken-1 text-uppercase tracking-wider">
@@ -189,11 +250,11 @@ const valueProps = [
             <div class="d-flex flex-column flex-md-row align-center justify-space-between gap-6 relative z-1">
               <div class="text-center text-md-start">
                 <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
-                  <VIcon icon="tabler-gift" size="16" /> Annual Verified Subscriptions
+                  <VIcon icon="tabler-gift" size="16" /> Easy Onboarding
                 </div>
-                <h2 class="text-h4 font-weight-black text-white mb-2">Are you a Car Dealer or Showroom?</h2>
+                <h2 class="text-h4 font-weight-black text-white mb-2">Ready to Sell Your Vehicle?</h2>
                 <p class="text-subtitle-1 text-white-50 mb-0">
-                  Register your showroom profile, display your custom logo, and show your direct contact details to active buyers!
+                  Register as a showroom or an individual seller to start listing your car on NegmCars and connect with active buyers instantly.
                 </p>
               </div>
 
@@ -211,15 +272,27 @@ const valueProps = [
                 </VBtn>
 
                 <VBtn
+                  variant="tonal"
+                  color="primary"
+                  size="large"
+                  rounded="pill"
+                  to="/login?tab=register"
+                  class="font-weight-bold text-subtitle-2"
+                >
+                  <VIcon icon="tabler-user-plus" size="18" class="me-2" />
+                  Register Individual
+                </VBtn>
+
+                <VBtn
                   variant="outlined"
                   color="white"
                   size="large"
                   rounded="pill"
-                  to="/seller/login"
+                  to="/login"
                   class="font-weight-bold text-subtitle-2"
                 >
-                  <VIcon icon="tabler-lock" size="18" class="me-2" />
-                  Sign In to Dashboard
+                  <VIcon icon="tabler-login" size="18" class="me-2" />
+                  Sign In
                 </VBtn>
               </div>
             </div>
