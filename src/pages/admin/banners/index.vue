@@ -14,7 +14,8 @@ definePage({
 
 const banners = ref([])
 const loading = ref(false)
-const uploadType = ref('hero') // 'hero' or 'sidebar'
+const uploadType = ref('hero') // 'hero', 'sidebar', or 'video'
+const videoUrlInput = ref('')
 
 const deleteDialog = ref(false)
 const selectedBanner = ref(null)
@@ -37,6 +38,10 @@ const heroBanners = computed(() => {
 
 const sidebarBanners = computed(() => {
   return banners.value.filter((b) => b.type === 'sidebar')
+})
+
+const videoBanners = computed(() => {
+  return banners.value.filter((b) => b.type === 'video')
 })
 
 const fetchBanners = async () => {
@@ -72,6 +77,7 @@ const handleDelete = async () => {
 
 // Watch selected file to init cropper inside the dialog
 watch(selectedFile, (file) => {
+  if (uploadType.value === 'video') return
   if (file && file instanceof File && !isCropped.value) {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -106,36 +112,45 @@ watch(selectedFile, (file) => {
 })
 
 const handleCreate = async () => {
-  if (!selectedFile.value) return
+  if (!selectedFile.value && !videoUrlInput.value) return
 
   creating.value = true
   try {
-    let fileToUpload = selectedFile.value
-
-    // If cropper is active, get the cropped version first
-    if (cropper && !isCropped.value) {
-      const cropWidth = uploadType.value === 'sidebar' ? 640 : 2560
-      const cropHeight = uploadType.value === 'sidebar' ? 420 : 1600
-      const canvas = cropper.getCroppedCanvas({ 
-        width: cropWidth,
-        height: cropHeight,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high',
-      })
-      
-      const blob = await new Promise((resolve) => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.95) // جودة عالية جداً مع حجم ملف معقول
-      })
-      fileToUpload = new File([blob], uploadType.value === 'sidebar' ? 'sidebar_ad.jpg' : 'banner_2k.jpg', { type: 'image/jpeg' })
-    }
-
     const fd = new FormData()
-    fd.append('image', fileToUpload)
     fd.append('type', uploadType.value)
+
+    if (uploadType.value === 'video') {
+      if (videoUrlInput.value) {
+        fd.append('video_url', videoUrlInput.value)
+      } else if (selectedFile.value) {
+        fd.append('image', selectedFile.value) // using 'image' parameter for compatibility with backend file handler
+      }
+    } else if (selectedFile.value) {
+      let fileToUpload = selectedFile.value
+
+      // If cropper is active, get the cropped version first
+      if (cropper && !isCropped.value) {
+        const cropWidth = uploadType.value === 'sidebar' ? 640 : 2560
+        const cropHeight = uploadType.value === 'sidebar' ? 420 : 1600
+        const canvas = cropper.getCroppedCanvas({ 
+          width: cropWidth,
+          height: cropHeight,
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+        })
+        
+        const blob = await new Promise((resolve) => {
+          canvas.toBlob(resolve, 'image/jpeg', 0.95) // جودة عالية جداً مع حجم ملف معقول
+        })
+        fileToUpload = new File([blob], uploadType.value === 'sidebar' ? 'sidebar_ad.jpg' : 'banner_2k.jpg', { type: 'image/jpeg' })
+      }
+      fd.append('image', fileToUpload)
+    }
 
     await bannerAdminApi.create(fd)
     createDialog.value = false
     selectedFile.value = null
+    videoUrlInput.value = ''
     isCropped.value = false
     fetchBanners()
   } catch (err) {
@@ -320,11 +335,96 @@ onMounted(() => fetchBanners())
       </div>
     </VCard>
 
+    <!-- 3️⃣ Promo Video Banners Section -->
+    <div class="flex items-center justify-between mb-8 mt-12">
+      <div>
+        <h2 class="text-2xl font-bold text-white mb-1">إعلانات الفيديو الترويجي (Video Banners)</h2>
+        <p class="text-sm text-gray-400">إدارة فيديوهات الإعلان الترويجي التي تظهر في الواجهة الرئيسية بجانب كرت البحث</p>
+      </div>
+
+      <VBtn
+        color="info"
+        variant="elevated"
+        class="rounded-xl px-6"
+        height="44"
+        @click="uploadType = 'video'; createDialog = true; selectedFile = null; videoUrlInput = ''"
+      >
+        <VIcon icon="tabler-plus" class="me-2" />
+        إضافة إعلان فيديو
+      </VBtn>
+    </div>
+
+    <VCard rounded="xl" border class="overflow-hidden mb-12">
+      <VTable class="custom-table">
+        <thead>
+          <tr>
+            <th class="text-uppercase text-xs font-bold opacity-70">ID</th>
+            <th class="text-uppercase text-xs font-bold opacity-70">معاينة الفيديو</th>
+            <th class="text-uppercase text-xs font-bold opacity-70">الحالة</th>
+            <th class="text-uppercase text-xs font-bold opacity-70 text-center">العمليات</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="banner in videoBanners" :key="banner.id">
+            <td class="font-medium">#{{ banner.id }}</td>
+            <td>
+              <div class="py-3">
+                <div class="banner-preview-wrapper video-preview" style="width: 240px; height: 135px;">
+                  <video
+                    :src="banner.image_path"
+                    controls
+                    muted
+                    class="rounded-lg border shadow-sm h-100 w-100 object-cover"
+                    style="max-height: 120px;"
+                  ></video>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="flex items-center gap-3">
+                <VSwitch
+                  v-model="banner.is_active"
+                  color="success"
+                  hide-details
+                  density="compact"
+                  @change="toggleActive(banner)"
+                />
+                <VChip :color="banner.is_active ? 'success' : 'default'" size="small" variant="tonal" class="font-weight-bold">
+                  {{ banner.is_active ? 'نشط' : 'غير نشط' }}
+                </VChip>
+              </div>
+            </td>
+            <td class="text-center">
+              <VBtn
+                icon
+                variant="text"
+                color="error"
+                class="rounded-lg"
+                @click="confirmDelete(banner)"
+              >
+                <VIcon icon="tabler-trash" />
+              </VBtn>
+            </td>
+          </tr>
+          <tr v-if="videoBanners.length === 0 && !loading">
+            <td colspan="4" class="text-center py-12 text-gray-400">
+              <VIcon icon="tabler-video-off" size="48" class="opacity-20 mb-4 d-block mx-auto" />
+              لا توجد إعلانات فيديو حالياً
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <div v-if="loading" class="flex justify-center items-center py-12">
+        <VProgressCircular indeterminate color="primary" />
+      </div>
+    </VCard>
+
     <!-- Create Dialog (Simplified) -->
     <VDialog v-model="createDialog" max-width="800" persistent>
       <VCard rounded="xl">
         <VCardTitle class="text-xl font-bold px-6 pt-6 flex justify-between items-center">
-          رفع إعلان جديد ({{ uploadType === 'sidebar' ? 'جانبي' : 'شاشة كاملة هيرو' }})
+          رفع إعلان جديد ({{ uploadType === 'sidebar' ? 'جانبي' : uploadType === 'video' ? 'فيديو ترويجي' : 'شاشة كاملة هيرو' }})
           <VBtn icon variant="text" size="small" @click="createDialog = false">
             <VIcon icon="tabler-x" />
           </VBtn>
@@ -332,22 +432,55 @@ onMounted(() => fetchBanners())
 
         <VCardText class="px-6 pb-6">
           <p class="text-sm text-gray-500 mb-6 italic">
-            {{ uploadType === 'sidebar' ? 'سيتم قص الصورة تلقائياً لتناسب المقاس المقترح (640×420).' : 'سيتم قص الصورة تلقائياً لتناسب المقاس الإجباري للموقع (2560×1600).' }}
+            <span v-if="uploadType === 'sidebar'">سيتم قص الصورة تلقائياً لتناسب المقاس المقترح (640×420).</span>
+            <span v-else-if="uploadType === 'video'">يمكنك تحميل ملف فيديو مباشرة أو إدخال رابط فيديو خارجي (مفضل).</span>
+            <span v-else>سيتم قص الصورة تلقائياً لتناسب المقاس الإجباري للموقع (2560×1600).</span>
           </p>
 
-          <VFileInput
-            v-model="selectedFile"
-            label="اختر ملف الصورة"
-            accept="image/*"
-            prepend-icon="tabler-photo-up"
-            variant="outlined"
-            density="comfortable"
-            class="mb-6"
-            placeholder="اضغط هنا لاختيار الصورة"
-          />
+          <!-- Video Fields -->
+          <div v-if="uploadType === 'video'">
+            <VFileInput
+              v-model="selectedFile"
+              label="تحميل ملف فيديو (اختياري)"
+              accept="video/*"
+              prepend-icon="tabler-video"
+              variant="outlined"
+              density="comfortable"
+              class="mb-4"
+              placeholder="اضغط هنا لاختيار ملف فيديو (MP4, WebM)"
+              :disabled="!!videoUrlInput"
+            />
+            
+            <div class="text-center my-3 text-gray-500 font-weight-bold">أو</div>
+            
+            <VTextField
+              v-model="videoUrlInput"
+              label="أدخل رابط فيديو مباشر (اختياري)"
+              placeholder="مثال: https://example.com/video.mp4"
+              prepend-inner-icon="tabler-link"
+              variant="outlined"
+              density="comfortable"
+              class="mb-6"
+              :disabled="!!selectedFile"
+            />
+          </div>
+
+          <!-- Image Fields -->
+          <div v-else>
+            <VFileInput
+              v-model="selectedFile"
+              label="اختر ملف الصورة"
+              accept="image/*"
+              prepend-icon="tabler-photo-up"
+              variant="outlined"
+              density="comfortable"
+              class="mb-6"
+              placeholder="اضغط هنا لاختيار الصورة"
+            />
+          </div>
 
           <!-- Cropper Interface -->
-          <div v-if="imageToCrop" class="mt-2">
+          <div v-if="imageToCrop && uploadType !== 'video'" class="mt-2">
             <div
               class="text-xs font-bold text-primary text-uppercase mb-3 tracking-widest flex items-center gap-2"
             >
@@ -384,7 +517,7 @@ onMounted(() => fetchBanners())
             height="44"
             :loading="creating"
             @click="handleCreate"
-            :disabled="!selectedFile"
+            :disabled="!selectedFile && !videoUrlInput"
           >
             حفظ ونشر الإعلان
           </VBtn>

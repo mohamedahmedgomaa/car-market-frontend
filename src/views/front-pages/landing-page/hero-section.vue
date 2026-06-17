@@ -309,6 +309,18 @@ const nextSlide = () => {
 const adVideoRef = ref(null)
 const isMuted = ref(true)
 const isPlaying = ref(true)
+const videoUrl = ref('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4')
+
+const fetchVideoBanner = async () => {
+  try {
+    const res = await api.get('/user/banners', { params: { type: 'video' } })
+    if (res.data && res.data.data && res.data.data.length > 0) {
+      videoUrl.value = res.data.data[0].image_path
+    }
+  } catch (err) {
+    console.error('Error fetching video banner:', err)
+  }
+}
 
 const toggleMute = () => {
   if (adVideoRef.value) {
@@ -331,6 +343,7 @@ const togglePlay = () => {
 
 onMounted(() => {
   fetchBanners()
+  fetchVideoBanner()
   fetchBrands()
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
@@ -639,7 +652,7 @@ onBeforeUnmount(() => {
               <div class="video-player-wrapper">
                 <video
                   ref="adVideoRef"
-                  src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+                  :src="videoUrl"
                   autoplay
                   loop
                   muted
