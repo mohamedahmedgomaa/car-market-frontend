@@ -198,13 +198,59 @@ onMounted(fetchCars)
   }
 }
 
+/* Card theme styling */
+.v-theme--light .car-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+.v-theme--light .car-card:hover {
+  background: #ffffff;
+  border-color: rgba(255, 107, 0, 0.25);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+.v-theme--light .car-card__title {
+  color: #2F2B3D !important;
+}
+.v-theme--light .car-card__meta {
+  color: rgba(47, 43, 61, 0.85) !important;
+}
+.v-theme--light .car-card__price {
+  color: #FF6B00 !important;
+}
+.v-theme--light .car-card__badge {
+  background: rgba(15, 17, 26, 0.06) !important;
+  color: rgba(15, 17, 26, 0.8) !important;
+}
+
+.v-theme--dark .car-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.v-theme--dark .car-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 107, 0, 0.25);
+}
+.v-theme--dark .car-card__title {
+  color: #ffffff !important;
+}
+.v-theme--dark .car-card__meta {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.v-theme--dark .car-card__price {
+  color: #FF6B00 !important;
+}
+.v-theme--dark .car-card__badge {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
 .car-card {
   display: block;
   border-radius: 14px;
   overflow: hidden;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.04);
-  transition: transform 0.15s ease;
+  transition: all 0.25s ease;
 }
 
 .car-card:hover {
@@ -259,6 +305,5 @@ onMounted(fetchCars)
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
 }
 </style>

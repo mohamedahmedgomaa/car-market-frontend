@@ -256,11 +256,11 @@ onMounted(() => {
               <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">Showrooms Directory</span>
             </div>
             
-            <h1 class="text-h3 font-weight-black text-white mb-4 leading-tight">
-              Discover Egypt's <span class="text-gradient">Premier Showrooms</span>
+            <h1 class="text-h3 font-weight-black text-high-emphasis mb-4 leading-tight">
+              <span dir="ltr">Discover Egypt's <span class="text-gradient">Premier Showrooms</span></span>
             </h1>
-            <p class="text-body-2 text-white-50 max-w-650 font-weight-medium mb-6" style="line-height: 1.5;">
-              Explore certified automotive dealerships nationwide. Locate verified showrooms, browse premium inventories, and connect directly with verified owners.
+            <p class="text-body-2 text-medium-emphasis max-w-650 font-weight-medium mb-6" style="line-height: 1.5;">
+              <span dir="ltr">Explore certified automotive dealerships nationwide. Locate verified showrooms, browse premium inventories, and connect directly with verified owners.</span>
             </p>
 
             <!-- Ultra-Sleek Trust & Stats Bar -->
@@ -270,8 +270,8 @@ onMounted(() => {
                   <VIcon icon="tabler-building-store" color="primary" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
-                  <span class="text-caption font-weight-black text-white leading-tight">{{ sellers.length || 0 }} Showrooms</span>
-                  <span class="text-xxs text-white-50 leading-none">Verified Dealers</span>
+                  <span class="text-caption font-weight-black text-high-emphasis leading-tight"><span dir="ltr">{{ sellers.length || 0 }} Showrooms</span></span>
+                  <span class="text-xxs text-medium-emphasis leading-none">Verified Dealers</span>
                 </div>
               </div>
 
@@ -280,8 +280,8 @@ onMounted(() => {
                   <VIcon icon="tabler-map-pin" color="success" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
-                  <span class="text-caption font-weight-black text-white leading-tight">Egypt-wide</span>
-                  <span class="text-xxs text-white-50 leading-none">Active Cities</span>
+                  <span class="text-caption font-weight-black text-high-emphasis leading-tight">Egypt-wide</span>
+                  <span class="text-xxs text-medium-emphasis leading-none">Active Cities</span>
                 </div>
               </div>
 
@@ -290,8 +290,8 @@ onMounted(() => {
                   <VIcon icon="tabler-shield-check" color="warning" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
-                  <span class="text-caption font-weight-black text-white leading-tight">100% Secure</span>
-                  <span class="text-xxs text-white-50 leading-none">Direct Connection</span>
+                  <span class="text-caption font-weight-black text-high-emphasis leading-tight"><span dir="ltr">100% Secure</span></span>
+                  <span class="text-xxs text-medium-emphasis leading-none">Direct Connection</span>
                 </div>
               </div>
             </div>
@@ -306,12 +306,12 @@ onMounted(() => {
                 <VIcon icon="tabler-rocket" size="12" /> Dealership Partnership
               </div>
               
-              <h2 class="text-h6 font-weight-black text-white leading-tight">
-                Own a Showroom?
+              <h2 class="text-h6 font-weight-black text-high-emphasis leading-tight">
+                <span dir="ltr">Own a Showroom?</span>
               </h2>
               
-              <p class="text-caption text-white-50 mb-1 font-weight-medium" style="line-height: 1.4;">
-                Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Display your inventory and receive direct buyer leads.
+              <p class="text-caption text-medium-emphasis mb-1 font-weight-medium" style="line-height: 1.4;">
+                <span dir="ltr">Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Display your inventory and receive direct buyer leads.</span>
               </p>
               
               <VBtn
@@ -442,7 +442,7 @@ onMounted(() => {
 
       <div class="d-flex align-center gap-2 mb-6 animate-fade-in">
         <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
-        <span class="text-caption font-weight-bold text-white-50 text-uppercase tracking-wider px-3">Verified Showrooms</span>
+        <span class="text-caption font-weight-bold text-medium-emphasis text-uppercase tracking-wider px-3">Verified Showrooms</span>
         <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
       </div>
 
@@ -454,13 +454,13 @@ onMounted(() => {
 
       <!-- Error State -->
       <VAlert v-else-if="error" type="error" variant="tonal" class="mb-8 rounded-lg">
-        {{ error }}
+        <div dir="ltr">{{ error }}</div>
       </VAlert>
 
       <!-- Empty State -->
       <div v-else-if="filteredSellers.length === 0" class="text-center py-16 animate-fade-in">
         <VIcon icon="tabler-building-store" size="80" class="mb-4 opacity-20" />
-        <h3 class="text-h5 text-white-50 font-weight-bold">No verified showrooms match your location or search.</h3>
+        <h3 class="text-h5 text-medium-emphasis font-weight-bold">No verified showrooms match your location or search.</h3>
         <VBtn variant="tonal" color="primary" class="mt-4 px-6 font-weight-bold" rounded="pill" @click="resetFilters">
           Reset Filters
         </VBtn>
@@ -485,7 +485,7 @@ onMounted(() => {
 
                   <div class="overflow-hidden flex-grow-1">
                     <div class="d-flex align-center justify-space-between gap-1 mb-1">
-                      <h3 class="text-h5 font-weight-black text-white text-truncate mb-0">
+                      <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0">
                         {{ t(seller.store_name) || seller.name }}
                       </h3>
                       <VChip color="amber" variant="elevated" size="x-small" class="font-weight-black tracking-widest px-2 py-0">PRO</VChip>
@@ -498,7 +498,7 @@ onMounted(() => {
 
                     <!-- Beautiful Custom Location Tags -->
                     <div class="d-flex align-center flex-wrap gap-2 mt-2">
-                      <div class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-70 text-xxs font-weight-black border-white-10">
+                      <div class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-black border-white-10">
                         <VIcon icon="tabler-map-pin-filled" size="11" color="primary" />
                         <span>
                           {{ seller.governorate ? t(seller.governorate.name) : '' }}
@@ -507,12 +507,12 @@ onMounted(() => {
                         </span>
                       </div>
                       
-                      <div v-if="t(seller.district)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-50 text-xxs font-weight-bold border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.district)">
+                      <div v-if="t(seller.district)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-bold border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.district)">
                         <VIcon icon="tabler-building" size="11" color="white-50" />
                         <span>{{ t(seller.district) }}</span>
                       </div>
 
-                      <div v-if="t(seller.street)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-white-50 text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.street)">
+                      <div v-if="t(seller.street)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.street)">
                         <VIcon icon="tabler-road" size="11" color="white-50" />
                         <span>{{ t(seller.street) }}</span>
                       </div>
@@ -532,7 +532,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Bio excerpt -->
-                <p class="text-body-2 text-white-50 line-clamp-2 mb-6 font-weight-medium">
+                <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-6 font-weight-medium">
                   {{ t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
                 </p>
               </div>
@@ -589,14 +589,14 @@ onMounted(() => {
 
       <!-- Call Confirmation Modal -->
       <VDialog v-model="showCallDialog" max-width="400">
-        <VCard v-if="selectedSellerForCall" class="pa-6 text-center rounded-2xl elevation-10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15);">
+        <VCard v-if="selectedSellerForCall" class="pa-6 text-center rounded-2xl elevation-10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(var(--v-theme-on-surface), 0.15);">
           <VAvatar color="primary" variant="tonal" size="70" class="mx-auto mb-4 elevation-4 overflow-hidden border">
             <img v-if="selectedSellerForCall.store_logo" :src="selectedSellerForCall.store_logo" alt="Logo" class="w-100 h-100 object-fit-cover" />
             <VIcon v-else icon="tabler-phone-calling" size="36" />
           </VAvatar>
           
-          <h3 class="text-h5 font-weight-bold mb-2 text-white">Call Dealership</h3>
-          <p class="text-body-1 opacity-70 mb-6 text-white-50">
+          <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">Call Dealership</h3>
+          <p class="text-body-1 opacity-70 mb-6 text-medium-emphasis">
             Contact <strong>{{ t(selectedSellerForCall.store_name) || selectedSellerForCall.name }}</strong> directly at:
           </p>
 
@@ -624,7 +624,7 @@ onMounted(() => {
               block
               height="50"
               rounded="pill"
-              class="text-white-50 font-weight-medium"
+              class="text-medium-emphasis font-weight-medium"
               @click="closeCallDialog"
             >
               Cancel
@@ -653,8 +653,8 @@ onMounted(() => {
 .dealer-promo-card {
   background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15), rgba(var(--v-theme-surface), 0.9)) !important;
   backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1) !important;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(var(--v-theme-on-surface), 0.15) !important;
   transition: all 0.4s ease;
 
   &.border-glow {
@@ -679,12 +679,12 @@ onMounted(() => {
 }
 
 .bg-white-5 {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
   backdrop-filter: blur(8px);
 }
 
 .border-white-10 {
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
 }
 
 .bg-success-subtle {
@@ -701,15 +701,15 @@ onMounted(() => {
   font-size: 0.65rem !important;
 }
 
-.text-white-70 {
-  color: rgba(255, 255, 255, 0.7) !important;
+.text-medium-emphasis {
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
 }
 
 .stat-badge {
   transition: all 0.3s ease;
   &:hover {
     transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(var(--v-theme-on-surface), 0.08) !important;
     border-color: rgba(var(--v-theme-primary), 0.3) !important;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
   }
@@ -718,7 +718,7 @@ onMounted(() => {
 .showroom-card {
   background: rgba(var(--v-theme-surface), 0.35) !important;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
@@ -729,11 +729,11 @@ onMounted(() => {
 }
 
 .bg-white-10 {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(var(--v-theme-on-surface), 0.08) !important;
 }
 
-.text-white-50 {
-  color: rgba(255, 255, 255, 0.7) !important;
+.text-medium-emphasis {
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
 }
 
 .line-clamp-2 {
@@ -783,8 +783,8 @@ onMounted(() => {
 
 /* Premium Horizontal Search Deck Styles - Very Compact! */
 .premium-horizontal-search {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 12px 18px;
@@ -844,7 +844,7 @@ onMounted(() => {
 
 .premium-input-field :deep(.v-field__outline) {
   --v-field-border-opacity: 1 !important;
-  color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(var(--v-theme-on-surface), 0.08) !important;
   transition: color 0.3s ease;
 }
 
@@ -862,7 +862,7 @@ onMounted(() => {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   align-items: center;
-  color: #fff !important;
+  color: rgba(var(--v-theme-on-surface), 0.9) !important;
   font-size: 14px;
 }
 

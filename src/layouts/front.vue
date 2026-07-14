@@ -23,8 +23,24 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
 </template>
 
 <style lang="scss">
+.v-theme--light .landing-page-wrapper {
+  background: #ffffff !important;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+.v-theme--light .bg-glow {
+  opacity: 0.12 !important; /* softer glow for light theme */
+}
+
+.v-theme--dark .landing-page-wrapper {
+  background: #000000 !important; /* pure black background */
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
 .landing-page-wrapper {
-  background: #0f111a; /* Deep indigo-tinted dark */
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;

@@ -263,9 +263,9 @@ watch(
         </RouterLink>
       </div>
 
-      <div v-if="displayLoading" class="cars-section__state">Loading cars...</div>
-      <div v-else-if="displayError" class="cars-section__state error">{{ displayError }}</div>
-      <div v-else-if="displayCars.length === 0" class="cars-section__state">No cars found.</div>
+      <div v-if="displayLoading" class="cars-section__state"><span dir="ltr">Loading cars...</span></div>
+      <div v-else-if="displayError" class="cars-section__state error"><span dir="ltr">{{ displayError }}</span></div>
+      <div v-else-if="displayCars.length === 0" class="cars-section__state"><span dir="ltr">No cars found.</span></div>
 
       <div v-else class="cars-grid">
         <RouterLink
@@ -333,11 +333,11 @@ watch(
             </button>
           </div>
 
-          <div class="car-card__body d-flex flex-column text-white">
+          <div class="car-card__body d-flex flex-column">
             <!-- Top Section: Title, Brand, Year -->
             <div>
               <h3
-                class="car-card__title text-white font-weight-bold mb-1"
+                class="car-card__title font-weight-bold mb-1"
                 style="min-height: 44px; line-height: 1.4"
               >
                 {{ t(car.title) || `Car #${car.id}` }}
@@ -373,7 +373,7 @@ watch(
             <div class="d-flex align-center justify-space-between mb-3 pt-2">
               <div class="car-card__price">
                 {{ formatPrice(car.price) }}
-                <span class="text-caption text-white opacity-60">EG</span>
+                <span class="text-caption price-currency opacity-60">EG</span>
               </div>
 
               <div class="d-flex align-center" style="font-size: 12px">
@@ -384,7 +384,7 @@ watch(
             </div>
 
             <!-- ✅ Location & Time -->
-            <div class="car-card__footer pt-2 border-t border-white-opacity-10 opacity-70">
+            <div class="car-card__footer pt-2 border-t opacity-70">
               <div class="car-card__location d-flex align-center">
                 <VIcon icon="tabler-map-pin" size="14" class="me-1" />
                 <span>{{ t(car.city?.name) || 'Cairo' }}</span>
@@ -477,6 +477,60 @@ watch(
   }
 }
 
+/* Card Colors by Theme */
+.v-theme--light .car-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+.v-theme--light .car-card:hover {
+  background: #ffffff;
+  border-color: rgba(255, 107, 0, 0.25);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+.v-theme--light .car-card__title {
+  color: #2F2B3D !important;
+}
+.v-theme--light .car-card__meta {
+  color: rgba(47, 43, 61, 0.85) !important;
+}
+.v-theme--light .car-card__info {
+  color: rgba(47, 43, 61, 0.7) !important;
+}
+.v-theme--light .car-card__location,
+.v-theme--light .car-card__date {
+  color: rgba(47, 43, 61, 0.6) !important;
+}
+.v-theme--light .border-t {
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.v-theme--dark .car-card {
+  background: rgba(20, 24, 40, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.v-theme--dark .car-card:hover {
+  background: rgba(25, 30, 50, 0.75);
+  border-color: rgba(255, 107, 0, 0.25);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+.v-theme--dark .car-card__title {
+  color: #ffffff !important;
+}
+.v-theme--dark .car-card__meta {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.v-theme--dark .car-card__info {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.v-theme--dark .car-card__location,
+.v-theme--dark .car-card__date {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.v-theme--dark .border-t {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 .car-card {
   display: flex;
   flex-direction: column;
@@ -484,17 +538,12 @@ watch(
   border-radius: 24px;
   overflow: hidden;
   text-decoration: none;
-  background: rgba(20, 24, 40, 0.55);
   backdrop-filter: blur(10px);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
 }
 .car-card:hover {
   transform: translateY(-6px);
-  background: rgba(25, 30, 50, 0.75);
-  border-color: rgba(255, 107, 0, 0.2);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* ✅ Best Deal Border */
@@ -569,30 +618,27 @@ watch(
 .car-card__title {
   margin: 0 0 8px;
   font-size: 16px;
+  font-weight: 800;
 }
 
 .car-card__meta {
   font-size: 13px;
-  color: #fff;
   opacity: 0.7;
 }
 
 .car-card__info {
   font-size: 13px;
-  color: #fff;
-  opacity: 0.8;
   display: flex;
   align-items: center;
   font-weight: 700;
 }
 .border-t {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid transparent;
 }
 .car-card__location {
   display: flex;
   align-items: center;
   font-size: 11px;
-  color: #fff;
   opacity: 0.6;
 }
 
@@ -616,7 +662,6 @@ watch(
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #fff;
   opacity: 0.6;
   font-size: 11px;
   white-space: nowrap;

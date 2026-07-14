@@ -1,4 +1,6 @@
 <script setup>
+import { useTheme } from 'vuetify'
+const theme = useTheme()
 const features = [
   {
     title: 'Trusted Sellers',
@@ -34,7 +36,7 @@ const features = [
 </script>
 
 <template>
-  <section id="features" class="features-section py-16">
+  <section id="features" class="features-section py-16" :class="theme.current.value.dark ? 'features--dark' : 'features--light'">
     <VContainer>
       <div class="text-center mb-16">
         <h2 class="text-h3 font-weight-black mb-4">
@@ -98,5 +100,35 @@ const features = [
 
 .leading-relaxed {
   line-height: 1.7;
+}
+
+/* =========================================
+   ✅ LIGHT THEME OVERRIDES
+   ========================================= */
+.features--light {
+  &.features-section {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .feature-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+
+    &:hover {
+      background: #ffffff;
+      border-color: rgba(var(--v-theme-primary), 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+    }
+  }
+
+  .feature-icon-wrapper {
+    background: rgba(var(--v-theme-primary), 0.1);
+    border: 1px solid rgba(var(--v-theme-primary), 0.15);
+  }
+
+  h2, h3, p {
+    color: #000 !important;
+  }
 }
 </style>

@@ -78,8 +78,8 @@ onMounted(fetchTopCars)
 </script>
 
 <template>
-  <div class="footer">
-    <div class="footer-top pt-11" :style="{ 'background-image': `url(${footerBg})` }">
+  <div class="footer v-theme--dark">
+    <div class="footer-top pt-11">
       <VContainer>
         <VRow>
           <!-- 👉 Brand / About (Column 1) -->
@@ -113,13 +113,13 @@ onMounted(fetchTopCars)
               </div>
 
               <!-- Brand tagline -->
-              <p class="brand-description opacity-70 mb-5">
+              <p class="brand-description text-white opacity-70 mb-5">
                 Egypt's premier automotive marketplace. Connecting buyers, sellers, and verified showrooms with intelligence and trust.
               </p>
 
               <!-- ✅ Follow Us -->
               <div class="mb-4">
-                <h6 class="footer-title text-subtitle-2 font-weight-bold mb-3 opacity-60">
+                <h6 class="footer-title text-white text-subtitle-2 font-weight-bold mb-3 opacity-60">
                   Follow Our Updates
                 </h6>
                 <div class="d-flex gap-x-3">
@@ -141,12 +141,12 @@ onMounted(fetchTopCars)
           <!-- 👉 Download Our Apps (Column 2) -->
           <VCol cols="12" md="3" sm="6">
             <div class="footer-links">
-              <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+              <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-device-mobile" size="20" color="primary" />
                 <span>Download Our App</span>
               </h6>
               
-              <p class="text-body-2 opacity-60 mb-5 leading-relaxed">
+              <p class="text-white text-body-2 opacity-60 mb-5 leading-relaxed">
                 Enjoy the ultimate vehicle trading experience anytime, anywhere. Get our apps for iOS and Android.
               </p>
 
@@ -159,8 +159,8 @@ onMounted(fetchTopCars)
                     </svg>
                   </div>
                   <div class="app-text">
-                    <span class="app-subtitle">Download on the</span>
-                    <span class="app-title">App Store</span>
+                    <span class="app-subtitle text-white">Download on the</span>
+                    <span class="app-title text-white">App Store</span>
                   </div>
                 </a>
 
@@ -172,8 +172,8 @@ onMounted(fetchTopCars)
                     </svg>
                   </div>
                   <div class="app-text">
-                    <span class="app-subtitle">GET IT ON</span>
-                    <span class="app-title">Google Play</span>
+                    <span class="app-subtitle text-white">GET IT ON</span>
+                    <span class="app-title text-white">Google Play</span>
                   </div>
                 </a>
               </div>
@@ -183,7 +183,7 @@ onMounted(fetchTopCars)
           <!-- 👉 Legal Info (Column 3) -->
           <VCol md="3" sm="6" cols="12">
             <div class="footer-links">
-              <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+              <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-info-circle" size="20" color="primary" />
                 <span>Official Information</span>
               </h6>
@@ -193,7 +193,7 @@ onMounted(fetchTopCars)
                   <div class="status-indicator"></div>
                   <span class="text-white font-weight-bold text-subtitle-1">Registered Platform</span>
                 </div>
-                <p class="text-body-2 opacity-60 mb-5 leading-relaxed">
+                <p class="text-white text-body-2 opacity-60 mb-5 leading-relaxed">
                   NegmCars is a legally registered company in Egypt, ensuring highly trusted transactions.
                 </p>
                 <div class="tax-info-grid">
@@ -213,7 +213,7 @@ onMounted(fetchTopCars)
           <!-- 👉 Contact Info (Column 4) -->
           <VCol cols="12" md="3" sm="6">
             <div class="ps-md-6">
-              <h6 class="footer-title text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+              <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-headset" size="20" color="primary" />
                 <span>Get in Touch</span>
               </h6>
@@ -261,11 +261,11 @@ onMounted(fetchTopCars)
 
 .footer-top {
   border-radius: 60px 60px 0 0;
-  background-size: cover;
-  background-color: #1a1d2e;
+  background: linear-gradient(180deg, #181818 0%, #0a0a0a 100%);
   color: #fff;
   position: relative;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 3px solid rgba(var(--v-theme-primary), 0.8);
+  box-shadow: 0 -15px 40px rgba(var(--v-theme-primary), 0.08);
 }
 
 .status-indicator {
@@ -301,7 +301,8 @@ onMounted(fetchTopCars)
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  opacity: 0.4;
+  opacity: 0.8;
+  color: #fff;
   font-weight: 800;
 }
 
@@ -385,7 +386,7 @@ onMounted(fetchTopCars)
 }
 
 .footer-line {
-  background: #141724;
+  background: #050505;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 

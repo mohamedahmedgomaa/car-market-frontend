@@ -2,6 +2,9 @@
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 import HeroSection from '@/views/front-pages/landing-page/hero-section.vue'
 import FeaturesSection from '@/views/front-pages/landing-page/features.vue'
+import { useTheme } from 'vuetify'
+
+const theme = useTheme()
 
 definePage({ meta: { layout: 'front', public: true } })
 
@@ -72,7 +75,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <HeroSection />
+  <div :class="theme.current.value.dark ? 'index--dark' : 'index--light'">
+    <HeroSection />
 
   <VContainer class="hero__container">
     <!-- Cars Section -->
@@ -168,7 +172,7 @@ onMounted(() => {
             </VBtn>
             <VBtn
               variant="outlined"
-              color="white"
+              :color="theme.current.value.dark ? 'white' : 'black'"
               size="large"
               height="60"
               class="px-10 font-weight-bold premium-btn-outline"
@@ -203,6 +207,7 @@ onMounted(() => {
       </VAlert>
     </VContainer>
   </section>
+  </div>
 </template>
 
 <style scoped>
@@ -292,5 +297,47 @@ onMounted(() => {
 
 .disclaimer-alert {
   border-radius: 20px !important;
+}
+
+/* =========================================
+   ✅ LIGHT THEME OVERRIDES
+   ========================================= */
+.index--light {
+  .cta-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .cta-glow {
+    background: radial-gradient(
+      circle at center,
+      rgba(var(--v-theme-primary), 0.08) 0%,
+      transparent 50%
+    );
+  }
+
+  .cta-content p, .cta-content h2 {
+    color: #000 !important;
+  }
+
+  .premium-btn-outline {
+    border-color: rgba(0, 0, 0, 0.8) !important;
+    color: rgba(0, 0, 0, 0.8) !important;
+    &:hover {
+      background: rgba(0, 0, 0, 0.04) !important;
+      border-color: #000 !important;
+      color: #000 !important;
+    }
+  }
+
+  .disclaimer-alert {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .disclaimer-alert .text-body-2, .disclaimer-alert .text-h6 {
+    color: #000 !important;
+  }
 }
 </style>

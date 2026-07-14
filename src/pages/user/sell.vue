@@ -124,10 +124,10 @@ const valueProps = [
             </span>
           </div>
 
-          <h1 class="text-h2 font-weight-black text-white mb-3">
-            Welcome Back, {{ sellerData.store_name || sellerData.name }}!
+          <h1 class="text-h2 font-weight-black text-high-emphasis mb-3">
+            <span dir="ltr">Welcome Back, {{ sellerData.store_name || sellerData.name }}!</span>
           </h1>
-          <p class="text-h6 text-white-50 max-w-700 mx-auto font-weight-medium mb-8">
+          <p class="text-h6 text-medium-emphasis max-w-700 mx-auto font-weight-medium mb-8">
             Ready to expand your showroom? Add a new premium listing to your online inventory or manage your current cars directly.
           </p>
 
@@ -138,8 +138,8 @@ const valueProps = [
                 <VAvatar :color="stat.color" variant="tonal" size="52" class="mb-3">
                   <VIcon :icon="stat.icon" size="24" />
                 </VAvatar>
-                <div class="text-h4 font-weight-black text-white mb-1">{{ stat.count }}</div>
-                <div class="text-caption font-weight-medium text-white-50">{{ stat.title }}</div>
+                <div class="text-h4 font-weight-black text-high-emphasis mb-1">{{ stat.count }}</div>
+                <div class="text-caption font-weight-medium text-medium-emphasis">{{ stat.title }}</div>
               </VCard>
             </VCol>
           </VRow>
@@ -180,10 +180,10 @@ const valueProps = [
             </span>
           </div>
 
-          <h1 class="text-h2 font-weight-black text-white mb-3">
-            Upgrade to Seller Profile
+          <h1 class="text-h2 font-weight-black text-high-emphasis mb-3">
+            <span dir="ltr">Upgrade to Seller Profile</span>
           </h1>
-          <p class="text-h6 text-white-50 max-w-700 mx-auto font-weight-medium mb-8">
+          <p class="text-h6 text-medium-emphasis max-w-700 mx-auto font-weight-medium mb-8">
             You are logged in as an individual. To start listing and selling your cars on NegmCars, please register your showroom/seller profile.
           </p>
 
@@ -194,8 +194,8 @@ const valueProps = [
                 <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
                   <VIcon icon="tabler-shield-check" size="16" /> Verified Seller Status
                 </div>
-                <h2 class="text-h4 font-weight-black text-white mb-2">Create Your Seller Account</h2>
-                <p class="text-subtitle-1 text-white-50 mb-0">
+                <h2 class="text-h4 font-weight-black text-high-emphasis mb-2">Create Your Seller Account</h2>
+                <p class="text-subtitle-1 text-medium-emphasis mb-0">
                   Fill in your showroom or personal seller details to unlock the vehicle listing features immediately.
                 </p>
               </div>
@@ -215,7 +215,7 @@ const valueProps = [
 
                 <VBtn
                   variant="outlined"
-                  color="white"
+                  color="secondary"
                   size="large"
                   rounded="pill"
                   to="/seller/login"
@@ -238,10 +238,10 @@ const valueProps = [
             </span>
           </div>
 
-          <h1 class="text-h2 font-weight-black text-white mb-3">
-            Sell Your Car in Egypt Online
+          <h1 class="text-h2 font-weight-black text-high-emphasis mb-3">
+            <span dir="ltr">Sell Your Car in Egypt Online</span>
           </h1>
-          <p class="text-h6 text-white-50 max-w-700 mx-auto font-weight-medium mb-8">
+          <p class="text-h6 text-medium-emphasis max-w-700 mx-auto font-weight-medium mb-8">
             NegmCars connects you directly with thousands of verified active buyers in Egypt. List your showroom inventory or personal car easily.
           </p>
 
@@ -252,8 +252,8 @@ const valueProps = [
                 <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
                   <VIcon icon="tabler-gift" size="16" /> Easy Onboarding
                 </div>
-                <h2 class="text-h4 font-weight-black text-white mb-2">Ready to Sell Your Vehicle?</h2>
-                <p class="text-subtitle-1 text-white-50 mb-0">
+                <h2 class="text-h4 font-weight-black text-high-emphasis mb-2"><span dir="ltr">Ready to Sell Your Vehicle?</span></h2>
+                <p class="text-subtitle-1 text-medium-emphasis mb-0">
                   Register as a showroom or an individual seller to start listing your car on NegmCars and connect with active buyers instantly.
                 </p>
               </div>
@@ -285,7 +285,7 @@ const valueProps = [
 
                 <VBtn
                   variant="outlined"
-                  color="white"
+                  color="secondary"
                   size="large"
                   rounded="pill"
                   to="/login"
@@ -303,8 +303,8 @@ const valueProps = [
       <!-- Step-by-Step Timeline Section -->
       <section class="timeline-section mb-16">
         <div class="text-center mb-10">
-          <h2 class="text-h3 font-weight-black text-white mb-2">How It Works</h2>
-          <p class="text-body-1 text-white-50">Simple steps to get your car listed and sold</p>
+          <h2 class="text-h3 font-weight-black text-high-emphasis mb-2"><span dir="ltr">How It Works</span></h2>
+          <p class="text-body-1 text-medium-emphasis">Simple steps to get your car listed and sold</p>
         </div>
 
         <VRow class="justify-center">
@@ -318,17 +318,17 @@ const valueProps = [
                 <VIcon :icon="step.icon" size="26" />
               </VAvatar>
 
-              <h3 class="text-h5 font-weight-black text-white mb-2">
+              <h3 class="text-h5 font-weight-black text-high-emphasis mb-2">
                 {{ step.title_en }}
                 <div class="text-subtitle-2 font-weight-bold text-primary-subtle mt-1 font-arabic" dir="rtl">
                   {{ step.title_ar }}
                 </div>
               </h3>
 
-              <p class="text-body-2 text-white-50 mb-0 font-weight-medium">
+              <p class="text-body-2 text-medium-emphasis mb-0 font-weight-medium">
                 {{ step.desc_en }}
               </p>
-              <p class="text-caption text-white-50 mt-2 border-top pt-2 opacity-75 font-arabic font-weight-medium" dir="rtl">
+              <p class="text-caption text-medium-emphasis mt-2 border-top pt-2 opacity-75 font-arabic font-weight-medium" dir="rtl">
                 {{ step.desc_ar }}
               </p>
             </div>
@@ -339,8 +339,8 @@ const valueProps = [
       <!-- Why Sell With Us Grid -->
       <section class="value-props-section py-8">
         <div class="text-center mb-12">
-          <h2 class="text-h3 font-weight-black text-white mb-2">Why Sell On NegmCars?</h2>
-          <p class="text-body-1 text-white-50">Premium tools and network engineered for your sales success</p>
+          <h2 class="text-h3 font-weight-black text-high-emphasis mb-2"><span dir="ltr">Why Sell On NegmCars?</span></h2>
+          <p class="text-body-1 text-medium-emphasis">Premium tools and network engineered for your sales success</p>
         </div>
 
         <VRow>
@@ -348,17 +348,17 @@ const valueProps = [
             <VCard class="prop-card h-100 pa-6 rounded-2xl border" elevation="4">
               <VIcon :icon="prop.icon" size="36" :style="{ color: prop.color }" class="mb-4" />
               
-              <h3 class="text-h5 font-weight-bold text-white mb-2">
+              <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
                 {{ prop.title_en }}
-                <div class="text-subtitle-2 font-weight-bold text-white-50 mt-1 font-arabic" dir="rtl">
+                <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mt-1 font-arabic" dir="rtl">
                   {{ prop.title_ar }}
                 </div>
               </h3>
 
-              <p class="text-body-2 text-white-50 mb-0">
+              <p class="text-body-2 text-medium-emphasis mb-0">
                 {{ prop.desc_en }}
               </p>
-              <p class="text-caption text-white-50 mt-2 border-top pt-2 opacity-75 font-arabic" dir="rtl">
+              <p class="text-caption text-medium-emphasis mt-2 border-top pt-2 opacity-75 font-arabic" dir="rtl">
                 {{ prop.desc_ar }}
               </p>
             </VCard>
@@ -376,8 +376,8 @@ const valueProps = [
               radial-gradient(circle at bottom left, rgba(var(--v-theme-surface), 0.7), transparent 70%);
 }
 
-.text-white-50 {
-  color: rgba(255, 255, 255, 0.7) !important;
+.text-medium-emphasis {
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
 }
 
 .max-w-700 {
@@ -409,7 +409,7 @@ const valueProps = [
   background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.25), rgba(var(--v-theme-surface), 0.85)) !important;
   backdrop-filter: blur(30px);
   border: 1px solid rgba(var(--v-theme-primary), 0.4) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(var(--v-theme-on-surface), 0.15) !important;
   position: relative;
 
   &::before {
@@ -447,7 +447,7 @@ const valueProps = [
 .stat-card {
   background: rgba(var(--v-theme-surface), 0.4) !important;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
   transition: all 0.3s ease;
 
   &:hover {
@@ -459,13 +459,13 @@ const valueProps = [
 
 /* Timeline Cards */
 .step-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
   .step-number {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(var(--v-theme-on-surface), 0.9);
     pointer-events: none;
     line-height: 1;
     font-size: 80px;
@@ -474,8 +474,8 @@ const valueProps = [
 
   &:hover {
     transform: translateY(-8px);
-    border-color: rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(var(--v-theme-on-surface), 0.15);
+    background: rgba(var(--v-theme-on-surface), 0.05);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
   }
 }
@@ -484,7 +484,7 @@ const valueProps = [
 .prop-card {
   background: rgba(var(--v-theme-surface), 0.35) !important;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.06) !important;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {

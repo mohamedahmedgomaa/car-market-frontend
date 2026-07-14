@@ -1282,9 +1282,8 @@ const activeAdvancedFiltersCount = computed(() => {
 
 /* Premium Horizontal Search Deck Styles */
 .premium-horizontal-search {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   border-radius: 24px;
   padding: 20px 24px;
   margin-bottom: 30px;
@@ -1333,7 +1332,7 @@ const activeAdvancedFiltersCount = computed(() => {
 /* Integrated Outlined Cohesion for all Vuetify 3 inputs */
 .premium-input-field :deep(.v-field) {
   border-radius: 12px !important;
-  background: rgba(0, 0, 0, 0.3) !important;
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   height: 44px !important;
   display: flex;
@@ -1342,12 +1341,12 @@ const activeAdvancedFiltersCount = computed(() => {
 
 .premium-input-field :deep(.v-field__outline) {
   --v-field-border-opacity: 1 !important;
-  color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(var(--v-theme-on-surface), 0.1) !important;
   transition: color 0.3s ease;
 }
 
 .premium-input-field :deep(.v-field:hover .v-field__outline) {
-  color: rgba(255, 255, 255, 0.2) !important;
+  color: rgba(var(--v-theme-on-surface), 0.2) !important;
 }
 
 .premium-input-field :deep(.v-field--focused .v-field__outline) {
@@ -1360,12 +1359,12 @@ const activeAdvancedFiltersCount = computed(() => {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   align-items: center;
-  color: #fff !important;
+  color: rgba(var(--v-theme-on-surface), 0.9) !important;
   font-size: 14px;
 }
 
 .premium-input-field :deep(.v-label) {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(var(--v-theme-on-surface), 0.5) !important;
   font-size: 14px;
   top: 50% !important;
   transform: translateY(-50%) !important;
@@ -1382,14 +1381,14 @@ const activeAdvancedFiltersCount = computed(() => {
   padding-top: 0 !important;
   margin-top: 0 !important;
   height: 44px !important;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(var(--v-theme-on-surface), 0.5);
 }
 
 /* Type Toggle Bar */
 .horizontal-toggle {
   display: flex;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   border-radius: 12px;
   padding: 2px;
   gap: 2px;
@@ -1401,7 +1400,7 @@ const activeAdvancedFiltersCount = computed(() => {
   flex: 1;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.7);
   font-size: 13px;
   font-weight: 700;
   border-radius: 10px;
@@ -1410,7 +1409,7 @@ const activeAdvancedFiltersCount = computed(() => {
   align-items: center;
   justify-content: center;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.5;
+  opacity: 0.8;
 }
 
 .horizontal-toggle-btn.active {
@@ -1437,9 +1436,9 @@ const activeAdvancedFiltersCount = computed(() => {
 .horizontal-advanced-btn,
 .horizontal-reset-btn {
   border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: rgba(255, 255, 255, 0.02) !important;
-  color: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
+  background: rgba(var(--v-theme-on-surface), 0.03) !important;
+  color: rgba(var(--v-theme-on-surface), 0.8) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: inline-flex;
   align-items: center;
@@ -1474,8 +1473,8 @@ const activeAdvancedFiltersCount = computed(() => {
 
 /* Beautiful Rounded Filter Cards (مربعات مخصصة لكل فلتر) */
 .filter-card {
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
   border-radius: 18px;
   padding: 18px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1485,10 +1484,10 @@ const activeAdvancedFiltersCount = computed(() => {
 }
 
 .filter-card:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--v-theme-on-surface), 0.04);
   border-color: rgba(var(--v-theme-primary), 0.15);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
 .filter-card-header {
@@ -1508,7 +1507,7 @@ const activeAdvancedFiltersCount = computed(() => {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(var(--v-theme-on-surface), 0.6);
 }
 
 .filter-card-body {
@@ -1548,10 +1547,10 @@ const activeAdvancedFiltersCount = computed(() => {
   justify-content: center;
   gap: 8px;
   padding: 10px 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(var(--v-theme-on-surface), 0.7);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -1561,15 +1560,15 @@ const activeAdvancedFiltersCount = computed(() => {
 }
 
 .fuel-type-btn:hover, .transmission-btn:hover, .drivetrain-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  border-color: rgba(var(--v-theme-on-surface), 0.15);
+  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 
 .fuel-type-btn.active, .transmission-btn.active, .drivetrain-btn.active {
   background: rgba(var(--v-theme-primary), 0.15);
   border-color: rgba(var(--v-theme-primary), 1);
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.9);
   box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.25);
   font-weight: 700;
 }
@@ -1584,8 +1583,8 @@ const activeAdvancedFiltersCount = computed(() => {
 
 /* Mobile Sidebar Drawer styling fallback */
 .premium-search-box {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--v-theme-surface), 1);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   border-radius: 24px;
   padding: 16px;
   position: sticky;
@@ -1600,7 +1599,7 @@ const activeAdvancedFiltersCount = computed(() => {
 }
 
 .premium-search-box::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--v-theme-on-surface), 0.1);
   border-radius: 10px;
 }
 
@@ -1611,19 +1610,20 @@ const activeAdvancedFiltersCount = computed(() => {
   letter-spacing: 1px;
   opacity: 0.5;
   margin-bottom: 8px;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 
 .premium-input :deep(.v-field) {
   border-radius: 14px !important;
-  background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   transition: all 0.3s ease;
+  color: rgba(var(--v-theme-on-surface), 0.9) !important;
 }
 
 .premium-input :deep(.v-field--focused) {
   border-color: rgba(var(--v-theme-primary), 0.8) !important;
-  background: rgba(0, 0, 0, 0.4) !important;
+  background: rgba(var(--v-theme-on-surface), 0.08) !important;
 }
 
 .search-submit-btn {
@@ -1636,8 +1636,8 @@ const activeAdvancedFiltersCount = computed(() => {
 
 .premium-toggle {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   border-radius: 12px;
   padding: 3px;
   gap: 3px;
@@ -1648,7 +1648,7 @@ const activeAdvancedFiltersCount = computed(() => {
   flex: 1;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.8);
   font-size: 14px;
   font-weight: 700;
   border-radius: 12px;
@@ -1657,7 +1657,7 @@ const activeAdvancedFiltersCount = computed(() => {
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.4;
+  opacity: 0.8;
 }
 
 .premium-toggle__btn.active {

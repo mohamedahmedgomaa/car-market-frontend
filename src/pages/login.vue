@@ -148,7 +148,7 @@ const handleAuth = async () => {
       class="auth-logo mb-6 d-flex align-center gap-x-3 text-decoration-none"
     >
       <VNodeRenderer v-slot="{ nodes }" v-if="themeConfig.app.logo" :nodes="themeConfig.app.logo" />
-      <h1 class="auth-title text-white text-h4 font-weight-bold">{{ themeConfig.app.title }}</h1>
+      <h1 class="auth-title text-high-emphasis text-h4 font-weight-bold">{{ themeConfig.app.title }}</h1>
     </RouterLink>
 
     <VCard class="auth-card" elevation="24">
@@ -172,7 +172,7 @@ const handleAuth = async () => {
 
       <VCardText class="pa-10">
         <!-- Title -->
-        <h2 class="text-h4 font-weight-bold mb-8 text-center text-white">
+        <h2 class="text-h4 font-weight-bold mb-8 text-center text-high-emphasis" dir="ltr">
           {{ activeTab === 'login' ? 'Hello! Welcome back!' : 'Create your account!' }}
         </h2>
 
@@ -299,7 +299,7 @@ const handleAuth = async () => {
               />
 
               <div v-if="activeTab === 'login'" class="mt-4 text-end">
-                <a href="javascript:void(0)" class="text-body-2 text-disabled text-decoration-underline hover-white">Forgot password?</a>
+                <a href="javascript:void(0)" class="text-body-2 text-disabled text-decoration-underline hover-white"><span dir="ltr">Forgot password?</span></a>
               </div>
             </VCol>
 
@@ -343,7 +343,7 @@ const handleAuth = async () => {
                 <template #label>
                   <div class="text-body-2 text-disabled line-height-1-6">
                     I agree to the processing of my data as described in the 
-                    <a href="#" class="text-white text-decoration-underline font-weight-bold">privacy policy</a>.
+                    <a href="#" class="text-high-emphasis text-decoration-underline font-weight-bold">privacy policy</a>.
                   </div>
                 </template>
               </VCheckbox>
@@ -367,8 +367,8 @@ const handleAuth = async () => {
 
         <!-- Terms Footer -->
         <div v-if="activeTab === 'register'" class="mt-8 text-center text-caption text-disabled px-4 line-height-1-6">
-          The <a href="#" class="text-white font-weight-bold">AGB</a> of NegmCars apply. Information on data processing is described in the
-          <a href="#" class="text-white font-weight-bold">Privacy Policy</a>.
+          The <a href="#" class="text-high-emphasis font-weight-bold">AGB</a> of NegmCars apply. Information on data processing is described in the
+          <a href="#" class="text-high-emphasis font-weight-bold">Privacy Policy</a>.
         </div>
       </VCardText>
     </VCard>
@@ -378,16 +378,16 @@ const handleAuth = async () => {
 <style lang="scss" scoped>
 .auth-wrapper {
   min-height: 100vh;
-  background-color: #0f111a;
+  background-color: rgb(var(--v-theme-background));
   background-image: radial-gradient(circle at 50% 50%, rgba(var(--v-theme-primary), 0.12) 0%, transparent 80%);
 }
 
 .auth-card {
   width: 100%;
   max-width: 500px;
-  background-color: #1c1f2e !important;
+  background-color: rgba(var(--v-theme-surface), 0.9) !important;
   border-radius: 28px !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   overflow: hidden;
 }
 
@@ -401,7 +401,7 @@ const handleAuth = async () => {
   padding: 22px;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.9);
   font-weight: 800;
   font-size: 18px;
   cursor: pointer;
@@ -411,7 +411,7 @@ const handleAuth = async () => {
 
   &:hover {
     opacity: 0.7;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--v-theme-on-surface), 0.03);
   }
 
   &.active {
@@ -435,12 +435,12 @@ const handleAuth = async () => {
   text-transform: none !important;
   font-weight: 700 !important;
   border-radius: 14px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
-  color: #fff !important;
+  border: 1.5px solid rgba(var(--v-theme-on-surface), 0.15) !important;
+  color: rgba(var(--v-theme-on-surface), 0.9) !important;
   transition: all 0.3s ease !important;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: rgba(var(--v-theme-on-surface), 0.05) !important;
     border-color: #a855f7 !important;
     transform: translateY(-2px);
   }
@@ -455,13 +455,13 @@ const handleAuth = async () => {
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 10px;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 
 .premium-input :deep(.v-field) {
   border-radius: 14px !important;
   background: rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
 
   &.v-field--focused {
     border-color: rgba(var(--v-theme-primary), 0.8);
@@ -471,7 +471,7 @@ const handleAuth = async () => {
 .role-selector {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
 }
 
 .auth-submit-btn {

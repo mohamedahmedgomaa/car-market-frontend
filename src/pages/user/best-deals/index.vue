@@ -78,8 +78,8 @@ onMounted(() => {
     <VContainer>
       <div class="d-flex align-center justify-space-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 class="text-h3 font-weight-black text-white mb-2">Best Deals</h1>
-          <p class="text-h6 opacity-70 font-weight-medium">Price Crash & Best Market Deals</p>
+          <h1 class="text-h3 font-weight-black text-high-emphasis mb-2">Best Deals</h1>
+          <p class="text-h6 opacity-70 font-weight-medium"><span dir="ltr">Price Crash & Best Market Deals</span></p>
         </div>
         
         <!-- ✅ Vehicle Type Toggle -->
@@ -108,9 +108,9 @@ onMounted(() => {
         </div>
       </div>
 
-      <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05)">
+      <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(var(--v-theme-on-surface),0.02); border: 1px solid rgba(var(--v-theme-on-surface),0.05)">
         <div class="d-flex align-center justify-space-between mb-8">
-          <div class="text-body-1 opacity-60">{{ total }} offers found</div>
+          <div class="text-body-1 opacity-60"><span dir="ltr">{{ total }} offers found</span></div>
           
           <VSelect
             v-model="sort"
@@ -138,7 +138,7 @@ onMounted(() => {
 
         <div v-if="!loading && cars.length === 0" class="text-center py-16">
           <VIcon icon="tabler-car-off" size="80" class="mb-4 opacity-10" />
-          <h3 class="text-h5 opacity-50">No deals found at the moment</h3>
+          <h3 class="text-h5 opacity-50"><span dir="ltr">No deals found at the moment</span></h3>
         </div>
 
         <div class="d-flex justify-center mt-12" v-if="total > perPage && !loading">
@@ -161,8 +161,8 @@ onMounted(() => {
 
 .premium-type-toggle {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   border-radius: 16px;
   padding: 5px;
   gap: 5px;
@@ -184,7 +184,7 @@ onMounted(() => {
   border-radius: 12px;
   border: none;
   background: transparent;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.8);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -201,7 +201,7 @@ onMounted(() => {
 
 .type-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--v-theme-on-surface), 0.03);
 }
 
 .type-btn.active {

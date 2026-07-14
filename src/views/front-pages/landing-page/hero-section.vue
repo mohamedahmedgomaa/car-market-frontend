@@ -127,46 +127,54 @@ const buildQuery = () => {
   return q
 }
 
-// ✅ Search Ad by ID
-const searchId = ref('')
+// ✅ Omni-Search (ID or Text)
 const smartSearch = ref('')
 
-const handleIdInput = (val) => {
+const onSmartSearchInput = (val) => {
   if (!val) {
-    searchId.value = ''
+    smartSearch.value = ''
     return
   }
-  let cleaned = String(val)
-  cleaned = cleaned.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
-  cleaned = cleaned.replace(/[^0-9#]/g, '')
-  if (cleaned.includes('#')) {
-    cleaned = '#' + cleaned.replace(/#/g, '')
-  }
   
-  const hasHash = cleaned.startsWith('#')
-  const maxLength = hasHash ? 8 : 7
-  if (cleaned.length > maxLength) {
-    cleaned = cleaned.slice(0, maxLength)
+  // Convert Arabic to English instantly
+  let cleaned = String(val).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+  
+  // If it looks like an ID (only numbers or # + numbers), enforce 6 digits limit
+  if (/^(#?\d+)$/.test(cleaned)) {
+    const hasHash = cleaned.startsWith('#')
+    const maxLength = hasHash ? 7 : 6
+    if (cleaned.length > maxLength) {
+      cleaned = cleaned.slice(0, maxLength)
+    }
   }
 
-  if (searchId.value !== cleaned) {
-    searchId.value = cleaned
+  if (smartSearch.value !== cleaned) {
+    nextTick(() => {
+      smartSearch.value = cleaned
+    })
   }
-}
-
-const goSearchId = async () => {
-  const numericId = searchId.value.replace(/[^0-9]/g, '')
-  if (!numericId) return
-
-  await router.push(`/user/cars/${numericId}`)
-  searchId.value = ''
 }
 
 const onSearch = () => {
-  const numericId = searchId.value ? searchId.value.replace(/[^0-9]/g, '') : ''
-  if (numericId) {
-    goSearchId()
+  if (!smartSearch.value) {
+    router.push({
+      path: '/user/cars',
+      query: buildQuery(),
+    })
+    return
+  }
+
+  let query = String(smartSearch.value).trim()
+  
+  // Check if it's an ID search (only numbers, optionally starting with #)
+  const isId = /^(#?\d+)$/.test(query)
+
+  if (isId) {
+    const numericId = query.replace(/[^0-9]/g, '')
+    router.push(`/user/cars/${numericId}`)
+    smartSearch.value = ''
   } else {
+    // Normal text search
     router.push({
       path: '/user/cars',
       query: buildQuery(),
@@ -175,7 +183,6 @@ const onSearch = () => {
 }
 
 const resetFilters = () => {
-  searchId.value = ''
   smartSearch.value = ''
   filters.value = {
     type: 'car',
@@ -380,35 +387,19 @@ onBeforeUnmount(() => {
               />
             </div>
 
-            <!-- ✅ Search Inputs (Smart Search & Search by ID) -->
+            <!-- ✅ Search Inputs (Smart Search / Omni-Search) -->
             <div class="mb-5 d-flex gap-3 align-center search-inputs-row">
-              <!-- Smart Search -->
               <VTextField
                 v-model="smartSearch"
-                placeholder="ابحث بالماركة، الموديل أو السنة (مثال: BMW M5 2025)"
+                placeholder="Search by Ad ID, Brand, Model or Year (e.g. BMW M5 2025)"
                 density="compact"
                 variant="outlined"
                 hide-details
                 prepend-inner-icon="tabler-search"
                 @keydown.enter.prevent="onSearch"
-                class="premium-id-input smart-search-input"
-                dir="rtl"
-              />
-
-              <!-- Search by ID -->
-              <VTextField
-                v-model="searchId"
-                placeholder="رقم الإعلان"
-                density="compact"
-                variant="outlined"
-                hide-details
-                maxlength="8"
-                prepend-inner-icon="tabler-hash"
-                @keydown.enter.prevent="onSearch"
-                @update:model-value="handleIdInput"
-                class="premium-id-input search-id-input"
-                style="max-width: 130px; min-width: 110px;"
-                dir="rtl"
+                @update:model-value="onSmartSearchInput"
+                class="premium-id-input smart-search-input flex-grow-1"
+                dir="ltr"
               />
             </div>
 
@@ -1201,6 +1192,97 @@ onBeforeUnmount(() => {
 }
 :deep(.no-spin input[type='number']) {
   -moz-appearance: textfield;
+}
+
+/* =========================================
+   ✅ LIGHT THEME OVERRIDES
+   ========================================= */
+.hero--light {
+  .premium-search-card {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 20px 50px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .premium-ad-card,
+  .premium-video-card {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .group-label {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .premium-toggle-group {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .toggle-btn {
+    color: rgba(0, 0, 0, 0.75);
+    &:hover:not(.active) {
+      color: #000;
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  .premium-id-input :deep(.v-field) {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  }
+  .premium-id-input :deep(.v-field__input) {
+    color: #000 !important;
+  }
+  .premium-id-input :deep(.v-field--focused) {
+    background: rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .premium-input :deep(.v-field) {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  }
+  .premium-input :deep(.v-field:hover) {
+    border-color: rgba(255, 107, 0, 0.4) !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+  }
+  .premium-input :deep(.v-field__input) {
+    color: rgba(0, 0, 0, 0.95) !important;
+  }
+  .premium-input :deep(.v-label) {
+    color: rgba(0, 0, 0, 0.6) !important;
+  }
+  .premium-input :deep(.v-field--focused) {
+    background: rgba(0, 0, 0, 0.02) !important;
+    box-shadow: 0 0 15px rgba(255, 107, 0, 0.1) !important;
+  }
+
+  .sell-side-btn {
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: rgba(0, 0, 0, 0.85) !important;
+    &:hover {
+      background: rgba(0, 0, 0, 0.08) !important;
+      border-color: rgba(0, 0, 0, 0.3) !important;
+    }
+  }
+
+  .reset-btn-v2 {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: rgba(0, 0, 0, 0.75) !important;
+    &:hover {
+      background: rgba(255, 107, 0, 0.1) !important;
+      color: #FF6B00 !important;
+    }
+  }
+
+  .placeholder-ad {
+    background: radial-gradient(circle at 50% 50%, rgba(255, 107, 0, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
+    h4, p {
+      color: #000 !important;
+    }
+  }
 }
 
 @media (min-width: 1201px) and (max-width: 1450px) {
