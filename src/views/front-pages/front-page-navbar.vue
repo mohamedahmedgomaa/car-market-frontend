@@ -393,93 +393,94 @@ const logout = async () => {
         <VSpacer class="d-none d-md-block" />
         <VSpacer class="d-md-none" />
 
-        <!-- ✅ Settings Dropdown -->
-        <VMenu close-on-content-click="false" offset="12px" width="230">
-          <template #activator="{ props }">
-            <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-2" icon>
-              <VIcon icon="tabler-settings" size="22" />
-            </VBtn>
-          </template>
-
-          <VList class="settings-menu-list pa-2" style="border-radius: 12px">
-            <!-- Language Section -->
-            <div class="px-3 py-1 text-caption font-weight-bold text-uppercase opacity-60">
-              {{ t('language') }}
-            </div>
-            <VListItem
-              v-for="lang in themeConfig.app.i18n.langConfig"
-              :key="lang.i18nLang"
-              :value="lang.i18nLang"
-              :active="locale === lang.i18nLang"
-              color="primary"
-              rounded="lg"
-              class="mb-1"
-              @click="locale = lang.i18nLang"
-            >
-              <template #prepend>
-                <VIcon
-                  :icon="locale === lang.i18nLang ? 'tabler-circle-check-filled' : 'tabler-circle'"
-                  size="18"
-                  class="me-2"
-                />
-              </template>
-              <VListItemTitle>{{ lang.label }}</VListItemTitle>
-            </VListItem>
-
-            <VDivider class="my-2" />
-
-            <!-- Theme Section -->
-            <div class="px-3 py-1 text-caption font-weight-bold text-uppercase opacity-60">
-              {{ t('theme') }}
-            </div>
-
-            <VListItem
-              :active="configStore.theme === 'light'"
-              color="primary"
-              rounded="lg"
-              class="mb-1"
-              @click="configStore.theme = 'light'"
-            >
-              <template #prepend>
-                <VIcon icon="tabler-sun" size="18" class="me-2" />
-              </template>
-              <VListItemTitle>{{ t('light') }}</VListItemTitle>
-            </VListItem>
-
-            <VListItem
-              :active="configStore.theme === 'dark'"
-              color="primary"
-              rounded="lg"
-              class="mb-1"
-              @click="configStore.theme = 'dark'"
-            >
-              <template #prepend>
-                <VIcon icon="tabler-moon" size="18" class="me-2" />
-              </template>
-              <VListItemTitle>{{ t('dark') }}</VListItemTitle>
-            </VListItem>
-
-            <VListItem
-              :active="configStore.theme === 'system'"
-              color="primary"
-              rounded="lg"
-              @click="configStore.theme = 'system'"
-            >
-              <template #prepend>
-                <VIcon icon="tabler-device-desktop" size="18" class="me-2" />
-              </template>
-              <VListItemTitle>{{ t('system') }}</VListItemTitle>
-            </VListItem>
-          </VList>
-        </VMenu>
-
-        <!-- ✅ Unified Auth button -->
+        <!-- ✅ Auth & Settings Area -->
         <template v-if="!isLoggedIn">
+          <!-- Settings Dropdown (Before Login) -->
+          <VMenu close-on-content-click="false" offset="12px" width="230">
+            <template #activator="{ props }">
+              <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-2" icon>
+                <VIcon icon="tabler-dots-vertical" size="22" />
+              </VBtn>
+            </template>
+
+            <VList class="settings-menu-list pa-2" style="border-radius: 12px">
+              <!-- Language Section -->
+              <div class="px-3 py-1 text-caption font-weight-bold text-uppercase opacity-60">
+                {{ t('language') }}
+              </div>
+              <VListItem
+                v-for="lang in themeConfig.app.i18n.langConfig"
+                :key="lang.i18nLang"
+                :value="lang.i18nLang"
+                :active="locale === lang.i18nLang"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="locale = lang.i18nLang"
+              >
+                <template #prepend>
+                  <VIcon
+                    :icon="locale === lang.i18nLang ? 'tabler-circle-check-filled' : 'tabler-circle'"
+                    size="18"
+                    class="me-2"
+                  />
+                </template>
+                <VListItemTitle>{{ lang.label }}</VListItemTitle>
+              </VListItem>
+
+              <VDivider class="my-2" />
+
+              <!-- Theme Section -->
+              <div class="px-3 py-1 text-caption font-weight-bold text-uppercase opacity-60">
+                {{ t('theme') }}
+              </div>
+
+              <VListItem
+                :active="configStore.theme === 'light'"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="configStore.theme = 'light'"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-sun" size="18" class="me-2" />
+                </template>
+                <VListItemTitle>{{ t('light') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
+                :active="configStore.theme === 'dark'"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="configStore.theme = 'dark'"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-moon" size="18" class="me-2" />
+                </template>
+                <VListItemTitle>{{ t('dark') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
+                :active="configStore.theme === 'system'"
+                color="primary"
+                rounded="lg"
+                @click="configStore.theme = 'system'"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-device-desktop" size="18" class="me-2" />
+                </template>
+                <VListItemTitle>{{ t('system') }}</VListItemTitle>
+              </VListItem>
+            </VList>
+          </VMenu>
+
+          <!-- Login Button -->
           <VBtn
             color="primary"
             variant="elevated"
             to="/login"
-            class="ms-sm-3 ms-1 auth-main-btn"
+            class="ms-sm-1 ms-1 auth-main-btn"
             rounded="xl"
           >
             <VIcon icon="tabler-user-circle" class="auth-btn-icon me-sm-2 me-1" size="20" />
@@ -488,19 +489,119 @@ const logout = async () => {
         </template>
 
         <template v-else>
-          <VBtn
-            variant="tonal"
-            to="/user/profile"
-            class="ms-sm-3 ms-1 profile-main-btn"
-            rounded="xl"
-          >
-            <VIcon icon="tabler-user" class="auth-btn-icon me-sm-2 me-1" size="20" />
-            {{ t('profile') }}
-          </VBtn>
+          <!-- ✅ Unified User Menu (After Login) -->
+          <VMenu close-on-content-click="false" offset="12px" width="260">
+            <template #activator="{ props }">
+              <VBtn
+                v-bind="props"
+                variant="tonal"
+                class="ms-sm-3 ms-1 profile-main-btn"
+                icon
+                rounded="circle"
+                style="width: 42px; height: 42px;"
+              >
+                <VIcon icon="tabler-user" size="22" />
+              </VBtn>
+            </template>
 
-          <VBtn icon variant="text" color="error" class="ms-sm-2 ms-1 logout-btn" @click="logout">
-            <VIcon icon="tabler-logout" size="22" />
-          </VBtn>
+            <VList class="settings-menu-list pa-2" style="border-radius: 12px">
+              <!-- User Options -->
+              <VListItem
+                to="/user/profile"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-user-circle" size="20" class="me-2" />
+                </template>
+                <VListItemTitle class="font-weight-bold">{{ t('profile') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
+                color="error"
+                rounded="lg"
+                class="mb-1 text-error"
+                @click="logout"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-logout" size="20" class="me-2" />
+                </template>
+                <VListItemTitle class="font-weight-bold">{{ t('logout') }}</VListItemTitle>
+              </VListItem>
+
+              <VDivider class="my-2" />
+
+              <!-- Language Section -->
+              <div class="px-3 py-1 text-caption font-weight-bold text-uppercase opacity-60">
+                {{ t('language') }}
+              </div>
+              <VListItem
+                v-for="lang in themeConfig.app.i18n.langConfig"
+                :key="lang.i18nLang"
+                :value="lang.i18nLang"
+                :active="locale === lang.i18nLang"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="locale = lang.i18nLang"
+              >
+                <template #prepend>
+                  <VIcon
+                    :icon="locale === lang.i18nLang ? 'tabler-circle-check-filled' : 'tabler-circle'"
+                    size="18"
+                    class="me-2"
+                  />
+                </template>
+                <VListItemTitle>{{ lang.label }}</VListItemTitle>
+              </VListItem>
+
+              <VDivider class="my-2" />
+
+              <!-- Theme Section -->
+              <div class="px-3 py-1 text-caption font-weight-bold text-uppercase opacity-60">
+                {{ t('theme') }}
+              </div>
+
+              <VListItem
+                :active="configStore.theme === 'light'"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="configStore.theme = 'light'"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-sun" size="18" class="me-2" />
+                </template>
+                <VListItemTitle>{{ t('light') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
+                :active="configStore.theme === 'dark'"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="configStore.theme = 'dark'"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-moon" size="18" class="me-2" />
+                </template>
+                <VListItemTitle>{{ t('dark') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
+                :active="configStore.theme === 'system'"
+                color="primary"
+                rounded="lg"
+                @click="configStore.theme = 'system'"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-device-desktop" size="18" class="me-2" />
+                </template>
+                <VListItemTitle>{{ t('system') }}</VListItemTitle>
+              </VListItem>
+            </VList>
+          </VMenu>
         </template>
       </VAppBar>
     </div>
