@@ -308,90 +308,90 @@ const logout = async () => {
         </IconBtn>
 
         <!-- Title -->
-        <div class="d-flex align-center">
-          <VAppBarTitle class="me-sm-8 me-2 logo-title-wrapper" style="flex: 0 0 auto; min-width: max-content; overflow: visible !important;">
-            <RouterLink
-              to="/"
-              class="d-flex gap-x-4"
-              :class="$vuetify.display.mdAndUp ? 'd-block' : 'd-block'"
-              style="text-decoration: none"
-            >
-              <h1 class="app-logo-title">NegmCars</h1>
-            </RouterLink>
-          </VAppBarTitle>
+        <VAppBarTitle class="me-sm-8 me-2 logo-title-wrapper" style="flex: 0 0 auto; min-width: max-content; overflow: visible !important;">
+          <RouterLink
+            to="/"
+            class="d-flex gap-x-4 d-block"
+            style="text-decoration: none"
+          >
+            <h1 class="app-logo-title">NegmCars</h1>
+          </RouterLink>
+        </VAppBarTitle>
 
-          <!-- ✅ Links (Desktop) -->
-          <div class="text-base align-center d-none d-md-flex gap-x-6 ms-8">
-            <RouterLink
-              to="/user/cars"
-              class="nav-link font-weight-bold"
-              :class="
-                route.path === '/user/cars' && route.query['filter[type]'] !== 'motorcycle'
-                  ? 'active-link'
-                  : ''
-              "
-            >
-              {{ t('cars') }}
-            </RouterLink>
+        <VSpacer class="d-none d-md-block" />
 
-            <RouterLink
-              to="/user/best-deals"
-              class="nav-link font-weight-bold"
-              :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
-            >
-              {{ t('bestDeals') }}
-            </RouterLink>
+        <!-- ✅ Links (Desktop) -->
+        <div class="text-base align-center d-none d-md-flex justify-center" style="gap: 1.5rem; flex: 1 1 auto;">
+          <RouterLink
+            to="/user/cars"
+            class="nav-link font-weight-bold"
+            :class="
+              route.path === '/user/cars' && route.query['filter[type]'] !== 'motorcycle'
+                ? 'active-link'
+                : ''
+            "
+          >
+            {{ t('cars') }}
+          </RouterLink>
 
-            <RouterLink
-              to="/user/negm-sooq"
-              class="nav-link font-weight-bold"
-              :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
-            >
-              {{ t('importCars') }}
-            </RouterLink>
+          <RouterLink
+            to="/user/best-deals"
+            class="nav-link font-weight-bold"
+            :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
+          >
+            {{ t('bestDeals') }}
+          </RouterLink>
 
-            <RouterLink
-              :to="{
-                path: '/user/cars',
-                query: { 'filter[type]': 'motorcycle', sort: '-created_at' },
-              }"
-              class="nav-link font-weight-bold"
-              :class="
-                route.path === '/user/cars' && route.query['filter[type]'] === 'motorcycle'
-                  ? 'active-link'
-                  : ''
-              "
-            >
-              {{ t('bikes') }}
-            </RouterLink>
+          <RouterLink
+            to="/user/negm-sooq"
+            class="nav-link font-weight-bold"
+            :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
+          >
+            {{ t('importCars') }}
+          </RouterLink>
 
-            <RouterLink
-              to="/user/sell"
-              class="nav-link font-weight-bold"
-              :class="route.path === '/user/sell' ? 'active-link' : ''"
-            >
-              {{ t('sell') }}
-            </RouterLink>
+          <RouterLink
+            :to="{
+              path: '/user/cars',
+              query: { 'filter[type]': 'motorcycle', sort: '-created_at' },
+            }"
+            class="nav-link font-weight-bold"
+            :class="
+              route.path === '/user/cars' && route.query['filter[type]'] === 'motorcycle'
+                ? 'active-link'
+                : ''
+            "
+          >
+            {{ t('bikes') }}
+          </RouterLink>
 
-            <RouterLink
-              to="/user/favorites"
-              class="nav-link font-weight-bold"
-              :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
-            >
-              {{ t('favorites') }}
-            </RouterLink>
+          <RouterLink
+            to="/user/sell"
+            class="nav-link font-weight-bold"
+            :class="route.path === '/user/sell' ? 'active-link' : ''"
+          >
+            {{ t('sell') }}
+          </RouterLink>
 
-            <RouterLink
-              to="/user/sellers"
-              class="nav-link font-weight-bold"
-              :class="route.path === '/user/sellers' ? 'active-link' : ''"
-            >
-              {{ t('showrooms') }}
-            </RouterLink>
-          </div>
+          <RouterLink
+            to="/user/favorites"
+            class="nav-link font-weight-bold"
+            :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
+          >
+            {{ t('favorites') }}
+          </RouterLink>
+
+          <RouterLink
+            to="/user/sellers"
+            class="nav-link font-weight-bold"
+            :class="route.path === '/user/sellers' ? 'active-link' : ''"
+          >
+            {{ t('showrooms') }}
+          </RouterLink>
         </div>
 
-        <VSpacer />
+        <VSpacer class="d-none d-md-block" />
+        <VSpacer class="d-md-none" />
 
         <!-- ✅ Settings Dropdown -->
         <VMenu close-on-content-click="false" offset="12px" width="230">
