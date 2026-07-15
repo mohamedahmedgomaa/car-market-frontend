@@ -398,7 +398,7 @@ const logout = async () => {
           <!-- Settings Dropdown (Before Login) -->
           <VMenu close-on-content-click="false" offset="12px" width="230">
             <template #activator="{ props }">
-              <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-2" icon>
+              <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-2 d-none d-sm-flex" icon>
                 <VIcon icon="tabler-dots-vertical" size="22" />
               </VBtn>
             </template>

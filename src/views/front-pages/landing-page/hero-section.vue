@@ -390,7 +390,7 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- ✅ Search Inputs (Smart Search / Omni-Search) -->
-            <div class="mb-5 d-flex gap-3 align-center search-inputs-row">
+            <div class="mb-5 d-flex gap-3 align-center search-inputs-row w-100">
               <VTextField
                 v-model="smartSearch"
                 :placeholder="t('searchPlaceholder')"
@@ -400,7 +400,7 @@ onBeforeUnmount(() => {
                 prepend-inner-icon="tabler-search"
                 @keydown.enter.prevent="onSearch"
                 @update:model-value="onSmartSearchInput"
-                class="premium-id-input smart-search-input flex-grow-1"
+                class="premium-id-input smart-search-input flex-grow-1 w-100"
                 dir="ltr"
               />
             </div>
@@ -1367,12 +1367,18 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 12px;
   align-items: center;
+  width: 100%;
 }
 
 @media (max-width: 600px) {
   .search-inputs-row {
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: stretch;
+    width: 100%;
+  }
+  .smart-search-input {
+    width: 100% !important;
+    max-width: 100% !important;
   }
   .search-id-input {
     max-width: 100% !important;
