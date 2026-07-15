@@ -3,8 +3,10 @@ import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 import HeroSection from '@/views/front-pages/landing-page/hero-section.vue'
 import FeaturesSection from '@/views/front-pages/landing-page/features.vue'
 import { useTheme } from 'vuetify'
+import { useI18n } from 'vue-i18n'
 
 const theme = useTheme()
+const { t } = useI18n({ useScope: 'global' })
 
 definePage({ meta: { layout: 'front', public: true } })
 
@@ -82,8 +84,8 @@ onMounted(() => {
     <!-- Cars Section -->
     <div class="reveal-on-scroll">
       <CarsSection
-        title="Cars"
-        subtitle="Browse our newest car listings"
+        :title="t('cars')"
+        :subtitle="t('browseCars')"
         :limit="CARS.latest.limit"
         :params="CARS.latest.params"
         :viewAllTo="CARS.latest.viewAllTo"
@@ -95,8 +97,8 @@ onMounted(() => {
     <!-- Bikes Section -->
     <div class="reveal-on-scroll">
       <CarsSection
-        title="Bikes"
-        subtitle="Browse our newest motorcycle listings"
+        :title="t('bikes')"
+        :subtitle="t('browseBikes')"
         :limit="MOTOS.latest.limit"
         :params="MOTOS.latest.params"
         :viewAllTo="MOTOS.latest.viewAllTo"
@@ -108,14 +110,14 @@ onMounted(() => {
     <!-- Best Deals Section -->
     <div class="reveal-on-scroll">
       <CarsSection
-        title="Best Deals"
-        subtitle="The most competitive prices on all vehicles"
+        :title="t('bestDeals')"
+        :subtitle="t('bestDealsSubtitle')"
         :limit="ALL_VEHICLES.bestDeals.limit"
         :params="ALL_VEHICLES.bestDeals.params"
         :viewAllTo="ALL_VEHICLES.bestDeals.viewAllTo"
       >
         <template #header-extra>
-          <VChip size="small" color="error" variant="flat" class="best-deal-badge"> Best Deal </VChip>
+          <VChip size="small" color="error" variant="flat" class="best-deal-badge"> {{ t('bestDealBadge') }} </VChip>
         </template>
       </CarsSection>
     </div>
@@ -125,15 +127,15 @@ onMounted(() => {
     <!-- Import Cars Section -->
     <div class="reveal-on-scroll">
       <CarsSection
-        title="Import Cars"
-        subtitle="Our most popular and highly rated vehicles available for import"
+        :title="t('importCars')"
+        :subtitle="t('importCarsSubtitle')"
         :limit="ALL_VEHICLES.importCars.limit"
         :params="ALL_VEHICLES.importCars.params"
         :viewAllTo="ALL_VEHICLES.importCars.viewAllTo"
       >
         <template #header-extra>
           <VChip size="small" color="success" variant="flat" class="import-badge">
-            Featured
+            {{ t('featuredBadge') }}
           </VChip>
         </template>
       </CarsSection>
@@ -152,11 +154,10 @@ onMounted(() => {
         <div class="cta-glow"></div>
         <div class="cta-content relative-z">
           <h2 class="text-h3 font-weight-black mb-4">
-            Ready to <span class="text-primary-gradient">Sell Your Car?</span>
+            {{ t('readyToSell') }}
           </h2>
           <p class="text-h6 opacity-70 mb-10 max-w-700 mx-auto">
-            Join thousands of successful sellers on our platform. List your car today and reach
-            thousands of interested buyers in seconds.
+            {{ t('sellCTA') }}
           </p>
           <div class="d-flex flex-wrap justify-center gap-6">
             <VBtn
@@ -168,7 +169,7 @@ onMounted(() => {
               prepend-icon="tabler-circle-plus"
               elevation="8"
             >
-              Add Your Ad Now
+              {{ t('addAdNow') }}
             </VBtn>
             <VBtn
               variant="outlined"
@@ -178,7 +179,7 @@ onMounted(() => {
               class="px-10 font-weight-bold premium-btn-outline"
               to="/user/cars"
             >
-              Browse Cars
+              {{ t('browseCarsBtn') }}
             </VBtn>
           </div>
         </div>
@@ -196,13 +197,9 @@ onMounted(() => {
         border="start"
         class="disclaimer-alert pa-6 glass-panel"
       >
-        <div class="text-h6 font-weight-bold mb-2">Important Notice & Disclaimer</div>
+        <div class="text-h6 font-weight-bold mb-2">{{ t('disclaimerTitle') }}</div>
         <div class="text-body-2 opacity-80">
-          NegmCars is an advertising platform that acts as a bridge between buyers and sellers. We
-          are NOT responsible for any transactions, payments, or the condition of the vehicles
-          listed. We strongly advise users to inspect vehicles thoroughly and meet in safe public
-          locations for transactions. Use of this platform constitutes agreement that NegmCars is
-          not liable for any financial or legal issues arising from deals made between users.
+          {{ t('disclaimerText') }}
         </div>
       </VAlert>
     </VContainer>

@@ -1,38 +1,43 @@
 <script setup>
+import { computed } from 'vue'
 import { useTheme } from 'vuetify'
+import { useI18n } from 'vue-i18n'
+
 const theme = useTheme()
-const features = [
+const { t } = useI18n({ useScope: 'global' })
+
+const features = computed(() => [
   {
-    title: 'Trusted Sellers',
-    desc: 'We ensure all sellers are verified to guarantee a safe and reliable buying experience.',
+    title: t('feature1Title'),
+    desc: t('feature1Desc'),
     icon: 'tabler-shield-check',
   },
   {
-    title: 'Best Prices',
-    desc: 'Compare thousands of cars and find the best deals that fit your budget perfectly.',
+    title: t('feature2Title'),
+    desc: t('feature2Desc'),
     icon: 'tabler-currency-dollar',
   },
   {
-    title: 'Wide Variety',
-    desc: 'From luxury sedans to economy hatchbacks, we have every type of vehicle in one place.',
+    title: t('feature3Title'),
+    desc: t('feature3Desc'),
     icon: 'tabler-car',
   },
   {
-    title: 'Easy Viewing',
-    desc: 'Schedule a viewing directly through the platform with ease and convenience.',
+    title: t('feature4Title'),
+    desc: t('feature4Desc'),
     icon: 'tabler-calendar-event',
   },
   {
-    title: '24/7 Support',
-    desc: 'Our team is always available to help you with any inquiries or issues you may have.',
+    title: t('feature5Title'),
+    desc: t('feature5Desc'),
     icon: 'tabler-headset',
   },
   {
-    title: 'Smart Search',
-    desc: 'Use our advanced filtering tools to find your perfect car in seconds.',
+    title: t('feature6Title'),
+    desc: t('feature6Desc'),
     icon: 'tabler-search',
   },
-]
+])
 </script>
 
 <template>
@@ -40,11 +45,10 @@ const features = [
     <VContainer>
       <div class="text-center mb-16">
         <h2 class="text-h3 font-weight-black mb-4">
-          Everything You Need to <span class="text-primary">Buy & Sell</span> Easily
+          {{ t('featuresTitle1') }}<span class="text-primary">{{ t('featuresTitleBuySell') }}</span>{{ t('featuresTitle2') }}
         </h2>
         <p class="text-h6 opacity-60 max-w-700 mx-auto">
-          We provide the best tools and services to ensure a seamless and safe experience in the car
-          market.
+          {{ t('featuresSubtitle') }}
         </p>
       </div>
 

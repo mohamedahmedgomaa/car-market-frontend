@@ -2,6 +2,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/index.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
@@ -9,6 +10,7 @@ import { customBrandFilter } from '@/utils/brandTranslations.js'
 
 const theme = useTheme()
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 /* =========================
    ✅ Refs for Auto-Navigation
@@ -211,7 +213,7 @@ const yearsToList = computed(() => {
     .sort((a, b) => b - a)
 })
 
-const t = (val) => {
+const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
@@ -221,7 +223,7 @@ const fetchBrands = async () => {
   try {
     const res = await brandUserApi.getAll()
     const data = res.data?.data || res.data || []
-    brandsList.value = data.map((b) => ({ id: b.id, name: t(b.name), originalName: b.name }))
+    brandsList.value = data.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name }))
   } catch (err) {
     console.error('Error fetching brands:', err)
   }
@@ -235,7 +237,7 @@ const fetchModels = async (brandId) => {
   try {
     const res = await modelUserApi.getAll({ 'filter[brand_id]': brandId })
     const data = res.data?.data || res.data || []
-    modelsList.value = data.map((m) => ({ id: m.id, name: t(m.name) }))
+    modelsList.value = data.map((m) => ({ id: m.id, name: _t(m.name) }))
   } catch (err) {
     console.error('Error fetching models:', err)
   }
@@ -374,7 +376,7 @@ onBeforeUnmount(() => {
             <!-- Top Chip & Reset -->
             <div class="d-flex align-center justify-space-between mb-4">
               <VChip label color="primary" class="font-weight-bold" size="x-small" variant="flat">
-                Welcome to NegmCars
+                {{ t('welcomeToNegmCars') }}
               </VChip>
 
               <VBtn
@@ -391,7 +393,7 @@ onBeforeUnmount(() => {
             <div class="mb-5 d-flex gap-3 align-center search-inputs-row">
               <VTextField
                 v-model="smartSearch"
-                placeholder="Search by Ad ID, Brand, Model or Year (e.g. BMW M5 2025)"
+                :placeholder="t('searchPlaceholder')"
                 density="compact"
                 variant="outlined"
                 hide-details
@@ -408,23 +410,23 @@ onBeforeUnmount(() => {
             <div class="search-form-grid">
               <!-- Type Toggle -->
               <div class="form-group">
-                <label class="group-label">Vehicle Type</label>
+                <label class="group-label">{{ t('vehicleType') }}</label>
                 <div class="premium-toggle-group">
                   <button
-                    v-for="t in ['car', 'motorcycle']"
-                    :key="t"
+                    v-for="t_type in ['car', 'motorcycle']"
+                    :key="t_type"
                     class="toggle-btn"
-                    :class="{ active: filters.type === t }"
-                    @click="filters.type = t"
+                    :class="{ active: filters.type === t_type }"
+                    @click="filters.type = t_type"
                   >
-                    {{ t === 'car' ? 'Cars' : 'Bikes' }}
+                    {{ t_type === 'car' ? t('cars') : t('bikes') }}
                   </button>
                 </div>
               </div>
 
               <!-- Condition Toggle -->
               <div class="form-group">
-                <label class="group-label">Condition</label>
+                <label class="group-label">{{ t('condition') }}</label>
                 <div class="premium-toggle-group">
                   <button
                     v-for="c in ['', 'used', 'new']"
@@ -433,7 +435,7 @@ onBeforeUnmount(() => {
                     :class="{ active: filters.condition === c }"
                     @click="filters.condition = c"
                   >
-                    {{ c === '' ? 'All' : c.charAt(0).toUpperCase() + c.slice(1) }}
+                    {{ c === '' ? t('allCondition') : (c === 'used' ? t('usedCondition') : t('newCondition')) }}
                   </button>
                 </div>
               </div>
@@ -446,7 +448,7 @@ onBeforeUnmount(() => {
                   item-title="name"
                   item-value="id"
                   maxlength="30"
-                  label="Select Brand"
+                  :label="t('selectBrand')"
                   density="compact"
                   variant="outlined"
                   hide-details
@@ -463,7 +465,7 @@ onBeforeUnmount(() => {
                   :items="modelsList"
                   item-title="name"
                   item-value="id"
-                  label="Select Model"
+                  :label="t('selectModel')"
                   density="compact"
                   variant="outlined"
                   hide-details
@@ -476,7 +478,7 @@ onBeforeUnmount(() => {
               <div class="form-group">
                 <VTextField
                   v-model="displayPriceFrom"
-                  label="Min Price"
+                  :label="t('minPrice')"
                   prefix="EG"
                   density="compact"
                   variant="outlined"
@@ -493,7 +495,7 @@ onBeforeUnmount(() => {
                 <VTextField
                   ref="priceToInput"
                   v-model="displayPriceTo"
-                  label="Max Price"
+                  :label="t('maxPrice')"
                   prefix="EG"
                   density="compact"
                   variant="outlined"
@@ -510,7 +512,7 @@ onBeforeUnmount(() => {
                 <VSelect
                   v-model="filters.yearFrom"
                   :items="yearsList"
-                  label="From Year"
+                  :label="t('fromYear')"
                   density="compact"
                   variant="outlined"
                   hide-details
@@ -524,7 +526,7 @@ onBeforeUnmount(() => {
                   v-model="filters.yearTo"
                   v-model:menu="isYearToMenuOpen"
                   :items="yearsToList"
-                  label="To Year"
+                  :label="t('toYear')"
                   density="compact"
                   variant="outlined"
                   hide-details
@@ -537,7 +539,7 @@ onBeforeUnmount(() => {
                 <VTextField
                   ref="kmMinInput"
                   v-model="displayKmMin"
-                  label="Min KM"
+                  :label="t('minKM')"
                   density="compact"
                   variant="outlined"
                   hide-details
@@ -552,7 +554,7 @@ onBeforeUnmount(() => {
                 <VTextField
                   ref="kmMaxInput"
                   v-model="displayKmMax"
-                  label="Max KM"
+                  :label="t('maxKM')"
                   density="compact"
                   variant="outlined"
                   hide-details
@@ -575,7 +577,7 @@ onBeforeUnmount(() => {
                 prepend-icon="tabler-search"
                 elevation="4"
               >
-                Search
+                {{ t('searchBtn') }}
               </VBtn>
               <VBtn
                 variant="tonal"
@@ -586,7 +588,7 @@ onBeforeUnmount(() => {
                 to="/user/sell"
                 prepend-icon="tabler-circle-plus"
               >
-                Sell
+                {{ t('sellBtn') }}
               </VBtn>
             </div>
           </VCard>
@@ -619,8 +621,8 @@ onBeforeUnmount(() => {
                       color="primary"
                       class="text-glow mb-4"
                     />
-                    <h4 class="text-h5 font-weight-black mb-2 text-white">Ad Space</h4>
-                    <p class="text-body-2 opacity-70 max-w-400 text-white">أضف إعلانك هنا ليصل لآلاف المهتمين</p>
+                    <h4 class="text-h5 font-weight-black mb-2 text-white">{{ t('adSpace') }}</h4>
+                    <p class="text-body-2 opacity-70 max-w-400 text-white">{{ t('addAdHere') }}</p>
                     <Transition name="fade" mode="out-in">
                       <div v-if="showAdPhone" class="phone-display-box mt-6">
                         <VIcon icon="tabler-phone-call" size="20" class="me-2 text-primary" />
@@ -634,7 +636,7 @@ onBeforeUnmount(() => {
                         class="mt-6 contact-btn-pulse"
                         @click="showAdPhone = true"
                       >
-                        Contact Us
+                        {{ t('contactUs') }}
                       </VBtn>
                     </Transition>
                   </div>

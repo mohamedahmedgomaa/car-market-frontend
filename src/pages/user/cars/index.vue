@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import carsUserApi from '@/api/user/carUserApi.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
@@ -14,6 +15,7 @@ definePage({
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 // -------------------------
 // Helpers
@@ -26,7 +28,7 @@ const isNumberKey = (evt) => {
   }
 }
 
-const t = (val) => {
+const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
@@ -537,7 +539,7 @@ const activeAdvancedFiltersCount = computed(() => {
             <div class="search-col search-col-query">
               <VTextField
                 v-model="draft.q"
-                placeholder="Search by ID..."
+                :placeholder="t('searchByIdOrText')"
                 prepend-inner-icon="tabler-search"
                 variant="outlined"
                 density="comfortable"
@@ -556,7 +558,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   :class="{ active: draft.type === 'car' }"
                   @click="draft.type = 'car'"
                 >
-                  Cars
+                  {{ t('cars') }}
                 </button>
                 <button
                   type="button"
@@ -564,7 +566,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   :class="{ active: draft.type === 'motorcycle' }"
                   @click="draft.type = 'motorcycle'"
                 >
-                  Bikes
+                  {{ t('bikes') }}
                 </button>
               </div>
             </div>
@@ -575,10 +577,10 @@ const activeAdvancedFiltersCount = computed(() => {
                 v-model="draft.brandId"
                 :items="filteredBrands"
                 item-value="id"
-                :item-title="b => t(b.name)"
+                :item-title="b => _t(b.name)"
                 :custom-filter="customBrandFilter"
                 maxlength="30"
-                label="Brand"
+                :label="t('brand')"
                 variant="outlined"
                 density="comfortable"
                 hide-details
@@ -586,10 +588,10 @@ const activeAdvancedFiltersCount = computed(() => {
                 @update:model-value="draft.modelId = null"
               >
                 <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="t(item.raw.name)" />
+                  <VListItem v-bind="props" :title="_t(item.raw.name)" />
                 </template>
                 <template #selection="{ item }">
-                  {{ t(item.raw.name) }}
+                  {{ _t(item.raw.name) }}
                 </template>
               </VAutocomplete>
             </div>
@@ -601,17 +603,17 @@ const activeAdvancedFiltersCount = computed(() => {
                 :items="draftModels"
                 item-value="id"
                 :disabled="!draft.brandId"
-                label="Model"
+                :label="t('model')"
                 variant="outlined"
                 density="comfortable"
                 hide-details
                 class="premium-input-field"
               >
                 <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="t(item.raw.name)" />
+                  <VListItem v-bind="props" :title="_t(item.raw.name)" />
                 </template>
                 <template #selection="{ item }">
-                  {{ t(item.raw.name) }}
+                  {{ _t(item.raw.name) }}
                 </template>
               </VSelect>
             </div>
@@ -623,7 +625,7 @@ const activeAdvancedFiltersCount = computed(() => {
                 height="44"
                 color="secondary"
                 class="horizontal-reset-btn px-4"
-                title="Reset All"
+                :title="t('resetAll')"
                 @click="resetAll"
               >
                 <VIcon icon="tabler-refresh" />
@@ -641,7 +643,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   :icon="isAdvancedOpen ? 'tabler-chevron-up' : 'tabler-adjustments-horizontal'"
                   class="me-1"
                 />
-                <span>{{ isAdvancedOpen ? 'Less Filters' : 'More Filters' }}</span>
+                <span>{{ isAdvancedOpen ? t('lessFilters') : t('moreFilters') }}</span>
                 <span
                   v-if="activeAdvancedFiltersCount > 0"
                   class="filter-count-badge ms-1"
@@ -660,7 +662,7 @@ const activeAdvancedFiltersCount = computed(() => {
                 <div class="filter-card">
                   <div class="filter-card-header">
                     <VIcon icon="tabler-shield-check" class="filter-icon" />
-                    <span class="filter-title">Condition</span>
+                    <span class="filter-title">{{ t('condition') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <div class="premium-toggle premium-toggle--three">
@@ -670,7 +672,7 @@ const activeAdvancedFiltersCount = computed(() => {
                         :class="{ active: draft.condition === '' }"
                         @click="draft.condition = ''"
                       >
-                        All
+                        {{ t('allCondition') }}
                       </button>
                       <button
                         type="button"
@@ -678,7 +680,7 @@ const activeAdvancedFiltersCount = computed(() => {
                         :class="{ active: draft.condition === 'used' }"
                         @click="draft.condition = 'used'"
                       >
-                        Used
+                        {{ t('usedCondition') }}
                       </button>
                       <button
                         type="button"
@@ -686,7 +688,7 @@ const activeAdvancedFiltersCount = computed(() => {
                         :class="{ active: draft.condition === 'new' }"
                         @click="draft.condition = 'new'"
                       >
-                        New
+                        {{ t('newCondition') }}
                       </button>
                     </div>
                   </div>
@@ -696,13 +698,13 @@ const activeAdvancedFiltersCount = computed(() => {
                 <div class="filter-card">
                   <div class="filter-card-header">
                     <VIcon icon="tabler-currency-dollar" class="filter-icon" />
-                    <span class="filter-title">Price Range (EG)</span>
+                    <span class="filter-title">{{ t('priceRangeEG') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <div class="d-flex gap-2">
                       <VTextField
                         v-model="displayDraftPriceFrom"
-                        placeholder="Min"
+                        :placeholder="t('min')"
                         variant="outlined"
                         density="comfortable"
                         hide-details
@@ -712,7 +714,7 @@ const activeAdvancedFiltersCount = computed(() => {
                       />
                       <VTextField
                         v-model="displayDraftPriceTo"
-                        placeholder="Max"
+                        :placeholder="t('max')"
                         variant="outlined"
                         density="comfortable"
                         hide-details
@@ -728,14 +730,14 @@ const activeAdvancedFiltersCount = computed(() => {
                 <div class="filter-card">
                   <div class="filter-card-header">
                     <VIcon icon="tabler-calendar" class="filter-icon" />
-                    <span class="filter-title">Year</span>
+                    <span class="filter-title">{{ t('year') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <div class="d-flex gap-2">
                       <VSelect
                         v-model="draft.yearFrom"
                         :items="Array.from({ length: 26 }, (_, i) => 2025 - i)"
-                        label="From"
+                        :label="t('from')"
                         variant="outlined"
                         density="comfortable"
                         hide-details
@@ -744,7 +746,7 @@ const activeAdvancedFiltersCount = computed(() => {
                       <VSelect
                         v-model="draft.yearTo"
                         :items="Array.from({ length: 26 }, (_, i) => 2025 - i).filter(y => !draft.yearFrom || y >= draft.yearFrom)"
-                        label="To"
+                        :label="t('to')"
                         variant="outlined"
                         density="comfortable"
                         hide-details
@@ -758,13 +760,13 @@ const activeAdvancedFiltersCount = computed(() => {
                 <div class="filter-card">
                   <div class="filter-card-header">
                     <VIcon icon="tabler-road" class="filter-icon" />
-                    <span class="filter-title">Mileage (km)</span>
+                    <span class="filter-title">{{ t('mileageKM') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <div class="d-flex gap-2">
                       <VTextField
                         v-model="displayDraftMileageFrom"
-                        placeholder="Min"
+                        :placeholder="t('min')"
                         variant="outlined"
                         density="comfortable"
                         hide-details
@@ -774,7 +776,7 @@ const activeAdvancedFiltersCount = computed(() => {
                       />
                       <VTextField
                         v-model="displayDraftMileageTo"
-                        placeholder="Max"
+                        :placeholder="t('max')"
                         variant="outlined"
                         density="comfortable"
                         hide-details
@@ -790,7 +792,7 @@ const activeAdvancedFiltersCount = computed(() => {
                 <div class="filter-card">
                   <div class="filter-card-header">
                     <VIcon icon="tabler-settings" class="filter-icon" />
-                    <span class="filter-title">Transmission</span>
+                    <span class="filter-title">{{ t('transmission') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <VSelect
@@ -811,7 +813,7 @@ const activeAdvancedFiltersCount = computed(() => {
                 <div class="filter-card">
                   <div class="filter-card-header">
                     <VIcon icon="tabler-gas-station" class="filter-icon" />
-                    <span class="filter-title">Fuel Type</span>
+                    <span class="filter-title">{{ t('fuelType') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <VSelect
@@ -831,8 +833,8 @@ const activeAdvancedFiltersCount = computed(() => {
                 <!-- Card 7: Drivetrain -->
                 <div class="filter-card" v-if="draft.type === 'car'">
                   <div class="filter-card-header">
-                    <VIcon icon="tabler-propeller" class="filter-icon" />
-                    <span class="filter-title">Drivetrain</span>
+                    <VIcon icon="tabler-car" class="filter-icon" />
+                    <span class="filter-title">{{ t('drivetrain') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <VSelect
@@ -852,18 +854,18 @@ const activeAdvancedFiltersCount = computed(() => {
                 <!-- Card 8: Classification -->
                 <div class="filter-card">
                   <div class="filter-card-header">
-                    <VIcon icon="tabler-tags" class="filter-icon" />
-                    <span class="filter-title">Classification</span>
+                    <VIcon icon="tabler-tag" class="filter-icon" />
+                    <span class="filter-title">{{ t('classification') }}</span>
                   </div>
                   <div class="filter-card-body">
                     <VSelect
                       v-model="draft.adCategory"
                       :items="[
-                        { title: 'All', value: '' },
-                        { title: 'Featured Only', value: 'featured' },
-                        { title: 'Best Deals Only', value: 'best_deal' },
-                        { title: 'Imported Only', value: 'imported' },
-                        { title: 'Local Only', value: 'local' }
+                        { title: t('all'), value: '' },
+                        { title: t('featuredOnly'), value: 'featured' },
+                        { title: t('bestDealsOnly'), value: 'best_deal' },
+                        { title: t('importedOnly'), value: 'imported' },
+                        { title: t('localOnly'), value: 'local' }
                       ]"
                       item-value="value"
                       item-title="title"
@@ -886,7 +888,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   prepend-icon="tabler-sparkles"
                   @click="applyFilters"
                 >
-                  Search Vehicles
+                  {{ t('searchVehicles') }}
                 </VBtn>
               </div>
             </div>
@@ -907,7 +909,7 @@ const activeAdvancedFiltersCount = computed(() => {
           <div class="premium-search-box" :class="{ 'is-open': isMobileFilterOpen }">
             <!-- Mobile Header -->
             <div class="mobile-filter-header d-md-none d-flex align-center justify-space-between mb-4">
-              <span class="text-h6 font-weight-bold text-white">Filters</span>
+              <span class="text-h6 font-weight-bold text-white">{{ t('filters') }}</span>
               <VBtn icon="tabler-x" variant="text" color="white" density="comfortable" @click="isMobileFilterOpen = false" />
             </div>
 
@@ -917,7 +919,7 @@ const activeAdvancedFiltersCount = computed(() => {
               <div class="mb-4">
                 <VTextField
                   v-model="draft.q"
-                  placeholder="Search by ID..."
+                  :placeholder="t('searchByIdOrText')"
                   prepend-inner-icon="tabler-search"
                   variant="outlined"
                   density="comfortable"
@@ -936,7 +938,7 @@ const activeAdvancedFiltersCount = computed(() => {
                     :class="{ active: draft.type === 'car' }"
                     @click="draft.type = 'car'"
                   >
-                    Cars
+                    {{ t('cars') }}
                   </button>
                   <button
                     type="button"
@@ -944,7 +946,7 @@ const activeAdvancedFiltersCount = computed(() => {
                     :class="{ active: draft.type === 'motorcycle' }"
                     @click="draft.type = 'motorcycle'"
                   >
-                    Bikes
+                    {{ t('bikes') }}
                   </button>
                 </div>
               </div>
@@ -958,7 +960,7 @@ const activeAdvancedFiltersCount = computed(() => {
                     :class="{ active: draft.condition === '' }"
                     @click="draft.condition = ''"
                   >
-                    All
+                    {{ t('all') }}
                   </button>
                   <button
                     type="button"
@@ -966,7 +968,7 @@ const activeAdvancedFiltersCount = computed(() => {
                     :class="{ active: draft.condition === 'used' }"
                     @click="draft.condition = 'used'"
                   >
-                    Used
+                    {{ t('used') }}
                   </button>
                   <button
                     type="button"
@@ -974,7 +976,7 @@ const activeAdvancedFiltersCount = computed(() => {
                     :class="{ active: draft.condition === 'new' }"
                     @click="draft.condition = 'new'"
                   >
-                    New
+                    {{ t('new') }}
                   </button>
                 </div>
               </div>
@@ -988,7 +990,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   :item-title="b => t(b.name)"
                   :custom-filter="customBrandFilter"
                   maxlength="30"
-                  label="Brand"
+                  :label="t('brand')"
                   variant="outlined"
                   density="comfortable"
                   hide-details
@@ -1008,7 +1010,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   :items="draftModels"
                   item-value="id"
                   :disabled="!draft.brandId"
-                  label="Model"
+                  :label="t('model')"
                   variant="outlined"
                   density="comfortable"
                   hide-details
@@ -1025,12 +1027,12 @@ const activeAdvancedFiltersCount = computed(() => {
 
               <!-- Price -->
               <div class="mb-4">
-                <div class="input-label-mini">Price (EG)</div>
+                <div class="input-label-mini">{{ t('priceEG') }}</div>
                 <VRow dense>
                   <VCol cols="6">
                     <VTextField
                       v-model="displayDraftPriceFrom"
-                      placeholder="Min"
+                      :placeholder="t('min')"
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1042,7 +1044,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   <VCol cols="6">
                     <VTextField
                       v-model="displayDraftPriceTo"
-                      placeholder="Max"
+                      :placeholder="t('max')"
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1056,13 +1058,13 @@ const activeAdvancedFiltersCount = computed(() => {
 
               <!-- Year -->
               <div class="mb-4">
-                <div class="input-label-mini">Year</div>
+                <div class="input-label-mini">{{ t('year') }}</div>
                 <VRow dense>
                   <VCol cols="6">
                     <VSelect
                       v-model="draft.yearFrom"
                       :items="Array.from({ length: 26 }, (_, i) => 2025 - i)"
-                      label="From"
+                      :label="t('from')"
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1073,7 +1075,7 @@ const activeAdvancedFiltersCount = computed(() => {
                     <VSelect
                       v-model="draft.yearTo"
                       :items="Array.from({ length: 26 }, (_, i) => 2025 - i).filter(y => !draft.yearFrom || y >= draft.yearFrom)"
-                      label="To"
+                      :label="t('to')"
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1085,7 +1087,7 @@ const activeAdvancedFiltersCount = computed(() => {
 
               <!-- Advanced Filters -->
               <div class="advanced-filters-section mt-6">
-                <div class="input-label-mini mb-2">Technical Details</div>
+                <div class="input-label-mini mb-2">{{ t('technicalDetails') }}</div>
                 
                 <div class="technical-details-section">
                   <!-- Transmission -->
@@ -1095,7 +1097,7 @@ const activeAdvancedFiltersCount = computed(() => {
                       :items="transmissionOptions"
                       item-value="value"
                       item-title="title"
-                      label="Transmission"
+                      :label="t('transmission')"
                       clearable
                       variant="outlined"
                       density="comfortable"
@@ -1111,7 +1113,7 @@ const activeAdvancedFiltersCount = computed(() => {
                       :items="fuelOptions"
                       item-value="value"
                       item-title="title"
-                      label="Fuel Type"
+                      :label="t('fuelType')"
                       clearable
                       variant="outlined"
                       density="comfortable"
@@ -1127,7 +1129,7 @@ const activeAdvancedFiltersCount = computed(() => {
                       :items="drivetrainOptions"
                       item-value="value"
                       item-title="title"
-                      label="Drivetrain"
+                      :label="t('drivetrain')"
                       clearable
                       variant="outlined"
                       density="comfortable"
@@ -1141,15 +1143,15 @@ const activeAdvancedFiltersCount = computed(() => {
                     <VSelect
                       v-model="draft.adCategory"
                       :items="[
-                        { title: 'All', value: '' },
-                        { title: 'Featured Only', value: 'featured' },
-                        { title: 'Best Deals Only', value: 'best_deal' },
-                        { title: 'Imported Only', value: 'imported' },
+                        { title: t('all'), value: '' },
+                        { title: t('featuredOnly'), value: 'featured' },
+                        { title: t('bestDealsOnly'), value: 'best_deal' },
+                        { title: t('importedOnly'), value: 'imported' },
                         { title: 'Local Only', value: 'local' }
                       ]"
                       item-value="value"
                       item-title="title"
-                      label="Classification"
+                      :label="t('classification')"
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1158,12 +1160,12 @@ const activeAdvancedFiltersCount = computed(() => {
                   </div>
                 </div>
 
-                <div class="input-label-mini mb-1">Mileage (km)</div>
+                <div class="input-label-mini mb-1">{{ t('mileageKM') }}</div>
                 <VRow dense class="mb-3">
                   <VCol cols="6">
                     <VTextField
                       v-model="displayDraftMileageFrom"
-                      placeholder="Min"
+                      :placeholder="t('min')"
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1175,7 +1177,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   <VCol cols="6">
                     <VTextField
                       v-model="displayDraftMileageTo"
-                      placeholder="Max"
+                      :placeholder="t('max')"
                       variant="outlined"
                       density="comfortable"
                       hide-details
@@ -1190,11 +1192,11 @@ const activeAdvancedFiltersCount = computed(() => {
 
             <div class="filter-actions">
               <VBtn block color="primary" height="52" class="search-submit-btn mb-3" @click="handleApplyMobile">
-                Apply Filters
+                {{ t('applyFilters') }}
               </VBtn>
 
               <VBtn block variant="text" color="secondary" size="small" @click="handleResetMobile">
-                Reset All
+                {{ t('resetAll') }}
               </VBtn>
             </div>
           </div>
@@ -1205,20 +1207,18 @@ const activeAdvancedFiltersCount = computed(() => {
           <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05)">
             <div class="d-flex align-center justify-space-between mb-8">
               <div>
-                <h2 class="text-h4 font-weight-bold text-white mb-1">
-                  {{ activeType === 'motorcycle' ? 'Bikes' : (activeType === 'car' ? 'Cars' : 'Search Results') }}
-                </h2>
-                <div class="text-body-1 opacity-60">{{ total }} {{ activeType === 'motorcycle' ? 'bikes' : 'cars' }} available</div>
+                <h1 class="text-h4 font-weight-black mb-1">{{ t('cars') }}</h1>
+                <p class="text-body-2 opacity-60 mb-0">{{ t('carsAvailable', { count: total }) }}</p>
               </div>
               
               <VSelect
                 v-model="sort"
                 :items="[
-                  { title: 'Newest', value: '-created_at' },
-                  { title: 'Price: Low to High', value: 'price' },
-                  { title: 'Price: High to Low', value: '-price' },
+                  { title: t('newest'), value: '-created_at' },
+                  { title: t('priceLowToHigh'), value: 'price' },
+                  { title: t('priceHighToLow'), value: '-price' },
                 ]"
-                label="Sort By"
+                :label="t('sortBy')"
                 variant="tonal"
                 density="comfortable"
                 hide-details
@@ -1237,9 +1237,9 @@ const activeAdvancedFiltersCount = computed(() => {
 
             <div v-if="initialized && !loading && cars.length === 0" class="text-center py-16">
               <VIcon icon="tabler-car-off" size="80" class="mb-4 opacity-10" />
-              <h3 class="text-h5 opacity-50 mb-2">No matching vehicles found</h3>
-              <p class="text-body-1 opacity-40 mb-6">Try adjusting your filters to see more results.</p>
-              <VBtn variant="flat" color="primary" @click="resetAll">Clear All Filters</VBtn>
+              <h3 class="text-h5 opacity-50 mb-2">{{ t('noMatchingVehiclesFound') }}</h3>
+              <p class="text-body-1 opacity-40 mb-6">{{ t('tryAdjustingFilters') }}</p>
+              <VBtn variant="flat" color="primary" @click="resetAll">{{ t('clearAllFilters') }}</VBtn>
             </div>
 
             <div class="d-flex justify-center mt-12" v-if="total > perPage && !loading">

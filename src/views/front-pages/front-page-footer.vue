@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import footerDarkBg from '@images/front-pages/backgrounds/footer-bg-dark.png'
 import footerLightBg from '@images/front-pages/backgrounds/footer-bg-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
@@ -8,6 +9,7 @@ import { themeConfig } from '@themeConfig'
 import carsUserApi from '@/api/user/carUserApi.js'
 
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 const footerBg = useGenerateImageVariant(footerLightBg, footerDarkBg)
 
 // -------------------------
@@ -114,13 +116,13 @@ onMounted(fetchTopCars)
 
               <!-- Brand tagline -->
               <p class="brand-description text-white opacity-70 mb-5">
-                Egypt's premier automotive marketplace. Connecting buyers, sellers, and verified showrooms with intelligence and trust.
+                {{ t('brandDesc') }}
               </p>
 
               <!-- ✅ Follow Us -->
               <div class="mb-4">
                 <h6 class="footer-title text-white text-subtitle-2 font-weight-bold mb-3 opacity-60">
-                  Follow Our Updates
+                  {{ t('followUpdates') }}
                 </h6>
                 <div class="d-flex gap-x-3">
                   <a
@@ -143,11 +145,11 @@ onMounted(fetchTopCars)
             <div class="footer-links">
               <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-device-mobile" size="20" color="primary" />
-                <span>Download Our App</span>
+                <span>{{ t('downloadAppTitle') }}</span>
               </h6>
               
               <p class="text-white text-body-2 opacity-60 mb-5 leading-relaxed">
-                Enjoy the ultimate vehicle trading experience anytime, anywhere. Get our apps for iOS and Android.
+                {{ t('downloadAppDesc') }}
               </p>
 
               <div class="d-flex flex-column gap-y-3">
@@ -159,7 +161,7 @@ onMounted(fetchTopCars)
                     </svg>
                   </div>
                   <div class="app-text">
-                    <span class="app-subtitle text-white">Download on the</span>
+                    <span class="app-subtitle text-white">{{ t('downloadOn') }}</span>
                     <span class="app-title text-white">App Store</span>
                   </div>
                 </a>
@@ -172,7 +174,7 @@ onMounted(fetchTopCars)
                     </svg>
                   </div>
                   <div class="app-text">
-                    <span class="app-subtitle text-white">GET IT ON</span>
+                    <span class="app-subtitle text-white">{{ t('getItOn') }}</span>
                     <span class="app-title text-white">Google Play</span>
                   </div>
                 </a>
@@ -185,24 +187,24 @@ onMounted(fetchTopCars)
             <div class="footer-links">
               <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-info-circle" size="20" color="primary" />
-                <span>Official Information</span>
+                <span>{{ t('officialInfo') }}</span>
               </h6>
 
               <div class="registration-box pa-6 rounded-xl glass-panel-dark border border-white-opacity-10">
                 <div class="d-flex align-center gap-x-3 mb-4">
                   <div class="status-indicator"></div>
-                  <span class="text-white font-weight-bold text-subtitle-1">Registered Platform</span>
+                  <span class="text-white font-weight-bold text-subtitle-1">{{ t('registeredPlatform') }}</span>
                 </div>
                 <p class="text-white text-body-2 opacity-60 mb-5 leading-relaxed">
-                  NegmCars is a legally registered company in Egypt, ensuring highly trusted transactions.
+                  {{ t('registeredPlatformDesc') }}
                 </p>
                 <div class="tax-info-grid">
                   <div class="tax-item">
-                    <span class="tax-label">Tax ID</span>
+                    <span class="tax-label">{{ t('taxId') }}</span>
                     <span class="tax-value">725-463-524</span>
                   </div>
                   <div class="tax-item">
-                    <span class="tax-label">Comm. Reg</span>
+                    <span class="tax-label">{{ t('commReg') }}</span>
                     <span class="tax-value">215486</span>
                   </div>
                 </div>
@@ -215,7 +217,7 @@ onMounted(fetchTopCars)
             <div class="ps-md-6">
               <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-headset" size="20" color="primary" />
-                <span>Get in Touch</span>
+                <span>{{ t('getInTouch') }}</span>
               </h6>
 
               <div class="d-flex flex-column gap-y-6">
@@ -239,13 +241,13 @@ onMounted(fetchTopCars)
       <VContainer>
         <div class="d-flex justify-space-between flex-wrap gap-y-4 align-center">
           <div class="text-white opacity-40 text-caption">
-            © {{ new Date().getFullYear() }} <span class="text-white opacity-100 font-weight-bold">{{ themeConfig.app.title }}</span>. All rights reserved.
+            © {{ new Date().getFullYear() }} <span class="text-white opacity-100 font-weight-bold">{{ themeConfig.app.title }}</span>. {{ t('allRightsReserved') }}
           </div>
 
           <div class="footer-bottom-links d-flex gap-x-6">
-            <RouterLink to="/" class="bottom-link">Privacy Policy</RouterLink>
-            <RouterLink to="/" class="bottom-link">Terms of Service</RouterLink>
-            <RouterLink to="/" class="bottom-link">Sitemap</RouterLink>
+            <RouterLink to="/" class="bottom-link">{{ t('privacyPolicy') }}</RouterLink>
+            <RouterLink to="/" class="bottom-link">{{ t('termsOfService') }}</RouterLink>
+            <RouterLink to="/" class="bottom-link">{{ t('sitemap') }}</RouterLink>
           </div>
         </div>
       </VContainer>

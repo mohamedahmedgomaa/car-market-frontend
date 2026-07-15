@@ -2,8 +2,10 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import carsUserApi from '@/api/user/carUserApi.js'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 const props = defineProps({
   title: { type: String, default: 'Cars' },
@@ -30,7 +32,7 @@ const localCars = ref([])
 
 const API_BASE = import.meta.env.VITE_BASE_URL
 
-const t = (val) => {
+const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
@@ -53,7 +55,7 @@ const getMainImage = (car) => {
 }
 
 const getSellerName = (car) => {
-  return t(car?.seller?.store_name) || car?.seller?.name || 'Unknown seller'
+  return _t(car?.seller?.store_name) || car?.seller?.name || t('unknownSeller')
 }
 
 // ✅ English "Time Ago" formatter with a 1 month ago cap
@@ -259,13 +261,13 @@ watch(
         </div>
 
         <RouterLink v-if="showViewAll" class="cars-section__link" :to="viewAllTo">
-          View all
+          {{ t('viewAll') }}
         </RouterLink>
       </div>
 
-      <div v-if="displayLoading" class="cars-section__state"><span dir="ltr">Loading cars...</span></div>
-      <div v-else-if="displayError" class="cars-section__state error"><span dir="ltr">{{ displayError }}</span></div>
-      <div v-else-if="displayCars.length === 0" class="cars-section__state"><span dir="ltr">No cars found.</span></div>
+      <div v-if="displayLoading" class="cars-section__state"><span dir="ltr">{{ t('loadingCars') }}</span></div>
+      <div v-else-if="displayError" class="cars-section__state error"><span dir="ltr">{{ t('failedToLoadCars') }}</span></div>
+      <div v-else-if="displayCars.length === 0" class="cars-section__state"><span dir="ltr">{{ t('noCarsFound') }}</span></div>
 
       <div v-else class="cars-grid">
         <RouterLink
@@ -282,20 +284,20 @@ watch(
         >
           <!-- ✅ صورة العربية اختيارية -->
           <div v-if="showImage" class="car-card__image">
-            <img :src="getMainImage(car)" :alt="t(car.title) || `Car #${car.id}`" loading="lazy" />
+            <img :src="getMainImage(car)" :alt="_t(car.title) || `Car #${car.id}`" loading="lazy" />
 
             <!-- ✅ Badges Section -->
             <div class="car-card__badges">
               <!-- Best Deal Badge -->
               <div v-if="Number(car.is_best_deal) === 1" class="badge-item badge-best-deal">
                 <VIcon icon="tabler-tag" size="12" class="me-1" />
-                <span>Best Deal</span>
+                <span>{{ t('bestDealBadge') }}</span>
               </div>
               
               <!-- Featured Badge -->
               <div v-if="Number(car.is_featured) === 1" class="badge-item badge-featured">
                 <VIcon icon="tabler-star" size="12" class="me-1" />
-                <span>Featured</span>
+                <span>{{ t('featuredBadge') }}</span>
               </div>
 
               <!-- Global Ad Badge -->
@@ -307,7 +309,7 @@ watch(
               <!-- Import Badge -->
               <div v-if="Number(car.is_import) === 1" class="badge-item badge-import">
                 <VIcon icon="tabler-plane-arrival" size="12" class="me-1" />
-                <span>Imported</span>
+                <span>{{ t('imported') }}</span>
               </div>
             </div>
 
@@ -340,16 +342,16 @@ watch(
                 class="car-card__title font-weight-bold mb-1"
                 style="min-height: 44px; line-height: 1.4"
               >
-                {{ t(car.title) || `Car #${car.id}` }}
+                {{ _t(car.title) || `Car #${car.id}` }}
               </h3>
 
               <!-- ✅ Brand & Model -->
               <div class="car-card__meta mb-1 opacity-90">
-                <span class="font-weight-bold">{{ t(car.brand?.name) }}</span>
+                <span class="font-weight-bold">{{ _t(car.brand?.name) }}</span>
                 <span class="mx-2">|</span>
-                <span>{{ t(car.model?.name) }}</span>
+                <span>{{ _t(car.model?.name) }}</span>
                 <span class="mx-2">|</span>
-                <span>{{ Number(car.is_import) === 1 ? 'Imported' : 'Local' }}</span>
+                <span>{{ Number(car.is_import) === 1 ? t('imported') : t('local') }}</span>
               </div>
 
               <!-- ✅ Year & Condition -->
@@ -357,7 +359,7 @@ watch(
                 <span>{{ car.year }}</span>
                 <span class="mx-2">|</span>
                 <span class="text-primary">
-                  {{ car.condition === 'new' ? 'New' : 'Used' }}
+                  {{ car.condition === 'new' ? t('newCondition') : t('usedCondition') }}
                 </span>
                 <template v-if="car.condition === 'used' && car.mileage">
                   <span class="mx-2">|</span>
@@ -387,7 +389,7 @@ watch(
             <div class="car-card__footer pt-2 border-t opacity-70">
               <div class="car-card__location d-flex align-center">
                 <VIcon icon="tabler-map-pin" size="14" class="me-1" />
-                <span>{{ t(car.city?.name) || 'Cairo' }}</span>
+                <span>{{ _t(car.city?.name) || 'Cairo' }}</span>
               </div>
 
               <div class="car-card__date d-flex align-center">
