@@ -3,8 +3,11 @@ import { computed, onMounted, ref, watch } from 'vue'
 import sellerUserApi from '@/api/user/sellerUserApi.js'
 import cityUserApi from '@/api/user/cityUserApi.js'
 import governorateUserApi from '@/api/user/governorateUserApi.js'
+import { useI18n } from 'vue-i18n'
 
 definePage({ meta: { layout: 'front', public: true } })
+
+const { t } = useI18n({ useScope: 'global' })
 
 const loading = ref(true)
 const error = ref('')
@@ -33,7 +36,7 @@ const resetFilters = () => {
   filters.value.neighborhood = ''
 }
 
-const t = (val) => {
+const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
@@ -253,14 +256,14 @@ onMounted(() => {
           <div class="header-section text-center text-md-start animate-fade-in">
             <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle mb-3 border border-primary-20">
               <VIcon icon="tabler-building-store" size="16" color="primary" />
-              <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">Showrooms Directory</span>
+              <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">{{ t('showroomsDirectory') }}</span>
             </div>
             
             <h1 class="text-h3 font-weight-black text-high-emphasis mb-4 leading-tight">
-              <span dir="ltr">Discover Egypt's <span class="text-gradient">Premier Showrooms</span></span>
+              <span dir="ltr">{{ t('discoverShowrooms') }}</span>
             </h1>
             <p class="text-body-2 text-medium-emphasis max-w-650 font-weight-medium mb-6" style="line-height: 1.5;">
-              <span dir="ltr">Explore certified automotive dealerships nationwide. Locate verified showrooms, browse premium inventories, and connect directly with verified owners.</span>
+              <span dir="ltr">{{ t('exploreShowroomsDesc') }}</span>
             </p>
 
             <!-- Ultra-Sleek Trust & Stats Bar -->
@@ -270,8 +273,8 @@ onMounted(() => {
                   <VIcon icon="tabler-building-store" color="primary" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
-                  <span class="text-caption font-weight-black text-high-emphasis leading-tight"><span dir="ltr">{{ sellers.length || 0 }} Showrooms</span></span>
-                  <span class="text-xxs text-medium-emphasis leading-none">Verified Dealers</span>
+                  <span class="text-caption font-weight-black text-high-emphasis leading-tight"><span dir="ltr">{{ t('showroomsCount', { count: sellers.length || 0 }) }}</span></span>
+                  <span class="text-xxs text-medium-emphasis leading-none">{{ t('verifiedDealers') }}</span>
                 </div>
               </div>
 
@@ -280,8 +283,8 @@ onMounted(() => {
                   <VIcon icon="tabler-map-pin" color="success" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
-                  <span class="text-caption font-weight-black text-high-emphasis leading-tight">Egypt-wide</span>
-                  <span class="text-xxs text-medium-emphasis leading-none">Active Cities</span>
+                  <span class="text-caption font-weight-black text-high-emphasis leading-tight">{{ t('egyptWide') }}</span>
+                  <span class="text-xxs text-medium-emphasis leading-none">{{ t('activeCities') }}</span>
                 </div>
               </div>
 
@@ -290,8 +293,8 @@ onMounted(() => {
                   <VIcon icon="tabler-shield-check" color="warning" size="20" />
                 </div>
                 <div class="d-flex flex-column text-start">
-                  <span class="text-caption font-weight-black text-high-emphasis leading-tight"><span dir="ltr">100% Secure</span></span>
-                  <span class="text-xxs text-medium-emphasis leading-none">Direct Connection</span>
+                  <span class="text-caption font-weight-black text-high-emphasis leading-tight"><span dir="ltr">{{ t('secure100') }}</span></span>
+                  <span class="text-xxs text-medium-emphasis leading-none">{{ t('directConnection') }}</span>
                 </div>
               </div>
             </div>
@@ -303,15 +306,15 @@ onMounted(() => {
           <VCard class="dealer-promo-card pa-5 rounded-2xl elevation-10 overflow-hidden relative border-glow">
             <div class="d-flex flex-column gap-2 relative z-1">
               <div class="d-inline-flex align-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-primary-subtle text-primary text-caption font-weight-bold align-self-start">
-                <VIcon icon="tabler-rocket" size="12" /> Dealership Partnership
+                <VIcon icon="tabler-rocket" size="12" /> {{ t('dealershipPartnership') }}
               </div>
               
               <h2 class="text-h6 font-weight-black text-high-emphasis leading-tight">
-                <span dir="ltr">Own a Showroom?</span>
+                <span dir="ltr">{{ t('ownShowroomTitle') }}</span>
               </h2>
               
               <p class="text-caption text-medium-emphasis mb-1 font-weight-medium" style="line-height: 1.4;">
-                <span dir="ltr">Grow your reach with a <span class="text-primary font-weight-bold">verified annual membership</span>! Display your inventory and receive direct buyer leads.</span>
+                <span dir="ltr">{{ t('ownShowroomDesc') }}</span>
               </p>
               
               <VBtn
@@ -324,7 +327,7 @@ onMounted(() => {
                 elevation="8"
               >
                 <VIcon icon="tabler-building-store" size="16" class="me-2" />
-                Register Showroom
+                {{ t('registerShowroom') }}
               </VBtn>
             </div>
           </VCard>
@@ -338,7 +341,7 @@ onMounted(() => {
           <div class="search-col search-col-name">
             <VTextField
               v-model="filters.storeName"
-              placeholder="Showroom Name / اسم المعرض..."
+              :placeholder="t('showroomNamePlaceholder')"
               prepend-inner-icon="tabler-building-store"
               variant="outlined"
               density="comfortable"
@@ -355,7 +358,7 @@ onMounted(() => {
               :items="governorates"
               item-value="id"
               :item-title="g => getCombinedName(g.name)"
-              placeholder="Governorate / المحافظة..."
+              :placeholder="t('governoratePlaceholder')"
               prepend-inner-icon="tabler-map"
               variant="outlined"
               density="comfortable"
@@ -379,7 +382,7 @@ onMounted(() => {
               :items="filteredCities"
               item-value="id"
               :item-title="c => getCombinedName(c.name)"
-              placeholder="City / المدينة..."
+              :placeholder="t('cityPlaceholder')"
               prepend-inner-icon="tabler-map-pin"
               variant="outlined"
               density="comfortable"
@@ -400,7 +403,7 @@ onMounted(() => {
           <div class="search-col search-col-neighborhood">
             <VTextField
               v-model="filters.neighborhood"
-              placeholder="Area or Street / المنطقة أو الشارع..."
+              :placeholder="t('areaPlaceholder')"
               prepend-inner-icon="tabler-road"
               variant="outlined"
               density="comfortable"
@@ -422,7 +425,7 @@ onMounted(() => {
               @click="locateNearMe"
             >
               <VIcon icon="tabler-map-pin-up" size="20" class="me-1" />
-              Near Me
+              {{ t('nearMe') }}
             </VBtn>
 
             <VBtn
@@ -431,7 +434,7 @@ onMounted(() => {
               color="secondary"
               class="px-4"
               rounded="lg"
-              title="Reset Filters"
+              :title="t('resetFilters')"
               @click="resetFilters"
             >
               <VIcon icon="tabler-refresh" />
@@ -442,14 +445,14 @@ onMounted(() => {
 
       <div class="d-flex align-center gap-2 mb-6 animate-fade-in">
         <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
-        <span class="text-caption font-weight-bold text-medium-emphasis text-uppercase tracking-wider px-3">Verified Showrooms</span>
+        <span class="text-caption font-weight-bold text-medium-emphasis text-uppercase tracking-wider px-3">{{ t('verifiedShowroomsTitle') }}</span>
         <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="d-flex flex-column align-center justify-center py-16">
         <VProgressCircular indeterminate color="primary" size="64" width="6" />
-        <h3 class="mt-4 text-h6 text-primary animate-pulse">Loading Verified Dealerships...</h3>
+        <h3 class="mt-4 text-h6 text-primary animate-pulse">{{ t('loadingShowrooms') }}</h3>
       </div>
 
       <!-- Error State -->
@@ -460,9 +463,9 @@ onMounted(() => {
       <!-- Empty State -->
       <div v-else-if="filteredSellers.length === 0" class="text-center py-16 animate-fade-in">
         <VIcon icon="tabler-building-store" size="80" class="mb-4 opacity-20" />
-        <h3 class="text-h5 text-medium-emphasis font-weight-bold">No verified showrooms match your location or search.</h3>
+        <h3 class="text-h5 text-medium-emphasis font-weight-bold">{{ t('noShowroomsFound') }}</h3>
         <VBtn variant="tonal" color="primary" class="mt-4 px-6 font-weight-bold" rounded="pill" @click="resetFilters">
-          Reset Filters
+          {{ t('resetFilters') }}
         </VBtn>
       </div>
 
@@ -486,14 +489,14 @@ onMounted(() => {
                   <div class="overflow-hidden flex-grow-1">
                     <div class="d-flex align-center justify-space-between gap-1 mb-1">
                       <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0">
-                        {{ t(seller.store_name) || seller.name }}
+                        {{ _t(seller.store_name) || seller.name }}
                       </h3>
-                      <VChip color="amber" variant="elevated" size="x-small" class="font-weight-black tracking-widest px-2 py-0">PRO</VChip>
+                      <VChip color="amber" variant="elevated" size="x-small" class="font-weight-black tracking-widest px-2 py-0">{{ t('pro') }}</VChip>
                     </div>
 
                     <div class="d-flex align-center gap-1 text-success font-weight-bold text-caption">
                       <VIcon icon="tabler-discount-check-filled" size="16" />
-                      <span>Verified Showroom</span>
+                      <span>{{ t('verifiedShowroom') }}</span>
                     </div>
 
                     <!-- Beautiful Custom Location Tags -->
@@ -501,20 +504,20 @@ onMounted(() => {
                       <div class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-black border-white-10">
                         <VIcon icon="tabler-map-pin-filled" size="11" color="primary" />
                         <span>
-                          {{ seller.governorate ? t(seller.governorate.name) : '' }}
+                          {{ seller.governorate ? _t(seller.governorate.name) : '' }}
                           {{ seller.governorate && seller.city ? ' - ' : '' }}
-                          {{ seller.city ? t(seller.city.name) : (!seller.governorate ? 'Egypt' : '') }}
+                          {{ seller.city ? _t(seller.city.name) : (!seller.governorate ? 'Egypt' : '') }}
                         </span>
                       </div>
                       
-                      <div v-if="t(seller.district)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-bold border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.district)">
+                      <div v-if="_t(seller.district)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-bold border-white-10 text-truncate" style="max-width: 140px;" :title="_t(seller.district)">
                         <VIcon icon="tabler-building" size="11" color="white-50" />
-                        <span>{{ t(seller.district) }}</span>
+                        <span>{{ _t(seller.district) }}</span>
                       </div>
 
-                      <div v-if="t(seller.street)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="t(seller.street)">
+                      <div v-if="_t(seller.street)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="_t(seller.street)">
                         <VIcon icon="tabler-road" size="11" color="white-50" />
-                        <span>{{ t(seller.street) }}</span>
+                        <span>{{ _t(seller.street) }}</span>
                       </div>
 
                       <a
@@ -525,7 +528,7 @@ onMounted(() => {
                         @click.stop
                       >
                         <VIcon icon="tabler-map" size="11" />
-                        <span>Map / الموقع</span>
+                        <span>{{ t('mapLink') }}</span>
                       </a>
                     </div>
                   </div>
@@ -533,7 +536,7 @@ onMounted(() => {
 
                 <!-- Bio excerpt -->
                 <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-6 font-weight-medium">
-                  {{ t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
+                  {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
                 </p>
               </div>
 
@@ -550,7 +553,7 @@ onMounted(() => {
                     @click.stop="openCallDialog(seller)"
                   >
                     <VIcon icon="tabler-phone" size="16" class="me-1" />
-                    Call
+                    {{ t('callBtn') }}
                   </VBtn>
 
                   <VBtn
@@ -565,7 +568,7 @@ onMounted(() => {
                     @click.stop
                   >
                     <VIcon icon="tabler-brand-whatsapp" size="16" class="me-1" />
-                    WhatsApp
+                    {{ t('whatsappBtn') }}
                   </VBtn>
                 </div>
 
@@ -578,7 +581,7 @@ onMounted(() => {
                   @click.stop
                   :to="`/user/sellers/${seller.id}`"
                 >
-                  Explore Showroom
+                  {{ t('exploreShowroom') }}
                   <VIcon icon="tabler-arrow-right" size="18" class="ms-1" />
                 </VBtn>
               </div>
@@ -597,7 +600,7 @@ onMounted(() => {
           
           <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">Call Dealership</h3>
           <p class="text-body-1 opacity-70 mb-6 text-medium-emphasis">
-            Contact <strong>{{ t(selectedSellerForCall.store_name) || selectedSellerForCall.name }}</strong> directly at:
+            Contact <strong>{{ _t(selectedSellerForCall.store_name) || selectedSellerForCall.name }}</strong> directly at:
           </p>
 
           <div class="phone-display mb-8 pa-4 rounded-xl font-weight-black text-h5 text-primary tracking-wide bg-primary-subtle border">

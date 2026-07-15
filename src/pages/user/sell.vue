@@ -3,12 +3,14 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSellerAuth } from '@/stores/sellerAuth'
 import { useUserAuth } from '@/stores/userAuth'
+import { useI18n } from 'vue-i18n'
 
 definePage({ meta: { layout: 'front', public: true } })
 
 const router = useRouter()
 const sellerAuth = useSellerAuth()
 const userAuth = useUserAuth()
+const { t, locale } = useI18n({ useScope: 'global' })
 
 const isSellerLoggedIn = computed(() => !!sellerAuth.token)
 const isUserLoggedIn = computed(() => !!userAuth.token)
@@ -22,7 +24,7 @@ const sellerData = computed(() => {
   }
 })
 
-const t = (val) => {
+const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
   return val.en || val.ar || ''
@@ -239,10 +241,10 @@ const valueProps = [
           </div>
 
           <h1 class="text-h2 font-weight-black text-high-emphasis mb-3">
-            <span dir="ltr">Sell Your Car in Egypt Online</span>
+            <span dir="ltr">{{ t('sellYourCarTitle') }}</span>
           </h1>
           <p class="text-h6 text-medium-emphasis max-w-700 mx-auto font-weight-medium mb-8">
-            NegmCars connects you directly with thousands of verified active buyers in Egypt. List your showroom inventory or personal car easily.
+            {{ t('sellYourCarDesc') }}
           </p>
 
           <!-- Call to Action Card for Registration -->
@@ -252,9 +254,9 @@ const valueProps = [
                 <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
                   <VIcon icon="tabler-gift" size="16" /> Easy Onboarding
                 </div>
-                <h2 class="text-h4 font-weight-black text-high-emphasis mb-2"><span dir="ltr">Ready to Sell Your Vehicle?</span></h2>
+                <h2 class="text-h4 font-weight-black text-high-emphasis mb-2"><span dir="ltr">{{ t('readyToSellTitle') }}</span></h2>
                 <p class="text-subtitle-1 text-medium-emphasis mb-0">
-                  Register as a showroom or an individual seller to start listing your car on NegmCars and connect with active buyers instantly.
+                  {{ t('readyToSellDesc') }}
                 </p>
               </div>
 
@@ -268,7 +270,7 @@ const valueProps = [
                   elevation="8"
                 >
                   <VIcon icon="tabler-building-store" size="22" class="me-2" />
-                  Register Showroom
+                  {{ t('registerShowroom') }}
                 </VBtn>
 
                 <VBtn
@@ -280,7 +282,7 @@ const valueProps = [
                   class="font-weight-bold text-subtitle-2"
                 >
                   <VIcon icon="tabler-user-plus" size="18" class="me-2" />
-                  Register Individual
+                  {{ t('registerIndividual') }}
                 </VBtn>
 
                 <VBtn
@@ -292,7 +294,7 @@ const valueProps = [
                   class="font-weight-bold text-subtitle-2"
                 >
                   <VIcon icon="tabler-login" size="18" class="me-2" />
-                  Sign In
+                  {{ t('signIn') }}
                 </VBtn>
               </div>
             </div>
@@ -303,8 +305,8 @@ const valueProps = [
       <!-- Step-by-Step Timeline Section -->
       <section class="timeline-section mb-16">
         <div class="text-center mb-10">
-          <h2 class="text-h3 font-weight-black text-high-emphasis mb-2"><span dir="ltr">How It Works</span></h2>
-          <p class="text-body-1 text-medium-emphasis">Simple steps to get your car listed and sold</p>
+          <h2 class="text-h3 font-weight-black text-high-emphasis mb-2"><span dir="ltr">{{ t('howItWorksTitle') }}</span></h2>
+          <p class="text-body-1 text-medium-emphasis">{{ t('howItWorksDesc') }}</p>
         </div>
 
         <VRow class="justify-center">
@@ -318,17 +320,17 @@ const valueProps = [
                 <VIcon :icon="step.icon" size="26" />
               </VAvatar>
 
-              <h3 class="text-h5 font-weight-black text-high-emphasis mb-2">
+              <h3 class="text-h5 font-weight-black text-high-emphasis mb-2" v-if="locale === 'en'">
                 {{ step.title_en }}
-                <div class="text-subtitle-2 font-weight-bold text-primary-subtle mt-1 font-arabic" dir="rtl">
-                  {{ step.title_ar }}
-                </div>
+              </h3>
+              <h3 class="text-h5 font-weight-black text-high-emphasis mb-2 font-arabic" dir="rtl" v-else>
+                {{ step.title_ar }}
               </h3>
 
-              <p class="text-body-2 text-medium-emphasis mb-0 font-weight-medium">
+              <p class="text-body-2 text-medium-emphasis mb-0 font-weight-medium" v-if="locale === 'en'">
                 {{ step.desc_en }}
               </p>
-              <p class="text-caption text-medium-emphasis mt-2 border-top pt-2 opacity-75 font-arabic font-weight-medium" dir="rtl">
+              <p class="text-body-2 text-medium-emphasis mb-0 font-weight-medium font-arabic" dir="rtl" v-else>
                 {{ step.desc_ar }}
               </p>
             </div>
@@ -339,8 +341,8 @@ const valueProps = [
       <!-- Why Sell With Us Grid -->
       <section class="value-props-section py-8">
         <div class="text-center mb-12">
-          <h2 class="text-h3 font-weight-black text-high-emphasis mb-2"><span dir="ltr">Why Sell On NegmCars?</span></h2>
-          <p class="text-body-1 text-medium-emphasis">Premium tools and network engineered for your sales success</p>
+          <h2 class="text-h3 font-weight-black text-high-emphasis mb-2"><span dir="ltr">{{ t('whySellTitle') }}</span></h2>
+          <p class="text-body-1 text-medium-emphasis">{{ t('whySellDesc') }}</p>
         </div>
 
         <VRow>
@@ -348,17 +350,17 @@ const valueProps = [
             <VCard class="prop-card h-100 pa-6 rounded-2xl border" elevation="4">
               <VIcon :icon="prop.icon" size="36" :style="{ color: prop.color }" class="mb-4" />
               
-              <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
+              <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2" v-if="locale === 'en'">
                 {{ prop.title_en }}
-                <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mt-1 font-arabic" dir="rtl">
-                  {{ prop.title_ar }}
-                </div>
+              </h3>
+              <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2 font-arabic" dir="rtl" v-else>
+                {{ prop.title_ar }}
               </h3>
 
-              <p class="text-body-2 text-medium-emphasis mb-0">
+              <p class="text-body-2 text-medium-emphasis mb-0" v-if="locale === 'en'">
                 {{ prop.desc_en }}
               </p>
-              <p class="text-caption text-medium-emphasis mt-2 border-top pt-2 opacity-75 font-arabic" dir="rtl">
+              <p class="text-body-2 text-medium-emphasis mb-0 font-arabic" dir="rtl" v-else>
                 {{ prop.desc_ar }}
               </p>
             </VCard>

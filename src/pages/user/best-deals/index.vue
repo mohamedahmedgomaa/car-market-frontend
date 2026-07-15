@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import carsUserApi from '@/api/user/carUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 
@@ -10,6 +11,7 @@ definePage({
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 const loading = ref(true)
 const cars = ref([])
@@ -78,8 +80,8 @@ onMounted(() => {
     <VContainer>
       <div class="d-flex align-center justify-space-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 class="text-h3 font-weight-black text-high-emphasis mb-2">Best Deals</h1>
-          <p class="text-h6 opacity-70 font-weight-medium"><span dir="ltr">Price Crash & Best Market Deals</span></p>
+          <h1 class="text-h3 font-weight-black text-high-emphasis mb-2">{{ t('bestDealsTitle') }}</h1>
+          <p class="text-h6 opacity-70 font-weight-medium"><span dir="ltr">{{ t('priceCrash') }}</span></p>
         </div>
         
         <!-- ✅ Vehicle Type Toggle -->
@@ -89,37 +91,37 @@ onMounted(() => {
             :class="{ active: selectedType === '' }"
             @click="router.push({ query: { ...route.query, 'filter[type]': undefined, page: 1 } })"
           >
-            All
+            {{ t('all') }}
           </button>
           <button 
             class="type-btn" 
             :class="{ active: selectedType === 'car' }"
             @click="router.push({ query: { ...route.query, 'filter[type]': 'car', page: 1 } })"
           >
-            Cars
+            {{ t('cars') }}
           </button>
           <button 
             class="type-btn" 
             :class="{ active: selectedType === 'motorcycle' }"
             @click="router.push({ query: { ...route.query, 'filter[type]': 'motorcycle', page: 1 } })"
           >
-            Bikes
+            {{ t('bikes') }}
           </button>
         </div>
       </div>
 
       <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(var(--v-theme-on-surface),0.02); border: 1px solid rgba(var(--v-theme-on-surface),0.05)">
         <div class="d-flex align-center justify-space-between mb-8">
-          <div class="text-body-1 opacity-60"><span dir="ltr">{{ total }} offers found</span></div>
+          <div class="text-body-1 opacity-60"><span dir="ltr">{{ t('offersFound', { count: total }) }}</span></div>
           
           <VSelect
             v-model="sort"
             :items="[
-              { title: 'Lowest Price', value: 'price' },
-              { title: 'Highest Price', value: '-price' },
-              { title: 'Newest', value: '-created_at' },
+              { title: t('lowestPrice'), value: 'price' },
+              { title: t('highestPrice'), value: '-price' },
+              { title: t('newest'), value: '-created_at' },
             ]"
-            label="Sort By"
+            :label="t('sortBy')"
             variant="tonal"
             density="comfortable"
             hide-details
@@ -138,7 +140,7 @@ onMounted(() => {
 
         <div v-if="!loading && cars.length === 0" class="text-center py-16">
           <VIcon icon="tabler-car-off" size="80" class="mb-4 opacity-10" />
-          <h3 class="text-h5 opacity-50"><span dir="ltr">No deals found at the moment</span></h3>
+          <h3 class="text-h5 opacity-50"><span dir="ltr">{{ t('noDealsFound') }}</span></h3>
         </div>
 
         <div class="d-flex justify-center mt-12" v-if="total > perPage && !loading">
