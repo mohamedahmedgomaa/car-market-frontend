@@ -987,7 +987,7 @@ const activeAdvancedFiltersCount = computed(() => {
                   v-model="draft.brandId"
                   :items="filteredBrands"
                   item-value="id"
-                  :item-title="b => t(b.name)"
+                  :item-title="b => _t(b.name)"
                   :custom-filter="customBrandFilter"
                   maxlength="30"
                   :label="t('brand')"
@@ -998,10 +998,10 @@ const activeAdvancedFiltersCount = computed(() => {
                   @update:model-value="draft.modelId = null"
                 >
                   <template #item="{ props, item }">
-                    <VListItem v-bind="props" :title="t(item.raw.name)" />
+                    <VListItem v-bind="props" :title="_t(item.raw.name)" />
                   </template>
                   <template #selection="{ item }">
-                    {{ t(item.raw.name) }}
+                    {{ _t(item.raw.name) }}
                   </template>
                 </VAutocomplete>
 
@@ -1017,10 +1017,10 @@ const activeAdvancedFiltersCount = computed(() => {
                   class="premium-input"
                 >
                   <template #item="{ props, item }">
-                    <VListItem v-bind="props" :title="t(item.raw.name)" />
+                    <VListItem v-bind="props" :title="_t(item.raw.name)" />
                   </template>
                   <template #selection="{ item }">
-                    {{ t(item.raw.name) }}
+                    {{ _t(item.raw.name) }}
                   </template>
                 </VSelect>
               </div>
