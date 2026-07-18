@@ -59,4 +59,31 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+api.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      const url = error.config.url || ""
+      
+      // Determine which auth type failed and redirect accordingly
+      if (url.startsWith("/admin/")) {
+        localStorage.removeItem("admin_token")
+        localStorage.removeItem("admin_data")
+        window.location.href = "/admin/login"
+      } else if (url.startsWith("/seller/")) {
+        localStorage.removeItem("seller_token")
+        localStorage.removeItem("seller_data")
+        window.location.href = "/seller/login"
+      } else {
+        localStorage.removeItem("user_token")
+        localStorage.removeItem("user_data")
+        // window.location.href = "/login" // Uncomment if user login exists
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 export default api

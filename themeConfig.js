@@ -11,7 +11,7 @@ export const { themeConfig, layoutConfig } = defineThemeConfig({
   app: {
     title: import.meta.env.APP_NAME ?? 'NegmCars',
     logo: null,
-    contentWidth: ContentWidth.Boxed,
+    contentWidth: ContentWidth.Fluid,
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetifyV3.lg - 1, // 1 for matching with vuetify breakpoint. Docs: https://next.vuetifyjs.com/en/features/display-and-platform/
     i18n: {
