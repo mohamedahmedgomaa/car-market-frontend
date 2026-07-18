@@ -12,6 +12,9 @@ const props = defineProps({
 })
 
 const { locale } = useI18n({ useScope: 'global' })
+
+// Ensure languages is always a valid array for VList
+const safeLanguages = computed(() => props.languages || [])
 </script>
 
 <template>
@@ -32,7 +35,7 @@ const { locale } = useI18n({ useScope: 'global' })
       >
         <!-- List item -->
         <VListItem
-          v-for="lang in props.languages"
+          v-for="lang in safeLanguages"
           :key="lang.i18nLang"
           :value="lang.i18nLang"
           @click="locale = lang.i18nLang"

@@ -205,14 +205,19 @@ const resetFilters = () => {
 ========================= */
 const brandsList = ref([])
 const modelsList = ref([])
+const isBrandsLoading = ref(true)
 const yearsList = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i)
+
+// Ensure yearsList is always a valid array for VSelect
+const safeYearsList = computed(() => yearsList || [])
 
 // Ensure items are always valid arrays for Vuetify components
 const safeBrandsList = computed(() => brandsList.value || [])
 const safeModelsList = computed(() => modelsList.value || [])
+const safeSlides = computed(() => slides.value || [])
 const yearsToList = computed(() => {
-  if (!filters.value.yearFrom) return yearsList
-  return yearsList
+  if (!filters.value.yearFrom) return yearsList || []
+  return (yearsList || [])
     .filter((y) => y >= filters.value.yearFrom)
     .sort((a, b) => b - a)
 })
@@ -224,12 +229,15 @@ const _t = (val) => {
 }
 
 const fetchBrands = async () => {
+  isBrandsLoading.value = true
   try {
     const res = await brandUserApi.getAll()
     const data = res.data?.data || res.data || []
     brandsList.value = data.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name }))
   } catch (err) {
     console.error('Error fetching brands:', err)
+  } finally {
+    isBrandsLoading.value = false
   }
 }
 
@@ -447,6 +455,7 @@ onBeforeUnmount(() => {
               <!-- Brand & Model -->
               <div class="form-group">
                 <VAutocomplete
+                  v-if="!isBrandsLoading"
                   v-model="filters.brandId"
                   :items="safeBrandsList"
                   item-title="name"
@@ -456,8 +465,14 @@ onBeforeUnmount(() => {
                   density="compact"
                   variant="outlined"
                   hide-details
-                  :custom-filter="customBrandFilter"
                   class="premium-input"
+                  no-data-text="No brands found"
+                />
+                <VSkeletonLoader
+                  v-else
+                  type="text-field"
+                  class="premium-input"
+                  height="44"
                 />
               </div>
 
@@ -475,6 +490,7 @@ onBeforeUnmount(() => {
                   hide-details
                   :disabled="!filters.brandId"
                   class="premium-input"
+                  no-data-text="No models found"
                 />
               </div>
 
@@ -515,7 +531,7 @@ onBeforeUnmount(() => {
               <div class="form-group">
                 <VSelect
                   v-model="filters.yearFrom"
-                  :items="yearsList"
+                  :items="safeYearsList"
                   :label="t('fromYear')"
                   density="compact"
                   variant="outlined"
@@ -606,11 +622,11 @@ onBeforeUnmount(() => {
               <div class="ad-label">AD</div>
               <div class="ad-carousel-wrapper">
                 <Transition name="fade" mode="out-in">
-                  <div v-if="slides.length > 0" :key="slideIndex" class="ad-slide-wrapper">
-                    <a :href="slides[slideIndex].link" target="_blank" class="ad-slide">
+                  <div v-if="safeSlides.length > 0" :key="slideIndex" class="ad-slide-wrapper">
+                    <a :href="safeSlides[slideIndex].link" target="_blank" class="ad-slide">
                       <div
                         class="ad-image animate-ken-burns"
-                        :style="{ backgroundImage: `url(${slides[slideIndex].image})` }"
+                        :style="{ backgroundImage: `url(${safeSlides[slideIndex].image})` }"
                       />
                     </a>
                   </div>
@@ -647,9 +663,9 @@ onBeforeUnmount(() => {
                 </Transition>
 
                 <!-- Indicators -->
-                <div v-if="slides.length > 1" class="carousel-indicators">
+                <div v-if="safeSlides.length > 1" class="carousel-indicators">
                   <span
-                    v-for="(slide, idx) in slides"
+                    v-for="(slide, idx) in safeSlides"
                     :key="idx"
                     class="indicator-dot"
                     :class="{ active: idx === slideIndex }"

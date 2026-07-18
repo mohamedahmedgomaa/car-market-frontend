@@ -11,6 +11,9 @@ const props = defineProps({
 const configStore = useConfigStore()
 const selectedItem = ref([configStore.theme])
 
+// Ensure themes is always a valid array for VList
+const safeThemes = computed(() => props.themes || [])
+
 // Update icon if theme is changed from other sources
 watch(() => configStore.theme, () => {
   selectedItem.value = [configStore.theme]
@@ -19,7 +22,7 @@ watch(() => configStore.theme, () => {
 
 <template>
   <IconBtn color="rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity))">
-    <VIcon :icon="props.themes.find(t => t.name === configStore.theme)?.icon" />
+    <VIcon :icon="safeThemes.find(t => t.name === configStore.theme)?.icon" />
 
     <VTooltip
       activator="parent"
@@ -40,7 +43,7 @@ watch(() => configStore.theme, () => {
         mandatory
       >
         <VListItem
-          v-for="{ name, icon } in props.themes"
+          v-for="{ name, icon } in safeThemes"
           :key="name"
           :value="name"
           :prepend-icon="icon"

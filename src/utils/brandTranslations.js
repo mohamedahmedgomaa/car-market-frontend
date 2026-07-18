@@ -116,5 +116,6 @@ export const matchBrand = (brandObj, queryText) => {
 export const customBrandFilter = (value, queryText, item) => {
   const rawItem = item?.raw
   if (!rawItem) return false
+  if (!queryText) return true
   return matchBrand(rawItem, queryText)
 }

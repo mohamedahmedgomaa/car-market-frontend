@@ -71,6 +71,9 @@ const isLoggedIn = computed(() => {
   return !!localStorage.getItem('user_token')
 })
 
+// Ensure langConfig is always a valid array for VList
+const safeLangConfig = computed(() => themeConfig.app.i18n.langConfig || [])
+
 const logout = async () => {
   const userAuth = useUserAuth()
   await userAuth.logout()
@@ -212,7 +215,7 @@ const logout = async () => {
             <span class="text-subtitle-2 font-weight-medium">{{ t('language') }}:</span>
             <div class="d-flex gap-x-2 mt-2">
               <VBtn
-                v-for="lang in themeConfig.app.i18n.langConfig"
+                v-for="lang in safeLangConfig"
                 :key="lang.i18nLang"
                 size="small"
                 :variant="locale === lang.i18nLang ? 'elevated' : 'tonal'"
@@ -409,7 +412,7 @@ const logout = async () => {
                 {{ t('language') }}
               </div>
               <VListItem
-                v-for="lang in themeConfig.app.i18n.langConfig"
+                v-for="lang in safeLangConfig"
                 :key="lang.i18nLang"
                 :value="lang.i18nLang"
                 :active="locale === lang.i18nLang"
@@ -537,7 +540,7 @@ const logout = async () => {
                 {{ t('language') }}
               </div>
               <VListItem
-                v-for="lang in themeConfig.app.i18n.langConfig"
+                v-for="lang in safeLangConfig"
                 :key="lang.i18nLang"
                 :value="lang.i18nLang"
                 :active="locale === lang.i18nLang"

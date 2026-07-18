@@ -49,7 +49,6 @@ export default {
   },
   VList: {
     color: 'primary',
-    density: 'compact',
     VCheckboxBtn: {
       density: 'compact',
     },
