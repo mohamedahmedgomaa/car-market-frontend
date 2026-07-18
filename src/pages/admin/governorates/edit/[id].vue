@@ -121,7 +121,7 @@ onMounted(() => {
           <VSelect
             v-model="form.country_id"
             :items="countries"
-            :item-title="country => country.name.en"
+            :item-title="country => country.name?.en ?? country.name ?? '-'"
             item-value="id"
             variant="outlined"
             density="comfortable"

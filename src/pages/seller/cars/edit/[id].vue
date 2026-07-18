@@ -3,13 +3,12 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 import carSellerApi from '../../../../api/seller/carSellerApi.js'
-import sellerAdminApi from '../../../../api/admin/sellerAdminApi.js'
-import brandAdminApi from '../../../../api/admin/brandAdminApi.js'
-import modelAdminApi from '../../../../api/admin/modelAdminApi.js'
-import featureAdminApi from '../../../../api/admin/carFeatureAdminApi.js'
-import countryAdminApi from '../../../../api/admin/countryAdminApi.js'
+import brandUserApi from '../../../../api/user/brandUserApi.js'
+import modelUserApi from '../../../../api/user/modelUserApi.js'
+import carFeatureUserApi from '../../../../api/user/carFeatureUserApi.js'
+import countryUserApi from '../../../../api/user/countryUserApi.js'
 import governorateUserApi from '../../../../api/user/governorateUserApi.js'
-import cityAdminApi from '../../../../api/admin/cityAdminApi.js'
+import cityUserApi from '../../../../api/user/cityUserApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
 
 const router = useRouter()
@@ -67,6 +66,7 @@ const newImagePreviews = ref([]) // [{file, url, index}]
  * - new: { type: 'new', index: number }
  */
 const mainSelection = ref(null)
+const carSellerName = ref('')
 
 const sellers = ref([])
 const brands = ref([])
@@ -737,8 +737,12 @@ const loadModels = async (keepCurrent = false) => {
   }
 
   const current = form.value.model_id
-  const res = await modelAdminApi.getAll({ 'filter[brand_id]': form.value.brand_id })
-  models.value = res.data.data || []
+  try {
+    const res = await modelUserApi.getAll({ 'filter[brand_id]': form.value.brand_id })
+    models.value = res.data.data || []
+  } catch (err) {
+    console.error('Failed to load models:', err)
+  }
 
   // ✅ لو بنحمّل للـ edit: سيب القيمة القديمة لو موجودة في الليست
   if (keepCurrent && current) {
@@ -760,8 +764,12 @@ const loadGovernorates = async (keepCurrent = false) => {
   }
 
   const current = form.value.governorate_id
-  const res = await governorateUserApi.getAll({ 'filter[country_id]': form.value.country_id })
-  governorates.value = res.data.data || []
+  try {
+    const res = await governorateUserApi.getAll({ 'filter[country_id]': form.value.country_id })
+    governorates.value = res.data.data || []
+  } catch (err) {
+    console.error('Failed to load governorates:', err)
+  }
 
   if (keepCurrent && current) {
     const exists = governorates.value.some(g => g.id === current)
@@ -782,8 +790,12 @@ const loadCities = async (keepCurrent = false) => {
   }
 
   const current = form.value.city_id
-  const res = await cityAdminApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
-  cities.value = res.data.data || []
+  try {
+    const res = await cityUserApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
+    cities.value = res.data.data || []
+  } catch (err) {
+    console.error('Failed to load cities:', err)
+  }
 
   if (keepCurrent && current) {
     const exists = cities.value.some(c => c.id === current)
@@ -900,6 +912,7 @@ const handleColorInput = (evt) => {
 const loadCar = async () => {
   const res = await carSellerApi.getById(carId)
   const car = res.data.data
+  carSellerName.value = car.seller?.name || ''
 
   // ✅ set base ids first
   form.value.seller_id = car.seller_id
@@ -967,22 +980,21 @@ const loadCar = async () => {
 onMounted(async () => {
   loading.value = true
   try {
-    const [sellersRes, brandsRes, featuresRes, countriesRes] = await Promise.all([
-      sellerAdminApi.getAll(),
-      brandAdminApi.getAll(),
-      featureAdminApi.getAll(),
-      countryAdminApi.getAll(),
+    const [brandsRes, featuresRes, countriesRes] = await Promise.all([
+      brandUserApi.getAll(),
+      carFeatureUserApi.getAll(),
+      countryUserApi.getAll(),
     ])
 
-    sellers.value = sellersRes.data.data || []
     brands.value = brandsRes.data.data || []
     features.value = featuresRes.data.data || []
     countries.value = countriesRes.data.data || []
 
-    // بعد ما features جهزت
     normalizeFeaturesSelection()
 
     await loadCar()
+  } catch (err) {
+    console.error('Failed to load edit form data:', err)
   } finally {
     loading.value = false
   }
@@ -1129,18 +1141,12 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12">
-              <VSelect
-                ref="refSeller"
-                v-model="form.seller_id"
-                :items="sellers"
-                item-title="name"
-                item-value="id"
+              <VTextField
+                v-model="carSellerName"
                 label="Seller"
                 prepend-inner-icon="tabler-user"
                 variant="outlined"
-                :error="!!fieldError('seller_id').length"
-                :error-messages="fieldError('seller_id')"
-                @update:modelValue="focusNext(refBrand.value)"
+                disabled
               />
             </VCol>
 

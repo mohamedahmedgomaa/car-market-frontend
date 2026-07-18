@@ -98,7 +98,7 @@ const handleSubmit = async () => {
           <VSelect
             v-model="form.brand_id"
             :items="brands"
-            :item-title="brand => brand.name.en"
+            :item-title="brand => brand.name?.en ?? brand.name ?? '-'"
             item-value="id"
             variant="outlined"
             density="comfortable"

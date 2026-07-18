@@ -822,14 +822,20 @@ onMounted(async () => {
 })
 
 /* ================= Loaders ================= */
+const safeItemTitle = (obj) => obj?.name?.en ?? obj?.name ?? '-'
+
 const loadModels = async () => {
   form.value.model_id = null
   if (!form.value.brand_id) return
 
-  const res = await modelAdminApi.getAll({ 'filter[brand_id]': form.value.brand_id })
-  models.value = res.data.data
-  if (models.value.length > 0) {
-    focusNext(refModel.value)
+  try {
+    const res = await modelAdminApi.getAll({ 'filter[brand_id]': form.value.brand_id })
+    models.value = res.data.data || []
+    if (models.value.length > 0) {
+      focusNext(refModel.value)
+    }
+  } catch (err) {
+    console.error('Failed to load models:', err)
   }
 }
 
@@ -840,10 +846,14 @@ const loadGovernorates = async () => {
   cities.value = []
   if (!form.value.country_id) return
 
-  const res = await governorateAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
-  governorates.value = res.data.data
-  if (governorates.value.length > 0) {
-    focusNext(refGovernorate.value)
+  try {
+    const res = await governorateAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
+    governorates.value = res.data.data || []
+    if (governorates.value.length > 0) {
+      focusNext(refGovernorate.value)
+    }
+  } catch (err) {
+    console.error('Failed to load governorates:', err)
   }
 }
 
@@ -852,10 +862,14 @@ const loadCities = async () => {
   cities.value = []
   if (!form.value.governorate_id) return
 
-  const res = await cityAdminApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
-  cities.value = res.data.data
-  if (cities.value.length > 0) {
-    focusNext(refCity.value)
+  try {
+    const res = await cityAdminApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
+    cities.value = res.data.data || []
+    if (cities.value.length > 0) {
+      focusNext(refCity.value)
+    }
+  } catch (err) {
+    console.error('Failed to load cities:', err)
   }
 }
 
@@ -1083,7 +1097,7 @@ const handleSubmit = async () => {
                 ref="refBrand"
                 v-model="form.brand_id"
                 :items="brands"
-                :item-title="b => b.name?.en ?? b.name ?? '-'"
+                :item-title="b => safeItemTitle(b)"
                 item-value="id"
                 label="Brand"
                 prepend-inner-icon="tabler-building-factory"
@@ -1100,7 +1114,7 @@ const handleSubmit = async () => {
                 ref="refModel"
                 v-model="form.model_id"
                 :items="models"
-                :item-title="m => m.name?.en ?? m.name ?? '-'"
+                :item-title="m => safeItemTitle(m)"
                 item-value="id"
                 label="Model"
                 prepend-inner-icon="tabler-car"
@@ -1123,7 +1137,7 @@ const handleSubmit = async () => {
                 ref="refCountry"
                 v-model="form.country_id"
                 :items="countries"
-                :item-title="c => c.name.en"
+                :item-title="c => safeItemTitle(c)"
                 item-value="id"
                 label="Country"
                 prepend-inner-icon="tabler-world"
@@ -1139,7 +1153,7 @@ const handleSubmit = async () => {
                 ref="refGovernorate"
                 v-model="form.governorate_id"
                 :items="governorates"
-                :item-title="g => g.name.en"
+                :item-title="g => safeItemTitle(g)"
                 item-value="id"
                 label="Governorate"
                 prepend-inner-icon="tabler-map"
@@ -1155,7 +1169,7 @@ const handleSubmit = async () => {
                 ref="refCity"
                 v-model="form.city_id"
                 :items="cities"
-                :item-title="c => c.name.en"
+                :item-title="c => safeItemTitle(c)"
                 item-value="id"
                 label="City"
                 prepend-inner-icon="tabler-map-pin"

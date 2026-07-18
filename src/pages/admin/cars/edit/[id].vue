@@ -817,8 +817,12 @@ const loadModels = async (keepCurrent = false) => {
   }
 
   const current = form.value.model_id
-  const res = await modelAdminApi.getAll({ 'filter[brand_id]': form.value.brand_id })
-  models.value = res.data.data || []
+  try {
+    const res = await modelAdminApi.getAll({ 'filter[brand_id]': form.value.brand_id })
+    models.value = res.data.data || []
+  } catch (err) {
+    console.error('Failed to load models:', err)
+  }
 
   // ✅ لو بنحمّل للـ edit: سيب القيمة القديمة لو موجودة في الليست
   if (keepCurrent && current) {
@@ -840,8 +844,12 @@ const loadGovernorates = async (keepCurrent = false) => {
   }
 
   const current = form.value.governorate_id
-  const res = await governorateAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
-  governorates.value = res.data.data || []
+  try {
+    const res = await governorateAdminApi.getAll({ 'filter[country_id]': form.value.country_id })
+    governorates.value = res.data.data || []
+  } catch (err) {
+    console.error('Failed to load governorates:', err)
+  }
 
   if (keepCurrent && current) {
     const exists = governorates.value.some(g => g.id === current)
@@ -862,8 +870,12 @@ const loadCities = async (keepCurrent = false) => {
   }
 
   const current = form.value.city_id
-  const res = await cityAdminApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
-  cities.value = res.data.data || []
+  try {
+    const res = await cityAdminApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
+    cities.value = res.data.data || []
+  } catch (err) {
+    console.error('Failed to load cities:', err)
+  }
 
   if (keepCurrent && current) {
     const exists = cities.value.some(c => c.id === current)

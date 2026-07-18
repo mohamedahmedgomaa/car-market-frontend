@@ -4,14 +4,16 @@ export function setupGuards(router) {
     const sellerToken = localStorage.getItem('seller_token')
     const userToken   = localStorage.getItem('user_token')
 
-    // ✅ لو الصفحة public خلّص
-    if (to.meta?.public) return next()
+    // ✅ Robust check if any matched route in the hierarchy is public
+    const isPublic = to.matched.some(record => record.meta?.public)
+    if (isPublic) return next()
 
     // -------------------
     // Admin area
     // -------------------
     if (to.path.startsWith('/admin')) {
-      if (to.meta?.unauthenticatedOnly) {
+      const isUnauthOnly = to.matched.some(record => record.meta?.unauthenticatedOnly)
+      if (isUnauthOnly) {
         return adminToken ? next('/admin/dashboard') : next()
       }
 
@@ -23,7 +25,8 @@ export function setupGuards(router) {
     // Seller area
     // -------------------
     if (to.path.startsWith('/seller')) {
-      if (to.meta?.unauthenticatedOnly) {
+      const isUnauthOnly = to.matched.some(record => record.meta?.unauthenticatedOnly)
+      if (isUnauthOnly) {
         return sellerToken ? next('/seller/dashboard') : next()
       }
 
@@ -36,7 +39,8 @@ export function setupGuards(router) {
     // -------------------
     const isUserArea = to.path.startsWith('/user') || to.path === '/login'
     if (isUserArea) {
-      if (to.meta?.unauthenticatedOnly) {
+      const isUnauthOnly = to.matched.some(record => record.meta?.unauthenticatedOnly)
+      if (isUnauthOnly) {
         // لو لوجين بالفعل امنعه من login/register
         return userToken ? next('/') : next()
       }
@@ -49,3 +53,4 @@ export function setupGuards(router) {
     next()
   })
 }
+
