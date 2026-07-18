@@ -797,7 +797,7 @@ onMounted(async () => {
   loading.value = true
   try {
     const results = await Promise.allSettled([
-      sellerAdminApi.getAll(),
+      sellerAdminApi.getAll({ sort: '-sort_order' }),
       brandAdminApi.getAll(),
       featureAdminApi.getAll(),
       countryAdminApi.getAll()
