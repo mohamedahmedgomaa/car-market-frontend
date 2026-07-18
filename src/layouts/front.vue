@@ -14,7 +14,7 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
     <main style="margin-top: 90px">
       <RouterView v-slot="{ Component }">
         <!-- نخلي الصفحة تبعت للـ Layout الـ activeSectionId -->
-        <Component :is="Component" v-model:activeSectionId="activeSectionId" />
+        <Component :is="Component" v-if="Component" v-model:activeSectionId="activeSectionId" />
       </RouterView>
     </main>
 
