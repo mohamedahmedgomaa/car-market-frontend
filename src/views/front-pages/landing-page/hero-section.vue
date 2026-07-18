@@ -206,6 +206,10 @@ const resetFilters = () => {
 const brandsList = ref([])
 const modelsList = ref([])
 const yearsList = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i)
+
+// Ensure items are always valid arrays for Vuetify components
+const safeBrandsList = computed(() => brandsList.value || [])
+const safeModelsList = computed(() => modelsList.value || [])
 const yearsToList = computed(() => {
   if (!filters.value.yearFrom) return yearsList
   return yearsList
@@ -444,7 +448,7 @@ onBeforeUnmount(() => {
               <div class="form-group">
                 <VAutocomplete
                   v-model="filters.brandId"
-                  :items="brandsList"
+                  :items="safeBrandsList"
                   item-title="name"
                   item-value="id"
                   maxlength="30"
@@ -462,7 +466,7 @@ onBeforeUnmount(() => {
                   ref="modelSelect"
                   v-model="filters.modelId"
                   v-model:menu="isModelMenuOpen"
-                  :items="modelsList"
+                  :items="safeModelsList"
                   item-title="name"
                   item-value="id"
                   :label="t('selectModel')"
