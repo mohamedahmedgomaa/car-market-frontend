@@ -25,6 +25,7 @@ const seller = ref({
   address_en: '',
   map_url: '',
   sort_order: 0,
+  tier: 'none',
 })
 
 const loading = ref(false)
@@ -102,6 +103,7 @@ const fetchSeller = async () => {
     seller.value.address_en = data.address?.en || ''
     seller.value.map_url = data.map_url || ''
     seller.value.sort_order = data.sort_order || 0
+    seller.value.tier = data.tier || 'none'
 
     if (seller.value.governorate_id) {
       filteredCities.value = cities.value.filter(c => c.governorate_id === seller.value.governorate_id)
@@ -425,6 +427,26 @@ onMounted(async () => {
             hide-details="auto"
             :error="!!errors.sort_order"
             :error-messages="errors.sort_order"
+          />
+        </div>
+
+        <!-- Showroom Tier / الباقة -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Showroom Tier / الباقة</label>
+          <VSelect
+            v-model="seller.tier"
+            :items="[
+              { title: 'Normal / عادي', value: 'none' },
+              { title: 'Silver Partner / شريك سيلفر', value: 'silver' },
+              { title: 'Gold Partner / شريك جولد', value: 'gold' },
+              { title: 'Platinum Co-Founder / شريك بلاتينيوم مؤسس', value: 'platinum' }
+            ]"
+            item-title="title"
+            item-value="value"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            prepend-inner-icon="tabler-medal"
           />
         </div>
 

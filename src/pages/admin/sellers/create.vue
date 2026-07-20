@@ -26,6 +26,7 @@ const form = ref({
   address_en: '',
   map_url: '',
   sort_order: 0,
+  tier: 'none',
 })
 
 const loading = ref(false)
@@ -385,6 +386,26 @@ onMounted(async () => {
             hide-details="auto"
             :error="!!errors.sort_order"
             :error-messages="errors.sort_order"
+          />
+        </div>
+
+        <!-- Showroom Tier / الباقة -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Showroom Tier / الباقة</label>
+          <VSelect
+            v-model="form.tier"
+            :items="[
+              { title: 'Normal / عادي', value: 'none' },
+              { title: 'Silver Partner / شريك سيلفر', value: 'silver' },
+              { title: 'Gold Partner / شريك جولد', value: 'gold' },
+              { title: 'Platinum Co-Founder / شريك بلاتينيوم مؤسس', value: 'platinum' }
+            ]"
+            item-title="title"
+            item-value="value"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            prepend-inner-icon="tabler-medal"
           />
         </div>
 

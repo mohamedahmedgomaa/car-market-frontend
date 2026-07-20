@@ -29,6 +29,42 @@ const featuredCarsCount = computed(() => sellerCars.value.filter(c => c.is_featu
 const bestDealCarsCount = computed(() => sellerCars.value.filter(c => c.is_best_deal).length)
 const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length)
 
+// 🔥 Brand Filtering Logic
+const selectedBrandId = ref(null)
+const uniqueBrands = computed(() => {
+  const brandsMap = new Map()
+  sellerCars.value.forEach(car => {
+    if (car.brand) {
+      brandsMap.set(car.brand.id, car.brand)
+    }
+  })
+  return Array.from(brandsMap.values())
+})
+
+const carParams = computed(() => {
+  const params = {
+    sort: '-created_at',
+    'filter[status]': 'approved',
+    'filter[seller_id]': seller.value?.id,
+  }
+  if (selectedBrandId.value) {
+    params['filter[brand_id]'] = selectedBrandId.value
+  }
+  return params
+})
+
+const carViewAllPath = computed(() => {
+  return {
+    path: '/user/cars',
+    query: {
+      sort: '-created_at',
+      'filter[status]': 'approved',
+      'filter[seller_id]': seller.value?.id,
+      ...(selectedBrandId.value ? { 'filter[brand_id]': selectedBrandId.value } : {})
+    }
+  }
+})
+
 const fetchSeller = async () => {
   loading.value = true
   error.value = ''
@@ -102,11 +138,34 @@ onMounted(fetchSeller)
               <div class="showroom-info flex-grow-1">
                 <div class="d-flex flex-column flex-md-row align-center align-md-start justify-space-between gap-4">
                   <div class="flex-grow-1 w-100 text-center text-md-start">
-                    <div class="d-flex align-center justify-center justify-md-start gap-2 mb-1">
+                    <div class="d-flex align-center justify-center justify-md-start gap-2 mb-1 flex-wrap">
                       <h1 class="text-h3 font-weight-black text-white mb-0">
                         {{ t(seller.store_name) || seller.name }}
                       </h1>
-                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" color="success" size="32" class="ms-1" />
+                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" color="success" size="32" class="ms-1" v-tooltip="'Verified Showroom'" />
+                      
+                      <!-- Tier Badge -->
+                      <VChip
+                        v-if="seller.tier && seller.tier !== 'none'"
+                        size="small"
+                        :color="seller.tier === 'silver' ? 'grey-lighten-1' : seller.tier === 'gold' ? 'warning' : 'blue-darken-1'"
+                        class="ms-2 font-weight-bold text-uppercase elevation-2"
+                        prepend-icon="tabler-medal"
+                      >
+                        {{ seller.tier === 'silver' ? 'Silver Partner' : seller.tier === 'gold' ? 'Gold Partner' : 'Platinum Co-Founder' }}
+                      </VChip>
+                    </div>
+
+                    <!-- Reviews / Ratings (Placeholder) -->
+                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2">
+                      <div class="d-flex align-center text-amber-accent-4">
+                        <VIcon icon="tabler-star-filled" size="18" />
+                        <VIcon icon="tabler-star-filled" size="18" />
+                        <VIcon icon="tabler-star-filled" size="18" />
+                        <VIcon icon="tabler-star-filled" size="18" />
+                        <VIcon icon="tabler-star-half-filled" size="18" />
+                      </div>
+                      <span class="text-subtitle-2 text-white-50 font-weight-medium ms-2">4.8 (124 Reviews)</span>
                     </div>
 
                     <!-- City & Location line -->
@@ -317,23 +376,44 @@ onMounted(fetchSeller)
 
         <!-- Showroom Cars Section -->
         <div class="inventory-section animate-fade-in-up" style="animation-delay: 0.3s">
+          <!-- Brands Filter -->
+          <div v-if="uniqueBrands.length > 0" class="brands-filter-container mb-6 d-flex align-center gap-3 overflow-x-auto pb-2">
+            <span class="text-subtitle-1 font-weight-bold text-white-50 text-no-wrap">Filter by Brand:</span>
+            
+            <VChip
+              class="font-weight-bold brand-chip"
+              :variant="selectedBrandId === null ? 'elevated' : 'tonal'"
+              :color="selectedBrandId === null ? 'primary' : 'grey-lighten-2'"
+              size="large"
+              @click="selectedBrandId = null"
+            >
+              All Brands
+            </VChip>
+
+            <VChip
+              v-for="brand in uniqueBrands"
+              :key="brand.id"
+              class="font-weight-bold brand-chip"
+              :variant="selectedBrandId === brand.id ? 'elevated' : 'tonal'"
+              :color="selectedBrandId === brand.id ? 'primary' : 'grey-lighten-2'"
+              size="large"
+              @click="selectedBrandId = brand.id"
+            >
+              <!-- Show brand logo if exists -->
+              <VAvatar start v-if="brand.logo" size="24" class="me-1">
+                <img :src="brand.logo" alt="brand" />
+              </VAvatar>
+              {{ t(brand.name) }}
+            </VChip>
+          </div>
+
           <CarsSection
             :title="`Available Listings at ${t(seller.store_name) || seller.name}`"
             subtitle="Browse all verified high-quality vehicles offered by this showroom"
             :limit="20"
-            :params="{
-              sort: '-created_at',
-              'filter[status]': 'approved',
-              'filter[seller_id]': seller.id,
-            }"
-            :viewAllTo="{
-              path: '/user/cars',
-              query: {
-                sort: '-created_at',
-                'filter[status]': 'approved',
-                'filter[seller_id]': seller.id,
-              }
-            }"
+            :params="carParams"
+            :viewAllTo="carViewAllPath"
+            :key="selectedBrandId"
           />
         </div>
 
@@ -570,6 +650,26 @@ onMounted(fetchSeller)
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+/* Brand Filter */
+.brands-filter-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-primary), 0.5) transparent;
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--v-theme-primary), 0.5);
+    border-radius: 4px;
+  }
+}
+
+.brand-chip {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-2px);
   }
 }
 </style>
