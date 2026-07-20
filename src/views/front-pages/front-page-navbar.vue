@@ -321,10 +321,8 @@ const logout = async () => {
           </RouterLink>
         </VAppBarTitle>
 
-        <VSpacer class="d-none d-md-block" />
-
         <!-- ✅ Links (Desktop) -->
-        <div class="text-base align-center d-none d-md-flex justify-center" style="gap: 1.5rem; flex: 1 1 auto;">
+        <div class="text-base align-center d-none d-md-flex mx-8" style="gap: 1.5rem; flex: 1 1 auto; overflow-x: auto;">
           <RouterLink
             to="/user/cars"
             class="nav-link font-weight-bold"
