@@ -1122,7 +1122,7 @@ watch(
                   </div>
                   <VIcon 
                     icon="tabler-discount-check-filled" 
-                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#E5E4E2' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#FFD700' : 'success')" 
+                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#78909C' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : 'success')" 
                     size="22" 
                     title="Verified Dealer" 
                   />
@@ -1206,7 +1206,7 @@ watch(
             v-if="adSlides.length > 0"
             style="
               background: rgba(var(--v-theme-surface), 0.3);
-              border: 1px solid rgba(255, 255, 255, 0.1);
+              border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
             "
           >
             <div class="ad-label-tag">AD</div>
@@ -1227,7 +1227,7 @@ watch(
             class="pa-5 text-center rounded-xl metadata-card mb-4"
             style="
               background: rgba(var(--v-theme-surface), 0.5);
-              border: 1px solid rgba(255, 255, 255, 0.1);
+              border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
             "
           >
             <div class="d-flex flex-column gap-3">
@@ -1571,8 +1571,8 @@ watch(
 }
 
 .spec-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   border-radius: 16px;
   padding: 20px;
   text-align: center;
@@ -1580,7 +1580,7 @@ watch(
 }
 
 .spec-card:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--v-theme-on-surface), 0.06);
   transform: translateY(-4px);
 }
 
@@ -1589,7 +1589,7 @@ watch(
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  opacity: 0.5;
+  color: rgba(var(--v-theme-on-surface), 0.7);
   margin-bottom: 4px;
 }
 
@@ -1612,7 +1612,8 @@ watch(
 }
 
 .feature-item {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
   padding: 12px 16px;
   border-radius: 12px;
   font-size: 14px;
@@ -1633,13 +1634,7 @@ watch(
   }
 }
 
-.seller-card {
-  background-color: #25293c !important;
-  opacity: 1 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
-}
+
 
 /* Cylinders Graphic Visual Container */
 .cylinders-graphic-container {
@@ -1855,50 +1850,50 @@ watch(
   transition: all 0.3s ease;
 
   &.seller-card-gold {
-    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(255, 215, 0, 0.08)) !important;
-    border: 1px solid rgba(255, 215, 0, 0.4) !important;
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(218, 165, 32, 0.15)) !important;
+    border: 1px solid rgba(218, 165, 32, 0.8) !important;
     border-bottom: none !important;
-    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.15) !important;
+    box-shadow: 0 12px 30px rgba(218, 165, 32, 0.25) !important;
     
     &::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 4px;
-      background: linear-gradient(90deg, #DAA520, #FFD700, #FFF8DC, #FFD700, #DAA520);
+      background: linear-gradient(90deg, #B8860B, #FFD700, #FFF8DC, #FFD700, #B8860B);
       z-index: 10;
     }
   }
 
   &.seller-card-platinum {
-    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(229, 228, 226, 0.1)) !important;
-    border: 1px solid rgba(229, 228, 226, 0.5) !important;
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(69, 90, 100, 0.15)) !important;
+    border: 1px solid rgba(69, 90, 100, 0.6) !important;
     border-bottom: none !important;
-    box-shadow: 0 12px 30px rgba(229, 228, 226, 0.15) !important;
+    box-shadow: 0 12px 30px rgba(69, 90, 100, 0.25) !important;
     
     &::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 4px;
-      background: linear-gradient(90deg, #9E9E9E, #E5E4E2, #FFFFFF, #E5E4E2, #9E9E9E);
+      background: linear-gradient(90deg, #37474F, #78909C, #CFD8DC, #78909C, #37474F);
       z-index: 10;
     }
   }
 }
 
 .tier-badge-platinum {
-  background: linear-gradient(135deg, #B0BEC5 0%, #E5E4E2 50%, #FFFFFF 100%);
-  color: #263238 !important;
-  box-shadow: 0 4px 15px rgba(229, 228, 226, 0.4);
-  border: 1px solid #FFFFFF;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, #455A64 0%, #78909C 50%, #B0BEC5 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .tier-badge-gold {
   background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #FFF8DC 100%);
   color: #3E2723 !important;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(218, 165, 32, 0.5);
   border: 1px solid #FFF8DC;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
