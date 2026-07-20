@@ -672,7 +672,7 @@ watch(
             </div>
 
             <button class="fav-float" type="button" @click.prevent.stop="toggleFavorite">
-              <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="22" />
+              <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="22" :color="isFav ? 'error' : undefined" />
               <span class="fav-count">{{ car.favorites_count ?? 0 }}</span>
             </button>
           </div>

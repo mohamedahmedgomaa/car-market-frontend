@@ -319,7 +319,7 @@ watch(
               :aria-label="isFav(car) ? 'Remove from favorites' : 'Add to favorites'"
               @click.prevent.stop="toggleFavorite(car)"
             >
-              <VIcon :icon="isFav(car) ? 'tabler-heart-filled' : 'tabler-heart'" size="20" />
+              <VIcon :icon="isFav(car) ? 'tabler-heart-filled' : 'tabler-heart'" size="20" :color="isFav(car) ? 'error' : undefined" />
             </button>
           </div>
 
@@ -331,7 +331,7 @@ watch(
               :aria-label="isFav(car) ? 'Remove from favorites' : 'Add to favorites'"
               @click.prevent.stop="toggleFavorite(car)"
             >
-              <VIcon :icon="isFav(car) ? 'tabler-heart-filled' : 'tabler-heart'" size="20" />
+              <VIcon :icon="isFav(car) ? 'tabler-heart-filled' : 'tabler-heart'" size="20" :color="isFav(car) ? 'error' : undefined" />
             </button>
           </div>
 
@@ -355,15 +355,15 @@ watch(
               </div>
 
               <!-- ✅ Year & Condition -->
-              <div class="car-card__info mb-2 opacity-80">
+              <div class="car-card__info mb-2 opacity-100">
                 <span>{{ car.year }}</span>
                 <span class="mx-2">|</span>
-                <span class="text-primary">
+                <span>
                   {{ car.condition === 'new' ? t('newCondition') : t('usedCondition') }}
                 </span>
                 <template v-if="car.condition === 'used' && car.mileage">
                   <span class="mx-2">|</span>
-                  <span class="text-primary">{{ Number(car.mileage).toLocaleString() }}</span>
+                  <span>{{ Number(car.mileage).toLocaleString() }}</span>
                 </template>
               </div>
             </div>
@@ -379,20 +379,28 @@ watch(
               </div>
 
               <div class="d-flex align-center" style="font-size: 12px">
-                <span class="text-truncate font-weight-bold text-primary" style="max-width: 95px">
+                <span 
+                  class="text-truncate font-weight-bold" 
+                  :class="{
+                    'text-gold': car.seller?.tier?.toLowerCase() === 'gold',
+                    'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
+                    'text-silver': !car.seller?.tier || car.seller?.tier?.toLowerCase() === 'silver'
+                  }"
+                  style="max-width: 95px"
+                >
                   {{ getSellerName(car) }}
                 </span>
               </div>
             </div>
 
             <!-- ✅ Location & Time -->
-            <div class="car-card__footer pt-2 border-t opacity-70">
-              <div class="car-card__location d-flex align-center">
+            <div class="car-card__footer pt-2 border-t opacity-100">
+              <div class="car-card__location d-flex align-center font-weight-medium">
                 <VIcon icon="tabler-map-pin" size="14" class="me-1" />
                 <span>{{ _t(car.city?.name) || 'Cairo' }}</span>
               </div>
 
-              <div class="car-card__date d-flex align-center">
+              <div class="car-card__date d-flex align-center font-weight-medium">
                 <VIcon icon="tabler-clock" size="14" class="me-1" />
                 <span>{{ formatDateTime(car.created_at) }}</span>
               </div>
@@ -501,7 +509,7 @@ watch(
 }
 .v-theme--light .car-card__location,
 .v-theme--light .car-card__date {
-  color: rgba(47, 43, 61, 0.6) !important;
+  color: rgba(47, 43, 61, 0.9) !important;
 }
 .v-theme--light .border-t {
   border-top-color: rgba(0, 0, 0, 0.08) !important;
@@ -527,7 +535,7 @@ watch(
 }
 .v-theme--dark .car-card__location,
 .v-theme--dark .car-card__date {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 .v-theme--dark .border-t {
   border-top-color: rgba(255, 255, 255, 0.08) !important;
@@ -641,7 +649,6 @@ watch(
   display: flex;
   align-items: center;
   font-size: 11px;
-  opacity: 0.6;
 }
 
 /* ✅ footer: price + date */
@@ -664,7 +671,6 @@ watch(
   display: flex;
   align-items: center;
   gap: 6px;
-  opacity: 0.6;
   font-size: 11px;
   white-space: nowrap;
 }
@@ -751,4 +757,9 @@ watch(
   box-shadow: 0 4px 12px rgba(255, 159, 67, 0.4);
   color: #fff;
 }
+
+.text-gold { color: #D4AF37 !important; }
+.text-platinum { color: #455A64 !important; }
+.v-theme--dark .text-platinum { color: #B0BEC5 !important; }
+.text-silver { color: #9E9E9E !important; }
 </style>
