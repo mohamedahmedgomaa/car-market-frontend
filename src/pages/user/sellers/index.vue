@@ -876,12 +876,12 @@ onMounted(() => {
   border-radius: 20px;
   padding: 12px 18px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 35px rgba(var(--v-theme-on-surface), 0.1);
 }
 
 .premium-horizontal-search:hover {
   border-color: rgba(var(--v-theme-primary), 0.15);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 45px rgba(var(--v-theme-on-surface), 0.15);
 }
 
 .search-main-row {
@@ -922,7 +922,7 @@ onMounted(() => {
 /* Integrated Outlined Cohesion for all Vuetify 3 inputs */
 .premium-input-field :deep(.v-field) {
   border-radius: 12px !important;
-  background: rgba(0, 0, 0, 0.3) !important;
+  background: rgba(var(--v-theme-on-surface), 0.05) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   height: 44px !important;
   display: flex;
@@ -936,7 +936,7 @@ onMounted(() => {
 }
 
 .premium-input-field :deep(.v-field:hover .v-field__outline) {
-  color: rgba(255, 255, 255, 0.2) !important;
+  color: rgba(var(--v-theme-on-surface), 0.2) !important;
 }
 
 .premium-input-field :deep(.v-field--focused .v-field__outline) {

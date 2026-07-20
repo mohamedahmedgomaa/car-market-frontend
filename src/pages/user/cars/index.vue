@@ -1288,12 +1288,12 @@ const activeAdvancedFiltersCount = computed(() => {
   padding: 20px 24px;
   margin-bottom: 30px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 35px rgba(var(--v-theme-on-surface), 0.1);
 }
 
 .premium-horizontal-search:hover {
   border-color: rgba(var(--v-theme-primary), 0.15);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 45px rgba(var(--v-theme-on-surface), 0.15);
 }
 
 .search-main-row {
