@@ -29,6 +29,13 @@ const featuredCarsCount = computed(() => sellerCars.value.filter(c => c.is_featu
 const bestDealCarsCount = computed(() => sellerCars.value.filter(c => c.is_best_deal).length)
 const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length)
 
+const verifiedBadgeColor = computed(() => {
+  if (seller.value?.tier === 'gold') return 'warning' // Gold
+  if (seller.value?.tier === 'silver') return 'grey-lighten-1' // Silver
+  if (seller.value?.tier === 'platinum') return 'blue-darken-1' // Platinum
+  return 'info' // Normal verified (blue)
+})
+
 // 🔥 Brand Filtering Logic
 const selectedBrandId = ref(null)
 const uniqueBrands = computed(() => {
@@ -142,7 +149,8 @@ onMounted(fetchSeller)
                       <h1 class="text-h3 font-weight-black text-high-emphasis mb-0">
                         {{ t(seller.store_name) || seller.name }}
                       </h1>
-                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" color="success" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
+                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" :color="verifiedBadgeColor" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
+
                       
                       <!-- Tier Badge -->
                       <VChip

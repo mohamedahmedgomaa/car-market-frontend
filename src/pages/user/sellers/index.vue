@@ -504,7 +504,7 @@ onMounted(() => {
                         </h3>
                         <VIcon 
                           icon="tabler-discount-check-filled" 
-                          :color="seller.tier?.toLowerCase() === 'platinum' ? '#78909C' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#B0BEC5' : 'success'))" 
+                          :color="seller.tier?.toLowerCase() === 'gold' ? 'warning' : (seller.tier?.toLowerCase() === 'silver' ? 'grey-lighten-1' : (seller.tier?.toLowerCase() === 'platinum' ? 'blue-darken-1' : 'info'))" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
                           class="flex-shrink-0"

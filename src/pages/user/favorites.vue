@@ -62,8 +62,8 @@ onMounted(async () => {
               <VIcon icon="tabler-heart-filled" color="error" size="32" />
             </div>
           </div>
-          <h1 class="text-h2 font-weight-black text-white mb-4">
-            My <span class="text-primary-gradient">Favorites</span>
+          <h1 class="text-h4 font-weight-black text-high-emphasis mb-4">
+            My <span class="text-primary">Favorites</span>
           </h1>
           <p class="text-h6 opacity-70 max-w-600 mx-auto">
             All the vehicles you've saved for later. Keep track of your dream cars in one place.
@@ -141,11 +141,6 @@ onMounted(async () => {
   backdrop-filter: blur(10px);
 }
 
-.text-primary-gradient {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1), #64ffda);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 
 .max-w-600 {
   max-width: 600px;
@@ -187,8 +182,8 @@ onMounted(async () => {
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
-  .text-h2 {
-    font-size: 2.5rem !important;
+  .text-h4 {
+    font-size: 1.75rem !important;
   }
 }
 </style>
