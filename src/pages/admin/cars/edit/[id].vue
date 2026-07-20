@@ -308,7 +308,8 @@ const handleParseSpecs = async () => {
     { field: 'brand_id', synonyms: ['brand', 'الماركة', 'الشركة', 'ماركة', 'شركة'] },
     { field: 'model_id', synonyms: ['model', 'الموديل', 'موديل', 'طراز'] },
     { field: 'country_id', synonyms: ['country', 'البلد', 'الدولة', 'بلد', 'دولة'] },
-    { field: 'city_id', synonyms: ['city', 'المدينة', 'مدينة', 'المحافظة'] },
+    { field: 'governorate_id', synonyms: ['governorate', 'المحافظة', 'محافظة', 'منطقة'] },
+    { field: 'city_id', synonyms: ['city', 'المدينة', 'مدينة'] },
     { field: 'title_ar', synonyms: ['title arabic', 'title ar', 'العنوان العربي', 'الاسم العربي', 'عنوان عربي'] },
     { field: 'title_en', synonyms: ['title english', 'title en', 'العنوان الانجليزي', 'الاسم الانجليزي', 'عنوان انجليزي'] },
     { field: 'description_ar', synonyms: ['description arabic', 'description ar', 'الوصف العربي', 'الوصف', 'وصف عربي'] },
@@ -452,7 +453,7 @@ const handleParseSpecs = async () => {
     }
   }
 
-  // 5. Country & City
+  // 5. Country, Governorate & City
   let countryValue = keyValueMap['country_id']
   let matchedCountry = null
   if (countryValue && countries.value?.length) {
@@ -475,31 +476,58 @@ const handleParseSpecs = async () => {
     form.value.country_id = matchedCountry.id
     matchedCount++
     extractedDetails.push(`Country: ${matchedCountry.name?.en ?? matchedCountry.name}`)
-    await loadCities()
+    await loadGovernorates()
 
-    let cityValue = keyValueMap['city_id']
-    if (cities.value?.length) {
-      let matchedCity = null
-      if (cityValue) {
-        const cSearch = cityValue.toLowerCase().trim()
-        matchedCity = cities.value.find(c => {
-          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase().trim()
-          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase().trim()
-          return nameEn === cSearch || nameAr === cSearch || nameEn.includes(cSearch) || nameAr.includes(cSearch) || cSearch.includes(nameEn) || cSearch.includes(nameAr)
+    let govValue = keyValueMap['governorate_id']
+    if (governorates.value?.length) {
+      let matchedGov = null
+      if (govValue) {
+        const gSearch = govValue.toLowerCase().trim()
+        matchedGov = governorates.value.find(g => {
+          const nameEn = String(g.name?.en ?? g.name ?? '').toLowerCase().trim()
+          const nameAr = String(g.name?.ar ?? g.name ?? '').toLowerCase().trim()
+          return nameEn === gSearch || nameAr === gSearch || nameEn.includes(gSearch) || nameAr.includes(gSearch) || gSearch.includes(nameEn) || gSearch.includes(nameAr)
         })
       }
-      if (!matchedCity) {
-        matchedCity = cities.value.find(c => {
-          const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
-          const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+      if (!matchedGov) {
+        matchedGov = governorates.value.find(g => {
+          const nameEn = String(g.name?.en ?? g.name ?? '').toLowerCase()
+          const nameAr = String(g.name?.ar ?? g.name ?? '').toLowerCase()
           if (nameEn.length <= 1 && nameAr.length <= 1) return false
           return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
         })
       }
-      if (matchedCity) {
-        form.value.city_id = matchedCity.id
+      if (matchedGov) {
+        form.value.governorate_id = matchedGov.id
         matchedCount++
-        extractedDetails.push(`City: ${matchedCity.name?.en ?? matchedCity.name}`)
+        extractedDetails.push(`Governorate: ${matchedGov.name?.en ?? matchedGov.name}`)
+        await loadCities()
+
+        let cityValue = keyValueMap['city_id']
+        if (cities.value?.length) {
+          let matchedCity = null
+          if (cityValue) {
+            const cSearch = cityValue.toLowerCase().trim()
+            matchedCity = cities.value.find(c => {
+              const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase().trim()
+              const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase().trim()
+              return nameEn === cSearch || nameAr === cSearch || nameEn.includes(cSearch) || nameAr.includes(cSearch) || cSearch.includes(nameEn) || cSearch.includes(nameAr)
+            })
+          }
+          if (!matchedCity) {
+            matchedCity = cities.value.find(c => {
+              const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
+              const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
+              if (nameEn.length <= 1 && nameAr.length <= 1) return false
+              return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
+            })
+          }
+          if (matchedCity) {
+            form.value.city_id = matchedCity.id
+            matchedCount++
+            extractedDetails.push(`City: ${matchedCity.name?.en ?? matchedCity.name}`)
+          }
+        }
       }
     }
   }
@@ -960,15 +988,73 @@ const removeExistingImage = (id) => {
   }
 }
 
-const handleImagesChange = (files) => {
-  // Vuetify بيرجع Array<File>
-  form.value.images = files || []
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = (event) => {
+      const img = new Image()
+      img.src = event.target.result
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
+        const MAX_WIDTH = 1920
+        const MAX_HEIGHT = 1080
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width)
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height)
+            height = MAX_HEIGHT
+          }
+        }
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }))
+        }, 'image/jpeg', 0.85)
+      }
+    }
+  })
+}
 
-  // نظّف previews القديمة للـ new
+const handleImagesChange = async (files) => {
+  if (!files || !files.length) {
+    form.value.images = []
+    newImagePreviews.value.forEach(p => URL.revokeObjectURL(p.url))
+    newImagePreviews.value = []
+    return
+  }
+
+  const remainingSlots = 20 - existingImages.value.length
+  
+  if (files.length > remainingSlots) {
+    files = files.slice(0, remainingSlots)
+    snackbarMessage.value = `Maximum 20 images allowed in total. Extra images were removed.`
+    snackbarColor.value = 'warning'
+    snackbar.value = true
+  }
+
+  const compressedFiles = []
+  for (const file of files) {
+    if (file.size > 1024 * 1024 * 1.5) {
+      const compressed = await compressImage(file)
+      compressedFiles.push(compressed)
+    } else {
+      compressedFiles.push(file)
+    }
+  }
+
+  form.value.images = compressedFiles
+
   newImagePreviews.value.forEach(p => URL.revokeObjectURL(p.url))
   newImagePreviews.value = []
-
-  if (!form.value.images.length) return
 
   form.value.images.forEach((file, index) => {
     newImagePreviews.value.push({
@@ -978,7 +1064,6 @@ const handleImagesChange = (files) => {
     })
   })
 
-  // لو مفيش main لسه واخترت صور جديدة ومفيش صور قديمة
   if (!mainSelection.value && newImagePreviews.value.length && !existingImages.value.length) {
     setMainNew(0)
   }
