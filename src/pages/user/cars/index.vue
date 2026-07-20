@@ -417,6 +417,28 @@ const applyFilters = async () => {
          console.error('Failed to parse models', e)
       }
     }
+    
+    // Auto-detect vehicle type (car or bike) based on text or brand
+    const bikeKeywords = ['m1000rr', 's1000rr', 'gsxr', 'ninja', 'cbr', 'yzf', 'ducati', 'yamaha', 'kawasaki', 'harley', 'ktm']
+    const textLower = queryText.toLowerCase() || (idValue ? idValue.toLowerCase() : '')
+    const isBikeKeyword = bikeKeywords.some(k => textLower.includes(k))
+    
+    let isBikeBrand = false
+    if (detectedBrandId) {
+      const brandObj = brands.value.find(b => b.id === detectedBrandId)
+      if (brandObj && brandObj.type === 'motorcycle') {
+        isBikeBrand = true
+      }
+    }
+    
+    if (isBikeKeyword || isBikeBrand) {
+      d.type = 'motorcycle'
+    } else if (detectedBrandId) {
+      const brandObj = brands.value.find(b => b.id === detectedBrandId)
+      if (brandObj && brandObj.type === 'car') {
+        d.type = 'car'
+      }
+    }
   }
 
   // If we fully parsed into brand, we can clear global search. Otherwise send original text.

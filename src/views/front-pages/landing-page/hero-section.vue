@@ -262,6 +262,30 @@ const onSearch = async () => {
   // Build query and merge with smart parsed fields
   const finalQuery = buildQuery()
   
+  // Auto-detect type if we used smart search
+  if (smartSearch.value) {
+    const bikeKeywords = ['m1000rr', 's1000rr', 'gsxr', 'ninja', 'cbr', 'yzf', 'ducati', 'yamaha', 'kawasaki', 'harley', 'ktm']
+    const textLower = String(smartSearch.value).toLowerCase()
+    const isBikeKeyword = bikeKeywords.some(k => textLower.includes(k))
+    
+    let isBikeBrand = false
+    if (detectedBrandId) {
+      const brandObj = safeBrandsList.value.find(b => b.id === detectedBrandId)
+      if (brandObj && brandObj.type === 'motorcycle') {
+        isBikeBrand = true
+      }
+    }
+    
+    if (isBikeKeyword || isBikeBrand) {
+      finalQuery['filter[type]'] = 'motorcycle'
+    } else if (detectedBrandId) {
+       const brandObj = safeBrandsList.value.find(b => b.id === detectedBrandId)
+       if (brandObj && brandObj.type === 'car') {
+         finalQuery['filter[type]'] = 'car'
+       }
+    }
+  }
+
   // Clean up global filter if we parsed successfully
   if (detectedBrandId || detectedYear) {
     delete finalQuery['filter[global]']
@@ -332,7 +356,7 @@ const fetchBrands = async () => {
   try {
     const res = await brandUserApi.getAll()
     const data = res.data?.data || res.data || []
-    brandsList.value = sortBrands(data.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name })))
+    brandsList.value = sortBrands(data.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name, type: b.type })))
   } catch (err) {
     console.error('Error fetching brands:', err)
   } finally {
