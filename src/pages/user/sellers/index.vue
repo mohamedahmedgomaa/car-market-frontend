@@ -497,34 +497,35 @@ onMounted(() => {
                   </div>
 
                   <div class="overflow-hidden flex-grow-1">
-                    <div class="d-flex align-center justify-space-between gap-1 mb-1">
-                      <div class="d-flex align-center gap-1 overflow-hidden">
-                        <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0">
+                    <div class="d-flex align-center justify-space-between gap-1 mb-1 w-100">
+                      <div class="d-flex align-center gap-1 overflow-hidden flex-grow-1">
+                        <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0 flex-grow-1">
                           {{ _t(seller.store_name) || seller.name }}
                         </h3>
                         <VIcon 
                           icon="tabler-discount-check-filled" 
-                          :color="seller.tier?.toLowerCase() === 'platinum' ? '#78909C' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : 'success')" 
+                          :color="seller.tier?.toLowerCase() === 'platinum' ? '#78909C' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#B0BEC5' : 'success'))" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
+                          class="flex-shrink-0"
                         />
                       </div>
                       
                       <div
                         v-if="seller.tier?.toLowerCase() === 'platinum'"
-                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
                       >
                         PLATINUM
                       </div>
                       <div
                         v-else-if="seller.tier?.toLowerCase() === 'gold'"
-                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
                       >
                         GOLD
                       </div>
                       <div
                         v-else
-                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
                       >
                         SILVER
                       </div>
@@ -752,17 +753,8 @@ onMounted(() => {
 
   &.showroom-card-gold {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(218, 165, 32, 0.15)) !important;
-    border: 1px solid rgba(218, 165, 32, 0.8) !important;
+    border: 2px solid rgba(218, 165, 32, 0.8) !important;
     box-shadow: 0 12px 30px rgba(218, 165, 32, 0.25) !important;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #B8860B, #FFD700, #FFF8DC, #FFD700, #B8860B);
-      z-index: 10;
-    }
     
     &:hover {
       border-color: rgba(218, 165, 32, 1) !important;
@@ -772,17 +764,8 @@ onMounted(() => {
 
   &.showroom-card-platinum {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(69, 90, 100, 0.15)) !important;
-    border: 1px solid rgba(69, 90, 100, 0.6) !important;
+    border: 2px solid rgba(69, 90, 100, 0.6) !important;
     box-shadow: 0 12px 30px rgba(69, 90, 100, 0.25) !important;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #37474F, #78909C, #CFD8DC, #78909C, #37474F);
-      z-index: 10;
-    }
     
     &:hover {
       border-color: rgba(69, 90, 100, 1) !important;

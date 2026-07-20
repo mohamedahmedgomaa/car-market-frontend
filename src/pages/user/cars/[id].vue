@@ -1066,11 +1066,13 @@ watch(
         <!-- Sidebar Actions -->
         <div class="sidebar-content">
           <VCard 
-            class="seller-card pa-6 mb-6 relative overflow-hidden"
+            class="seller-card pa-6 mb-6 relative overflow-hidden cursor-pointer"
             :class="{
               'seller-card-gold': car.seller?.tier?.toLowerCase() === 'gold',
               'seller-card-platinum': car.seller?.tier?.toLowerCase() === 'platinum'
             }"
+            @click="goSeller"
+            hover
           >
             <div class="d-flex align-center justify-space-between mb-4">
               <div class="text-overline opacity-60">Listing Owner</div>
@@ -1096,9 +1098,7 @@ watch(
             </div>
 
             <!-- Seller Profile Link -->
-            <RouterLink
-              v-if="sellerLink"
-              :to="sellerLink"
+            <div
               class="d-flex align-start gap-4 mb-8 text-decoration-none text-high-emphasis seller-profile-header"
             >
               <div class="showroom-logo-wrapper d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" style="width: 70px; height: 70px; padding: 4px;">
@@ -1117,18 +1117,19 @@ watch(
               </div>
               <div class="flex-grow-1 overflow-hidden mt-1">
                 <div class="d-flex align-center gap-1 overflow-hidden mb-1">
-                  <div class="font-weight-bold text-h5 text-truncate">
+                  <div class="font-weight-bold text-h5 text-truncate flex-grow-1">
                     {{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}
                   </div>
                   <VIcon 
                     icon="tabler-discount-check-filled" 
-                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#78909C' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : 'success')" 
+                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#78909C' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#B0BEC5' : 'success'))" 
                     size="22" 
                     title="Verified Dealer" 
+                    class="flex-shrink-0"
                   />
                 </div>
               </div>
-            </RouterLink>
+            </div>
 
             <div class="d-flex gap-2 w-100">
               <!-- Phone Call -->
@@ -1138,7 +1139,7 @@ watch(
                 color="primary"
                 class="contact-btn flex-1-1-0"
                 height="54"
-                @click="openCallDialog"
+                @click.stop.prevent="openCallDialog"
               >
                 <VIcon icon="tabler-phone" size="22" class="me-1" />
                 Call
@@ -1153,6 +1154,7 @@ watch(
                 elevation="0"
                 :href="whatsappLink"
                 target="_blank"
+                @click.stop
               >
                 <VIcon icon="tabler-brand-whatsapp" size="24" class="me-1" />
                 WhatsApp
@@ -1851,34 +1853,16 @@ watch(
 
   &.seller-card-gold {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(218, 165, 32, 0.15)) !important;
-    border: 1px solid rgba(218, 165, 32, 0.8) !important;
-    border-bottom: none !important;
+    border: 2px solid rgba(218, 165, 32, 0.8) !important;
+    border-bottom: 2px solid rgba(218, 165, 32, 0.8) !important;
     box-shadow: 0 12px 30px rgba(218, 165, 32, 0.25) !important;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #B8860B, #FFD700, #FFF8DC, #FFD700, #B8860B);
-      z-index: 10;
-    }
   }
 
   &.seller-card-platinum {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(69, 90, 100, 0.15)) !important;
-    border: 1px solid rgba(69, 90, 100, 0.6) !important;
-    border-bottom: none !important;
+    border: 2px solid rgba(69, 90, 100, 0.6) !important;
+    border-bottom: 2px solid rgba(69, 90, 100, 0.6) !important;
     box-shadow: 0 12px 30px rgba(69, 90, 100, 0.25) !important;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #37474F, #78909C, #CFD8DC, #78909C, #37474F);
-      z-index: 10;
-    }
   }
 }
 
