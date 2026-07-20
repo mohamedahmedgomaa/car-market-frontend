@@ -489,11 +489,12 @@ onMounted(() => {
             >
               <div>
                 <!-- Top details -->
-                <div class="d-flex align-center gap-4 mb-4">
-                  <VAvatar rounded="xl" size="75" color="white" variant="flat" class="elevation-2 flex-shrink-0 border" style="padding: 4px;">
-                    <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; border-radius: 8px;" />
+                <div class="d-flex align-start gap-4 mb-3">
+                  <!-- Logo Container -->
+                  <div class="showroom-logo-wrapper d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" style="width: 80px; height: 80px; padding: 6px;">
+                    <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; border-radius: 4px;" />
                     <span v-else class="text-h4 font-weight-black text-primary">{{ (_t(seller.store_name) || seller.name)?.charAt(0)?.toUpperCase() }}</span>
-                  </VAvatar>
+                  </div>
 
                   <div class="overflow-hidden flex-grow-1">
                     <div class="d-flex align-center justify-space-between gap-1 mb-1">
@@ -503,7 +504,7 @@ onMounted(() => {
                         </h3>
                         <VIcon 
                           icon="tabler-discount-check-filled" 
-                          :color="seller.tier?.toLowerCase() === 'platinum' ? 'blue-grey-lighten-2' : (seller.tier?.toLowerCase() === 'gold' ? 'amber-darken-1' : 'success')" 
+                          :color="seller.tier?.toLowerCase() === 'platinum' ? '#B0BEC5' : (seller.tier?.toLowerCase() === 'gold' ? '#FFD700' : 'success')" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
                         />
@@ -522,11 +523,10 @@ onMounted(() => {
                       </VChip>
                       <VChip
                         v-else-if="seller.tier?.toLowerCase() === 'gold'"
-                        color="amber-darken-2"
-                        text-color="white"
+                        color="#FFD700"
                         variant="elevated"
                         size="small"
-                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase"
+                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase text-black"
                       >
                         GOLD
                       </VChip>
@@ -541,35 +541,25 @@ onMounted(() => {
                       </VChip>
                     </div>
 
-                    <!-- Beautiful Custom Location Tags -->
-                    <div class="d-flex align-center flex-wrap gap-2 mt-2">
-                      <div class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-black border-white-10">
-                        <VIcon icon="tabler-map-pin-filled" size="11" color="primary" />
-                        <span>
-                          {{ seller.governorate ? _t(seller.governorate.name) : '' }}
-                          {{ seller.governorate && seller.city ? ' - ' : '' }}
-                          {{ seller.city ? _t(seller.city.name) : (!seller.governorate ? 'Egypt' : '') }}
-                        </span>
-                      </div>
-                      
-                      <div v-if="_t(seller.district)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-bold border-white-10 text-truncate" style="max-width: 140px;" :title="_t(seller.district)">
-                        <VIcon icon="tabler-building" size="11" color="white-50" />
-                        <span>{{ _t(seller.district) }}</span>
-                      </div>
+                    <!-- Clean Professional Location Line -->
+                    <div class="d-flex align-center text-medium-emphasis text-caption font-weight-medium mt-2">
+                      <VIcon icon="tabler-map-pin" size="16" class="me-1" color="primary" />
+                      <span class="text-truncate">
+                        {{ seller.governorate ? _t(seller.governorate.name) : '' }}
+                        <span v-if="seller.city">, {{ _t(seller.city.name) }}</span>
+                        <span v-if="_t(seller.district)">, {{ _t(seller.district) }}</span>
+                        <span v-if="_t(seller.street)">, {{ _t(seller.street) }}</span>
+                      </span>
+                    </div>
 
-                      <div v-if="_t(seller.street)" class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-white-5 text-medium-emphasis text-xxs font-weight-medium border-white-10 text-truncate" style="max-width: 140px;" :title="_t(seller.street)">
-                        <VIcon icon="tabler-road" size="11" color="white-50" />
-                        <span>{{ _t(seller.street) }}</span>
-                      </div>
-
+                    <div v-if="seller.map_url" class="mt-2">
                       <a
-                        v-if="seller.map_url"
                         :href="seller.map_url"
                         target="_blank"
-                        class="d-inline-flex align-center gap-1 px-2.5 py-0.5 rounded bg-primary-subtle text-primary text-xxs font-weight-black border border-primary-20 text-decoration-none hover-scale"
+                        class="d-inline-flex align-center gap-1 text-primary text-caption font-weight-bold text-decoration-none hover-scale"
                         @click.stop
                       >
-                        <VIcon icon="tabler-map" size="11" />
+                        <VIcon icon="tabler-map" size="14" />
                         <span>{{ t('mapLink') }}</span>
                       </a>
                     </div>
@@ -577,7 +567,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Bio excerpt -->
-                <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-6 font-weight-medium">
+                <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-4 font-weight-medium" style="line-height: 1.5;">
                   {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
                 </p>
               </div>
