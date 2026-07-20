@@ -1065,40 +1065,67 @@ watch(
 
         <!-- Sidebar Actions -->
         <div class="sidebar-content">
-          <VCard class="seller-card pa-6 mb-6">
-            <div class="text-overline mb-4 opacity-60">Listing Owner</div>
+          <VCard 
+            class="seller-card pa-6 mb-6 relative overflow-hidden"
+            :class="{
+              'seller-card-gold': car.seller?.tier?.toLowerCase() === 'gold',
+              'seller-card-platinum': car.seller?.tier?.toLowerCase() === 'platinum'
+            }"
+          >
+            <div class="d-flex align-center justify-space-between mb-4">
+              <div class="text-overline opacity-60">Listing Owner</div>
+              <!-- Badges -->
+              <div
+                v-if="car.seller?.tier?.toLowerCase() === 'platinum'"
+                class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+              >
+                PLATINUM
+              </div>
+              <div
+                v-else-if="car.seller?.tier?.toLowerCase() === 'gold'"
+                class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+              >
+                GOLD
+              </div>
+              <div
+                v-else
+                class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+              >
+                SILVER
+              </div>
+            </div>
 
             <!-- Seller Profile Link -->
             <RouterLink
               v-if="sellerLink"
               :to="sellerLink"
-              class="d-flex align-center gap-4 mb-8 text-decoration-none text-high-emphasis seller-profile-header"
+              class="d-flex align-start gap-4 mb-8 text-decoration-none text-high-emphasis seller-profile-header"
             >
-              <VAvatar
-                color="primary"
-                size="64"
-                class="text-h4 font-weight-bold elevation-4 overflow-hidden"
-              >
+              <div class="showroom-logo-wrapper d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" style="width: 70px; height: 70px; padding: 4px;">
                 <img
                   v-if="car.seller?.store_logo"
                   :src="car.seller.store_logo"
                   alt="Seller Logo"
                   class="w-100 h-100"
-                  style="object-fit: cover"
+                  style="object-fit: contain; border-radius: 4px;"
                 />
-                <span v-else>{{
+                <span v-else class="text-h4 font-weight-black text-primary">{{
                   (car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name)
                     ?.charAt(0)
                     ?.toUpperCase()
                 }}</span>
-              </VAvatar>
-              <div>
-                <div class="font-weight-bold text-h5 mb-1">
-                  {{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}
-                </div>
-                <div class="d-flex align-center gap-1 text-success text-caption">
-                  <VIcon icon="tabler-circle-check-filled" size="14" />
-                  Verified Dealer
+              </div>
+              <div class="flex-grow-1 overflow-hidden mt-1">
+                <div class="d-flex align-center gap-1 overflow-hidden mb-1">
+                  <div class="font-weight-bold text-h5 text-truncate">
+                    {{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}
+                  </div>
+                  <VIcon 
+                    icon="tabler-discount-check-filled" 
+                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#E5E4E2' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#FFD700' : 'success')" 
+                    size="22" 
+                    title="Verified Dealer" 
+                  />
                 </div>
               </div>
             </RouterLink>
@@ -1817,5 +1844,70 @@ watch(
   border-color: rgb(var(--v-theme-primary)) !important;
   background: rgba(var(--v-theme-primary), 0.08) !important;
   transform: translateY(-1px);
+}
+
+/* Seller Card Styles */
+.seller-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1) !important;
+  background: rgba(var(--v-theme-surface), 0.7) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 3px solid rgb(var(--v-theme-primary)) !important; /* Bottom band to match footer color */
+  transition: all 0.3s ease;
+
+  &.seller-card-gold {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(255, 215, 0, 0.08)) !important;
+    border: 1px solid rgba(255, 215, 0, 0.4) !important;
+    border-bottom: none !important;
+    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.15) !important;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #DAA520, #FFD700, #FFF8DC, #FFD700, #DAA520);
+      z-index: 10;
+    }
+  }
+
+  &.seller-card-platinum {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(229, 228, 226, 0.1)) !important;
+    border: 1px solid rgba(229, 228, 226, 0.5) !important;
+    border-bottom: none !important;
+    box-shadow: 0 12px 30px rgba(229, 228, 226, 0.15) !important;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #9E9E9E, #E5E4E2, #FFFFFF, #E5E4E2, #9E9E9E);
+      z-index: 10;
+    }
+  }
+}
+
+.tier-badge-platinum {
+  background: linear-gradient(135deg, #B0BEC5 0%, #E5E4E2 50%, #FFFFFF 100%);
+  color: #263238 !important;
+  box-shadow: 0 4px 15px rgba(229, 228, 226, 0.4);
+  border: 1px solid #FFFFFF;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.tier-badge-gold {
+  background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #FFF8DC 100%);
+  color: #3E2723 !important;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  border: 1px solid #FFF8DC;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.tier-badge-silver {
+  background: linear-gradient(135deg, #9E9E9E 0%, #E0E0E0 50%, #F5F5F5 100%);
+  color: #212121 !important;
+  box-shadow: 0 4px 15px rgba(224, 224, 224, 0.4);
+  border: 1px solid #F5F5F5;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 </style>

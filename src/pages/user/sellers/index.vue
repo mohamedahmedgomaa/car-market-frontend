@@ -504,41 +504,30 @@ onMounted(() => {
                         </h3>
                         <VIcon 
                           icon="tabler-discount-check-filled" 
-                          :color="seller.tier?.toLowerCase() === 'platinum' ? '#B0BEC5' : (seller.tier?.toLowerCase() === 'gold' ? '#FFD700' : 'success')" 
+                          :color="seller.tier?.toLowerCase() === 'platinum' ? '#E5E4E2' : (seller.tier?.toLowerCase() === 'gold' ? '#FFD700' : 'success')" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
                         />
                       </div>
                       
-                      <VChip
+                      <div
                         v-if="seller.tier?.toLowerCase() === 'platinum'"
-                        color="grey-darken-4"
-                        text-color="white"
-                        variant="elevated"
-                        size="small"
-                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase"
-                        style="border: 1px solid #E5E4E2;"
+                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
                       >
                         PLATINUM
-                      </VChip>
-                      <VChip
+                      </div>
+                      <div
                         v-else-if="seller.tier?.toLowerCase() === 'gold'"
-                        color="#FFD700"
-                        variant="elevated"
-                        size="small"
-                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase text-black"
+                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
                       >
                         GOLD
-                      </VChip>
-                      <VChip
+                      </div>
+                      <div
                         v-else
-                        color="grey-lighten-2"
-                        variant="elevated"
-                        size="small"
-                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase text-grey-darken-3"
+                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
                       >
                         SILVER
-                      </VChip>
+                      </div>
                     </div>
 
                     <!-- Clean Professional Location Line -->
@@ -753,6 +742,7 @@ onMounted(() => {
   backdrop-filter: blur(20px);
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-8px);
@@ -761,26 +751,68 @@ onMounted(() => {
   }
 
   &.showroom-card-gold {
-    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.9), rgba(255, 193, 7, 0.05)) !important;
-    border: 1px solid rgba(255, 193, 7, 0.4) !important;
-    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.1) !important;
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(255, 215, 0, 0.08)) !important;
+    border: 1px solid rgba(255, 215, 0, 0.4) !important;
+    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.15) !important;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #DAA520, #FFD700, #FFF8DC, #FFD700, #DAA520);
+      z-index: 10;
+    }
     
     &:hover {
-      border-color: rgba(255, 193, 7, 0.8) !important;
-      box-shadow: 0 20px 40px rgba(255, 193, 7, 0.3), 0 0 30px rgba(255, 193, 7, 0.15) !important;
+      border-color: rgba(255, 215, 0, 0.9) !important;
+      box-shadow: 0 20px 45px rgba(255, 215, 0, 0.25), 0 0 40px rgba(255, 215, 0, 0.15) !important;
     }
   }
 
   &.showroom-card-platinum {
-    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(176, 190, 197, 0.1)) !important;
-    border: 1px solid rgba(176, 190, 197, 0.5) !important;
-    box-shadow: 0 10px 25px rgba(176, 190, 197, 0.1) !important;
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(229, 228, 226, 0.1)) !important;
+    border: 1px solid rgba(229, 228, 226, 0.5) !important;
+    box-shadow: 0 12px 30px rgba(229, 228, 226, 0.15) !important;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #9E9E9E, #E5E4E2, #FFFFFF, #E5E4E2, #9E9E9E);
+      z-index: 10;
+    }
     
     &:hover {
-      border-color: rgba(224, 224, 224, 0.9) !important;
-      box-shadow: 0 20px 40px rgba(176, 190, 197, 0.3), 0 0 30px rgba(176, 190, 197, 0.2) !important;
+      border-color: rgba(229, 228, 226, 0.9) !important;
+      box-shadow: 0 20px 45px rgba(229, 228, 226, 0.3), 0 0 40px rgba(229, 228, 226, 0.2) !important;
     }
   }
+}
+
+.tier-badge-platinum {
+  background: linear-gradient(135deg, #B0BEC5 0%, #E5E4E2 50%, #FFFFFF 100%);
+  color: #263238 !important;
+  box-shadow: 0 4px 15px rgba(229, 228, 226, 0.4);
+  border: 1px solid #FFFFFF;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.tier-badge-gold {
+  background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #FFF8DC 100%);
+  color: #3E2723 !important;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  border: 1px solid #FFF8DC;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.tier-badge-silver {
+  background: linear-gradient(135deg, #9E9E9E 0%, #E0E0E0 50%, #F5F5F5 100%);
+  color: #212121 !important;
+  box-shadow: 0 4px 15px rgba(224, 224, 224, 0.4);
+  border: 1px solid #F5F5F5;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 .bg-white-10 {
