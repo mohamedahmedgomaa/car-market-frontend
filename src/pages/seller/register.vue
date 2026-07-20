@@ -43,6 +43,10 @@ const form = ref({
   street_en: '',
   street_ar: '',
   map_url: '',
+  facebook_url: '',
+  instagram_url: '',
+  tiktok_url: '',
+  youtube_url: '',
 
   store_logo: null, // File
   tax_card_image: null, // File
@@ -146,6 +150,10 @@ const handleRegister = async () => {
     if (form.value.street_en) fd.append('street_en', form.value.street_en)
     if (form.value.street_ar) fd.append('street_ar', form.value.street_ar)
     if (form.value.map_url) fd.append('map_url', form.value.map_url)
+    if (form.value.facebook_url) fd.append('facebook_url', form.value.facebook_url)
+    if (form.value.instagram_url) fd.append('instagram_url', form.value.instagram_url)
+    if (form.value.tiktok_url) fd.append('tiktok_url', form.value.tiktok_url)
+    if (form.value.youtube_url) fd.append('youtube_url', form.value.youtube_url)
 
     // Image/File uploads
     if (form.value.store_logo instanceof File) {
@@ -446,6 +454,62 @@ const handleRegister = async () => {
                 rows="3"
                 class="premium-input"
                 dir="rtl"
+              />
+            </VCol>
+
+            <!-- Social Media Links (Optional) -->
+            <VCol cols="12" class="mt-4">
+              <h3 class="section-title mb-4 d-flex align-center gap-x-2 text-primary">
+                <VIcon icon="tabler-link" size="20" />
+                Social Media Links (Optional)
+              </h3>
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">Facebook Link</label>
+              <VTextField
+                v-model="form.facebook_url"
+                placeholder="Ex: https://facebook.com/..."
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                prepend-inner-icon="tabler-brand-facebook"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">Instagram Link</label>
+              <VTextField
+                v-model="form.instagram_url"
+                placeholder="Ex: https://instagram.com/..."
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                prepend-inner-icon="tabler-brand-instagram"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">TikTok Link</label>
+              <VTextField
+                v-model="form.tiktok_url"
+                placeholder="Ex: https://tiktok.com/@..."
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                prepend-inner-icon="tabler-brand-tiktok"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <label class="input-label">YouTube Link</label>
+              <VTextField
+                v-model="form.youtube_url"
+                placeholder="Ex: https://youtube.com/..."
+                variant="outlined"
+                density="comfortable"
+                class="premium-input"
+                prepend-inner-icon="tabler-brand-youtube"
               />
             </VCol>
 

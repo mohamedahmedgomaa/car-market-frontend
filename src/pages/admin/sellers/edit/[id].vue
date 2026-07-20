@@ -24,6 +24,10 @@ const seller = ref({
   address_ar: '',
   address_en: '',
   map_url: '',
+  facebook_url: '',
+  instagram_url: '',
+  tiktok_url: '',
+  youtube_url: '',
   sort_order: 0,
   tier: 'none',
 })
@@ -102,6 +106,10 @@ const fetchSeller = async () => {
     seller.value.address_ar = data.address?.ar || ''
     seller.value.address_en = data.address?.en || ''
     seller.value.map_url = data.map_url || ''
+    seller.value.facebook_url = data.facebook_url || ''
+    seller.value.instagram_url = data.instagram_url || ''
+    seller.value.tiktok_url = data.tiktok_url || ''
+    seller.value.youtube_url = data.youtube_url || ''
     seller.value.sort_order = data.sort_order || 0
     seller.value.tier = data.tier || 'none'
 
@@ -380,6 +388,63 @@ onMounted(async () => {
             hide-details="auto"
             :error="!!errors.map_url"
             :error-messages="errors.map_url"
+          />
+        </div>
+
+        <!-- Social Media Links (Optional) -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Facebook Link (Optional)</label>
+          <VTextField
+            v-model="seller.facebook_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://facebook.com/..."
+            prepend-inner-icon="tabler-brand-facebook"
+            hide-details="auto"
+            :error="!!errors.facebook_url"
+            :error-messages="errors.facebook_url"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">Instagram Link (Optional)</label>
+          <VTextField
+            v-model="seller.instagram_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://instagram.com/..."
+            prepend-inner-icon="tabler-brand-instagram"
+            hide-details="auto"
+            :error="!!errors.instagram_url"
+            :error-messages="errors.instagram_url"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">TikTok Link (Optional)</label>
+          <VTextField
+            v-model="seller.tiktok_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://tiktok.com/@..."
+            prepend-inner-icon="tabler-brand-tiktok"
+            hide-details="auto"
+            :error="!!errors.tiktok_url"
+            :error-messages="errors.tiktok_url"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">YouTube Link (Optional)</label>
+          <VTextField
+            v-model="seller.youtube_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://youtube.com/..."
+            prepend-inner-icon="tabler-brand-youtube"
+            hide-details="auto"
+            :error="!!errors.youtube_url"
+            :error-messages="errors.youtube_url"
           />
         </div>
 
