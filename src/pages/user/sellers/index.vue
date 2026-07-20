@@ -479,7 +479,11 @@ onMounted(() => {
         <VRow class="showrooms-grid">
           <VCol v-for="seller in filteredSellers" :key="seller.id" cols="12" sm="6" lg="4">
             <VCard
-              class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between cursor-pointer"
+              class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between cursor-pointer relative"
+              :class="{
+                'showroom-card-gold': seller.tier?.toLowerCase() === 'gold',
+                'showroom-card-platinum': seller.tier?.toLowerCase() === 'platinum'
+              }"
               elevation="6"
               :to="`/user/sellers/${seller.id}`"
             >
@@ -497,11 +501,16 @@ onMounted(() => {
                         <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0">
                           {{ _t(seller.store_name) || seller.name }}
                         </h3>
-                        <VIcon icon="tabler-discount-check-filled" color="success" size="22" :title="t('verifiedShowroom')" />
+                        <VIcon 
+                          icon="tabler-discount-check-filled" 
+                          :color="seller.tier?.toLowerCase() === 'platinum' ? 'blue-grey-lighten-2' : (seller.tier?.toLowerCase() === 'gold' ? 'amber-darken-1' : 'success')" 
+                          size="22" 
+                          :title="t('verifiedShowroom')" 
+                        />
                       </div>
                       
                       <VChip
-                        v-if="seller.tier === 'Platinum'"
+                        v-if="seller.tier?.toLowerCase() === 'platinum'"
                         color="grey-darken-4"
                         text-color="white"
                         variant="elevated"
@@ -512,7 +521,7 @@ onMounted(() => {
                         PLATINUM
                       </VChip>
                       <VChip
-                        v-else-if="seller.tier === 'Gold'"
+                        v-else-if="seller.tier?.toLowerCase() === 'gold'"
                         color="amber-darken-2"
                         text-color="white"
                         variant="elevated"
@@ -522,22 +531,13 @@ onMounted(() => {
                         GOLD
                       </VChip>
                       <VChip
-                        v-else-if="seller.tier === 'Silver'"
+                        v-else
                         color="grey-lighten-2"
                         variant="elevated"
                         size="small"
                         class="font-weight-black tracking-widest px-2 py-0 text-uppercase text-grey-darken-3"
                       >
                         SILVER
-                      </VChip>
-                      <VChip
-                        v-else
-                        color="amber"
-                        variant="elevated"
-                        size="small"
-                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase"
-                      >
-                        {{ t('pro') }}
                       </VChip>
                     </div>
 
@@ -768,6 +768,28 @@ onMounted(() => {
     transform: translateY(-8px);
     border-color: rgba(var(--v-theme-primary), 0.5) !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(var(--v-theme-primary), 0.2) !important;
+  }
+
+  &.showroom-card-gold {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.9), rgba(255, 193, 7, 0.05)) !important;
+    border: 1px solid rgba(255, 193, 7, 0.4) !important;
+    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.1) !important;
+    
+    &:hover {
+      border-color: rgba(255, 193, 7, 0.8) !important;
+      box-shadow: 0 20px 40px rgba(255, 193, 7, 0.3), 0 0 30px rgba(255, 193, 7, 0.15) !important;
+    }
+  }
+
+  &.showroom-card-platinum {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(176, 190, 197, 0.1)) !important;
+    border: 1px solid rgba(176, 190, 197, 0.5) !important;
+    box-shadow: 0 10px 25px rgba(176, 190, 197, 0.1) !important;
+    
+    &:hover {
+      border-color: rgba(224, 224, 224, 0.9) !important;
+      box-shadow: 0 20px 40px rgba(176, 190, 197, 0.3), 0 0 30px rgba(176, 190, 197, 0.2) !important;
+    }
   }
 }
 
