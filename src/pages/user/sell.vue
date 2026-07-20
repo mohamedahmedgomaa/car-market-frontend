@@ -174,61 +174,59 @@ const valueProps = [
         </template>
 
         <template v-else-if="isUserLoggedIn">
-          <!-- Logged in as normal user but not seller -->
-          <div class="d-inline-flex align-center gap-2 px-4 py-1 rounded-pill bg-amber-subtle mb-4">
-            <VIcon icon="tabler-alert-circle" size="18" color="amber-darken-1" />
-            <span class="text-caption font-weight-bold text-amber-darken-1 text-uppercase tracking-wider">
-              Seller Account Required
+          <!-- Logged in as normal user -> Allow them to sell directly without showroom registration -->
+          <div class="d-inline-flex align-center gap-2 px-4 py-1 rounded-pill bg-success-subtle mb-4">
+            <VIcon icon="tabler-user-check" size="18" color="success" />
+            <span class="text-caption font-weight-bold text-success text-uppercase tracking-wider">
+              Logged in as User
             </span>
           </div>
 
           <h1 class="text-h2 font-weight-black text-high-emphasis mb-3">
-            <span dir="ltr">Upgrade to Seller Profile</span>
+            <span dir="ltr">Welcome, {{ userAuth.user?.name || 'User' }}!</span>
           </h1>
           <p class="text-h6 text-medium-emphasis max-w-700 mx-auto font-weight-medium mb-8">
-            You are logged in as an individual. To start listing and selling your cars on NegmCars, please register your showroom/seller profile.
+            You can now list and sell your cars directly on NegmCars. Start adding your vehicle details immediately!
           </p>
 
-          <!-- Call to Action Card for Upgrading/Registering as Seller -->
-          <VCard class="cta-card max-w-850 mx-auto pa-8 rounded-3xl elevation-12 border relative overflow-hidden mb-12">
-            <div class="d-flex flex-column flex-md-row align-center justify-space-between gap-6 relative z-1">
-              <div class="text-center text-md-start">
-                <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
-                  <VIcon icon="tabler-shield-check" size="16" /> Verified Seller Status
-                </div>
-                <h2 class="text-h4 font-weight-black text-high-emphasis mb-2">Create Your Seller Account</h2>
-                <p class="text-subtitle-1 text-medium-emphasis mb-0">
-                  Fill in your showroom or personal seller details to unlock the vehicle listing features immediately.
-                </p>
-              </div>
+          <!-- Call to Action for Normal User -->
+          <div class="d-flex align-center justify-center flex-wrap gap-4 mb-12">
+            <VBtn
+              color="primary"
+              size="x-large"
+              rounded="pill"
+              @click="() => {
+                localStorage.setItem('seller_token', userAuth.token);
+                localStorage.setItem('seller_data', JSON.stringify(userAuth.user));
+                sellerAuth.token = userAuth.token;
+                sellerAuth.seller = userAuth.user;
+                router.push('/seller/cars/create');
+              }"
+              class="px-8 py-3 font-weight-black shadow-primary text-subtitle-1"
+              elevation="8"
+            >
+              <VIcon icon="tabler-circle-plus" size="22" class="me-2" />
+              Add New Listing
+            </VBtn>
 
-              <div class="d-flex flex-column gap-3 flex-shrink-0 w-100 w-md-auto">
-                <VBtn
-                  color="primary"
-                  size="x-large"
-                  rounded="pill"
-                  to="/seller/register"
-                  class="px-8 py-3 font-weight-black shadow-primary text-subtitle-1"
-                  elevation="8"
-                >
-                  <VIcon icon="tabler-user-plus" size="22" class="me-2" />
-                  Register as Seller
-                </VBtn>
-
-                <VBtn
-                  variant="outlined"
-                  color="secondary"
-                  size="large"
-                  rounded="pill"
-                  to="/seller/login"
-                  class="font-weight-bold text-subtitle-2"
-                >
-                  <VIcon icon="tabler-login" size="18" class="me-2" />
-                  Log in as Seller
-                </VBtn>
-              </div>
-            </div>
-          </VCard>
+            <VBtn
+              variant="tonal"
+              color="secondary"
+              size="x-large"
+              rounded="pill"
+              @click="() => {
+                localStorage.setItem('seller_token', userAuth.token);
+                localStorage.setItem('seller_data', JSON.stringify(userAuth.user));
+                sellerAuth.token = userAuth.token;
+                sellerAuth.seller = userAuth.user;
+                router.push('/seller/dashboard');
+              }"
+              class="px-8 py-3 font-weight-black text-subtitle-1"
+            >
+              <VIcon icon="tabler-dashboard" size="22" class="me-2" />
+              My Ads Dashboard
+            </VBtn>
+          </div>
         </template>
 
         <template v-else>
