@@ -338,8 +338,8 @@ const applyFilters = async () => {
   let detectedYear = null
   let queryText = idValue ? idValue.toLowerCase() : ''
 
-  // Smart Parsing if text is provided but brand is not selected
-  if (queryText && !detectedBrandId) {
+  // Smart Parsing if text is provided
+  if (queryText) {
     const yearMatch = queryText.match(/\b(19\d{2}|20\d{2})\b/)
     if (yearMatch) {
       detectedYear = Number(yearMatch[1])
@@ -352,9 +352,10 @@ const applyFilters = async () => {
       return bLen - aLen
     })
     
+    let foundBrandId = null
     for (const brand of sortedBrands) {
       if (matchBrand(brand, queryText)) {
-        detectedBrandId = brand.id
+        foundBrandId = brand.id
         const nameEn = String(brand.originalName?.en || brand.originalName || brand.name?.en || brand.name || '').toLowerCase()
         const nameAr = String(brand.originalName?.ar || brand.name?.ar || '').toLowerCase()
         
@@ -388,17 +389,29 @@ const applyFilters = async () => {
       }
     }
     
+    if (foundBrandId && foundBrandId !== detectedBrandId) {
+      detectedBrandId = foundBrandId
+      detectedModelId = null // Brand changed via text search
+    }
+    
     if (detectedBrandId) {
       try {
         const mRes = await modelUserApi.getAll({ 'filter[brand_id]': detectedBrandId })
         const models = mRes.data?.data || mRes.data || []
         const sortedModels = [...models].sort((a, b) => (b.name?.en?.length || 0) - (a.name?.en?.length || 0))
+        
+        let foundModelId = null
         for (const model of sortedModels) {
           const mNameEn = String(model.name?.en || model.name || '').toLowerCase()
           if (mNameEn && queryText.includes(mNameEn)) {
-            detectedModelId = model.id
+            foundModelId = model.id
+            queryText = queryText.replace(mNameEn, '').trim()
             break
           }
+        }
+        
+        if (foundModelId) {
+          detectedModelId = foundModelId
         }
       } catch (e) {
          console.error('Failed to parse models', e)
