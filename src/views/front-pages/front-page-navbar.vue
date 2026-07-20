@@ -322,7 +322,7 @@ const logout = async () => {
         </VAppBarTitle>
 
         <!-- ✅ Links (Desktop) -->
-        <div class="text-base align-center d-none d-md-flex mx-8" style="gap: 1.5rem; flex: 1 1 auto; overflow-x: auto;">
+        <div class="text-base align-center d-none d-md-flex mx-6" style="flex: 1 1 auto; justify-content: space-evenly;">
           <RouterLink
             to="/user/cars"
             class="nav-link font-weight-bold"
@@ -391,7 +391,6 @@ const logout = async () => {
           </RouterLink>
         </div>
 
-        <VSpacer class="d-none d-md-block" />
         <VSpacer class="d-md-none" />
 
         <!-- ✅ Auth & Settings Area -->
@@ -611,14 +610,18 @@ const logout = async () => {
 
 <style lang="scss" scoped>
 .nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.95rem;
   font-weight: 750;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  padding: 8px 14px;
+  padding: 8px 18px;
   border-radius: 99px;
   border: 1px solid transparent;
   white-space: nowrap;
+  height: 42px;
 }
 
 .active-link {
