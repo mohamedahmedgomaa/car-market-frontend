@@ -239,6 +239,11 @@ const closeCallDialog = () => {
   selectedSellerForCall.value = null
 }
 
+const openWhatsApp = (phone) => {
+  if (!phone) return
+  window.open(`https://wa.me/${String(phone).replace('+', '')}`, '_blank')
+}
+
 onMounted(() => {
   fetchSellers()
   fetchGovernorates()
@@ -481,22 +486,59 @@ onMounted(() => {
               <div>
                 <!-- Top details -->
                 <div class="d-flex align-center gap-4 mb-4">
-                  <VAvatar size="72" color="primary" variant="tonal" class="elevation-4 overflow-hidden flex-shrink-0 border">
-                    <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; padding: 4px;" />
-                    <span v-else class="text-h4 font-weight-black">{{ (t(seller.store_name) || seller.name)?.charAt(0)?.toUpperCase() }}</span>
+                  <VAvatar rounded="xl" size="75" color="white" variant="flat" class="elevation-2 flex-shrink-0 border" style="padding: 4px;">
+                    <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; border-radius: 8px;" />
+                    <span v-else class="text-h4 font-weight-black text-primary">{{ (_t(seller.store_name) || seller.name)?.charAt(0)?.toUpperCase() }}</span>
                   </VAvatar>
 
                   <div class="overflow-hidden flex-grow-1">
                     <div class="d-flex align-center justify-space-between gap-1 mb-1">
-                      <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0">
-                        {{ _t(seller.store_name) || seller.name }}
-                      </h3>
-                      <VChip color="amber" variant="elevated" size="x-small" class="font-weight-black tracking-widest px-2 py-0">{{ t('pro') }}</VChip>
-                    </div>
-
-                    <div class="d-flex align-center gap-1 text-success font-weight-bold text-caption">
-                      <VIcon icon="tabler-discount-check-filled" size="16" />
-                      <span>{{ t('verifiedShowroom') }}</span>
+                      <div class="d-flex align-center gap-1 overflow-hidden">
+                        <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0">
+                          {{ _t(seller.store_name) || seller.name }}
+                        </h3>
+                        <VIcon icon="tabler-discount-check-filled" color="success" size="22" :title="t('verifiedShowroom')" />
+                      </div>
+                      
+                      <VChip
+                        v-if="seller.tier === 'Platinum'"
+                        color="grey-darken-4"
+                        text-color="white"
+                        variant="elevated"
+                        size="small"
+                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase"
+                        style="border: 1px solid #E5E4E2;"
+                      >
+                        PLATINUM
+                      </VChip>
+                      <VChip
+                        v-else-if="seller.tier === 'Gold'"
+                        color="amber-darken-2"
+                        text-color="white"
+                        variant="elevated"
+                        size="small"
+                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase"
+                      >
+                        GOLD
+                      </VChip>
+                      <VChip
+                        v-else-if="seller.tier === 'Silver'"
+                        color="grey-lighten-2"
+                        variant="elevated"
+                        size="small"
+                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase text-grey-darken-3"
+                      >
+                        SILVER
+                      </VChip>
+                      <VChip
+                        v-else
+                        color="amber"
+                        variant="elevated"
+                        size="small"
+                        class="font-weight-black tracking-widest px-2 py-0 text-uppercase"
+                      >
+                        {{ t('pro') }}
+                      </VChip>
                     </div>
 
                     <!-- Beautiful Custom Location Tags -->
@@ -550,7 +592,7 @@ onMounted(() => {
                     size="small"
                     rounded="pill"
                     class="flex-grow-1 font-weight-bold shadow-primary px-4 py-2"
-                    @click.stop="openCallDialog(seller)"
+                    @click.stop.prevent="openCallDialog(seller)"
                   >
                     <VIcon icon="tabler-phone" size="16" class="me-1" />
                     {{ t('callBtn') }}
@@ -563,9 +605,7 @@ onMounted(() => {
                     size="small"
                     rounded="pill"
                     class="flex-grow-1 font-weight-bold shadow-success px-4 py-2"
-                    :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
-                    target="_blank"
-                    @click.stop
+                    @click.stop.prevent="openWhatsApp(seller.phone)"
                   >
                     <VIcon icon="tabler-brand-whatsapp" size="16" class="me-1" />
                     {{ t('whatsappBtn') }}
@@ -578,7 +618,7 @@ onMounted(() => {
                   block
                   rounded="pill"
                   class="font-weight-bold tracking-wide"
-                  @click.stop
+                  @click.stop.prevent
                   :to="`/user/sellers/${seller.id}`"
                 >
                   {{ t('exploreShowroom') }}
