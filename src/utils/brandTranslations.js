@@ -113,6 +113,20 @@ export const matchBrand = (brandObj, queryText) => {
   return false
 }
 
+export const sortBrands = (brandsList) => {
+  const popular = ['bmw', 'mercedes', 'audi', 'toyota', 'hyundai', 'kia', 'nissan', 'chevrolet', 'skoda', 'volkswagen', 'renault', 'peugeot', 'mg', 'chery'];
+  return [...(brandsList || [])].sort((a, b) => {
+    const aName = String(a.originalName?.en || a.originalName || a.name?.en || a.name || '').toLowerCase();
+    const bName = String(b.originalName?.en || b.originalName || b.name?.en || b.name || '').toLowerCase();
+    const aIndex = popular.indexOf(aName);
+    const bIndex = popular.indexOf(bName);
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+    return aName.localeCompare(bName);
+  });
+}
+
 export const customBrandFilter = (value, queryText, item) => {
   const rawItem = item?.raw
   if (!rawItem) return false

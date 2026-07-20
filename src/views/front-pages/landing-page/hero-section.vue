@@ -6,7 +6,7 @@ import { useI18n } from 'vue-i18n'
 import api from '@/api/index.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
-import { customBrandFilter } from '@/utils/brandTranslations.js'
+import { customBrandFilter, sortBrands, matchBrand } from '@/utils/brandTranslations.js'
 
 const theme = useTheme()
 const router = useRouter()
@@ -157,7 +157,7 @@ const onSmartSearchInput = (val) => {
   }
 }
 
-const onSearch = () => {
+const onSearch = async () => {
   if (!smartSearch.value) {
     router.push({
       path: '/user/cars',
@@ -166,22 +166,84 @@ const onSearch = () => {
     return
   }
 
-  let query = String(smartSearch.value).trim()
+  let queryText = String(smartSearch.value).trim().toLowerCase()
   
   // Check if it's an ID search (only numbers, optionally starting with #)
-  const isId = /^(#?\d+)$/.test(query)
+  const isId = /^(#?\d+)$/.test(queryText)
 
   if (isId) {
-    const numericId = query.replace(/[^0-9]/g, '')
+    const numericId = queryText.replace(/[^0-9]/g, '')
     router.push(`/user/cars/${numericId}`)
     smartSearch.value = ''
-  } else {
-    // Normal text search
-    router.push({
-      path: '/user/cars',
-      query: buildQuery(),
-    })
+    return
   }
+
+  // ✅ Smart Parsing: extract Brand, Model, Year from queryText
+  let detectedBrandId = null
+  let detectedModelId = null
+  let detectedYear = null
+
+  // 1. Detect Year (any 4 digit number starting with 19 or 20)
+  const yearMatch = queryText.match(/\b(19\d{2}|20\d{2})\b/)
+  if (yearMatch) {
+    detectedYear = Number(yearMatch[1])
+    queryText = queryText.replace(yearMatch[0], '').trim()
+  }
+
+  // 2. Detect Brand
+  if (safeBrandsList.value.length > 0) {
+    // Sort brands by longest name first to match "alfa romeo" before "alfa"
+    const sortedBrands = [...safeBrandsList.value].sort((a, b) => {
+      const aLen = Math.max(a.name?.length || 0, a.originalName?.en?.length || 0)
+      const bLen = Math.max(b.name?.length || 0, b.originalName?.en?.length || 0)
+      return bLen - aLen
+    })
+
+    for (const brand of sortedBrands) {
+      if (matchBrand(brand, queryText)) {
+        detectedBrandId = brand.id
+        // Try to remove brand name from query to avoid matching model loosely
+        const nameEn = String(brand.originalName?.en || brand.originalName || brand.name || '').toLowerCase()
+        queryText = queryText.replace(nameEn, '').trim()
+        break
+      }
+    }
+  }
+
+  // 3. Detect Model (if Brand was found)
+  if (detectedBrandId) {
+    try {
+      const mRes = await modelUserApi.getAll({ 'filter[brand_id]': detectedBrandId })
+      const models = mRes.data?.data || mRes.data || []
+      const sortedModels = [...models].sort((a, b) => (b.name?.en?.length || 0) - (a.name?.en?.length || 0))
+      for (const model of sortedModels) {
+        const mNameEn = String(model.name?.en || model.name || '').toLowerCase()
+        if (mNameEn && queryText.includes(mNameEn)) {
+          detectedModelId = model.id
+          break
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch models for parsing', e)
+    }
+  }
+
+  // Build query and merge with smart parsed fields
+  const finalQuery = buildQuery()
+  
+  if (detectedBrandId) finalQuery['filter[brand_id]'] = detectedBrandId
+  if (detectedModelId) finalQuery['filter[model_id]'] = detectedModelId
+  if (detectedYear) finalQuery['filter[year_between]'] = `${detectedYear}.${detectedYear}`
+  
+  // If we couldn't parse everything, send the remaining text as global filter
+  if (!detectedBrandId && !detectedYear) {
+    finalQuery['filter[global]'] = smartSearch.value
+  }
+
+  router.push({
+    path: '/user/cars',
+    query: finalQuery,
+  })
 }
 
 const resetFilters = () => {
@@ -233,7 +295,7 @@ const fetchBrands = async () => {
   try {
     const res = await brandUserApi.getAll()
     const data = res.data?.data || res.data || []
-    brandsList.value = data.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name }))
+    brandsList.value = sortBrands(data.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name })))
   } catch (err) {
     console.error('Error fetching brands:', err)
   } finally {

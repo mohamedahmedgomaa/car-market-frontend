@@ -7,7 +7,7 @@ import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
 import featureUserApi from '@/api/user/carFeatureUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
-import { customBrandFilter } from '@/utils/brandTranslations.js'
+import { customBrandFilter, sortBrands, matchBrand } from '@/utils/brandTranslations.js'
 
 definePage({
   meta: { layout: 'front', public: true },
@@ -321,7 +321,7 @@ const onMileageInput = (val, key) => {
   draft.value[key] = clean
 }
 
-const applyFilters = () => {
+const applyFilters = async () => {
   const idValue = draft.value.q?.trim()
   if (idValue && /^\d+$/.test(idValue)) {
     router.push(`/user/cars/${idValue}`)
@@ -332,11 +332,73 @@ const applyFilters = () => {
   delete query.page // Reset to first page on filter change
 
   const d = draft.value
-  if (d.q) query['filter[global]'] = d.q; else delete query['filter[global]']
+
+  let detectedBrandId = d.brandId
+  let detectedModelId = d.modelId
+  let detectedYear = null
+  let queryText = idValue ? idValue.toLowerCase() : ''
+
+  // Smart Parsing if text is provided but brand is not selected
+  if (queryText && !detectedBrandId) {
+    const yearMatch = queryText.match(/\b(19\d{2}|20\d{2})\b/)
+    if (yearMatch) {
+      detectedYear = Number(yearMatch[1])
+      queryText = queryText.replace(yearMatch[0], '').trim()
+    }
+    
+    const sortedBrands = [...filteredBrands.value].sort((a, b) => {
+      const aLen = Math.max(a.name?.en?.length || 0, a.originalName?.en?.length || 0)
+      const bLen = Math.max(b.name?.en?.length || 0, b.originalName?.en?.length || 0)
+      return bLen - aLen
+    })
+    
+    for (const brand of sortedBrands) {
+      if (matchBrand(brand, queryText)) {
+        detectedBrandId = brand.id
+        const nameEn = String(brand.originalName?.en || brand.originalName || brand.name?.en || brand.name || '').toLowerCase()
+        queryText = queryText.replace(nameEn, '').trim()
+        break
+      }
+    }
+    
+    if (detectedBrandId) {
+      try {
+        const mRes = await modelUserApi.getAll({ 'filter[brand_id]': detectedBrandId })
+        const models = mRes.data?.data || mRes.data || []
+        const sortedModels = [...models].sort((a, b) => (b.name?.en?.length || 0) - (a.name?.en?.length || 0))
+        for (const model of sortedModels) {
+          const mNameEn = String(model.name?.en || model.name || '').toLowerCase()
+          if (mNameEn && queryText.includes(mNameEn)) {
+            detectedModelId = model.id
+            break
+          }
+        }
+      } catch (e) {
+         console.error('Failed to parse models', e)
+      }
+    }
+  }
+
+  // If we fully parsed into brand, we can clear global search. Otherwise send original text.
+  if (detectedBrandId || detectedYear) {
+    delete query['filter[global]']
+    // optionally, if there's still leftover text, we could put it in global, 
+    // but typically users just write "bmw x6 2025"
+    if (queryText && queryText.length > 2 && !detectedModelId) {
+       query['filter[global]'] = queryText
+    }
+  } else if (idValue) {
+    query['filter[global]'] = idValue
+  } else {
+    delete query['filter[global]']
+  }
+
   if (d.type) query['filter[type]'] = d.type; else delete query['filter[type]']
   if (d.condition) query['filter[condition]'] = d.condition; else delete query['filter[condition]']
-  if (d.brandId) query['filter[brand_id]'] = d.brandId; else delete query['filter[brand_id]']
-  if (d.modelId) query['filter[model_id]'] = d.modelId; else delete query['filter[model_id]']
+  
+  if (detectedBrandId) query['filter[brand_id]'] = detectedBrandId; else delete query['filter[brand_id]']
+  if (detectedModelId) query['filter[model_id]'] = detectedModelId; else delete query['filter[model_id]']
+  
   if (d.transmission) query['filter[transmission]'] = d.transmission; else delete query['filter[transmission]']
   if (d.fuelType) query['filter[fuel_type]'] = d.fuelType; else delete query['filter[fuel_type]']
   if (d.drivetrain) query['filter[drivetrain]'] = d.drivetrain; else delete query['filter[drivetrain]']
@@ -359,7 +421,12 @@ const applyFilters = () => {
 
   if (d.featureIds?.length) query['filter[feature_ids]'] = d.featureIds.join(','); else delete query['filter[feature_ids]']
 
-  putBetween(query, 'year_between', d.yearFrom, d.yearTo)
+  if (detectedYear) {
+    putBetween(query, 'year_between', detectedYear, detectedYear)
+  } else {
+    putBetween(query, 'year_between', d.yearFrom, d.yearTo)
+  }
+  
   putBetween(query, 'price_between', d.priceFrom, d.priceTo)
   putBetween(query, 'mileage_between', d.mileageFrom, d.mileageTo)
 
@@ -452,7 +519,7 @@ watch(() => draft.value.brandId, async (val) => {
 const filteredBrands = computed(() => {
   const type = draft.value.type || 'car'
   const items = brands.value || []
-  return items.filter(b => !b.type || b.type === type)
+  return sortBrands(items.filter(b => !b.type || b.type === type))
 })
 
 const BIKE_KEYWORDS = [

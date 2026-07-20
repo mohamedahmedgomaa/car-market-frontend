@@ -363,6 +363,7 @@
     "predefinedFeatures": true,
     "brandArabicMap": true,
     "customBrandFilter": true,
-    "matchBrand": true
+    "matchBrand": true,
+    "sortBrands": true
   }
 }
