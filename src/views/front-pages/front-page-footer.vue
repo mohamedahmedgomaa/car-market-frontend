@@ -80,7 +80,7 @@ onMounted(fetchTopCars)
 </script>
 
 <template>
-  <div class="footer v-theme--dark">
+  <div class="footer">
     <div class="footer-top pt-11">
       <VContainer>
         <VRow>
@@ -115,13 +115,13 @@ onMounted(fetchTopCars)
               </div>
 
               <!-- Brand tagline -->
-              <p class="brand-description text-white opacity-70 mb-5">
+              <p class="brand-description text-medium-emphasis mb-5">
                 {{ t('brandDesc') }}
               </p>
 
               <!-- ✅ Follow Us -->
               <div class="mb-4">
-                <h6 class="footer-title text-white text-subtitle-2 font-weight-bold mb-3 opacity-60">
+                <h6 class="footer-title text-medium-emphasis text-subtitle-2 font-weight-bold mb-3">
                   {{ t('followUpdates') }}
                 </h6>
                 <div class="d-flex gap-x-3">
@@ -143,12 +143,12 @@ onMounted(fetchTopCars)
           <!-- 👉 Download Our Apps (Column 2) -->
           <VCol cols="12" md="3" sm="6">
             <div class="footer-links">
-              <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+              <h6 class="footer-title text-high-emphasis text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-device-mobile" size="20" color="primary" />
                 <span>{{ t('downloadAppTitle') }}</span>
               </h6>
               
-              <p class="text-white text-body-2 opacity-60 mb-5 leading-relaxed">
+              <p class="text-medium-emphasis text-body-2 mb-5 leading-relaxed">
                 {{ t('downloadAppDesc') }}
               </p>
 
@@ -161,8 +161,8 @@ onMounted(fetchTopCars)
                     </svg>
                   </div>
                   <div class="app-text">
-                    <span class="app-subtitle text-white">{{ t('downloadOn') }}</span>
-                    <span class="app-title text-white">App Store</span>
+                    <span class="app-subtitle">{{ t('downloadOn') }}</span>
+                    <span class="app-title">App Store</span>
                   </div>
                 </a>
 
@@ -174,8 +174,8 @@ onMounted(fetchTopCars)
                     </svg>
                   </div>
                   <div class="app-text">
-                    <span class="app-subtitle text-white">{{ t('getItOn') }}</span>
-                    <span class="app-title text-white">Google Play</span>
+                    <span class="app-subtitle">{{ t('getItOn') }}</span>
+                    <span class="app-title">Google Play</span>
                   </div>
                 </a>
               </div>
@@ -185,17 +185,17 @@ onMounted(fetchTopCars)
           <!-- 👉 Legal Info (Column 3) -->
           <VCol md="3" sm="6" cols="12">
             <div class="footer-links">
-              <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+              <h6 class="footer-title text-high-emphasis text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-info-circle" size="20" color="primary" />
                 <span>{{ t('officialInfo') }}</span>
               </h6>
 
-              <div class="registration-box pa-6 rounded-xl glass-panel-dark border border-white-opacity-10">
+              <div class="registration-box pa-6 rounded-xl glass-panel border">
                 <div class="d-flex align-center gap-x-3 mb-4">
                   <div class="status-indicator"></div>
-                  <span class="text-white font-weight-bold text-subtitle-1">{{ t('registeredPlatform') }}</span>
+                  <span class="text-high-emphasis font-weight-bold text-subtitle-1">{{ t('registeredPlatform') }}</span>
                 </div>
-                <p class="text-white text-body-2 opacity-60 mb-5 leading-relaxed">
+                <p class="text-medium-emphasis text-body-2 mb-5 leading-relaxed">
                   {{ t('registeredPlatformDesc') }}
                 </p>
                 <div class="tax-info-grid">
@@ -215,7 +215,7 @@ onMounted(fetchTopCars)
           <!-- 👉 Contact Info (Column 4) -->
           <VCol cols="12" md="3" sm="6">
             <div class="ps-md-6">
-              <h6 class="footer-title text-white text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
+              <h6 class="footer-title text-high-emphasis text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-headset" size="20" color="primary" />
                 <span>{{ t('getInTouch') }}</span>
               </h6>
@@ -240,8 +240,8 @@ onMounted(fetchTopCars)
     <div class="footer-line w-100 py-6">
       <VContainer>
         <div class="d-flex justify-space-between flex-wrap gap-y-4 align-center">
-          <div class="text-white opacity-40 text-caption">
-            © {{ new Date().getFullYear() }} <span class="text-white opacity-100 font-weight-bold">{{ themeConfig.app.title }}</span>. {{ t('allRightsReserved') }}
+          <div class="text-medium-emphasis text-caption">
+            © {{ new Date().getFullYear() }} <span class="text-high-emphasis font-weight-bold">{{ themeConfig.app.title }}</span>. {{ t('allRightsReserved') }}
           </div>
 
           <div class="footer-bottom-links d-flex gap-x-6">
@@ -257,14 +257,14 @@ onMounted(fetchTopCars)
 
 <style lang="scss" scoped>
 .footer-title {
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.9);
   letter-spacing: 0.5px;
 }
 
 .footer-top {
   border-radius: 60px 60px 0 0;
-  background: linear-gradient(180deg, #181818 0%, #0a0a0a 100%);
-  color: #fff;
+  background: rgba(var(--v-theme-surface), 1);
+  color: rgba(var(--v-theme-on-surface), 1);
   position: relative;
   border-top: 3px solid rgba(var(--v-theme-primary), 0.8);
   box-shadow: 0 -15px 40px rgba(var(--v-theme-primary), 0.08);
@@ -289,7 +289,7 @@ onMounted(fetchTopCars)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--v-border-color), 0.15);
   padding-top: 20px;
 }
 
@@ -304,7 +304,7 @@ onMounted(fetchTopCars)
   text-transform: uppercase;
   letter-spacing: 1px;
   opacity: 0.8;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.8);
   font-weight: 800;
 }
 
@@ -332,8 +332,8 @@ onMounted(fetchTopCars)
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid rgba(var(--v-border-color), 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -343,18 +343,15 @@ onMounted(fetchTopCars)
 
 .contact-text-v2 {
   font-size: 15px;
-  opacity: 0.8;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 
 .bottom-link {
-  color: #fff;
-  opacity: 0.4;
+  color: rgba(var(--v-theme-on-surface), 0.7);
   text-decoration: none;
   font-size: 12px;
   transition: all 0.3s ease;
   &:hover {
-    opacity: 1;
     color: rgba(var(--v-theme-primary), 1);
   }
 }
@@ -363,9 +360,9 @@ onMounted(fetchTopCars)
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid rgba(var(--v-border-color), 0.15);
+  color: rgba(var(--v-theme-on-surface), 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -388,8 +385,8 @@ onMounted(fetchTopCars)
 }
 
 .footer-line {
-  background: #050505;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(var(--v-theme-background), 1);
+  border-top: 1px solid rgba(var(--v-border-color), 0.15);
 }
 
 .footer {
@@ -434,7 +431,7 @@ onMounted(fetchTopCars)
 .logo-title {
   font-size: 1.8rem;
   letter-spacing: 0.5px;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 1);
   
   .text-primary-glow {
     color: rgba(var(--v-theme-primary), 1);
@@ -445,7 +442,6 @@ onMounted(fetchTopCars)
 .brand-description {
   font-size: 13.5px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.65);
 }
 
 // Download Buttons
@@ -455,12 +451,12 @@ onMounted(fetchTopCars)
   gap: 12px;
   padding: 10px 18px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid rgba(var(--v-border-color), 0.15);
   text-decoration: none;
-  color: #fff;
+  color: rgba(var(--v-theme-on-surface), 1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 
@@ -468,7 +464,7 @@ onMounted(fetchTopCars)
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: rgba(var(--v-theme-on-surface), 1);
     transition: all 0.3s ease;
     
     svg {
@@ -498,7 +494,7 @@ onMounted(fetchTopCars)
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(var(--v-theme-on-surface), 0.1);
     border-color: rgba(var(--v-theme-primary), 0.5);
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.15), 0 0 15px rgba(var(--v-theme-primary), 0.1);
