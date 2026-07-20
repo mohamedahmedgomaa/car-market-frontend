@@ -25,6 +25,10 @@ const form = ref({
   address_ar: '',
   address_en: '',
   map_url: '',
+  facebook_url: '',
+  instagram_url: '',
+  tiktok_url: '',
+  youtube_url: '',
   sort_order: 0,
   tier: 'none',
 })
@@ -339,6 +343,63 @@ onMounted(async () => {
             hide-details="auto"
             :error="!!errors.map_url"
             :error-messages="errors.map_url"
+          />
+        </div>
+
+        <!-- Social Media Links -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Facebook Link</label>
+          <VTextField
+            v-model="form.facebook_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://facebook.com/..."
+            prepend-inner-icon="tabler-brand-facebook"
+            hide-details="auto"
+            :error="!!errors.facebook_url"
+            :error-messages="errors.facebook_url"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">Instagram Link</label>
+          <VTextField
+            v-model="form.instagram_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://instagram.com/..."
+            prepend-inner-icon="tabler-brand-instagram"
+            hide-details="auto"
+            :error="!!errors.instagram_url"
+            :error-messages="errors.instagram_url"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">TikTok Link</label>
+          <VTextField
+            v-model="form.tiktok_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://tiktok.com/@..."
+            prepend-inner-icon="tabler-brand-tiktok"
+            hide-details="auto"
+            :error="!!errors.tiktok_url"
+            :error-messages="errors.tiktok_url"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">YouTube Link</label>
+          <VTextField
+            v-model="form.youtube_url"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Ex: https://youtube.com/..."
+            prepend-inner-icon="tabler-brand-youtube"
+            hide-details="auto"
+            :error="!!errors.youtube_url"
+            :error-messages="errors.youtube_url"
           />
         </div>
 

@@ -97,10 +97,10 @@ export const matchBrand = (brandObj, queryText) => {
   }
 
   // Exact or partial match in English
-  if (nameEn.includes(q)) return true
+  if (nameEn && (nameEn.includes(q) || q.includes(nameEn))) return true
 
   // Exact or partial match in Arabic (from DB, if populated and different from English)
-  if (nameAr && nameAr !== nameEn && nameAr.includes(q)) return true
+  if (nameAr && nameAr !== nameEn && (nameAr.includes(q) || q.includes(nameAr))) return true
 
   // Exact or partial match in Arabic Synonyms Map
   const synonyms = brandArabicMap[nameEn]
