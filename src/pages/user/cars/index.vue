@@ -7,7 +7,7 @@ import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
 import featureUserApi from '@/api/user/carFeatureUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
-import { customBrandFilter, sortBrands, matchBrand } from '@/utils/brandTranslations.js'
+import { customBrandFilter, sortBrands, matchBrand, brandArabicMap } from '@/utils/brandTranslations.js'
 
 definePage({
   meta: { layout: 'front', public: true },
@@ -346,7 +346,7 @@ const applyFilters = async () => {
       queryText = queryText.replace(yearMatch[0], '').trim()
     }
     
-    const sortedBrands = [...filteredBrands.value].sort((a, b) => {
+    const sortedBrands = [...brands.value].sort((a, b) => {
       const aLen = Math.max(a.name?.en?.length || 0, a.originalName?.en?.length || 0)
       const bLen = Math.max(b.name?.en?.length || 0, b.originalName?.en?.length || 0)
       return bLen - aLen
@@ -356,7 +356,34 @@ const applyFilters = async () => {
       if (matchBrand(brand, queryText)) {
         detectedBrandId = brand.id
         const nameEn = String(brand.originalName?.en || brand.originalName || brand.name?.en || brand.name || '').toLowerCase()
-        queryText = queryText.replace(nameEn, '').trim()
+        const nameAr = String(brand.originalName?.ar || brand.name?.ar || '').toLowerCase()
+        
+        let removed = false
+        if (nameEn && queryText.includes(nameEn)) {
+          queryText = queryText.replace(nameEn, '').trim()
+          removed = true
+        }
+        if (!removed && nameAr && queryText.includes(nameAr)) {
+          queryText = queryText.replace(nameAr, '').trim()
+        }
+        if (!removed) {
+          for (const [key, aliases] of Object.entries(brandArabicMap)) {
+            if (key === nameEn || nameEn.includes(key)) {
+               for (const alias of aliases) {
+                 const al = alias.toLowerCase()
+                 if (queryText.includes(al)) {
+                   queryText = queryText.replace(al, '').trim()
+                   removed = true
+                   break
+                 }
+               }
+            }
+            if(removed) break;
+          }
+        }
+        if (!removed && (queryText === nameEn || queryText === nameAr)) {
+          queryText = ''
+        }
         break
       }
     }
@@ -384,7 +411,7 @@ const applyFilters = async () => {
     delete query['filter[global]']
     // optionally, if there's still leftover text, we could put it in global, 
     // but typically users just write "bmw x6 2025"
-    if (queryText && queryText.length > 2 && !detectedModelId) {
+    if (queryText && queryText.length > 1 && !detectedModelId) {
        query['filter[global]'] = queryText
     }
   } else if (idValue) {

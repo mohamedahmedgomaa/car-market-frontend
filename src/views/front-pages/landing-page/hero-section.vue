@@ -203,8 +203,39 @@ const onSearch = async () => {
       if (matchBrand(brand, queryText)) {
         detectedBrandId = brand.id
         // Try to remove brand name from query to avoid matching model loosely
-        const nameEn = String(brand.originalName?.en || brand.originalName || brand.name || '').toLowerCase()
-        queryText = queryText.replace(nameEn, '').trim()
+        const nameEn = String(brand.originalName?.en || brand.originalName || brand.name?.en || brand.name || '').toLowerCase()
+        const nameAr = String(brand.originalName?.ar || brand.name?.ar || '').toLowerCase()
+        
+        let removed = false
+        if (nameEn && queryText.includes(nameEn)) {
+          queryText = queryText.replace(nameEn, '').trim()
+          removed = true
+        }
+        if (!removed && nameAr && queryText.includes(nameAr)) {
+          queryText = queryText.replace(nameAr, '').trim()
+        }
+        // Also check aliases if not removed
+        if (!removed) {
+          for (const [key, aliases] of Object.entries(brandArabicMap)) {
+            if (key === nameEn || nameEn.includes(key)) {
+               for (const alias of aliases) {
+                 const al = alias.toLowerCase()
+                 if (queryText.includes(al)) {
+                   queryText = queryText.replace(al, '').trim()
+                   removed = true
+                   break
+                 }
+               }
+            }
+            if(removed) break;
+          }
+        }
+        
+        // Final fallback: if queryText is exactly equal to the brand name (or very close), just clear it
+        if (!removed && (queryText === nameEn || queryText === nameAr)) {
+          queryText = ''
+        }
+
         break
       }
     }
@@ -231,14 +262,20 @@ const onSearch = async () => {
   // Build query and merge with smart parsed fields
   const finalQuery = buildQuery()
   
+  // Clean up global filter if we parsed successfully
+  if (detectedBrandId || detectedYear) {
+    delete finalQuery['filter[global]']
+    
+    // If there's still leftover text that looks substantial, we can put it in global
+    if (queryText && queryText.length > 1 && !detectedModelId) {
+      finalQuery['filter[global]'] = queryText
+    }
+  }
+
   if (detectedBrandId) finalQuery['filter[brand_id]'] = detectedBrandId
   if (detectedModelId) finalQuery['filter[model_id]'] = detectedModelId
   if (detectedYear) finalQuery['filter[year_between]'] = `${detectedYear}.${detectedYear}`
-  
-  // If we couldn't parse everything, send the remaining text as global filter
-  if (!detectedBrandId && !detectedYear) {
-    finalQuery['filter[global]'] = smartSearch.value
-  }
+
 
   router.push({
     path: '/user/cars',
