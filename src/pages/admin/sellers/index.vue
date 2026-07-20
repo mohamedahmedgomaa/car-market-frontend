@@ -222,10 +222,10 @@ const stats = computed(() => [
                   </div>
                   <!-- Tier Badge display in list -->
                   <VChip
-                    v-if="seller.tier && seller.tier !== 'none'"
-                    size="x-small"
+                    v-if="seller && seller.tier && seller.tier !== 'none'"
+                    size="small"
                     :color="seller.tier === 'silver' ? 'grey-lighten-1' : seller.tier === 'gold' ? 'warning' : 'blue-darken-1'"
-                    class="font-weight-bold text-uppercase elevation-1"
+                    class="font-weight-bold text-uppercase elevation-1 mt-1"
                   >
                     {{ seller.tier === 'silver' ? 'Silver' : seller.tier === 'gold' ? 'Gold' : 'Platinum' }}
                   </VChip>
