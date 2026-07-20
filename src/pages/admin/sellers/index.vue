@@ -216,10 +216,19 @@ const stats = computed(() => [
                 </VAvatar>
                 <div>
                   <div class="text-body-1 font-weight-bold text-high-emphasis mb-1">{{ seller.name }}</div>
-                  <div class="text-caption font-weight-medium text-warning d-flex align-center gap-1">
+                  <div class="text-caption font-weight-medium text-warning d-flex align-center gap-1 mb-1">
                     <VIcon icon="tabler-briefcase" size="14" />
                     {{ seller.store_name?.en || seller.store_name || 'Individual Seller' }}
                   </div>
+                  <!-- Tier Badge display in list -->
+                  <VChip
+                    v-if="seller.tier && seller.tier !== 'none'"
+                    size="x-small"
+                    :color="seller.tier === 'silver' ? 'grey-lighten-1' : seller.tier === 'gold' ? 'warning' : 'blue-darken-1'"
+                    class="font-weight-bold text-uppercase elevation-1"
+                  >
+                    {{ seller.tier === 'silver' ? 'Silver' : seller.tier === 'gold' ? 'Gold' : 'Platinum' }}
+                  </VChip>
                 </div>
               </div>
             </td>
