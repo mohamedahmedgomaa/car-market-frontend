@@ -500,12 +500,18 @@ onMounted(() => {
                   <div class="overflow-hidden flex-grow-1">
                     <div class="d-flex align-center justify-space-between gap-1 mb-1 w-100">
                       <div class="d-flex align-center gap-1 overflow-hidden flex-grow-1">
-                        <h3 class="text-h5 font-weight-black text-high-emphasis text-truncate mb-0 flex-grow-1">
+                        <h3 class="text-h5 font-weight-black text-truncate mb-0 flex-grow-1"
+                            :class="{
+                              'text-gold': seller.tier?.toLowerCase() === 'gold',
+                              'text-platinum': seller.tier?.toLowerCase() === 'platinum',
+                              'text-silver': seller.tier?.toLowerCase() === 'silver',
+                              'text-high-emphasis': !seller.tier || seller.tier === 'none'
+                            }">
                           {{ _t(seller.store_name) || seller.name }}
                         </h3>
                         <VIcon 
                           icon="tabler-discount-check-filled" 
-                          :color="seller.tier?.toLowerCase() === 'gold' ? 'warning' : (seller.tier?.toLowerCase() === 'silver' ? 'grey-lighten-1' : (seller.tier?.toLowerCase() === 'platinum' ? 'blue-darken-1' : 'info'))" 
+                          :color="seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#78909C' : (seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : 'info'))" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
                           class="flex-shrink-0"
@@ -993,4 +999,9 @@ onMounted(() => {
     flex: 1;
   }
 }
+
+.text-gold { color: #DAA520 !important; }
+.text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
+.v-theme--dark .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
+.text-silver { color: #78909C !important; }
 </style>

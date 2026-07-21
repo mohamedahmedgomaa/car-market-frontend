@@ -378,7 +378,7 @@ watch(
                 <span class="text-caption price-currency opacity-60">EG</span>
               </div>
 
-              <div class="d-flex align-center" style="font-size: 12px">
+              <div class="d-flex align-center gap-1" style="font-size: 12px">
                 <span 
                   class="text-truncate font-weight-bold" 
                   :class="{
@@ -386,10 +386,20 @@ watch(
                     'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
                     'text-silver': !car.seller?.tier || car.seller?.tier?.toLowerCase() === 'silver'
                   }"
-                  style="max-width: 95px"
+                  style="max-width: 85px"
                 >
                   {{ getSellerName(car) }}
                 </span>
+                <VIcon 
+                  v-if="car.seller?.tier && car.seller.tier !== 'none'"
+                  icon="tabler-discount-check-filled"
+                  size="14"
+                  :class="{
+                    'text-gold': car.seller?.tier?.toLowerCase() === 'gold',
+                    'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
+                    'text-silver': car.seller?.tier?.toLowerCase() === 'silver'
+                  }"
+                />
               </div>
             </div>
 
@@ -758,8 +768,8 @@ watch(
   color: #fff;
 }
 
-.text-gold { color: #D4AF37 !important; }
-.text-platinum { color: #455A64 !important; }
-.v-theme--dark .text-platinum { color: #B0BEC5 !important; }
-.text-silver { color: #9E9E9E !important; }
+.text-gold { color: #DAA520 !important; }
+.text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
+.v-theme--dark .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
+.text-silver { color: #78909C !important; }
 </style>
