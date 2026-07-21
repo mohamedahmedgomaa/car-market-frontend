@@ -182,6 +182,7 @@ const messages = {
     callBtn: 'Call',
     whatsappBtn: 'WhatsApp',
     exploreShowroom: 'Explore Showroom',
+    elitePartner: 'Elite Partner',
   },
   ar: {
     settings: 'الإعدادات',
@@ -363,6 +364,7 @@ const messages = {
     callBtn: 'اتصل',
     whatsappBtn: 'واتساب',
     exploreShowroom: 'استكشاف المعرض',
+    elitePartner: 'شريك النخبة',
   }
 }
 

@@ -516,7 +516,7 @@ onMounted(() => {
                         v-if="seller.tier?.toLowerCase() === 'platinum'"
                         class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
                       >
-                        PLATINUM
+                        ELITE
                       </div>
                       <div
                         v-else-if="seller.tier?.toLowerCase() === 'gold'"
@@ -763,22 +763,22 @@ onMounted(() => {
   }
 
   &.showroom-card-platinum {
-    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(98, 0, 234, 0.15)) !important;
-    border: 2px solid rgba(98, 0, 234, 0.6) !important;
-    box-shadow: 0 12px 30px rgba(98, 0, 234, 0.25) !important;
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(255, 109, 0, 0.15)) !important;
+    border: 2px solid rgba(255, 109, 0, 0.8) !important;
+    box-shadow: 0 12px 30px rgba(255, 109, 0, 0.4), 0 0 25px rgba(255, 143, 0, 0.2) !important;
     
     &:hover {
-      border-color: rgba(98, 0, 234, 1) !important;
-      box-shadow: 0 20px 45px rgba(98, 0, 234, 0.4), 0 0 40px rgba(98, 0, 234, 0.25) !important;
+      border-color: rgba(255, 109, 0, 1) !important;
+      box-shadow: 0 20px 45px rgba(255, 109, 0, 0.6), 0 0 50px rgba(255, 143, 0, 0.4) !important;
     }
   }
 }
 
 .tier-badge-platinum {
-  background: linear-gradient(135deg, #6200EA 0%, #651FFF 50%, #B388FF 100%);
+  background: linear-gradient(135deg, #FF6D00 0%, #FF8F00 50%, #FFA000 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 15px rgba(98, 0, 234, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 109, 0, 0.6), 0 0 15px rgba(255, 143, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 

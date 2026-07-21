@@ -190,11 +190,11 @@ onMounted(fetchSeller)
                         v-if="seller.tier && seller.tier !== 'none'"
                         size="small"
                         variant="elevated"
-                        :color="seller.tier === 'silver' ? 'blue-grey-darken-1' : seller.tier === 'gold' ? 'amber-darken-3' : 'deep-purple-accent-3'"
+                        :color="seller.tier === 'silver' ? 'blue-grey-darken-1' : seller.tier === 'gold' ? 'amber-darken-3' : 'deep-orange-accent-4'"
                         class="ms-2 font-weight-black text-uppercase shadow-sm text-white"
                         prepend-icon="tabler-medal"
                       >
-                        {{ seller.tier === 'silver' ? t('silverPartner') || 'Silver Partner' : seller.tier === 'gold' ? t('goldPartner') || 'Gold Partner' : t('platinumPartner') || 'Platinum Co-Founder' }}
+                        {{ seller.tier === 'silver' ? t('silverPartner') || 'Silver Partner' : seller.tier === 'gold' ? t('goldPartner') || 'Gold Partner' : t('elitePartner') || 'Elite Partner' }}
                       </VChip>
                     </div>
 
@@ -552,9 +552,9 @@ onMounted(fetchSeller)
 }
 
 .showroom-header-platinum {
-  border: 2px solid rgba(98, 0, 234, 0.6) !important;
-  box-shadow: 0 12px 40px rgba(98, 0, 234, 0.25) !important;
-  .header-bg-glow { background: radial-gradient(circle, rgba(98, 0, 234, 0.2) 0%, transparent 70%); }
+  border: 2px solid rgba(255, 109, 0, 0.8) !important;
+  box-shadow: 0 12px 40px rgba(255, 109, 0, 0.4), 0 0 25px rgba(255, 143, 0, 0.3) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(255, 109, 0, 0.3) 0%, transparent 75%); filter: blur(50px); }
 }
 
 .showroom-header-silver {
