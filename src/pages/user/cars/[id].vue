@@ -733,9 +733,39 @@ watch(
                   </template>
                 </div>
               </div>
-              <div class="text-right">
-                <div class="text-h3 font-weight-black text-primary mb-1">
+              <div class="text-right d-flex flex-column align-end">
+                <div class="text-h3 font-weight-black text-primary mb-3">
                   {{ formatPrice(car.price) }} EG
+                </div>
+                
+                <!-- Contact Actions -->
+                <div class="d-flex gap-2">
+                  <VBtn
+                    v-if="car.seller?.phone"
+                    variant="elevated"
+                    color="primary"
+                    class="font-weight-bold shadow-primary px-5"
+                    height="44"
+                    rounded="pill"
+                    @click.stop.prevent="openCallDialog"
+                  >
+                    <VIcon icon="tabler-phone" size="18" class="me-1" />
+                    {{ t('callBtn') || 'Call' }}
+                  </VBtn>
+
+                  <VBtn
+                    v-if="car.seller?.phone"
+                    variant="elevated"
+                    color="success"
+                    class="font-weight-bold shadow-success px-5"
+                    height="44"
+                    rounded="pill"
+                    :href="whatsappLink"
+                    target="_blank"
+                  >
+                    <VIcon icon="tabler-brand-whatsapp" size="18" class="me-1" />
+                    {{ t('whatsappBtn') || 'WhatsApp' }}
+                  </VBtn>
                 </div>
               </div>
             </div>
@@ -1081,7 +1111,7 @@ watch(
                 v-if="car.seller?.tier?.toLowerCase() === 'platinum'"
                 class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
               >
-                PLATINUM
+                ELITE
               </div>
               <div
                 v-else-if="car.seller?.tier?.toLowerCase() === 'gold'"
@@ -1122,7 +1152,7 @@ watch(
                   </div>
                   <VIcon 
                     icon="tabler-discount-check-filled" 
-                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#78909C' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#B0BEC5' : 'success'))" 
+                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#78909C' : 'info'))" 
                     size="22" 
                     title="Verified Dealer" 
                     class="flex-shrink-0"
@@ -1131,35 +1161,6 @@ watch(
               </div>
             </div>
 
-            <div class="d-flex gap-2 w-100">
-              <!-- Phone Call -->
-              <VBtn
-                v-if="car.seller?.phone"
-                variant="flat"
-                color="primary"
-                class="contact-btn flex-1-1-0"
-                height="54"
-                @click.stop.prevent="openCallDialog"
-              >
-                <VIcon icon="tabler-phone" size="22" class="me-1" />
-                Call
-              </VBtn>
-
-              <!-- WhatsApp -->
-              <VBtn
-                v-if="car.seller?.phone"
-                color="#25D366"
-                class="contact-btn text-white flex-1-1-0"
-                height="54"
-                elevation="0"
-                :href="whatsappLink"
-                target="_blank"
-                @click.stop
-              >
-                <VIcon icon="tabler-brand-whatsapp" size="24" class="me-1" />
-                WhatsApp
-              </VBtn>
-            </div>
           </VCard>
 
           <!-- ✅ Call Confirmation Dialog -->
@@ -1858,19 +1859,32 @@ watch(
     box-shadow: 0 12px 30px rgba(218, 165, 32, 0.25) !important;
   }
 
-  &.seller-card-platinum {
+  &.seller-card-silver {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(69, 90, 100, 0.15)) !important;
     border: 2px solid rgba(69, 90, 100, 0.6) !important;
     border-bottom: 2px solid rgba(69, 90, 100, 0.6) !important;
     box-shadow: 0 12px 30px rgba(69, 90, 100, 0.25) !important;
   }
+
+  &.seller-card-platinum {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(255, 109, 0, 0.15)) !important;
+    border: 2px solid rgba(255, 109, 0, 0.8) !important;
+    border-bottom: 2px solid rgba(255, 109, 0, 0.8) !important;
+    box-shadow: 0 12px 30px rgba(255, 109, 0, 0.4), 0 0 25px rgba(255, 143, 0, 0.2) !important;
+    
+    &:hover {
+      border-color: rgba(255, 109, 0, 1) !important;
+      border-bottom-color: rgba(255, 109, 0, 1) !important;
+      box-shadow: 0 20px 45px rgba(255, 109, 0, 0.6), 0 0 50px rgba(255, 143, 0, 0.4) !important;
+    }
+  }
 }
 
 .tier-badge-platinum {
-  background: linear-gradient(135deg, #455A64 0%, #78909C 50%, #B0BEC5 100%);
+  background: linear-gradient(135deg, #FF6D00 0%, #FF8F00 50%, #FFA000 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 109, 0, 0.6), 0 0 15px rgba(255, 143, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
@@ -1883,10 +1897,10 @@ watch(
 }
 
 .tier-badge-silver {
-  background: linear-gradient(135deg, #9E9E9E 0%, #E0E0E0 50%, #F5F5F5 100%);
-  color: #212121 !important;
-  box-shadow: 0 4px 15px rgba(224, 224, 224, 0.4);
-  border: 1px solid #F5F5F5;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, #455A64 0%, #78909C 50%, #B0BEC5 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 </style>
