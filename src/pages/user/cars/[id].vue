@@ -22,6 +22,8 @@ const error = ref('')
 const car = ref(null)
 
 const API_BASE = import.meta.env.VITE_BASE_URL
+import { useI18n } from 'vue-i18n'
+const { t: _t } = useI18n()
 
 const t = (val) => {
   if (!val) return ''
@@ -715,7 +717,8 @@ watch(
         <div class="main-content">
           <!-- Header Area -->
           <div class="info-header mb-8">
-            <div class="d-flex justify-space-between align-center flex-wrap gap-4">
+            <div class="d-flex flex-column gap-4">
+              <!-- Top Row: Title & Info -->
               <div>
                 <h1 class="text-h3 font-weight-bold mb-2">{{ t(car.title) }}</h1>
                 <div class="text-h6 opacity-70 d-inline-flex align-center flex-wrap gap-1">
@@ -733,38 +736,40 @@ watch(
                   </template>
                 </div>
               </div>
-              <div class="text-right d-flex flex-column align-end">
-                <div class="text-h3 font-weight-black text-primary mb-3">
+
+              <!-- Bottom Row: Price & Actions -->
+              <div class="d-flex flex-column flex-md-row justify-space-between align-md-center gap-4 pa-4 rounded-xl" style="background: rgba(var(--v-theme-surface), 0.5); border: 1px solid rgba(var(--v-border-color), 0.1);">
+                <div class="text-h2 font-weight-black text-primary mb-0">
                   {{ formatPrice(car.price) }} EG
                 </div>
                 
                 <!-- Contact Actions -->
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-3">
                   <VBtn
                     v-if="car.seller?.phone"
                     variant="elevated"
                     color="primary"
-                    class="font-weight-bold shadow-primary px-5"
-                    height="44"
+                    class="font-weight-bold shadow-primary px-8"
+                    height="50"
                     rounded="pill"
                     @click.stop.prevent="openCallDialog"
                   >
-                    <VIcon icon="tabler-phone" size="18" class="me-1" />
-                    {{ t('callBtn') || 'Call' }}
+                    <VIcon icon="tabler-phone" size="20" class="me-2" />
+                    {{ _t('callBtn') || 'Call' }}
                   </VBtn>
 
                   <VBtn
                     v-if="car.seller?.phone"
                     variant="elevated"
                     color="success"
-                    class="font-weight-bold shadow-success px-5"
-                    height="44"
+                    class="font-weight-bold shadow-success px-8"
+                    height="50"
                     rounded="pill"
                     :href="whatsappLink"
                     target="_blank"
                   >
-                    <VIcon icon="tabler-brand-whatsapp" size="18" class="me-1" />
-                    {{ t('whatsappBtn') || 'WhatsApp' }}
+                    <VIcon icon="tabler-brand-whatsapp" size="20" class="me-2" />
+                    {{ _t('whatsappBtn') || 'WhatsApp' }}
                   </VBtn>
                 </div>
               </div>
