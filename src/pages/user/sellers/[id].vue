@@ -30,9 +30,10 @@ const bestDealCarsCount = computed(() => sellerCars.value.filter(c => c.is_best_
 const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length)
 
 const verifiedBadgeColor = computed(() => {
-  if (seller.value?.tier === 'gold') return 'warning' // Gold
-  if (seller.value?.tier === 'silver') return 'grey-lighten-1' // Silver
-  if (seller.value?.tier === 'platinum') return 'blue-darken-1' // Platinum
+  const t = seller.value?.tier?.toLowerCase()
+  if (t === 'gold') return '#DAA520' // Gold
+  if (t === 'silver') return '#78909C' // Silver
+  if (t === 'platinum') return '#FF6D00' // Elite
   return 'info' // Normal verified (blue)
 })
 
@@ -186,16 +187,24 @@ onMounted(fetchSeller)
 
                       
                       <!-- Tier Badge -->
-                      <VChip
-                        v-if="seller.tier && seller.tier !== 'none'"
-                        size="small"
-                        variant="elevated"
-                        :color="seller.tier === 'silver' ? 'blue-grey-darken-1' : seller.tier === 'gold' ? 'amber-darken-3' : 'deep-orange-accent-4'"
-                        class="ms-2 font-weight-black text-uppercase shadow-sm text-white"
-                        prepend-icon="tabler-medal"
+                      <div
+                        v-if="seller.tier?.toLowerCase() === 'platinum'"
+                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption ms-2"
                       >
-                        {{ seller.tier === 'silver' ? t('silverPartner') || 'Silver Partner' : seller.tier === 'gold' ? t('goldPartner') || 'Gold Partner' : t('elitePartner') || 'Elite Partner' }}
-                      </VChip>
+                        ELITE
+                      </div>
+                      <div
+                        v-else-if="seller.tier?.toLowerCase() === 'gold'"
+                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption ms-2"
+                      >
+                        GOLD
+                      </div>
+                      <div
+                        v-else-if="seller.tier?.toLowerCase() === 'silver'"
+                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption ms-2"
+                      >
+                        SILVER
+                      </div>
                     </div>
 
                     <!-- Reviews / Ratings -->
@@ -223,7 +232,7 @@ onMounted(fetchSeller)
 
                     <!-- City & Location line -->
                     <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-3">
-                      <VIcon icon="tabler-map-pin" color="error" size="20" />
+                      <VIcon icon="tabler-map-pin" size="20" />
                       <span class="text-subtitle-1 text-high-emphasis font-weight-black">
                         {{ seller.governorate ? t(seller.governorate.name) : '' }}
                         {{ seller.governorate && seller.city ? ' - ' : '' }}
@@ -561,6 +570,30 @@ onMounted(fetchSeller)
   border: 2px solid rgba(69, 90, 100, 0.6) !important;
   box-shadow: 0 12px 40px rgba(69, 90, 100, 0.25) !important;
   .header-bg-glow { background: radial-gradient(circle, rgba(69, 90, 100, 0.2) 0%, transparent 70%); }
+}
+
+.tier-badge-platinum {
+  background: linear-gradient(135deg, #FF6D00 0%, #FF8F00 50%, #FFA000 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 20px rgba(255, 109, 0, 0.6), 0 0 15px rgba(255, 143, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.tier-badge-gold {
+  background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #FFF8DC 100%);
+  color: #3E2723 !important;
+  box-shadow: 0 4px 15px rgba(218, 165, 32, 0.5);
+  border: 1px solid #FFF8DC;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.tier-badge-silver {
+  background: linear-gradient(135deg, #455A64 0%, #78909C 50%, #B0BEC5 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Avatar Styling */
