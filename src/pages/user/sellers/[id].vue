@@ -156,7 +156,11 @@ onMounted(fetchSeller)
       <!-- Profile & Stats Content -->
       <template v-else-if="seller">
         <!-- Showroom Header Card -->
-        <VCard class="showroom-header-card mb-8 animate-fade-in-up" elevation="10">
+        <VCard 
+          class="showroom-header-card mb-8 animate-fade-in-up" 
+          elevation="10"
+          :class="[seller.tier && seller.tier !== 'none' ? 'showroom-header-' + seller.tier.toLowerCase() : '']"
+        >
           <div class="header-bg-glow"></div>
           
           <div class="showroom-profile-container pa-6 pa-md-10 position-relative z-1">
@@ -352,31 +356,18 @@ onMounted(fetchSeller)
           </div>
         </VCard>
 
-        <!-- 📊 Showroom Statistics Cards Grid (1 Column) -->
-        <VRow class="stats-grid mb-10 animate-fade-in-up" style="animation-delay: 0.2s">
-          <!-- Total Cars -->
-          <VCol cols="12" md="4" class="mx-auto">
-            <VCard class="stat-card px-3 py-4 text-center h-100 rounded-xl d-flex align-center justify-center gap-3" elevation="6">
-              <div class="stat-icon-wrapper bg-primary-subtle flex-shrink-0">
-                <VIcon icon="tabler-car" size="26" color="primary" />
-              </div>
-              <div class="text-start overflow-hidden">
-                <h2 class="text-h3 font-weight-black text-primary mb-0 line-height-1">
-                  {{ totalCarsCount }}
-                </h2>
-                <div class="text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis mt-1 text-truncate">
-                  {{ t('totalCars') || 'Total Cars' }}
-                </div>
-              </div>
-            </VCard>
-          </VCol>
-        </VRow>
+
 
         <!-- Showroom Cars Section -->
         <div class="inventory-section animate-fade-in-up" style="animation-delay: 0.3s">
           <!-- Brands Filter -->
           <div v-if="uniqueBrands.length > 0" class="brands-filter-container mb-6 d-flex align-center gap-3 overflow-x-auto pb-2">
-            <span class="text-subtitle-1 font-weight-bold text-medium-emphasis text-no-wrap">{{ t('filterByBrand') || 'Filter by Brand:' }}</span>
+            <span class="text-subtitle-1 font-weight-bold text-medium-emphasis text-no-wrap me-2">{{ t('filterByBrand') || 'Filter by Brand:' }}</span>
+            
+            <div class="d-inline-flex align-center bg-surface px-3 py-1 rounded-pill elevation-1 border me-2 flex-shrink-0" v-tooltip="t('totalCars') || 'Total Cars'">
+              <VIcon icon="tabler-car" size="16" class="me-1 text-primary" />
+              <span class="text-subtitle-2 font-weight-bold">{{ totalCarsCount }}</span>
+            </div>
             
             <VChip
               class="font-weight-bold brand-chip"
@@ -551,6 +542,25 @@ onMounted(fetchSeller)
   filter: blur(60px);
   z-index: 0;
   pointer-events: none;
+}
+
+/* Tier Glow Classes */
+.showroom-header-gold {
+  border: 2px solid rgba(218, 165, 32, 0.8) !important;
+  box-shadow: 0 12px 40px rgba(218, 165, 32, 0.25) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(218, 165, 32, 0.2) 0%, transparent 70%); }
+}
+
+.showroom-header-platinum {
+  border: 2px solid rgba(98, 0, 234, 0.6) !important;
+  box-shadow: 0 12px 40px rgba(98, 0, 234, 0.25) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(98, 0, 234, 0.2) 0%, transparent 70%); }
+}
+
+.showroom-header-silver {
+  border: 2px solid rgba(69, 90, 100, 0.6) !important;
+  box-shadow: 0 12px 40px rgba(69, 90, 100, 0.25) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(69, 90, 100, 0.2) 0%, transparent 70%); }
 }
 
 /* Avatar Styling */
