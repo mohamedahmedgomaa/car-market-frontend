@@ -534,25 +534,13 @@ onMounted(() => {
 
                     <!-- Clean Professional Location Line -->
                     <div class="d-flex align-center text-medium-emphasis text-caption font-weight-medium mt-2">
-                      <VIcon icon="tabler-map-pin" size="16" class="me-1" color="primary" />
+                      <VIcon icon="tabler-map-pin" size="16" class="me-1" />
                       <span class="text-truncate">
                         {{ seller.governorate ? _t(seller.governorate.name) : '' }}
                         <span v-if="seller.city">, {{ _t(seller.city.name) }}</span>
                         <span v-if="_t(seller.district)">, {{ _t(seller.district) }}</span>
                         <span v-if="_t(seller.street)">, {{ _t(seller.street) }}</span>
                       </span>
-                    </div>
-
-                    <div v-if="seller.map_url" class="mt-2">
-                      <a
-                        :href="seller.map_url"
-                        target="_blank"
-                        class="d-inline-flex align-center gap-1 text-primary text-caption font-weight-bold text-decoration-none hover-scale"
-                        @click.stop
-                      >
-                        <VIcon icon="tabler-map" size="14" />
-                        <span>{{ t('mapLink') }}</span>
-                      </a>
                     </div>
                   </div>
                 </div>
