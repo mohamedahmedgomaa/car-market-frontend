@@ -482,6 +482,7 @@ onMounted(() => {
               class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between cursor-pointer relative"
               :class="{
                 'showroom-card-gold': seller.tier?.toLowerCase() === 'gold',
+                'showroom-card-silver': seller.tier?.toLowerCase() === 'silver',
                 'showroom-card-platinum': seller.tier?.toLowerCase() === 'platinum'
               }"
               elevation="6"
@@ -524,7 +525,7 @@ onMounted(() => {
                         GOLD
                       </div>
                       <div
-                        v-else
+                        v-else-if="seller.tier?.toLowerCase() === 'silver'"
                         class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
                       >
                         SILVER
@@ -762,7 +763,7 @@ onMounted(() => {
     }
   }
 
-  &.showroom-card-platinum {
+  &.showroom-card-silver {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(69, 90, 100, 0.15)) !important;
     border: 2px solid rgba(69, 90, 100, 0.6) !important;
     box-shadow: 0 12px 30px rgba(69, 90, 100, 0.25) !important;
@@ -772,12 +773,23 @@ onMounted(() => {
       box-shadow: 0 20px 45px rgba(69, 90, 100, 0.4), 0 0 40px rgba(69, 90, 100, 0.25) !important;
     }
   }
+
+  &.showroom-card-platinum {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(98, 0, 234, 0.15)) !important;
+    border: 2px solid rgba(98, 0, 234, 0.6) !important;
+    box-shadow: 0 12px 30px rgba(98, 0, 234, 0.25) !important;
+    
+    &:hover {
+      border-color: rgba(98, 0, 234, 1) !important;
+      box-shadow: 0 20px 45px rgba(98, 0, 234, 0.4), 0 0 40px rgba(98, 0, 234, 0.25) !important;
+    }
+  }
 }
 
 .tier-badge-platinum {
-  background: linear-gradient(135deg, #455A64 0%, #78909C 50%, #B0BEC5 100%);
+  background: linear-gradient(135deg, #6200EA 0%, #651FFF 50%, #B388FF 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
+  box-shadow: 0 4px 15px rgba(98, 0, 234, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.3);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
@@ -791,11 +803,11 @@ onMounted(() => {
 }
 
 .tier-badge-silver {
-  background: linear-gradient(135deg, #9E9E9E 0%, #E0E0E0 50%, #F5F5F5 100%);
-  color: #212121 !important;
-  box-shadow: 0 4px 15px rgba(224, 224, 224, 0.4);
-  border: 1px solid #F5F5F5;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, #455A64 0%, #78909C 50%, #B0BEC5 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .bg-white-10 {

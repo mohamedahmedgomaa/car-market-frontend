@@ -107,6 +107,35 @@ const showCallDialog = ref(false)
 const openCallDialog = () => { showCallDialog.value = true }
 const closeCallDialog = () => { showCallDialog.value = false }
 
+// ✅ Review Dialog State
+const showReviewDialog = ref(false)
+const reviewRating = ref(0)
+const reviewText = ref('')
+const isSubmittingReview = ref(false)
+const reviewSuccess = ref(false)
+
+const openReviewDialog = () => {
+  reviewRating.value = 0
+  reviewText.value = ''
+  reviewSuccess.value = false
+  showReviewDialog.value = true
+}
+
+const submitReview = () => {
+  if (reviewRating.value === 0) return
+  isSubmittingReview.value = true
+  
+  // Mock API Call
+  setTimeout(() => {
+    isSubmittingReview.value = false
+    reviewSuccess.value = true
+    
+    setTimeout(() => {
+      showReviewDialog.value = false
+    }, 2000)
+  }, 1500)
+}
+
 onMounted(fetchSeller)
 </script>
 
@@ -156,8 +185,9 @@ onMounted(fetchSeller)
                       <VChip
                         v-if="seller.tier && seller.tier !== 'none'"
                         size="small"
-                        :color="seller.tier === 'silver' ? 'grey-lighten-1' : seller.tier === 'gold' ? 'warning' : 'blue-darken-1'"
-                        class="ms-2 font-weight-bold text-uppercase elevation-2"
+                        variant="elevated"
+                        :color="seller.tier === 'silver' ? 'blue-grey-darken-1' : seller.tier === 'gold' ? 'amber-darken-3' : 'deep-purple-accent-3'"
+                        class="ms-2 font-weight-black text-uppercase shadow-sm text-white"
                         prepend-icon="tabler-medal"
                       >
                         {{ seller.tier === 'silver' ? t('silverPartner') || 'Silver Partner' : seller.tier === 'gold' ? t('goldPartner') || 'Gold Partner' : t('platinumPartner') || 'Platinum Co-Founder' }}
@@ -425,6 +455,66 @@ onMounted(fetchSeller)
                 @click="closeCallDialog"
               >
                 {{ t('cancel') || 'Cancel' }}
+              </VBtn>
+            </div>
+          </VCard>
+        </VDialog>
+
+        <!-- ✅ Rate & Review Dialog -->
+        <VDialog v-model="showReviewDialog" max-width="500">
+          <VCard class="pa-6 rounded-2xl elevation-10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(var(--v-border-color), 0.15);">
+            <div class="d-flex justify-space-between align-center mb-4">
+              <h3 class="text-h5 font-weight-black text-high-emphasis m-0">
+                {{ t('rateAndReview') || 'Rate & Review' }}
+              </h3>
+              <VBtn icon variant="text" size="small" @click="showReviewDialog = false">
+                <VIcon icon="tabler-x" />
+              </VBtn>
+            </div>
+
+            <div v-if="reviewSuccess" class="text-center py-6 animate-fade-in">
+              <VIcon icon="tabler-circle-check-filled" color="success" size="64" class="mb-4" />
+              <h4 class="text-h6 font-weight-bold text-success mb-2">{{ t('reviewSubmitted') || 'Review Submitted!' }}</h4>
+              <p class="text-body-2 text-medium-emphasis">{{ t('reviewPendingApproval') || 'Your review is pending approval.' }}</p>
+            </div>
+
+            <div v-else class="animate-fade-in">
+              <p class="text-body-2 text-medium-emphasis mb-6">
+                {{ t('shareExperienceWith') || 'Share your experience with' }} <strong>{{ t(seller?.store_name) || seller?.name }}</strong>.
+              </p>
+
+              <div class="d-flex flex-column align-center mb-6">
+                <span class="text-subtitle-1 font-weight-bold mb-2">{{ t('yourRating') || 'Your Rating' }}</span>
+                <VRating
+                  v-model="reviewRating"
+                  color="amber-accent-4"
+                  active-color="amber-accent-4"
+                  hover
+                  size="large"
+                />
+              </div>
+
+              <VTextarea
+                v-model="reviewText"
+                :label="t('writeReviewOptional') || 'Write your review (Optional)'"
+                variant="outlined"
+                auto-grow
+                rows="3"
+                class="mb-6 premium-input-field"
+                bg-color="transparent"
+              />
+
+              <VBtn
+                color="primary"
+                block
+                height="50"
+                rounded="pill"
+                class="font-weight-bold shadow-primary text-subtitle-1"
+                :disabled="reviewRating === 0"
+                :loading="isSubmittingReview"
+                @click="submitReview"
+              >
+                {{ t('submitReviewBtn') || 'Submit Review' }}
               </VBtn>
             </div>
           </VCard>
