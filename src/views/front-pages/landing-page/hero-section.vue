@@ -259,6 +259,22 @@ const onSearch = async () => {
     }
   }
 
+  // 4. Fallback: If no Brand was found, check ALL models
+  if (!detectedBrandId && !detectedModelId && queryText && allModelsList.value.length > 0) {
+    const sortedAllModels = [...allModelsList.value].sort((a, b) => (b.name?.en?.length || 0) - (a.name?.en?.length || 0))
+    for (const model of sortedAllModels) {
+      const mNameEn = String(model.name?.en || model.name || '').toLowerCase()
+      if (mNameEn && (queryText === mNameEn || queryText.startsWith(mNameEn + ' ') || queryText.endsWith(' ' + mNameEn) || queryText.includes(` ${mNameEn} `))) {
+        detectedModelId = model.id
+        if (model.brand_id) {
+          detectedBrandId = model.brand_id
+        }
+        queryText = queryText.replace(mNameEn, '').trim()
+        break
+      }
+    }
+  }
+
   // Build query and merge with smart parsed fields
   const finalQuery = buildQuery()
   
@@ -361,6 +377,16 @@ const fetchBrands = async () => {
     console.error('Error fetching brands:', err)
   } finally {
     isBrandsLoading.value = false
+  }
+}
+
+const allModelsList = ref([])
+const fetchAllModels = async () => {
+  try {
+    const res = await modelUserApi.getAll({ perPage: 2000 })
+    allModelsList.value = res.data?.data || res.data || []
+  } catch (err) {
+    console.error('Error fetching all models:', err)
   }
 }
 
@@ -492,6 +518,7 @@ onMounted(() => {
   fetchBanners()
   fetchVideoBanner()
   fetchBrands()
+  fetchAllModels()
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
 

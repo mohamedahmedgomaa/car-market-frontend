@@ -124,6 +124,7 @@ const total = ref(0)
 const page = ref(1)
 const brands = ref([])
 const draftModels = ref([])
+const allModels = ref([])
 const features = ref([])
 const isAdvancedOpen = ref(false)
 
@@ -418,6 +419,23 @@ const applyFilters = async () => {
       }
     }
     
+    // If we STILL don't have a model, let's search across ALL models (if loaded)
+    if (!detectedBrandId && !detectedModelId && queryText && allModels.value.length > 0) {
+      // Sort models by length so "x6 m" matches before "x6"
+      const sortedAllModels = [...allModels.value].sort((a, b) => (b.name?.en?.length || 0) - (a.name?.en?.length || 0))
+      for (const model of sortedAllModels) {
+        const mNameEn = String(model.name?.en || model.name || '').toLowerCase()
+        if (mNameEn && (queryText === mNameEn || queryText.startsWith(mNameEn + ' ') || queryText.endsWith(' ' + mNameEn) || queryText.includes(` ${mNameEn} `))) {
+          detectedModelId = model.id
+          if (model.brand_id) {
+            detectedBrandId = model.brand_id
+          }
+          queryText = queryText.replace(mNameEn, '').trim()
+          break
+        }
+      }
+    }
+    
     // Auto-detect vehicle type (car or bike) based on text or brand
     const bikeKeywords = ['m1000rr', 's1000rr', 'gsxr', 'ninja', 'cbr', 'yzf', 'ducati', 'yamaha', 'kawasaki', 'harley', 'ktm']
     const textLower = queryText.toLowerCase() || (idValue ? idValue.toLowerCase() : '')
@@ -631,12 +649,14 @@ onMounted(async () => {
   syncDraftFromQuery()
   fetchCars(true)
   try {
-    const [bRes, fRes] = await Promise.all([
+    const [bRes, fRes, mRes] = await Promise.all([
       brandUserApi.getAll(),
-      featureUserApi.getAll()
+      featureUserApi.getAll(),
+      modelUserApi.getAll({ perPage: 2000 })
     ])
     brands.value = bRes.data?.data || bRes.data || []
     features.value = fRes.data?.data || fRes.data || []
+    allModels.value = mRes.data?.data || mRes.data || []
   } catch {}
 })
 
