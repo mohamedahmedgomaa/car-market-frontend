@@ -164,9 +164,9 @@ onMounted(fetchSeller)
                       </VChip>
                     </div>
 
-                    <!-- Reviews / Ratings (Placeholder) -->
-                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2">
-                      <div class="d-flex align-center text-amber-accent-4">
+                    <!-- Reviews / Ratings -->
+                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2 flex-wrap">
+                      <div class="d-flex align-center text-amber-accent-4 cursor-pointer" @click="openReviewDialog" title="Click to see reviews">
                         <VIcon icon="tabler-star-filled" size="18" />
                         <VIcon icon="tabler-star-filled" size="18" />
                         <VIcon icon="tabler-star-filled" size="18" />
@@ -174,6 +174,17 @@ onMounted(fetchSeller)
                         <VIcon icon="tabler-star-half-filled" size="18" />
                       </div>
                       <span class="text-subtitle-2 text-medium-emphasis font-weight-medium ms-2">4.8 (124 {{ t('reviews') || 'Reviews' }})</span>
+                      
+                      <VBtn 
+                        variant="tonal" 
+                        size="small" 
+                        color="amber-accent-4" 
+                        class="ms-3 font-weight-bold rounded-pill px-4 shadow-sm"
+                        @click="openReviewDialog"
+                      >
+                        <VIcon icon="tabler-edit" size="14" class="me-1" />
+                        {{ t('rateShowroom') || 'Rate Showroom' }}
+                      </VBtn>
                     </div>
 
                     <!-- City & Location line -->
