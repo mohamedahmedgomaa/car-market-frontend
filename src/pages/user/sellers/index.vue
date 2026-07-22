@@ -425,12 +425,15 @@ onMounted(() => {
             </VAutocomplete>
           </div>
 
-          <!-- 4. Area/Neighborhood Field -->
-          <div class="search-col search-col-neighborhood">
-            <VTextField
-              v-model="filters.neighborhood"
-              :placeholder="t('areaPlaceholder')"
-              prepend-inner-icon="tabler-road"
+          <!-- 4. Tier Package Selector -->
+          <div class="search-col search-col-tier">
+            <VSelect
+              v-model="filters.tier"
+              :items="tierOptions"
+              item-value="value"
+              item-title="title"
+              :placeholder="_t({ ar: 'اختر الباقة', en: 'Select Tier' })"
+              prepend-inner-icon="tabler-crown"
               variant="outlined"
               density="comfortable"
               hide-details
