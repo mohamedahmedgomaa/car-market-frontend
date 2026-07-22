@@ -161,6 +161,11 @@ onMounted(fetchSeller)
           class="showroom-header-card mb-8 animate-fade-in-up" 
           elevation="10"
           :class="[seller.tier && seller.tier !== 'none' ? 'showroom-header-' + seller.tier.toLowerCase() : '']"
+          :style="{
+            background: seller.cover_image 
+              ? 'linear-gradient(to right, rgba(15, 15, 15, 0.95) 40%, rgba(15, 15, 15, 0.6) 100%), url(' + seller.cover_image + ') no-repeat center center / cover !important' 
+              : 'linear-gradient(to right, rgba(15, 15, 15, 0.95) 40%, rgba(15, 15, 15, 0.6) 100%), url(\'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80\') no-repeat center center / cover !important'
+          }"
         >
           <div class="header-bg-glow"></div>
           
@@ -168,7 +173,7 @@ onMounted(fetchSeller)
             <div class="d-flex flex-column flex-md-row align-center align-md-start gap-6 gap-md-8 text-center text-md-start">
               
               <!-- Showroom Avatar / Logo -->
-              <div class="avatar-wrapper animate-float">
+              <div class="avatar-wrapper animate-float flex-shrink-0">
                 <div class="showroom-logo-box elevation-8">
                   <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" />
                   <span v-else class="text-h2 font-weight-black text-primary">{{ (t(seller.store_name) || seller.name || 'S')[0].toUpperCase() }}</span>
@@ -176,91 +181,106 @@ onMounted(fetchSeller)
               </div>
 
               <!-- Profile Details -->
-              <div class="showroom-info flex-grow-1">
+              <div class="showroom-info flex-grow-1 overflow-hidden">
                 <div class="d-flex flex-column flex-md-row align-center align-md-start justify-space-between gap-4">
                   <div class="flex-grow-1 w-100 text-center text-md-start">
-                    <div class="d-flex align-center justify-center justify-md-start gap-2 mb-1 flex-wrap">
-                      <h1 class="text-h3 font-weight-black text-high-emphasis mb-0">
-                        {{ t(seller.store_name) || seller.name }}
-                      </h1>
-                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" :color="verifiedBadgeColor" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
-
-                      
-                      <!-- Tier Badge -->
+                    
+                    <!-- Premium Badges Row -->
+                    <div class="d-flex align-center justify-center justify-md-start gap-2 mb-2 flex-wrap">
                       <div
                         v-if="seller.tier?.toLowerCase() === 'platinum'"
-                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption ms-2"
+                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption"
                       >
-                        ELITE
+                        <VIcon icon="tabler-diamond" size="14" class="me-1" />
+                        ELITE DEALER
                       </div>
                       <div
                         v-else-if="seller.tier?.toLowerCase() === 'gold'"
-                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption ms-2"
+                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption"
                       >
-                        GOLD
+                        <VIcon icon="tabler-award" size="14" class="me-1" />
+                        GOLD SHOWROOM
                       </div>
                       <div
                         v-else-if="seller.tier?.toLowerCase() === 'silver'"
-                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption ms-2"
+                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption"
                       >
-                        SILVER
+                        <VIcon icon="tabler-certificate" size="14" class="me-1" />
+                        SILVER PARTNER
+                      </div>
+
+                      <div
+                        v-if="seller.is_verified"
+                        class="tier-badge-verified d-inline-flex align-center justify-center font-weight-bold tracking-widest px-3 py-1 rounded-pill text-caption"
+                        style="background: rgba(var(--v-theme-primary), 0.15) !important; color: #FFF !important; border: 1px solid rgba(var(--v-theme-primary), 0.4);"
+                      >
+                        <VIcon icon="tabler-discount-check" size="14" class="me-1" color="primary" />
+                        VERIFIED
                       </div>
                     </div>
 
-                    <!-- Reviews / Ratings -->
-                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2 flex-wrap">
-                      <div class="d-flex align-center text-amber-accent-4 cursor-pointer" @click="openReviewDialog" title="Click to see reviews">
-                        <VIcon icon="tabler-star-filled" size="18" />
-                        <VIcon icon="tabler-star-filled" size="18" />
-                        <VIcon icon="tabler-star-filled" size="18" />
-                        <VIcon icon="tabler-star-filled" size="18" />
-                        <VIcon icon="tabler-star-half-filled" size="18" />
-                      </div>
-                      <span class="text-subtitle-2 text-medium-emphasis font-weight-medium ms-2">4.8 (124 {{ t('reviews') || 'Reviews' }})</span>
-                      
-                      <VBtn 
-                        variant="tonal" 
-                        size="small" 
-                        color="amber-accent-4" 
-                        class="ms-3 font-weight-bold rounded-pill px-4 shadow-sm"
-                        @click="openReviewDialog"
-                      >
-                        <VIcon icon="tabler-edit" size="14" class="me-1" />
-                        {{ t('rateShowroom') || 'Rate Showroom' }}
-                      </VBtn>
+                    <!-- Name Line -->
+                    <div class="d-flex align-center justify-center justify-md-start gap-2 mb-1 flex-wrap">
+                      <h1 class="text-h3 font-weight-black text-white mb-0" style="font-size: 2.2rem !important; line-height: 1.2;">
+                        {{ t(seller.store_name) || seller.name }}
+                      </h1>
+                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" :color="verifiedBadgeColor" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
                     </div>
 
                     <!-- City & Location line -->
-                    <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-3">
-                      <VIcon icon="tabler-map-pin" size="20" />
-                      <span class="text-subtitle-1 text-high-emphasis font-weight-black">
+                    <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-2 text-white-50">
+                      <VIcon icon="tabler-map-pin" size="18" />
+                      <span class="text-subtitle-2 font-weight-bold">
                         {{ seller.governorate ? t(seller.governorate.name) : '' }}
                         {{ seller.governorate && seller.city ? ' - ' : '' }}
                         {{ seller.city ? t(seller.city.name) : (!seller.governorate ? t('egypt') || 'Egypt' : '') }}
                       </span>
-                      <span v-if="t(seller.district)" class="text-subtitle-1 text-medium-emphasis font-weight-bold">
+                      <span v-if="t(seller.district)" class="text-subtitle-2 font-weight-medium opacity-80">
                         • {{ t(seller.district) }}
                       </span>
-                      <span v-if="t(seller.street)" class="text-subtitle-1 text-medium-emphasis font-weight-medium">
+                      <span v-if="t(seller.street)" class="text-subtitle-2 font-weight-medium opacity-80">
                         • {{ t(seller.street) }}
                       </span>
-                      <span v-if="t(seller.address)" class="text-subtitle-1 text-medium-emphasis font-weight-medium">
+                      <span v-if="t(seller.address)" class="text-subtitle-2 font-weight-medium opacity-80">
                         ({{ t(seller.address) }})
                       </span>
                       <VChip
-                        size="small"
+                        size="x-small"
                         color="error"
                         variant="elevated"
                         class="ms-2 font-weight-bold cursor-pointer open-map-chip"
                         @click="openMap"
                         prepend-icon="tabler-map"
                       >
-                        {{ t('openMap') || 'Open Map / الموقع' }}
+                        {{ t('openMap') || 'Open Map' }}
                       </VChip>
                     </div>
 
-                    <!-- Showroom Bio / Description (Moved here to the empty left side) -->
-                    <p class="store-bio mt-4 text-subtitle-1 text-medium-emphasis max-w-700 mx-auto mx-md-0 text-center text-md-start">
+                    <!-- Reviews / Ratings -->
+                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2 mb-3 flex-wrap">
+                      <div class="d-flex align-center text-amber-accent-4 cursor-pointer" @click="openReviewDialog" title="Click to see reviews">
+                        <VIcon icon="tabler-star-filled" size="16" />
+                        <VIcon icon="tabler-star-filled" size="16" />
+                        <VIcon icon="tabler-star-filled" size="16" />
+                        <VIcon icon="tabler-star-filled" size="16" />
+                        <VIcon icon="tabler-star-half-filled" size="16" />
+                      </div>
+                      <span class="text-caption text-white-50 font-weight-medium ms-2">4.8 (124 {{ t('reviews') || 'Reviews' }})</span>
+                      
+                      <VBtn 
+                        variant="tonal" 
+                        size="x-small" 
+                        color="amber-accent-4" 
+                        class="ms-3 font-weight-bold rounded-pill px-3 shadow-sm"
+                        @click="openReviewDialog"
+                      >
+                        <VIcon icon="tabler-edit" size="12" class="me-1" />
+                        {{ t('rateShowroom') || 'Rate' }}
+                      </VBtn>
+                    </div>
+
+                    <!-- Showroom Bio / Description (4-line fixed space) -->
+                    <p class="store-bio mt-3 text-subtitle-2 text-white-50 max-w-700 mx-auto mx-md-0 text-center text-md-start">
                       {{ t(seller.store_description) || seller.bio || t('showroomDefaultBio') || 'Welcome to our premium showroom. We offer a high-quality selection of certified pre-owned and brand new vehicles.' }}
                     </p>
                   </div>
@@ -599,13 +619,13 @@ onMounted(fetchSeller)
 
 /* Avatar Styling */
 .showroom-logo-box {
-  border: 2px solid rgba(var(--v-theme-primary), 0.5);
-  background: rgba(var(--v-theme-surface), 0.9);
-  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: #09090b;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 16px;
   width: 140px;
-  height: 90px;
+  height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -614,15 +634,20 @@ onMounted(fetchSeller)
     object-fit: contain;
     width: 100%;
     height: 100%;
-    padding: 6px;
+    padding: 10px;
   }
 }
 
 /* Typography & Info */
 .store-bio {
-  line-height: 1.7;
+  line-height: 1.6;
   max-width: 720px;
-  font-size: 1.05rem !important;
+  font-size: 0.95rem !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 90px; /* Fixed height for exactly 4 lines (1.6 * 0.95rem * 4 lines ≈ 90px) */
 }
 
 .text-white-50 {

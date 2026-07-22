@@ -30,6 +30,7 @@ const seller = ref({
   youtube_url: '',
   sort_order: 0,
   tier: 'none',
+  cover_image: null,
 })
 
 const loading = ref(false)
@@ -134,6 +135,10 @@ const handleLogoChange = (event) => {
   seller.value.store_logo = event.target.files[0] || null
 }
 
+const handleCoverChange = (event) => {
+  seller.value.cover_image = event.target.files[0] || null
+}
+
 // ✅ Handle submit
 const handleSubmit = async () => {
   error.value = ''
@@ -214,7 +219,7 @@ onMounted(async () => {
 
         <!-- Email -->
         <div>
-          <label class="block text-sm font-medium mb-2">Email Address</label>
+          <label class="block text-sm font-medium mb-2">Email Address (Optional)</label>
           <VTextField
             v-model="seller.email"
             type="email"
@@ -226,7 +231,6 @@ onMounted(async () => {
             :error-messages="errors.email"
             hide-details="auto"
             class="rounded-md"
-            required
           />
         </div>
 
@@ -289,6 +293,8 @@ onMounted(async () => {
             :error="!!errors.store_description_ar"
             :error-messages="errors.store_description_ar"
             hide-details="auto"
+            maxlength="300"
+            counter="300"
           />
         </div>
 
@@ -303,13 +309,21 @@ onMounted(async () => {
             :error="!!errors.store_description_en"
             :error-messages="errors.store_description_en"
             hide-details="auto"
+            maxlength="300"
+            counter="300"
           />
         </div>
 
         <!-- Store Logo -->
         <div>
           <label class="block text-sm font-medium mb-2">Store Logo</label>
-          <input type="file" @change="handleLogoChange" accept="image/*" />
+          <input type="file" @change="handleLogoChange" accept="image/*" class="mb-4 d-block" />
+        </div>
+
+        <!-- Store Cover Image -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Store Cover Image (Optional)</label>
+          <input type="file" @change="handleCoverChange" accept="image/*" class="mb-4 d-block" />
         </div>
 
         <!-- Bank Account -->
