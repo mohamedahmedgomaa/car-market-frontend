@@ -251,8 +251,8 @@ const stats = computed(() => [
           <tr>
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis">Partner Info</th>
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis">Contact Hub</th>
-            <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-center">Trust Status</th>
-            <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-center">Visibility</th>
+            <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-center">Package Tier</th>
+            <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-center">Map Location</th>
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-end px-6">Actions</th>
           </tr>
         </thead>
@@ -292,21 +292,6 @@ const stats = computed(() => [
                     <VIcon icon="tabler-briefcase" size="14" />
                     {{ seller.store_name?.en || seller.store_name }}
                   </div>
-                  <!-- Tier Badge display in list -->
-                  <VChip
-                    v-if="seller && seller.tier && seller.tier !== 'none'"
-                    size="small"
-                    class="font-weight-black text-uppercase elevation-1 mt-1"
-                    :style="{
-                      background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
-                                  (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
-                                  (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : '#424242')),
-                      color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-                    }"
-                  >
-                    {{ seller.tier?.toLowerCase() === 'silver' ? 'Silver' : seller.tier?.toLowerCase() === 'gold' ? 'Gold' : 'Elite' }}
-                  </VChip>
                 </div>
               </div>
             </td>
@@ -324,25 +309,35 @@ const stats = computed(() => [
             </td>
             <td class="text-center">
               <VChip
-                :color="seller.is_verified ? 'success' : 'grey'"
                 size="small"
-                :variant="seller.is_verified ? 'flat' : 'tonal'"
-                class="font-weight-bold px-4"
-                :prepend-icon="seller.is_verified ? 'tabler-shield-check-filled' : 'tabler-shield'"
+                class="font-weight-black text-uppercase elevation-1 px-4"
+                :style="{
+                  background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                              (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
+                              (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : '#2D2D30')),
+                  color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  border: '1px solid rgba(255,255,255,0.08)'
+                }"
               >
-                {{ seller.is_verified ? 'Verified' : 'Unverified' }}
+                {{ seller.tier?.toLowerCase() === 'silver' ? 'Silver' : seller.tier?.toLowerCase() === 'gold' ? 'Gold' : (seller.tier?.toLowerCase() === 'platinum' ? 'Elite' : 'Standard') }}
               </VChip>
             </td>
             <td class="text-center">
-              <VSwitch
-                :model-value="!!seller.is_active"
-                color="warning"
-                inset
-                hide-details
-                density="compact"
-                class="d-inline-flex modern-switch"
-                @change="toggleActive(seller)"
-              />
+              <VBtn
+                v-if="seller.map_url"
+                color="error"
+                variant="tonal"
+                size="small"
+                rounded="pill"
+                class="font-weight-bold px-4 shadow-sm"
+                :href="seller.map_url"
+                target="_blank"
+              >
+                <VIcon icon="tabler-map-pin" size="16" class="me-1" />
+                Map / الموقع
+              </VBtn>
+              <span v-else class="text-caption text-disabled">-</span>
             </td>
             <td class="text-end px-6">
               <div class="d-flex justify-end gap-2">
