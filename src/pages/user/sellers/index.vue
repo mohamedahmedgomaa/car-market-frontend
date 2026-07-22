@@ -26,7 +26,8 @@ const filters = ref({
   storeName: '',
   governorateId: null,
   cityId: null,
-  neighborhood: ''
+  neighborhood: '',
+  tier: null
 })
 
 const resetFilters = () => {
@@ -34,7 +35,16 @@ const resetFilters = () => {
   filters.value.governorateId = null
   filters.value.cityId = null
   filters.value.neighborhood = ''
+  filters.value.tier = null
 }
+
+const tierOptions = computed(() => [
+  { value: null, title: _t({ ar: 'كل الباقات', en: 'All Tiers' }) },
+  { value: 'platinum', title: _t({ ar: 'باقة إيليت (Elite)', en: 'Elite' }) },
+  { value: 'gold', title: _t({ ar: 'باقة جولد (Gold)', en: 'Gold' }) },
+  { value: 'silver', title: _t({ ar: 'باقة سيلفر (Silver)', en: 'Silver' }) },
+  { value: 'none', title: _t({ ar: 'باقة عادية (Standard)', en: 'Standard' }) }
+])
 
 const _t = (val) => {
   if (!val) return ''
@@ -158,6 +168,17 @@ const filteredSellers = computed(() => {
              streetEn.includes(q) || streetAr.includes(q) || streetStr.includes(q) ||
              descEn.includes(q) || descAr.includes(q) || descStr.includes(q) ||
              cityEn.includes(q) || cityAr.includes(q)
+    })
+  }
+
+  // 5. Tier Package Filter
+  if (filters.value.tier !== null) {
+    result = result.filter(s => {
+      const tierVal = s.tier?.toLowerCase()
+      if (filters.value.tier === 'none') {
+        return !tierVal || tierVal === 'none'
+      }
+      return tierVal === filters.value.tier
     })
   }
 
