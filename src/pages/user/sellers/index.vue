@@ -120,7 +120,7 @@ const filteredSellers = computed(() => {
   let result = sellers.value
 
   // 1. Showroom Name Filter
-  if (filters.value.storeName.trim()) {
+  if (filters.value.storeName && filters.value.storeName.trim()) {
     const q = filters.value.storeName.toLowerCase().trim()
     result = result.filter(s => {
       const nameEn = (s.store_name?.en || s.name || '').toLowerCase()
@@ -141,7 +141,7 @@ const filteredSellers = computed(() => {
   }
 
   // 4. City/Neighborhood Filter
-  if (filters.value.neighborhood.trim()) {
+  if (filters.value.neighborhood && filters.value.neighborhood.trim()) {
     const q = filters.value.neighborhood.toLowerCase().trim()
     result = result.filter(s => {
       const addressEn = (s.address?.en || '').toLowerCase()
