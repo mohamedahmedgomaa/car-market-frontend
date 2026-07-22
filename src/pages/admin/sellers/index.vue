@@ -77,8 +77,19 @@ watch(search, () => {
 
 onMounted(() => fetchSellers())
 
+const activeTierFilter = ref('all')
+
+const displayedSellers = computed(() => {
+  if (activeTierFilter.value === 'all') return sellers.value
+  return sellers.value.filter(s => {
+    const t = s.tier?.toLowerCase() || 'none'
+    return t === activeTierFilter.value
+  })
+})
+
 const stats = computed(() => [
   { 
+    id: 'all',
     title: 'Total Sellers', 
     value: total.value, 
     icon: 'tabler-users-group', 
@@ -86,15 +97,33 @@ const stats = computed(() => [
     bg: 'linear-gradient(135deg, rgba(255,111,0,0.1) 0%, rgba(255,111,0,0.02) 100%)'
   },
   {
-    title: 'Verified Partners',
-    value: sellers.value.filter((s) => s.is_verified).length,
-    icon: 'tabler-shield-check-filled',
-    color: '#00C853',
-    bg: 'linear-gradient(135deg, rgba(0,200,83,0.1) 0%, rgba(0,200,83,0.02) 100%)'
+    id: 'platinum',
+    title: 'Elite Sellers',
+    value: sellers.value.filter((s) => s.tier?.toLowerCase() === 'platinum').length,
+    icon: 'tabler-diamond',
+    color: '#FF6D00',
+    bg: 'linear-gradient(135deg, rgba(255,109,0,0.1) 0%, rgba(255,109,0,0.02) 100%)'
   },
   {
-    title: 'Active Showrooms',
-    value: sellers.value.filter((s) => s.is_active).length,
+    id: 'gold',
+    title: 'Gold Sellers',
+    value: sellers.value.filter((s) => s.tier?.toLowerCase() === 'gold').length,
+    icon: 'tabler-award',
+    color: '#DAA520',
+    bg: 'linear-gradient(135deg, rgba(218,165,32,0.1) 0%, rgba(218,165,32,0.02) 100%)'
+  },
+  {
+    id: 'silver',
+    title: 'Silver Sellers',
+    value: sellers.value.filter((s) => s.tier?.toLowerCase() === 'silver').length,
+    icon: 'tabler-certificate',
+    color: '#78909C',
+    bg: 'linear-gradient(135deg, rgba(120,144,156,0.1) 0%, rgba(120,144,156,0.02) 100%)'
+  },
+  {
+    id: 'none',
+    title: 'Standard Sellers',
+    value: sellers.value.filter((s) => !s.tier || s.tier?.toLowerCase() === 'none').length,
     icon: 'tabler-building-store',
     color: '#2962FF',
     bg: 'linear-gradient(135deg, rgba(41,98,255,0.1) 0%, rgba(41,98,255,0.02) 100%)'
@@ -128,25 +157,37 @@ const stats = computed(() => [
     </div>
 
     <!-- Quick Stats -->
-    <VRow class="mb-8" dense>
-      <VCol v-for="stat in stats" :key="stat.title" cols="12" md="4">
-        <VCard class="glass-stat-card border" elevation="0" :style="{ background: stat.bg }">
-          <VCardText class="d-flex align-center pa-6">
-            <div class="icon-wrapper" :style="{ color: stat.color }">
-              <VIcon :icon="stat.icon" size="36" />
+    <div class="d-flex flex-wrap gap-4 mb-8">
+      <VCard 
+        v-for="stat in stats" 
+        :key="stat.title" 
+        class="glass-stat-card border cursor-pointer transition-all flex-grow-1" 
+        elevation="0" 
+        :style="{ 
+          background: stat.bg,
+          borderColor: activeTierFilter === stat.id ? stat.color + ' !important' : 'rgba(255, 255, 255, 0.08) !important',
+          boxShadow: activeTierFilter === stat.id ? '0 8px 24px rgba(0, 0, 0, 0.25)' : 'none',
+          transform: activeTierFilter === stat.id ? 'translateY(-2px)' : 'none',
+          minWidth: '200px',
+          flex: '1 1 0px'
+        }"
+        @click="activeTierFilter = activeTierFilter === stat.id ? 'all' : stat.id"
+      >
+        <VCardText class="d-flex align-center pa-6">
+          <div class="icon-wrapper" :style="{ color: stat.color }">
+            <VIcon :icon="stat.icon" size="36" />
+          </div>
+          <div class="ml-5">
+            <div class="text-caption text-uppercase font-weight-bold opacity-80 tracking-widest" :style="{ color: stat.color }">
+              {{ stat.title }}
             </div>
-            <div class="ml-5">
-              <div class="text-caption text-uppercase font-weight-bold opacity-80 tracking-widest" :style="{ color: stat.color }">
-                {{ stat.title }}
-              </div>
-              <div class="text-h4 font-weight-black mt-1 text-high-emphasis">
-                {{ stat.value }}
-              </div>
+            <div class="text-h4 font-weight-black mt-1 text-high-emphasis">
+              {{ stat.value }}
             </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+          </div>
+        </VCardText>
+      </VCard>
+    </div>
 
     <!-- Main Table Container -->
     <VCard class="premium-table-card border overflow-hidden" elevation="0">
@@ -198,16 +239,16 @@ const stats = computed(() => [
           </template>
 
           <!-- Empty State -->
-          <tr v-else-if="sellers.length === 0">
+          <tr v-else-if="displayedSellers.length === 0">
             <td colspan="5" class="text-center py-16">
               <VIcon icon="tabler-users-slash" size="64" color="disabled" class="mb-4" />
               <h3 class="text-h6 font-weight-bold text-medium-emphasis">No Sellers Found</h3>
-              <p class="text-body-2 text-disabled mt-1">Try adjusting your search or register a new seller.</p>
+              <p class="text-body-2 text-disabled mt-1">Try adjusting your search or select a different package tier.</p>
             </td>
           </tr>
 
           <!-- Data Rows -->
-          <tr v-else v-for="seller in sellers" :key="seller.id" class="data-row transition-swing">
+          <tr v-else v-for="seller in displayedSellers" :key="seller.id" class="data-row transition-swing">
             <td class="py-4">
               <div class="d-flex align-center">
                 <VAvatar size="56" rounded="xl" class="premium-avatar me-4 border elevation-1">
@@ -222,12 +263,13 @@ const stats = computed(() => [
                   </div>
                   <!-- Tier Badge display in list -->
                   <VChip
+                    v-slot:default
                     v-if="seller && seller.tier && seller.tier !== 'none'"
                     size="small"
-                    :color="seller.tier === 'silver' ? 'grey-lighten-1' : seller.tier === 'gold' ? 'warning' : 'blue-darken-1'"
-                    class="font-weight-bold text-uppercase elevation-1 mt-1"
+                    :color="seller.tier?.toLowerCase() === 'silver' ? 'blue-grey-darken-1' : seller.tier?.toLowerCase() === 'gold' ? 'amber-darken-2' : 'orange-darken-2'"
+                    class="font-weight-bold text-uppercase elevation-1 mt-1 text-white"
                   >
-                    {{ seller.tier === 'silver' ? 'Silver' : seller.tier === 'gold' ? 'Gold' : 'Platinum' }}
+                    {{ seller.tier?.toLowerCase() === 'silver' ? 'Silver' : seller.tier?.toLowerCase() === 'gold' ? 'Gold' : 'Elite' }}
                   </VChip>
                 </div>
               </div>
