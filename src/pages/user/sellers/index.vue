@@ -516,7 +516,7 @@ onMounted(() => {
                   <div class="overflow-hidden flex-grow-1">
                     <div class="d-flex align-center justify-space-between gap-1 mb-1 w-100">
                       <div class="d-flex align-center gap-1 overflow-hidden flex-grow-1">
-                        <h3 class="text-h5 font-weight-black text-truncate mb-0"
+                        <h3 class="font-weight-black text-truncate mb-0" style="font-size: 1.1rem !important;"
                             :class="{
                               'text-gold': seller.tier?.toLowerCase() === 'gold',
                               'text-platinum': seller.tier?.toLowerCase() === 'platinum',
