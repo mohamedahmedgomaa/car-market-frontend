@@ -492,15 +492,31 @@ onMounted(() => {
                 <!-- Top details -->
                 <div class="d-flex align-start gap-4 mb-3">
                   <!-- Logo Container -->
-                  <div class="showroom-logo-wrapper d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" style="width: 80px; height: 80px; padding: 6px;">
+                  <div class="showroom-logo-wrapper position-relative d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" style="width: 80px; height: 80px; padding: 6px;">
                     <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" class="w-100 h-100" style="object-fit: contain; border-radius: 4px;" />
                     <span v-else class="text-h4 font-weight-black text-primary">{{ (_t(seller.store_name) || seller.name)?.charAt(0)?.toUpperCase() }}</span>
+                    
+                    <!-- Absolute Overlaid Tier Badge -->
+                    <div 
+                      v-if="seller.tier && seller.tier !== 'none'"
+                      class="logo-tier-overlay text-xxs font-weight-black px-2 py-0.5 rounded text-uppercase"
+                      :class="{
+                        'tier-badge-platinum': seller.tier?.toLowerCase() === 'platinum',
+                        'tier-badge-gold': seller.tier?.toLowerCase() === 'gold',
+                        'tier-badge-silver': seller.tier?.toLowerCase() === 'silver'
+                      }"
+                    >
+                      {{ 
+                        seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : 
+                        (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER') 
+                      }}
+                    </div>
                   </div>
 
                   <div class="overflow-hidden flex-grow-1">
                     <div class="d-flex align-center justify-space-between gap-1 mb-1 w-100">
                       <div class="d-flex align-center gap-1 overflow-hidden flex-grow-1">
-                        <h3 class="text-h5 font-weight-black text-truncate mb-0 flex-grow-1"
+                        <h3 class="text-h5 font-weight-black text-truncate mb-0"
                             :class="{
                               'text-gold': seller.tier?.toLowerCase() === 'gold',
                               'text-platinum': seller.tier?.toLowerCase() === 'platinum',
@@ -514,7 +530,7 @@ onMounted(() => {
                           :color="seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#78909C' : (seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : 'info'))" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
-                          class="flex-shrink-0"
+                          class="flex-shrink-0 ms-1"
                         />
                       </div>
                     </div>
@@ -533,44 +549,11 @@ onMounted(() => {
                 </div>
 
                 <!-- Mid content wrapper with fixed min-height to prevent layout shifts -->
-                <div class="mid-content-wrapper mb-3" style="min-height: 65px;">
+                <div class="mid-content-wrapper mb-3" style="min-height: 90px;">
                   <!-- Bio excerpt -->
                   <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-0 font-weight-medium" style="line-height: 1.5;">
                     {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
                   </p>
-                </div>
-
-                <!-- Showroom Badges Row (Trusted Showroom & Package Tier) -->
-                <div class="d-flex align-center gap-2 mb-5 flex-wrap">
-                  <!-- Trusted Showroom Pill -->
-                  <div 
-                    class="premium-pill-trusted d-flex align-center gap-1.5 px-3 py-1 text-caption font-weight-black rounded-pill border"
-                    :class="{
-                      'pill-gold': seller.tier?.toLowerCase() === 'gold',
-                      'pill-platinum': seller.tier?.toLowerCase() === 'platinum',
-                      'pill-silver': seller.tier?.toLowerCase() === 'silver',
-                      'pill-standard': !seller.tier || seller.tier === 'none'
-                    }"
-                  >
-                    <VIcon icon="tabler-discount-check-filled" size="14" />
-                    <span>{{ _t({ ar: 'معرض موثوق', en: 'Trusted' }) }}</span>
-                  </div>
-
-                  <!-- Tier Package Badge Pill (with solid premium look matching the tier package) -->
-                  <div 
-                    v-if="seller.tier && seller.tier !== 'none'"
-                    class="premium-pill-tier px-3 py-1 text-caption font-weight-black rounded-pill text-uppercase border"
-                    :class="{
-                      'tier-badge-platinum': seller.tier?.toLowerCase() === 'platinum',
-                      'tier-badge-gold': seller.tier?.toLowerCase() === 'gold',
-                      'tier-badge-silver': seller.tier?.toLowerCase() === 'silver'
-                    }"
-                  >
-                    {{ 
-                      seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : 
-                      (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER') 
-                    }}
-                  </div>
                 </div>
               </div>
 
@@ -1062,5 +1045,19 @@ onMounted(() => {
 .showroom-card-silver .showroom-logo-wrapper {
   border-color: rgba(120, 144, 156, 0.4) !important;
   box-shadow: 0 0 10px rgba(120, 144, 156, 0.12) !important;
+}
+
+.logo-tier-overlay {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem !important;
+  font-weight: 900 !important;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 </style>
