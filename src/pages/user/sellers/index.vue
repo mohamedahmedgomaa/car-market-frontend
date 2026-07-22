@@ -573,9 +573,9 @@ onMounted(() => {
                 </div>
 
                 <!-- Mid content wrapper with fixed min-height to prevent layout shifts -->
-                <div class="mid-content-wrapper mb-3" style="min-height: 90px;">
+                <div class="mid-content-wrapper mb-3" style="min-height: 60px;">
                   <!-- Bio excerpt -->
-                  <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-0 font-weight-medium" style="line-height: 1.5;">
+                  <p class="text-body-2 text-medium-emphasis line-clamp-3 mb-0 font-weight-medium" style="line-height: 1.5;">
                     {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
                   </p>
                 </div>
@@ -829,6 +829,13 @@ onMounted(() => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
