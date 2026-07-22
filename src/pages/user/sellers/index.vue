@@ -533,48 +533,43 @@ onMounted(() => {
                 </div>
 
                 <!-- Mid content wrapper with fixed min-height to prevent layout shifts -->
-                <div class="mid-content-wrapper" style="min-height: 80px;">
+                <div class="mid-content-wrapper mb-3" style="min-height: 65px;">
                   <!-- Bio excerpt -->
-                  <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-4 font-weight-medium" style="line-height: 1.5;">
+                  <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-0 font-weight-medium" style="line-height: 1.5;">
                     {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
                   </p>
                 </div>
 
                 <!-- Showroom Badges Row (Trusted Showroom & Package Tier) -->
-                <div class="showroom-badges-row d-flex align-center gap-2 mb-4 py-2 px-3 rounded-lg" style="background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-theme-on-surface), 0.08);">
-                  <!-- Trusted Showroom (color matches package tier) -->
+                <div class="d-flex align-center gap-2 mb-5 flex-wrap">
+                  <!-- Trusted Showroom Pill -->
                   <div 
-                    class="d-flex align-center gap-1 text-caption font-weight-black"
+                    class="premium-pill-trusted d-flex align-center gap-1.5 px-3 py-1 text-caption font-weight-black rounded-pill border"
                     :class="{
-                      'text-gold': seller.tier?.toLowerCase() === 'gold',
-                      'text-platinum': seller.tier?.toLowerCase() === 'platinum',
-                      'text-silver': seller.tier?.toLowerCase() === 'silver',
-                      'text-success': !seller.tier || seller.tier === 'none'
+                      'pill-gold': seller.tier?.toLowerCase() === 'gold',
+                      'pill-platinum': seller.tier?.toLowerCase() === 'platinum',
+                      'pill-silver': seller.tier?.toLowerCase() === 'silver',
+                      'pill-standard': !seller.tier || seller.tier === 'none'
                     }"
                   >
-                    <VIcon icon="tabler-discount-check-filled" size="16" />
-                    <span>{{ _t({ ar: 'معرض موثوق', en: 'Trusted Showroom' }) }}</span>
+                    <VIcon icon="tabler-discount-check-filled" size="14" />
+                    <span>{{ _t({ ar: 'معرض موثوق', en: 'Trusted' }) }}</span>
                   </div>
 
-                  <VDivider vertical class="mx-1 opacity-20" style="height: 14px; border-color: rgba(var(--v-theme-on-surface), 0.3);" />
-
-                  <!-- Tier Package Badge (no icon, no package word) -->
+                  <!-- Tier Package Badge Pill (with solid premium look matching the tier package) -->
                   <div 
-                    class="d-flex align-center gap-1 text-caption font-weight-black"
+                    v-if="seller.tier && seller.tier !== 'none'"
+                    class="premium-pill-tier px-3 py-1 text-caption font-weight-black rounded-pill text-uppercase border"
                     :class="{
-                      'text-gold': seller.tier?.toLowerCase() === 'gold',
-                      'text-platinum': seller.tier?.toLowerCase() === 'platinum',
-                      'text-silver': seller.tier?.toLowerCase() === 'silver',
-                      'text-medium-emphasis': !seller.tier || seller.tier === 'none'
+                      'tier-badge-platinum': seller.tier?.toLowerCase() === 'platinum',
+                      'tier-badge-gold': seller.tier?.toLowerCase() === 'gold',
+                      'tier-badge-silver': seller.tier?.toLowerCase() === 'silver'
                     }"
                   >
-                    <span class="text-uppercase">
-                      {{ 
-                        seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : 
-                        (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 
-                        (seller.tier?.toLowerCase() === 'silver' ? 'SILVER' : 'STANDARD')) 
-                      }}
-                    </span>
+                    {{ 
+                      seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : 
+                      (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER') 
+                    }}
                   </div>
                 </div>
               </div>
@@ -1016,4 +1011,56 @@ onMounted(() => {
 .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
 .v-theme--dark .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
 .text-silver { color: #78909C !important; }
+
+.premium-pill-trusted {
+  backdrop-filter: blur(8px);
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  display: inline-flex;
+  align-items: center;
+  
+  &.pill-gold {
+    background: rgba(218, 165, 32, 0.08) !important;
+    border-color: rgba(218, 165, 32, 0.25) !important;
+    color: #DAA520 !important;
+  }
+  &.pill-platinum {
+    background: rgba(255, 109, 0, 0.08) !important;
+    border-color: rgba(255, 109, 0, 0.25) !important;
+    color: #FF6D00 !important;
+  }
+  &.pill-silver {
+    background: rgba(120, 144, 156, 0.08) !important;
+    border-color: rgba(120, 144, 156, 0.25) !important;
+    color: #90A4AE !important;
+  }
+  &.pill-standard {
+    background: rgba(76, 175, 80, 0.08) !important;
+    border-color: rgba(76, 175, 80, 0.25) !important;
+    color: #4CAF50 !important;
+  }
+}
+
+.premium-pill-tier {
+  font-size: 0.68rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.showroom-card-gold .showroom-logo-wrapper {
+  border-color: rgba(218, 165, 32, 0.5) !important;
+  box-shadow: 0 0 12px rgba(218, 165, 32, 0.15) !important;
+}
+.showroom-card-platinum .showroom-logo-wrapper {
+  border-color: rgba(255, 109, 0, 0.5) !important;
+  box-shadow: 0 0 12px rgba(255, 109, 0, 0.15) !important;
+}
+.showroom-card-silver .showroom-logo-wrapper {
+  border-color: rgba(120, 144, 156, 0.4) !important;
+  box-shadow: 0 0 10px rgba(120, 144, 156, 0.12) !important;
+}
 </style>
