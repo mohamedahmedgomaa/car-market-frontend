@@ -954,6 +954,22 @@ onMounted(() => {
   align-items: center;
   color: rgba(var(--v-theme-on-surface), 0.9) !important;
   font-size: 14px;
+  flex-wrap: nowrap !important;
+}
+
+.premium-input-field :deep(.v-select__selection) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: flex !important;
+  align-items: center !important;
+  max-width: calc(100% - 24px) !important;
+}
+
+.premium-input-field :deep(.v-select__selection-text) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .premium-input-field :deep(.v-label) {
