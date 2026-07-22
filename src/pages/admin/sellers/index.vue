@@ -22,8 +22,7 @@ const fetchSellers = async (page = 1) => {
   try {
     const res = await sellerAdminApi.getAll({
       page,
-      'filter[global]': search.value || undefined,
-      perPage,
+      perPage: 200, // Load all sellers for instant local searching and filtering
       sort: '-sort_order', // This bypasses the SQL column issue on the backend without needing a deploy!
     })
     sellers.value = res.data?.data || []
@@ -70,21 +69,35 @@ const toggleActive = async (seller) => {
   }
 }
 
-watch(search, () => {
-  // Debounce could be added here, but direct works for now
-  fetchSellers(1)
-})
-
 onMounted(() => fetchSellers())
 
 const activeTierFilter = ref('all')
 
 const displayedSellers = computed(() => {
-  if (activeTierFilter.value === 'all') return sellers.value
-  return sellers.value.filter(s => {
-    const t = s.tier?.toLowerCase() || 'none'
-    return t === activeTierFilter.value
-  })
+  let result = sellers.value
+
+  // 1. Local Search (100% Case-Insensitive)
+  if (search.value && search.value.trim()) {
+    const q = search.value.toLowerCase().trim()
+    result = result.filter(s => {
+      const name = (s.name || '').toLowerCase()
+      const storeNameEn = (s.store_name?.en || s.store_name || '').toLowerCase()
+      const storeNameAr = (s.store_name?.ar || '').toLowerCase()
+      const email = (s.email || '').toLowerCase()
+      const phone = (s.phone || '').toLowerCase()
+      return name.includes(q) || storeNameEn.includes(q) || storeNameAr.includes(q) || email.includes(q) || phone.includes(q)
+    })
+  }
+
+  // 2. Local Tier Filter
+  if (activeTierFilter.value !== 'all') {
+    result = result.filter(s => {
+      const t = s.tier?.toLowerCase() || 'none'
+      return t === activeTierFilter.value
+    })
+  }
+
+  return result
 })
 
 const stats = computed(() => [
@@ -195,14 +208,29 @@ const stats = computed(() => [
       <div class="d-flex flex-wrap align-center px-6 py-5 gap-4 border-b bg-surface">
         <VTextField
           v-model="search"
-          placeholder="Search partners by name, store, or email..."
+          placeholder="Search by name, store, phone..."
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="tabler-search"
-          class="search-input flex-grow-1 max-width-500"
+          class="search-input flex-grow-1"
+          style="max-width: 400px;"
           hide-details
           bg-color="transparent"
           rounded="pill"
+        />
+        <VAutocomplete
+          v-model="search"
+          :items="sellers.map(s => s.name)"
+          placeholder="Select a Showroom..."
+          variant="outlined"
+          density="comfortable"
+          prepend-inner-icon="tabler-building-store"
+          class="search-select flex-grow-1"
+          style="max-width: 300px;"
+          hide-details
+          bg-color="transparent"
+          rounded="pill"
+          clearable
         />
         <VSpacer />
         <VBtn
@@ -257,17 +285,25 @@ const stats = computed(() => [
                 </VAvatar>
                 <div>
                   <div class="text-body-1 font-weight-bold text-high-emphasis mb-1">{{ seller.name }}</div>
-                  <div class="text-caption font-weight-medium text-warning d-flex align-center gap-1 mb-1">
+                  <div 
+                    v-if="seller.store_name && (seller.store_name?.en || seller.store_name) !== seller.name"
+                    class="text-caption font-weight-medium text-medium-emphasis d-flex align-center gap-1 mb-1"
+                  >
                     <VIcon icon="tabler-briefcase" size="14" />
-                    {{ seller.store_name?.en || seller.store_name || 'Individual Seller' }}
+                    {{ seller.store_name?.en || seller.store_name }}
                   </div>
                   <!-- Tier Badge display in list -->
                   <VChip
-                    v-slot:default
                     v-if="seller && seller.tier && seller.tier !== 'none'"
                     size="small"
-                    :color="seller.tier?.toLowerCase() === 'silver' ? 'blue-grey-darken-1' : seller.tier?.toLowerCase() === 'gold' ? 'amber-darken-2' : 'orange-darken-2'"
-                    class="font-weight-bold text-uppercase elevation-1 mt-1 text-white"
+                    class="font-weight-black text-uppercase elevation-1 mt-1"
+                    :style="{
+                      background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                                  (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
+                                  (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : '#424242')),
+                      color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                    }"
                   >
                     {{ seller.tier?.toLowerCase() === 'silver' ? 'Silver' : seller.tier?.toLowerCase() === 'gold' ? 'Gold' : 'Elite' }}
                   </VChip>
