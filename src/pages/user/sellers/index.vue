@@ -67,7 +67,7 @@ const fetchSellers = async () => {
   loading.value = true
   error.value = ''
   try {
-    const res = await sellerUserApi.getAll({ perPage: 100 })
+    const res = await sellerUserApi.getAll({ perPage: 100, sort: '-sort_order' })
     const payload = res.data?.data ?? res.data ?? []
     sellers.value = Array.isArray(payload) ? payload : payload.data ?? []
   } catch (err) {
@@ -182,7 +182,12 @@ const filteredSellers = computed(() => {
     })
   }
 
-  return result
+  // 6. Sort by sort_order Descending (Larger first)
+  return [...result].sort((a, b) => {
+    const orderA = Number(a.sort_order) || 0
+    const orderB = Number(b.sort_order) || 0
+    return orderB - orderA
+  })
 })
 
 // ✅ Find Near Me using Smart Egyptian Geolocation range matching
