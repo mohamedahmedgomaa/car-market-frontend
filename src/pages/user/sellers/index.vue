@@ -900,18 +900,18 @@ onMounted(() => {
 }
 
 .search-col-name {
-  flex: 1.5;
+  flex: 1.4;
 }
 
 .search-col-governorate {
-  flex: 1.2;
+  flex: 1.7;
 }
 
 .search-col-city {
-  flex: 1.2;
+  flex: 1.7;
 }
 
-.search-col-neighborhood {
+.search-col-tier {
   flex: 1.2;
 }
 
@@ -955,8 +955,11 @@ onMounted(() => {
   color: rgba(var(--v-theme-on-surface), 0.9) !important;
   font-size: 14px;
   flex-wrap: nowrap !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
 }
 
+.premium-input-field :deep(.v-autocomplete__selection),
 .premium-input-field :deep(.v-select__selection) {
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -966,10 +969,15 @@ onMounted(() => {
   max-width: calc(100% - 24px) !important;
 }
 
-.premium-input-field :deep(.v-select__selection-text) {
+.premium-input-field :deep(.v-select__selection-text),
+.premium-input-field :deep(.v-autocomplete__selection-text) {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+
+.premium-input-field :deep(input) {
+  white-space: nowrap !important;
 }
 
 .premium-input-field :deep(.v-label) {
