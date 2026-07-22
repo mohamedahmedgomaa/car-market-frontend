@@ -517,25 +517,6 @@ onMounted(() => {
                           class="flex-shrink-0"
                         />
                       </div>
-                      
-                      <div
-                        v-if="seller.tier?.toLowerCase() === 'platinum'"
-                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
-                      >
-                        ELITE
-                      </div>
-                      <div
-                        v-else-if="seller.tier?.toLowerCase() === 'gold'"
-                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
-                      >
-                        GOLD
-                      </div>
-                      <div
-                        v-else-if="seller.tier?.toLowerCase() === 'silver'"
-                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption flex-shrink-0"
-                      >
-                        SILVER
-                      </div>
                     </div>
 
                     <!-- Clean Professional Location Line -->
@@ -551,22 +532,66 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <!-- Bio excerpt -->
-                <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-4 font-weight-medium" style="line-height: 1.5;">
-                  {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
-                </p>
+                <!-- Mid content wrapper with fixed min-height to prevent layout shifts -->
+                <div class="mid-content-wrapper" style="min-height: 80px;">
+                  <!-- Bio excerpt -->
+                  <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-4 font-weight-medium" style="line-height: 1.5;">
+                    {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
+                  </p>
+                </div>
+
+                <!-- Showroom Badges Row (Trusted Showroom & Package Tier) -->
+                <div class="showroom-badges-row d-flex align-center gap-2 mb-4 py-2 px-3 rounded-lg" style="background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-theme-on-surface), 0.08);">
+                  <!-- Trusted Showroom (color matches package tier) -->
+                  <div 
+                    class="d-flex align-center gap-1 text-caption font-weight-black"
+                    :class="{
+                      'text-gold': seller.tier?.toLowerCase() === 'gold',
+                      'text-platinum': seller.tier?.toLowerCase() === 'platinum',
+                      'text-silver': seller.tier?.toLowerCase() === 'silver',
+                      'text-success': !seller.tier || seller.tier === 'none'
+                    }"
+                  >
+                    <VIcon icon="tabler-discount-check-filled" size="16" />
+                    <span>{{ _t({ ar: 'معرض موثوق', en: 'Trusted Showroom' }) }}</span>
+                  </div>
+
+                  <VDivider vertical class="mx-1 opacity-20" style="height: 14px; border-color: rgba(var(--v-theme-on-surface), 0.3);" />
+
+                  <!-- Tier Package Badge (no icon, no package word) -->
+                  <div 
+                    class="d-flex align-center gap-1 text-caption font-weight-black"
+                    :class="{
+                      'text-gold': seller.tier?.toLowerCase() === 'gold',
+                      'text-platinum': seller.tier?.toLowerCase() === 'platinum',
+                      'text-silver': seller.tier?.toLowerCase() === 'silver',
+                      'text-medium-emphasis': !seller.tier || seller.tier === 'none'
+                    }"
+                  >
+                    <span class="text-uppercase">
+                      {{ 
+                        seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : 
+                        (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 
+                        (seller.tier?.toLowerCase() === 'silver' ? 'SILVER' : 'STANDARD')) 
+                      }}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <!-- Actions -->
               <div class="actions-wrapper mt-auto">
-                <div class="d-flex align-center gap-2 mb-3">
+                <div class="d-flex align-center gap-2">
                   <VBtn
                     v-if="seller.phone"
-                    color="primary"
+                    :color="seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#455A64' : 'primary'))"
                     variant="elevated"
                     size="small"
                     rounded="pill"
-                    class="flex-grow-1 font-weight-bold shadow-primary px-4 py-2"
+                    class="flex-grow-1 font-weight-bold px-4 py-2"
+                    :class="[
+                      seller.tier && seller.tier !== 'none' ? 'btn-call-' + seller.tier.toLowerCase() : 'shadow-primary'
+                    ]"
                     @click.stop.prevent="openCallDialog(seller)"
                   >
                     <VIcon icon="tabler-phone" size="16" class="me-1" />
@@ -586,19 +611,6 @@ onMounted(() => {
                     {{ t('whatsappBtn') }}
                   </VBtn>
                 </div>
-
-                <VBtn
-                  variant="tonal"
-                  color="secondary"
-                  block
-                  rounded="pill"
-                  class="font-weight-bold tracking-wide"
-                  @click.stop.prevent
-                  :to="`/user/sellers/${seller.id}`"
-                >
-                  {{ t('exploreShowroom') }}
-                  <VIcon icon="tabler-arrow-right" size="18" class="ms-1" />
-                </VBtn>
               </div>
             </VCard>
           </VCol>
