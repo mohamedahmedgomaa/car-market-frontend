@@ -183,6 +183,11 @@ const messages = {
     whatsappBtn: 'WhatsApp',
     exploreShowroom: 'Explore Showroom',
     elitePartner: 'Elite Partner',
+    trustedShowroom: 'Trusted Showroom',
+    goldShowroom: 'Gold Package',
+    silverShowroom: 'Silver Package',
+    eliteShowroom: 'Elite Package',
+    standardShowroom: 'Standard Package',
   },
   ar: {
     settings: 'الإعدادات',
@@ -365,6 +370,11 @@ const messages = {
     whatsappBtn: 'واتساب',
     exploreShowroom: 'استكشاف المعرض',
     elitePartner: 'شريك النخبة',
+    trustedShowroom: 'معرض موثوق',
+    goldShowroom: 'باقة جولد',
+    silverShowroom: 'باقة سيلفر',
+    eliteShowroom: 'باقة اليت',
+    standardShowroom: 'باقة عادية',
   }
 }
 

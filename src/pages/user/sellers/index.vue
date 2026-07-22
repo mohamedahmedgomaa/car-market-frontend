@@ -555,6 +555,40 @@ onMounted(() => {
                 <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-4 font-weight-medium" style="line-height: 1.5;">
                   {{ _t(seller.store_description) || seller.bio || 'Premium verified showroom offering certified high-quality vehicles with guaranteed warranties and transparent pricing.' }}
                 </p>
+
+                <!-- Showroom Badges Row (Trusted Showroom & Package Tier) -->
+                <div class="showroom-badges-row d-flex align-center gap-2 mb-4 py-2 px-3 rounded-lg" style="background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-theme-on-surface), 0.08);">
+                  <!-- Trusted Showroom -->
+                  <div class="d-flex align-center gap-1 text-caption font-weight-black text-success">
+                    <VIcon icon="tabler-discount-check-filled" size="16" />
+                    <span>{{ t('trustedShowroom') }}</span>
+                  </div>
+
+                  <VDivider vertical class="mx-1 opacity-20" style="height: 14px; border-color: rgba(var(--v-theme-on-surface), 0.3);" />
+
+                  <!-- Tier Package Badge -->
+                  <div 
+                    class="d-flex align-center gap-1 text-caption font-weight-black"
+                    :class="{
+                      'text-gold': seller.tier?.toLowerCase() === 'gold',
+                      'text-platinum': seller.tier?.toLowerCase() === 'platinum',
+                      'text-silver': seller.tier?.toLowerCase() === 'silver',
+                      'text-medium-emphasis': !seller.tier || seller.tier === 'none'
+                    }"
+                  >
+                    <VIcon 
+                      :icon="seller.tier?.toLowerCase() === 'platinum' ? 'tabler-crown' : (seller.tier?.toLowerCase() === 'gold' ? 'tabler-award' : 'tabler-shield-check')" 
+                      size="16" 
+                    />
+                    <span>
+                      {{ 
+                        seller.tier?.toLowerCase() === 'platinum' ? t('eliteShowroom') : 
+                        (seller.tier?.toLowerCase() === 'gold' ? t('goldShowroom') : 
+                        (seller.tier?.toLowerCase() === 'silver' ? t('silverShowroom') : t('standardShowroom'))) 
+                      }}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <!-- Actions -->
@@ -562,11 +596,14 @@ onMounted(() => {
                 <div class="d-flex align-center gap-2 mb-3">
                   <VBtn
                     v-if="seller.phone"
-                    color="primary"
+                    :color="seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#455A64' : 'primary'))"
                     variant="elevated"
                     size="small"
                     rounded="pill"
-                    class="flex-grow-1 font-weight-bold shadow-primary px-4 py-2"
+                    class="flex-grow-1 font-weight-bold px-4 py-2"
+                    :class="[
+                      seller.tier && seller.tier !== 'none' ? 'btn-call-' + seller.tier.toLowerCase() : 'shadow-primary'
+                    ]"
                     @click.stop.prevent="openCallDialog(seller)"
                   >
                     <VIcon icon="tabler-phone" size="16" class="me-1" />
@@ -1004,4 +1041,23 @@ onMounted(() => {
 .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
 .v-theme--dark .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
 .text-silver { color: #78909C !important; }
+
+.btn-call-platinum {
+  background: linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.btn-call-gold {
+  background: linear-gradient(135deg, #DAA520 0%, #FFD700 100%) !important;
+  color: #3E2723 !important;
+  box-shadow: 0 4px 15px rgba(218, 165, 32, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.btn-call-silver {
+  background: linear-gradient(135deg, #455A64 0%, #78909C 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
 </style>
