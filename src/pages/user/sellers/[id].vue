@@ -411,6 +411,7 @@ onMounted(fetchSeller)
             :limit="20"
             :params="carParams"
             :viewAllTo="carViewAllPath"
+            :show-view-all="false"
             :key="selectedBrandId"
           />
         </div>
