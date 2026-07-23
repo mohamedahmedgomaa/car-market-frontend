@@ -453,7 +453,7 @@ onMounted(() => {
               color="primary"
               variant="elevated"
               class="px-5 font-weight-bold shadow-primary text-subtitle-2"
-              height="44"
+              height="48"
               rounded="lg"
               :loading="isLocating"
               @click="locateNearMe"
@@ -464,7 +464,7 @@ onMounted(() => {
 
             <VBtn
               variant="tonal"
-              height="44"
+              height="48"
               color="secondary"
               class="px-4"
               rounded="lg"
@@ -883,88 +883,86 @@ onMounted(() => {
   animation: pulse 2s infinite ease-in-out;
 }
 
-/* Premium Horizontal Search Deck Styles - Very Compact! */
+/* Premium Horizontal Search Deck Styles - Spacious & High Contrast! */
 .premium-horizontal-search {
-  background: rgba(var(--v-theme-on-surface), 0.02);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
-  backdrop-filter: blur(20px);
+  background: rgba(var(--v-theme-surface), 0.45);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
+  backdrop-filter: blur(25px);
   border-radius: 20px;
-  padding: 12px 18px;
+  padding: 24px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 15px 35px rgba(var(--v-theme-on-surface), 0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
 
 .premium-horizontal-search:hover {
-  border-color: rgba(var(--v-theme-primary), 0.15);
-  box-shadow: 0 20px 45px rgba(var(--v-theme-on-surface), 0.15);
+  border-color: rgba(var(--v-theme-primary), 0.35);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
 }
 
 .search-main-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
 }
 
 .search-col {
-  flex: 1;
-  min-width: 0;
-}
-
-.search-col-name {
-  flex: 1.4;
-}
-
-.search-col-governorate {
-  flex: 1.7;
-}
-
-.search-col-city {
-  flex: 1.7;
-}
-
-.search-col-tier {
-  flex: 1.2;
+  width: 100%;
 }
 
 .search-col-actions {
-  flex-shrink: 0;
+  grid-column: span 2;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.search-col-actions > button,
+.search-col-actions > .v-btn {
+  flex: 1;
+  height: 48px !important;
+}
+
+.search-col-actions > button:last-child,
+.search-col-actions > .v-btn:last-child {
+  flex: 0 0 auto;
+  width: 48px;
+  min-width: 48px;
+  padding: 0 !important;
 }
 
 /* Integrated Outlined Cohesion for all Vuetify 3 inputs */
 .premium-input-field :deep(.v-field) {
   border-radius: 12px !important;
-  background: rgba(var(--v-theme-on-surface), 0.05) !important;
+  background: rgba(var(--v-theme-on-surface), 0.08) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 44px !important;
+  height: 48px !important;
   display: flex;
   align-items: center;
 }
 
 .premium-input-field :deep(.v-field__outline) {
   --v-field-border-opacity: 1 !important;
-  color: rgba(var(--v-theme-on-surface), 0.08) !important;
+  color: rgba(var(--v-theme-on-surface), 0.18) !important;
   transition: color 0.3s ease;
 }
 
 .premium-input-field :deep(.v-field:hover .v-field__outline) {
-  color: rgba(var(--v-theme-on-surface), 0.2) !important;
+  color: rgba(var(--v-theme-on-surface), 0.35) !important;
 }
 
 .premium-input-field :deep(.v-field--focused .v-field__outline) {
   color: rgba(var(--v-theme-primary), 1) !important;
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.15);
 }
 
 .premium-input-field :deep(.v-field__input) {
-  min-height: 44px !important;
-  height: 44px !important;
+  min-height: 48px !important;
+  height: 48px !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   align-items: center;
-  color: rgba(var(--v-theme-on-surface), 0.9) !important;
+  color: rgba(var(--v-theme-on-surface), 0.95) !important;
   font-size: 14px;
   flex-wrap: nowrap !important;
   overflow: hidden !important;
@@ -993,7 +991,7 @@ onMounted(() => {
 }
 
 .premium-input-field :deep(.v-label) {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
   font-size: 14px;
   top: 50% !important;
   transform: translateY(-50%) !important;
@@ -1009,8 +1007,8 @@ onMounted(() => {
   align-items: center;
   padding-top: 0 !important;
   margin-top: 0 !important;
-  height: 44px !important;
-  color: rgba(255, 255, 255, 0.5);
+  height: 48px !important;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .gap-2 {
@@ -1031,8 +1029,7 @@ onMounted(() => {
 
 @media (max-width: 959px) {
   .search-main-row {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
     gap: 12px;
   }
   
@@ -1041,11 +1038,13 @@ onMounted(() => {
   }
   
   .search-col-actions {
+    grid-column: span 1;
     justify-content: space-between;
     margin-top: 8px;
   }
   
-  .search-col-actions > button {
+  .search-col-actions > button,
+  .search-col-actions > .v-btn {
     flex: 1;
   }
 }
