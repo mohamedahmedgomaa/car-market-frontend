@@ -244,15 +244,16 @@ onMounted(fetchSeller)
                         v-if="seller.tier && seller.tier?.toLowerCase() !== 'none'"
                         class="d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption ms-2"
                         :style="{
-                          background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                          background: seller.tier?.toLowerCase() === 'diamond' ? 'linear-gradient(135deg, #00d2ff 0%, #0072ff 100%)' :
+                                      (seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
                                       (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
-                                      'linear-gradient(135deg, #455A64 0%, #78909C 100%)'),
+                                      'linear-gradient(135deg, #455A64 0%, #78909C 100%)')),
                           color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                          boxShadow: seller.tier?.toLowerCase() === 'diamond' ? '0 2px 10px rgba(0, 210, 255, 0.4)' : '0 2px 8px rgba(0,0,0,0.15)',
                           border: '1px solid rgba(255,255,255,0.1)'
                         }"
                       >
-                        {{ seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER') }}
+                        {{ seller.tier?.toLowerCase() === 'diamond' ? 'DIAMOND' : (seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER')) }}
                       </span>
                     </div>
 

@@ -510,7 +510,6 @@ onMounted(async () => {
             :error-messages="errors.sort_order"
           />
         </div>
-
         <!-- Showroom Tier / الباقة -->
         <div>
           <label class="block text-sm font-medium mb-2">Showroom Tier / الباقة</label>
@@ -520,7 +519,8 @@ onMounted(async () => {
               { title: 'Normal / عادي', value: 'none' },
               { title: 'Silver Partner / شريك سيلفر', value: 'silver' },
               { title: 'Gold Partner / شريك جولد', value: 'gold' },
-              { title: 'Elite Partner / شريك النخبة', value: 'platinum' }
+              { title: 'Elite Partner / شريك النخبة', value: 'platinum' },
+              { title: 'Diamond Partner / شريك ماسي', value: 'diamond' }
             ]"
             item-title="title"
             item-value="value"

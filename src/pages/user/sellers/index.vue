@@ -40,6 +40,7 @@ const resetFilters = () => {
 
 const tierOptions = computed(() => [
   { value: null, title: _t({ ar: 'كل الباقات', en: 'All Tiers' }) },
+  { value: 'diamond', title: _t({ ar: 'باقة دايموند (Diamond)', en: 'Diamond' }) },
   { value: 'platinum', title: _t({ ar: 'باقة إيليت (Elite)', en: 'Elite' }) },
   { value: 'gold', title: _t({ ar: 'باقة جولد (Gold)', en: 'Gold' }) },
   { value: 'silver', title: _t({ ar: 'باقة سيلفر (Silver)', en: 'Silver' }) },
@@ -507,9 +508,10 @@ onMounted(() => {
       <div v-else class="mb-8">
         <VRow class="showrooms-grid">
           <VCol v-for="seller in filteredSellers" :key="seller.id" cols="12" sm="6" lg="4">
-            <VCard
+             <VCard
               class="showroom-card h-100 pa-6 rounded-2xl d-flex flex-column justify-space-between cursor-pointer relative"
               :class="{
+                'showroom-card-diamond': seller.tier?.toLowerCase() === 'diamond',
                 'showroom-card-gold': seller.tier?.toLowerCase() === 'gold',
                 'showroom-card-silver': seller.tier?.toLowerCase() === 'silver',
                 'showroom-card-platinum': seller.tier?.toLowerCase() === 'platinum'
@@ -530,14 +532,16 @@ onMounted(() => {
                       v-if="seller.tier && seller.tier !== 'none'"
                       class="logo-tier-overlay text-xxs font-weight-black px-2 py-0.5 rounded text-uppercase"
                       :class="{
+                        'tier-badge-diamond': seller.tier?.toLowerCase() === 'diamond',
                         'tier-badge-platinum': seller.tier?.toLowerCase() === 'platinum',
                         'tier-badge-gold': seller.tier?.toLowerCase() === 'gold',
                         'tier-badge-silver': seller.tier?.toLowerCase() === 'silver'
                       }"
                     >
                       {{ 
-                        seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : 
-                        (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER') 
+                        seller.tier?.toLowerCase() === 'diamond' ? 'DIAMOND' :
+                        (seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : 
+                        (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER')) 
                       }}
                     </div>
                   </div>
@@ -547,6 +551,7 @@ onMounted(() => {
                       <div class="d-flex align-center gap-1 overflow-hidden flex-grow-1">
                         <h3 class="font-weight-black text-truncate mb-0" style="font-size: 1.1rem !important;"
                             :class="{
+                              'text-diamond': seller.tier?.toLowerCase() === 'diamond',
                               'text-gold': seller.tier?.toLowerCase() === 'gold',
                               'text-platinum': seller.tier?.toLowerCase() === 'platinum',
                               'text-silver': seller.tier?.toLowerCase() === 'silver',
@@ -556,7 +561,7 @@ onMounted(() => {
                         </h3>
                         <VIcon 
                           icon="tabler-discount-check-filled" 
-                          :color="seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#78909C' : (seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : 'info'))" 
+                          :color="seller.tier?.toLowerCase() === 'diamond' ? '#00d2ff' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#78909C' : (seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : 'info')))" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
                           class="flex-shrink-0 ms-1"
@@ -591,7 +596,7 @@ onMounted(() => {
                 <div class="d-flex align-center gap-2">
                   <VBtn
                     v-if="seller.phone"
-                    :color="seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#455A64' : 'primary'))"
+                    :color="seller.tier?.toLowerCase() === 'diamond' ? '#0072ff' : (seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#455A64' : 'primary')))"
                     variant="elevated"
                     size="small"
                     rounded="pill"
@@ -765,6 +770,17 @@ onMounted(() => {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(var(--v-theme-primary), 0.2) !important;
   }
 
+  &.showroom-card-diamond {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(0, 210, 255, 0.15)) !important;
+    border: 2px solid rgba(0, 210, 255, 0.8) !important;
+    box-shadow: 0 12px 30px rgba(0, 210, 255, 0.25) !important;
+    
+    &:hover {
+      border-color: rgba(0, 210, 255, 1) !important;
+      box-shadow: 0 20px 45px rgba(0, 210, 255, 0.4), 0 0 40px rgba(0, 210, 255, 0.25) !important;
+    }
+  }
+
   &.showroom-card-gold {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(218, 165, 32, 0.15)) !important;
     border: 2px solid rgba(218, 165, 32, 0.8) !important;
@@ -797,6 +813,14 @@ onMounted(() => {
       box-shadow: 0 20px 45px rgba(255, 109, 0, 0.6), 0 0 50px rgba(255, 143, 0, 0.4) !important;
     }
   }
+}
+
+.tier-badge-diamond {
+  background: linear-gradient(135deg, #00d2ff 0%, #0072ff 50%, #00c6ff 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.5), 0 0 15px rgba(0, 114, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .tier-badge-platinum {
@@ -1049,6 +1073,7 @@ onMounted(() => {
   }
 }
 
+.text-diamond { color: #00d2ff !important; text-shadow: 0 0 8px rgba(0, 210, 255, 0.4); }
 .text-gold { color: #DAA520 !important; }
 .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
 .v-theme--dark .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
@@ -1061,6 +1086,11 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   
+  &.pill-diamond {
+    background: rgba(0, 210, 255, 0.08) !important;
+    border-color: rgba(0, 210, 255, 0.25) !important;
+    color: #00d2ff !important;
+  }
   &.pill-gold {
     background: rgba(218, 165, 32, 0.08) !important;
     border-color: rgba(218, 165, 32, 0.25) !important;
@@ -1093,6 +1123,10 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
+.showroom-card-diamond .showroom-logo-wrapper {
+  border-color: rgba(0, 210, 255, 0.5) !important;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.15) !important;
+}
 .showroom-card-gold .showroom-logo-wrapper {
   border-color: rgba(218, 165, 32, 0.5) !important;
   box-shadow: 0 0 12px rgba(218, 165, 32, 0.15) !important;
