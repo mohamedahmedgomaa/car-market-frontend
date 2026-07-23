@@ -78,6 +78,7 @@ const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_
 
 const verifiedBadgeColor = computed(() => {
   const t = seller.value?.tier?.toLowerCase()
+  if (t === 'diamond') return '#00d2ff' // Diamond
   if (t === 'gold') return '#DAA520' // Gold
   if (t === 'silver') return '#78909C' // Silver
   if (t === 'platinum') return '#FF6D00' // Elite
@@ -603,6 +604,16 @@ onMounted(fetchSeller)
 }
 
 /* Tier Glow Classes */
+.showroom-header-diamond {
+  border: 2px solid rgba(0, 210, 255, 0.8) !important;
+  box-shadow: 0 12px 40px rgba(0, 210, 255, 0.25) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(0, 210, 255, 0.2) 0%, transparent 70%); }
+  .showroom-logo-box {
+    border: 2px solid rgba(0, 210, 255, 0.8) !important;
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4) !important;
+  }
+}
+
 .showroom-header-gold {
   border: 2px solid rgba(218, 165, 32, 0.8) !important;
   box-shadow: 0 12px 40px rgba(218, 165, 32, 0.25) !important;

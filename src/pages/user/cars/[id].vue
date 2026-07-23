@@ -1103,6 +1103,7 @@ watch(
           <VCard 
             class="seller-card pa-4 mb-6 relative overflow-hidden cursor-pointer"
             :class="{
+              'seller-card-diamond': car.seller?.tier?.toLowerCase() === 'diamond',
               'seller-card-gold': car.seller?.tier?.toLowerCase() === 'gold',
               'seller-card-platinum': car.seller?.tier?.toLowerCase() === 'platinum'
             }"
@@ -1113,7 +1114,14 @@ watch(
               <div class="text-overline opacity-60 text-caption">Listing Owner</div>
               <!-- Badges -->
               <div
-                v-if="car.seller?.tier?.toLowerCase() === 'platinum'"
+                v-if="car.seller?.tier?.toLowerCase() === 'diamond'"
+                class="tier-badge-diamond d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.7rem !important;"
+              >
+                DIAMOND
+              </div>
+              <div
+                v-else-if="car.seller?.tier?.toLowerCase() === 'platinum'"
                 class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
                 style="font-size: 0.7rem !important;"
               >
@@ -1143,10 +1151,12 @@ watch(
                 class="showroom-logo-wrapper d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" 
                 style="width: 54px; height: 54px; padding: 4px; transition: all 0.3s ease;"
                 :style="{
-                  borderColor: car.seller?.tier?.toLowerCase() === 'platinum' ? 'rgba(255, 109, 0, 0.8) !important' :
-                               (car.seller?.tier?.toLowerCase() === 'gold' ? 'rgba(218, 165, 32, 0.8) !important' : 'rgba(69, 90, 100, 0.6) !important'),
-                  boxShadow: car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 10px rgba(255, 109, 0, 0.4)' :
-                             (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 10px rgba(218, 165, 32, 0.3)' : '0 0 10px rgba(69, 90, 100, 0.2)')
+                  borderColor: car.seller?.tier?.toLowerCase() === 'diamond' ? 'rgba(0, 210, 255, 0.8) !important' :
+                               (car.seller?.tier?.toLowerCase() === 'platinum' ? 'rgba(255, 109, 0, 0.8) !important' :
+                               (car.seller?.tier?.toLowerCase() === 'gold' ? 'rgba(218, 165, 32, 0.8) !important' : 'rgba(69, 90, 100, 0.6) !important')),
+                  boxShadow: car.seller?.tier?.toLowerCase() === 'diamond' ? '0 0 10px rgba(0, 210, 255, 0.4)' :
+                             (car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 10px rgba(255, 109, 0, 0.4)' :
+                             (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 10px rgba(218, 165, 32, 0.3)' : '0 0 10px rgba(69, 90, 100, 0.2)'))
                 }"
               >
                 <img
@@ -1869,6 +1879,19 @@ watch(
   border-bottom: 3px solid rgb(var(--v-theme-primary)) !important; /* Bottom band to match footer color */
   transition: all 0.3s ease;
 
+  &.seller-card-diamond {
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(0, 210, 255, 0.15)) !important;
+    border: 2px solid rgba(0, 210, 255, 0.8) !important;
+    border-bottom: 2px solid rgba(0, 210, 255, 0.8) !important;
+    box-shadow: 0 12px 30px rgba(0, 210, 255, 0.25) !important;
+    
+    &:hover {
+      border-color: rgba(0, 210, 255, 1) !important;
+      border-bottom-color: rgba(0, 210, 255, 1) !important;
+      box-shadow: 0 20px 45px rgba(0, 210, 255, 0.6), 0 0 50px rgba(0, 210, 255, 0.4) !important;
+    }
+  }
+
   &.seller-card-gold {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(218, 165, 32, 0.15)) !important;
     border: 2px solid rgba(218, 165, 32, 0.8) !important;
@@ -1895,6 +1918,14 @@ watch(
       box-shadow: 0 20px 45px rgba(255, 109, 0, 0.6), 0 0 50px rgba(255, 143, 0, 0.4) !important;
     }
   }
+}
+
+.tier-badge-diamond {
+  background: linear-gradient(135deg, #00d2ff 0%, #0072ff 50%, #00c6ff 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.6), 0 0 15px rgba(0, 114, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .tier-badge-platinum {

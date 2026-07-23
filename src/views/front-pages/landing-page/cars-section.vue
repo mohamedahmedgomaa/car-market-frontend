@@ -395,10 +395,12 @@ watch(
                   class="d-flex align-center justify-center bg-white rounded flex-shrink-0"
                   style="width: 24px; height: 24px; padding: 1px; border: 1.5px solid;"
                   :style="{
-                    borderColor: car.seller?.tier?.toLowerCase() === 'platinum' ? '#FF6D00' :
-                                 (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : '#78909C'),
-                    boxShadow: car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 6px rgba(255, 109, 0, 0.3)' :
-                               (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 6px rgba(218, 165, 32, 0.2)' : '0 0 6px rgba(120, 144, 156, 0.2)')
+                    borderColor: car.seller?.tier?.toLowerCase() === 'diamond' ? '#00d2ff' :
+                                 (car.seller?.tier?.toLowerCase() === 'platinum' ? '#FF6D00' :
+                                 (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : '#78909C')),
+                    boxShadow: car.seller?.tier?.toLowerCase() === 'diamond' ? '0 0 6px rgba(0, 210, 255, 0.4)' :
+                               (car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 6px rgba(255, 109, 0, 0.3)' :
+                               (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 6px rgba(218, 165, 32, 0.2)' : '0 0 6px rgba(120, 144, 156, 0.2)'))
                   }"
                 >
                   <img :src="car.seller.store_logo" alt="logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 2px;" />
@@ -406,6 +408,7 @@ watch(
                 <span 
                   class="text-truncate font-weight-black text-caption" 
                   :class="{
+                    'text-diamond': car.seller?.tier?.toLowerCase() === 'diamond',
                     'text-gold': car.seller?.tier?.toLowerCase() === 'gold',
                     'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
                     'text-silver': !car.seller?.tier || car.seller?.tier?.toLowerCase() === 'silver'
@@ -419,6 +422,7 @@ watch(
                   icon="tabler-discount-check-filled"
                   size="12"
                   :class="{
+                    'text-diamond': car.seller?.tier?.toLowerCase() === 'diamond',
                     'text-gold': car.seller?.tier?.toLowerCase() === 'gold',
                     'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
                     'text-silver': car.seller?.tier?.toLowerCase() === 'silver'
@@ -785,6 +789,7 @@ watch(
   color: #fff;
 }
 
+.text-diamond { color: #00d2ff !important; text-shadow: 0 0 8px rgba(0, 210, 255, 0.4); }
 .text-gold { color: #DAA520 !important; }
 .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
 .v-theme--dark .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
