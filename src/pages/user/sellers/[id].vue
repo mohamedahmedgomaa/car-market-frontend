@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import sellerUserApi from '@/api/user/sellerUserApi.js'
 import carUserApi from '@/api/user/carUserApi.js'
@@ -11,15 +12,61 @@ definePage({ meta: { layout: 'front', public: true } })
 const route = useRoute()
 const sellerId = computed(() => route.params.id)
 
+const { t, locale } = useI18n({ useScope: 'global' })
+
 const loading = ref(false)
 const error = ref('')
 const seller = ref(null)
 const sellerCars = ref([])
 
-const t = (val) => {
+const brandTranslations = {
+  'Audi': { ar: 'أودي', en: 'Audi' },
+  'Porsche': { ar: 'بورشه', en: 'Porsche' },
+  'Land Rover': { ar: 'لاند روفر', en: 'Land Rover' },
+  'Mercedes': { ar: 'مرسيدس', en: 'Mercedes' },
+  'BMW': { ar: 'بي إم دبليو', en: 'BMW' },
+  'Nissan': { ar: 'نيسان', en: 'Nissan' },
+  'Toyota': { ar: 'تويوتا', en: 'Toyota' },
+  'Hyundai': { ar: 'هيونداي', en: 'Hyundai' },
+  'Kia': { ar: 'كيا', en: 'Kia' },
+  'Chevrolet': { ar: 'شيفروليه', en: 'Chevrolet' },
+  'Jeep': { ar: 'جيب', en: 'Jeep' },
+  'Ford': { ar: 'فورد', en: 'Ford' },
+  'Honda': { ar: 'هوندا', en: 'Honda' },
+  'Mitsubishi': { ar: 'ميتسوبيشي', en: 'Mitsubishi' },
+  'Fiat': { ar: 'فيات', en: 'Fiat' },
+  'Renault': { ar: 'رينو', en: 'Renault' },
+  'Peugeot': { ar: 'بيجو', en: 'Peugeot' },
+  'Skoda': { ar: 'سكودا', en: 'Skoda' },
+  'Volkswagen': { ar: 'فولكس فاجن', en: 'Volkswagen' },
+  'Subaru': { ar: 'سوبارو', en: 'Subaru' },
+  'Mazda': { ar: 'مازدا', en: 'Mazda' },
+  'Lexus': { ar: 'لكزس', en: 'Lexus' },
+  'Volvo': { ar: 'فولفو', en: 'Volvo' },
+  'Suzuki': { ar: 'سوزوكي', en: 'Suzuki' },
+  'Chery': { ar: 'شيري', en: 'Chery' },
+  'MG': { ar: 'إم جي', en: 'MG' },
+  'BYD': { ar: 'بي واي دي', en: 'BYD' },
+  'Geely': { ar: 'جيلي', en: 'Geely' },
+  'Jetour': { ar: 'جيتور', en: 'Jetour' },
+  'Opel': { ar: 'أوبل', en: 'Opel' },
+}
+
+const _t = (val) => {
   if (!val) return ''
-  if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  
+  if (typeof val === 'string') {
+    const lowerVal = val.trim()
+    const matchKey = Object.keys(brandTranslations).find(k => k.toLowerCase() === lowerVal.toLowerCase())
+    if (matchKey) {
+      const currentLocale = locale.value || 'ar'
+      return brandTranslations[matchKey][currentLocale] || brandTranslations[matchKey]['ar']
+    }
+    return val
+  }
+  
+  const currentLocale = locale.value || 'ar'
+  return val[currentLocale] || val.ar || val.en || ''
 }
 
 const normalizeOne = (payload) => payload?.data?.data ?? payload?.data ?? payload ?? null
@@ -176,79 +223,62 @@ onMounted(fetchSeller)
               <div class="avatar-wrapper animate-float flex-shrink-0">
                 <div class="showroom-logo-box elevation-8">
                   <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" />
-                  <span v-else class="text-h2 font-weight-black text-primary">{{ (t(seller.store_name) || seller.name || 'S')[0].toUpperCase() }}</span>
+                  <span v-else class="text-h2 font-weight-black text-primary">{{ (_t(seller.store_name) || seller.name || 'S')[0].toUpperCase() }}</span>
                 </div>
               </div>
 
               <!-- Profile Details -->
               <div class="showroom-info flex-grow-1 overflow-hidden">
                 <div class="d-flex flex-column flex-md-row align-center align-md-start justify-space-between gap-4">
-                  <div class="flex-grow-1 w-100 text-center text-md-start">
+                  <div class="flex-grow-1 w-100 text-center text-md-start text-white">
                     
-                    <!-- Premium Badges Row -->
-                    <div class="d-flex align-center justify-center justify-md-start gap-2 mb-2 flex-wrap">
-                      <div
-                        v-if="seller.tier?.toLowerCase() === 'platinum'"
-                        class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption"
-                      >
-                        <VIcon icon="tabler-diamond" size="14" class="me-1" />
-                        ELITE DEALER
-                      </div>
-                      <div
-                        v-else-if="seller.tier?.toLowerCase() === 'gold'"
-                        class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption"
-                      >
-                        <VIcon icon="tabler-award" size="14" class="me-1" />
-                        GOLD SHOWROOM
-                      </div>
-                      <div
-                        v-else-if="seller.tier?.toLowerCase() === 'silver'"
-                        class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption"
-                      >
-                        <VIcon icon="tabler-certificate" size="14" class="me-1" />
-                        SILVER PARTNER
-                      </div>
-
-                      <div
-                        v-if="seller.is_verified"
-                        class="tier-badge-verified d-inline-flex align-center justify-center font-weight-bold tracking-widest px-3 py-1 rounded-pill text-caption"
-                        style="background: rgba(var(--v-theme-primary), 0.15) !important; color: #FFF !important; border: 1px solid rgba(var(--v-theme-primary), 0.4);"
-                      >
-                        <VIcon icon="tabler-discount-check" size="14" class="me-1" color="primary" />
-                        VERIFIED
-                      </div>
-                    </div>
-
-                    <!-- Name Line -->
+                    <!-- Name & Badge Line -->
                     <div class="d-flex align-center justify-center justify-md-start gap-2 mb-1 flex-wrap">
                       <h1 class="text-h3 font-weight-black text-white mb-0" style="font-size: 2.2rem !important; line-height: 1.2;">
-                        {{ t(seller.store_name) || seller.name }}
+                        {{ _t(seller.store_name) || seller.name }}
                       </h1>
                       <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" :color="verifiedBadgeColor" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
+                      
+                      <!-- Package Badge (Without Diamond Icon, Placed Next to Name) -->
+                      <span
+                        v-slot:default
+                        v-if="seller.tier && seller.tier?.toLowerCase() !== 'none'"
+                        class="d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption ms-2"
+                        :style="{
+                          background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                                      (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
+                                      'linear-gradient(135deg, #455A64 0%, #78909C 100%)'),
+                          color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                          border: '1px solid rgba(255,255,255,0.1)'
+                        }"
+                      >
+                        {{ seller.tier?.toLowerCase() === 'platinum' ? 'ELITE DEALER' : (seller.tier?.toLowerCase() === 'gold' ? 'GOLD SHOWROOM' : 'SILVER PARTNER') }}
+                      </span>
                     </div>
 
                     <!-- City & Location line -->
-                    <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-2 text-white-50">
-                      <VIcon icon="tabler-map-pin" size="18" />
-                      <span class="text-subtitle-2 font-weight-bold">
-                        {{ seller.governorate ? t(seller.governorate.name) : '' }}
+                    <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-2 text-white" style="color: rgba(255, 255, 255, 0.7) !important;">
+                      <VIcon icon="tabler-map-pin" size="18" style="color: rgba(255, 255, 255, 0.8) !important;" />
+                      <span class="text-subtitle-2 font-weight-bold text-white">
+                        {{ seller.governorate ? _t(seller.governorate.name) : '' }}
                         {{ seller.governorate && seller.city ? ' - ' : '' }}
-                        {{ seller.city ? t(seller.city.name) : (!seller.governorate ? t('egypt') || 'Egypt' : '') }}
+                        {{ seller.city ? _t(seller.city.name) : (!seller.governorate ? t('egypt') || 'Egypt' : '') }}
                       </span>
-                      <span v-if="t(seller.district)" class="text-subtitle-2 font-weight-medium opacity-80">
-                        • {{ t(seller.district) }}
+                      <span v-if="_t(seller.district)" class="text-subtitle-2 font-weight-medium text-white" style="opacity: 0.8;">
+                        • {{ _t(seller.district) }}
                       </span>
-                      <span v-if="t(seller.street)" class="text-subtitle-2 font-weight-medium opacity-80">
-                        • {{ t(seller.street) }}
+                      <span v-if="_t(seller.street)" class="text-subtitle-2 font-weight-medium text-white" style="opacity: 0.8;">
+                        • {{ _t(seller.street) }}
                       </span>
-                      <span v-if="t(seller.address)" class="text-subtitle-2 font-weight-medium opacity-80">
-                        ({{ t(seller.address) }})
+                      <span v-if="_t(seller.address)" class="text-subtitle-2 font-weight-medium text-white" style="opacity: 0.8;">
+                        ({{ _t(seller.address) }})
                       </span>
                       <VChip
                         size="x-small"
                         color="error"
                         variant="elevated"
-                        class="ms-2 font-weight-bold cursor-pointer open-map-chip"
+                        class="ms-2 font-weight-bold cursor-pointer open-map-chip text-white"
                         @click="openMap"
                         prepend-icon="tabler-map"
                       >
@@ -257,7 +287,7 @@ onMounted(fetchSeller)
                     </div>
 
                     <!-- Reviews / Ratings -->
-                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2 mb-3 flex-wrap">
+                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2 mb-3 flex-wrap text-white">
                       <div class="d-flex align-center text-amber-accent-4 cursor-pointer" @click="openReviewDialog" title="Click to see reviews">
                         <VIcon icon="tabler-star-filled" size="16" />
                         <VIcon icon="tabler-star-filled" size="16" />
@@ -265,13 +295,13 @@ onMounted(fetchSeller)
                         <VIcon icon="tabler-star-filled" size="16" />
                         <VIcon icon="tabler-star-half-filled" size="16" />
                       </div>
-                      <span class="text-caption text-white-50 font-weight-medium ms-2">4.8 (124 {{ t('reviews') || 'Reviews' }})</span>
+                      <span class="text-caption font-weight-medium ms-2 text-white" style="color: rgba(255, 255, 255, 0.7) !important;">4.8 (124 {{ t('reviews') || 'Reviews' }})</span>
                       
                       <VBtn 
                         variant="tonal" 
                         size="x-small" 
                         color="amber-accent-4" 
-                        class="ms-3 font-weight-bold rounded-pill px-3 shadow-sm"
+                        class="ms-3 font-weight-bold rounded-pill px-3 shadow-sm text-white"
                         @click="openReviewDialog"
                       >
                         <VIcon icon="tabler-edit" size="12" class="me-1" />
@@ -280,26 +310,32 @@ onMounted(fetchSeller)
                     </div>
 
                     <!-- Showroom Bio / Description (4-line fixed space) -->
-                    <p class="store-bio mt-3 text-subtitle-2 text-white-50 max-w-700 mx-auto mx-md-0 text-center text-md-start">
-                      {{ t(seller.store_description) || seller.bio || t('showroomDefaultBio') || 'Welcome to our premium showroom. We offer a high-quality selection of certified pre-owned and brand new vehicles.' }}
+                    <p class="store-bio mt-3 text-subtitle-2 max-w-700 mx-auto mx-md-0 text-center text-md-start text-white" style="color: rgba(255, 255, 255, 0.7) !important;">
+                      {{ _t(seller.store_description) || seller.bio || t('showroomDefaultBio') || 'Welcome to our premium showroom. We offer a high-quality selection of certified pre-owned and brand new vehicles.' }}
                     </p>
                   </div>
 
-                    <!-- Contact Hub Card (Spacious Premium Control Deck) -->
-                  <div class="contact-hub-card pa-6 rounded-2xl d-flex flex-column gap-4 mt-4 mt-md-0 elevation-10 flex-shrink-0">
+                  <!-- Contact Hub Card (Transparent & Compact Control Deck) -->
+                  <div class="contact-hub-card pa-4 rounded-2xl d-flex flex-column gap-3 mt-4 mt-md-0 elevation-10 flex-shrink-0">
                     <!-- Primary Actions (Call & WhatsApp) -->
                     <div class="d-flex align-center gap-3 w-100">
                       <VBtn
                         v-if="seller.phone"
-                        color="primary"
-                        variant="elevated"
+                        variant="flat"
                         size="large"
                         rounded="pill"
-                        class="flex-grow-1 font-weight-bold shadow-primary text-subtitle-1 px-6 py-2"
+                        class="flex-grow-1 font-weight-bold text-subtitle-1 px-4 py-2 text-white"
+                        :style="{
+                          background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                                      (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
+                                      (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : 'var(--v-theme-primary)')),
+                          color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
+                          boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
+                        }"
                         @click="openCallDialog"
                       >
-                        <VIcon icon="tabler-phone" size="20" class="me-2" />
-                        {{ t('callNow') || 'Call Now' }}
+                        <VIcon icon="tabler-phone" size="18" class="me-2" />
+                        {{ t('call') || 'Call' }}
                       </VBtn>
 
                       <VBtn
@@ -308,74 +344,70 @@ onMounted(fetchSeller)
                         variant="elevated"
                         size="large"
                         rounded="pill"
-                        class="flex-grow-1 font-weight-bold shadow-success text-subtitle-1 px-6 py-2"
+                        class="flex-grow-1 font-weight-bold shadow-success text-subtitle-1 px-4 py-2"
                         :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
                         target="_blank"
                       >
-                        <VIcon icon="tabler-brand-whatsapp" size="20" class="me-2" />
+                        <VIcon icon="tabler-brand-whatsapp" size="18" class="me-2" />
                         {{ t('whatsapp') || 'WhatsApp' }}
                       </VBtn>
                     </div>
 
-                    <VDivider class="w-100 my-2 opacity-20" />
+                    <VDivider class="w-100 opacity-20" />
 
-                    <!-- Social Media Row -->
-                    <div class="d-flex align-center justify-space-between gap-3 w-100 px-2">
-                      <span class="text-button text-uppercase font-weight-black text-medium-emphasis tracking-wide">{{ t('connect') || 'Connect:' }}</span>
-                      
-                      <div class="d-flex align-center gap-3">
-                        <VBtn
-                          icon
-                          size="small"
-                          variant="tonal"
-                          color="blue-lighten-1"
-                          class="social-btn"
-                          :href="seller.facebook || 'https://facebook.com'"
-                          target="_blank"
-                          v-tooltip="'Facebook'"
-                        >
-                          <VIcon icon="tabler-brand-facebook" size="20" />
-                        </VBtn>
+                    <!-- Social Media Row (Centered & Simple without Connect Text) -->
+                    <div class="d-flex align-center justify-center gap-3 w-100">
+                      <VBtn
+                        icon
+                        size="small"
+                        variant="tonal"
+                        color="blue-lighten-1"
+                        class="social-btn"
+                        :href="seller.facebook || 'https://facebook.com'"
+                        target="_blank"
+                        v-tooltip="'Facebook'"
+                      >
+                        <VIcon icon="tabler-brand-facebook" size="20" />
+                      </VBtn>
 
-                        <VBtn
-                          icon
-                          size="small"
-                          variant="tonal"
-                          color="purple-lighten-2"
-                          class="social-btn"
-                          :href="seller.instagram || 'https://instagram.com'"
-                          target="_blank"
-                          v-tooltip="'Instagram'"
-                        >
-                          <VIcon icon="tabler-brand-instagram" size="20" />
-                        </VBtn>
+                      <VBtn
+                        icon
+                        size="small"
+                        variant="tonal"
+                        color="purple-lighten-2"
+                        class="social-btn"
+                        :href="seller.instagram || 'https://instagram.com'"
+                        target="_blank"
+                        v-tooltip="'Instagram'"
+                      >
+                        <VIcon icon="tabler-brand-instagram" size="20" />
+                      </VBtn>
 
-                        <VBtn
-                          icon
-                          size="small"
-                          variant="tonal"
-                          color="cyan-lighten-1"
-                          class="social-btn"
-                          :href="seller.website || 'https://google.com'"
-                          target="_blank"
-                          v-tooltip="'Website'"
-                        >
-                          <VIcon icon="tabler-world" size="20" />
-                        </VBtn>
+                      <VBtn
+                        icon
+                        size="small"
+                        variant="tonal"
+                        color="cyan-lighten-1"
+                        class="social-btn"
+                        :href="seller.website || 'https://google.com'"
+                        target="_blank"
+                        v-tooltip="'Website'"
+                      >
+                        <VIcon icon="tabler-world" size="20" />
+                      </VBtn>
 
-                        <VBtn
-                          icon
-                          size="small"
-                          variant="tonal"
-                          color="red-lighten-1"
-                          class="social-btn"
-                          :href="seller.tiktok || 'https://tiktok.com'"
-                          target="_blank"
-                          v-tooltip="'TikTok'"
-                        >
-                          <VIcon icon="tabler-brand-tiktok" size="20" />
-                        </VBtn>
-                      </div>
+                      <VBtn
+                        icon
+                        size="small"
+                        variant="tonal"
+                        color="red-lighten-1"
+                        class="social-btn"
+                        :href="seller.tiktok || 'https://tiktok.com'"
+                        target="_blank"
+                        v-tooltip="'TikTok'"
+                      >
+                        <VIcon icon="tabler-brand-tiktok" size="20" />
+                      </VBtn>
                     </div>
                   </div>
                 </div>
@@ -395,7 +427,7 @@ onMounted(fetchSeller)
             
             <div class="d-inline-flex align-center bg-surface px-3 py-1 rounded-pill elevation-1 border me-2 flex-shrink-0" v-tooltip="t('totalCars') || 'Total Cars'">
               <VIcon icon="tabler-car" size="16" class="me-1 text-primary" />
-              <span class="text-subtitle-2 font-weight-bold">{{ totalCarsCount }}</span>
+              <span class="text-subtitle-2 font-weight-bold text-high-emphasis">{{ totalCarsCount }}</span>
             </div>
             
             <VChip
@@ -421,13 +453,13 @@ onMounted(fetchSeller)
               <VAvatar start v-if="brand.logo" size="24" class="me-1">
                 <img :src="brand.logo" alt="brand" />
               </VAvatar>
-              {{ t(brand.name) }}
+              {{ _t(brand.name) }}
             </VChip>
           </div>
 
           <CarsSection
-            :title="`Available Listings at ${t(seller.store_name) || seller.name}`"
-            subtitle="Browse all verified high-quality vehicles offered by this showroom"
+            :title="t('availableListingsAt', { name: _t(seller.store_name) || seller.name })"
+            :subtitle="t('showroomListingsSubtitle') || 'Browse all verified high-quality vehicles offered by this showroom'"
             :limit="20"
             :params="carParams"
             :viewAllTo="carViewAllPath"
@@ -668,11 +700,11 @@ onMounted(fetchSeller)
 
 /* Contact Hub Card */
 .contact-hub-card {
-  background: rgba(var(--v-theme-surface), 0.75) !important;
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(var(--v-border-color), 0.15) !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-  min-width: 360px;
+  background: rgba(15, 15, 15, 0.6) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25) !important;
+  min-width: 280px;
 }
 
 .opacity-20 {
