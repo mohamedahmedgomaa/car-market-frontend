@@ -1,5 +1,4 @@
 <script setup>
-// Touch save to trigger Git update
 import { computed, onMounted, ref, watch } from 'vue'
 import sellerUserApi from '@/api/user/sellerUserApi.js'
 import cityUserApi from '@/api/user/cityUserApi.js'
@@ -8,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 
 definePage({ meta: { layout: 'front', public: true } })
 
-const { t, locale } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: 'global' })
 
 const loading = ref(true)
 const error = ref('')
@@ -49,16 +48,8 @@ const tierOptions = computed(() => [
 
 const _t = (val) => {
   if (!val) return ''
-  if (typeof val === 'string') {
-    try {
-      const parsed = JSON.parse(val)
-      return parsed[locale.value] || parsed.ar || parsed.en || ''
-    } catch (e) {
-      return val
-    }
-  }
-  const currentLocale = locale.value || 'ar'
-  return val[currentLocale] || val.ar || val.en || ''
+  if (typeof val === 'string') return val
+  return val.en || val.ar || ''
 }
 
 const getCombinedName = (nameObj) => {
@@ -912,32 +903,32 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .search-col {
-  flex: 1 1 200px;
-  min-width: 200px;
+  flex: 1;
+  min-width: 0;
 }
 
 .search-col-name {
-  flex: 1.4 1 240px;
+  flex: 1.4;
 }
 
 .search-col-governorate {
-  flex: 1.7 1 220px;
+  flex: 1.7;
 }
 
 .search-col-city {
-  flex: 1.7 1 220px;
+  flex: 1.7;
 }
 
 .search-col-tier {
-  flex: 1.2 1 180px;
+  flex: 1.2;
 }
 
 .search-col-actions {
-  flex: 0 1 auto;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;

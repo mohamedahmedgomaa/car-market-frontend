@@ -1,5 +1,4 @@
 <script setup>
-// Touch save to trigger Git update
 import { ref, onMounted, watch, computed } from 'vue'
 import sellerAdminApi from '../../../api/admin/sellerAdminApi.js'
 import { useRouter } from 'vue-router'
