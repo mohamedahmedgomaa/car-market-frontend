@@ -252,7 +252,7 @@ onMounted(fetchSeller)
                           border: '1px solid rgba(255,255,255,0.1)'
                         }"
                       >
-                        {{ seller.tier?.toUpperCase() }}
+                        {{ seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER') }}
                       </span>
                     </div>
 
@@ -352,17 +352,16 @@ onMounted(fetchSeller)
                       </VBtn>
                     </div>
 
-                    <VDivider class="w-100 opacity-20" v-if="seller.facebook || seller.instagram || seller.website || seller.tiktok" />
+                    <VDivider class="w-100 opacity-20" />
 
                     <!-- Social Media Row (Centered & Simple without Connect Text) -->
                     <div class="d-flex align-center justify-center gap-3 w-100">
                       <VBtn
-                        v-if="seller.facebook"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-facebook"
-                        :href="seller.facebook"
+                        :href="seller.facebook || 'https://facebook.com'"
                         target="_blank"
                         v-tooltip="'Facebook'"
                       >
@@ -370,12 +369,11 @@ onMounted(fetchSeller)
                       </VBtn>
 
                       <VBtn
-                        v-if="seller.instagram"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-instagram"
-                        :href="seller.instagram"
+                        :href="seller.instagram || 'https://instagram.com'"
                         target="_blank"
                         v-tooltip="'Instagram'"
                       >
@@ -383,12 +381,11 @@ onMounted(fetchSeller)
                       </VBtn>
 
                       <VBtn
-                        v-if="seller.website"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-website"
-                        :href="seller.website"
+                        :href="seller.website || 'https://google.com'"
                         target="_blank"
                         v-tooltip="'Website'"
                       >
@@ -396,12 +393,11 @@ onMounted(fetchSeller)
                       </VBtn>
 
                       <VBtn
-                        v-if="seller.tiktok"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-tiktok"
-                        :href="seller.tiktok"
+                        :href="seller.tiktok || 'https://tiktok.com'"
                         target="_blank"
                         v-tooltip="'TikTok'"
                       >
