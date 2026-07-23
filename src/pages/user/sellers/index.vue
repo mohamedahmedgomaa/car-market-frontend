@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 
 definePage({ meta: { layout: 'front', public: true } })
 
-const { t } = useI18n({ useScope: 'global' })
+const { t, locale } = useI18n({ useScope: 'global' })
 
 const loading = ref(true)
 const error = ref('')
@@ -48,8 +48,16 @@ const tierOptions = computed(() => [
 
 const _t = (val) => {
   if (!val) return ''
-  if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val)
+      return parsed[locale.value] || parsed.ar || parsed.en || ''
+    } catch (e) {
+      return val
+    }
+  }
+  const currentLocale = locale.value || 'ar'
+  return val[currentLocale] || val.ar || val.en || ''
 }
 
 const getCombinedName = (nameObj) => {
@@ -903,32 +911,32 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .search-col {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 200px;
+  min-width: 200px;
 }
 
 .search-col-name {
-  flex: 1.4;
+  flex: 1.4 1 240px;
 }
 
 .search-col-governorate {
-  flex: 1.7;
+  flex: 1.7 1 220px;
 }
 
 .search-col-city {
-  flex: 1.7;
+  flex: 1.7 1 220px;
 }
 
 .search-col-tier {
-  flex: 1.2;
+  flex: 1.2 1 180px;
 }
 
 .search-col-actions {
-  flex-shrink: 0;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
   gap: 12px;
