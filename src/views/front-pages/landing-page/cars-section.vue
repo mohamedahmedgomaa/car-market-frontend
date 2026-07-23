@@ -371,29 +371,53 @@ watch(
             <!-- ✅ Flexible Spacer to push price down -->
             <div class="flex-grow-1"></div>
 
-            <!-- ✅ Bottom Section: Price & Seller (Fixed Position) -->
+            <!-- ✅ Bottom Section: Price & Location (Location next to Price) -->
             <div class="d-flex align-center justify-space-between mb-3 pt-2">
               <div class="car-card__price">
                 {{ formatPrice(car.price) }}
                 <span class="text-caption price-currency opacity-60">EG</span>
               </div>
 
-              <div class="d-flex align-center gap-1" style="font-size: 12px">
+              <!-- Location shown next to price -->
+              <div class="d-flex align-center gap-1 opacity-90 text-subtitle-2 font-weight-bold">
+                <VIcon icon="tabler-map-pin" size="16" class="me-0.5 text-primary" />
+                <span>{{ _t(car.city?.name) || 'Cairo' }}</span>
+              </div>
+            </div>
+
+            <!-- ✅ Footer Section: Seller Name with Logo & Time Ago -->
+            <div class="car-card__footer pt-2 border-t opacity-100">
+              <!-- Seller details (Name & Logo next to name) -->
+              <div class="d-flex align-center gap-2 overflow-hidden">
+                <!-- Seller Logo Wrapper with tier-colored border -->
+                <div 
+                  v-if="car.seller?.store_logo"
+                  class="d-flex align-center justify-center bg-white rounded flex-shrink-0"
+                  style="width: 24px; height: 24px; padding: 1px; border: 1.5px solid;"
+                  :style="{
+                    borderColor: car.seller?.tier?.toLowerCase() === 'platinum' ? '#FF6D00' :
+                                 (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : '#78909C'),
+                    boxShadow: car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 6px rgba(255, 109, 0, 0.3)' :
+                               (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 6px rgba(218, 165, 32, 0.2)' : '0 0 6px rgba(120, 144, 156, 0.2)')
+                  }"
+                >
+                  <img :src="car.seller.store_logo" alt="logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 2px;" />
+                </div>
                 <span 
-                  class="text-truncate font-weight-bold" 
+                  class="text-truncate font-weight-black text-caption" 
                   :class="{
                     'text-gold': car.seller?.tier?.toLowerCase() === 'gold',
                     'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
                     'text-silver': !car.seller?.tier || car.seller?.tier?.toLowerCase() === 'silver'
                   }"
-                  style="max-width: 85px"
+                  style="max-width: 110px"
                 >
                   {{ getSellerName(car) }}
                 </span>
                 <VIcon 
                   v-if="car.seller?.tier && car.seller.tier !== 'none'"
                   icon="tabler-discount-check-filled"
-                  size="14"
+                  size="12"
                   :class="{
                     'text-gold': car.seller?.tier?.toLowerCase() === 'gold',
                     'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
@@ -401,17 +425,10 @@ watch(
                   }"
                 />
               </div>
-            </div>
 
-            <!-- ✅ Location & Time -->
-            <div class="car-card__footer pt-2 border-t opacity-100">
-              <div class="car-card__location d-flex align-center font-weight-medium">
-                <VIcon icon="tabler-map-pin" size="14" class="me-1" />
-                <span>{{ _t(car.city?.name) || 'Cairo' }}</span>
-              </div>
-
-              <div class="car-card__date d-flex align-center font-weight-medium">
-                <VIcon icon="tabler-clock" size="14" class="me-1" />
+              <!-- Time Ago -->
+              <div class="car-card__date d-flex align-center font-weight-bold opacity-80">
+                <VIcon icon="tabler-clock" size="14" class="me-1 text-medium-emphasis" />
                 <span>{{ formatDateTime(car.created_at) }}</span>
               </div>
             </div>
