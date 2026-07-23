@@ -241,7 +241,6 @@ onMounted(fetchSeller)
                       
                       <!-- Package Badge (Without Diamond Icon, Placed Next to Name) -->
                       <span
-                        v-slot:default
                         v-if="seller.tier && seller.tier?.toLowerCase() !== 'none'"
                         class="d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption ms-2"
                         :style="{

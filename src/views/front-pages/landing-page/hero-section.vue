@@ -620,7 +620,7 @@ onBeforeUnmount(() => {
                 />
                 <VSkeletonLoader
                   v-else
-                  type="text-field"
+                  type="text"
                   class="premium-input"
                   height="44"
                 />
