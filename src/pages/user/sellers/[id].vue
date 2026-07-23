@@ -359,53 +359,49 @@ onMounted(fetchSeller)
                       <VBtn
                         icon
                         size="small"
-                        variant="tonal"
-                        color="blue-lighten-1"
-                        class="social-btn"
+                        variant="flat"
+                        class="social-btn social-btn-facebook"
                         :href="seller.facebook || 'https://facebook.com'"
                         target="_blank"
                         v-tooltip="'Facebook'"
                       >
-                        <VIcon icon="tabler-brand-facebook" size="20" />
+                        <VIcon icon="tabler-brand-facebook" size="22" />
                       </VBtn>
 
                       <VBtn
                         icon
                         size="small"
-                        variant="tonal"
-                        color="purple-lighten-2"
-                        class="social-btn"
+                        variant="flat"
+                        class="social-btn social-btn-instagram"
                         :href="seller.instagram || 'https://instagram.com'"
                         target="_blank"
                         v-tooltip="'Instagram'"
                       >
-                        <VIcon icon="tabler-brand-instagram" size="20" />
+                        <VIcon icon="tabler-brand-instagram" size="22" />
                       </VBtn>
 
                       <VBtn
                         icon
                         size="small"
-                        variant="tonal"
-                        color="cyan-lighten-1"
-                        class="social-btn"
+                        variant="flat"
+                        class="social-btn social-btn-website"
                         :href="seller.website || 'https://google.com'"
                         target="_blank"
                         v-tooltip="'Website'"
                       >
-                        <VIcon icon="tabler-world" size="20" />
+                        <VIcon icon="tabler-world" size="22" />
                       </VBtn>
 
                       <VBtn
                         icon
                         size="small"
-                        variant="tonal"
-                        color="red-lighten-1"
-                        class="social-btn"
+                        variant="flat"
+                        class="social-btn social-btn-tiktok"
                         :href="seller.tiktok || 'https://tiktok.com'"
                         target="_blank"
                         v-tooltip="'TikTok'"
                       >
-                        <VIcon icon="tabler-brand-tiktok" size="20" />
+                        <VIcon icon="tabler-brand-tiktok" size="22" />
                       </VBtn>
                     </div>
                   </div>
@@ -699,11 +695,11 @@ onMounted(fetchSeller)
 
 /* Contact Hub Card */
 .contact-hub-card {
-  background: rgba(15, 15, 15, 0.6) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25) !important;
-  min-width: 280px;
+  background: rgba(20, 20, 25, 0.75) !important;
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4) !important;
+  min-width: 290px;
 }
 
 .opacity-20 {
@@ -711,22 +707,62 @@ onMounted(fetchSeller)
 }
 
 .social-btn {
-  width: 42px !important;
-  height: 42px !important;
+  width: 44px !important;
+  height: 44px !important;
   border-radius: 50% !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(var(--v-theme-on-surface), 0.05) !important;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  &:hover {
-    transform: translateY(-4px) rotate(8deg);
-    background: rgba(var(--v-theme-primary), 1) !important;
-    border-color: rgba(var(--v-theme-primary), 1) !important;
-    box-shadow: 0 8px 20px rgba(var(--v-theme-primary), 0.3);
-    :deep(.v-icon) {
-      color: #fff !important;
-    }
-  }
+.social-btn-facebook {
+  background: rgba(24, 119, 242, 0.15) !important;
+  border: 1px solid rgba(24, 119, 242, 0.4) !important;
+  color: #1877F2 !important;
+}
+.social-btn-facebook:hover {
+  background: #1877F2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(24, 119, 242, 0.6) !important;
+  transform: translateY(-4px) rotate(8deg);
+}
+
+.social-btn-instagram {
+  background: rgba(225, 48, 108, 0.15) !important;
+  border: 1px solid rgba(225, 48, 108, 0.4) !important;
+  color: #E1306C !important;
+}
+.social-btn-instagram:hover {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(225, 48, 108, 0.6) !important;
+  transform: translateY(-4px) rotate(8deg);
+}
+
+.social-btn-website {
+  background: rgba(0, 176, 255, 0.15) !important;
+  border: 1px solid rgba(0, 176, 255, 0.4) !important;
+  color: #00B0FF !important;
+}
+.social-btn-website:hover {
+  background: #00B0FF !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(0, 176, 255, 0.6) !important;
+  transform: translateY(-4px) rotate(8deg);
+}
+
+.social-btn-tiktok {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+.social-btn-tiktok:hover {
+  background: #000000 !important;
+  border-color: #FE2C55 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(254, 44, 85, 0.6) !important;
+  transform: translateY(-4px) rotate(8deg);
 }
 
 /* Stats Cards */
