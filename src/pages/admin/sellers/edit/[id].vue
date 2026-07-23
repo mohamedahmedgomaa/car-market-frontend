@@ -166,17 +166,19 @@ const handleSubmit = async () => {
       router.push('/admin/sellers')
     }, 1500)
   } catch (err) {
-    console.error(err)
+    console.error("Full update error object:", err.response || err)
 
     if (err.response && err.response.status === 422) {
       errors.value = err.response.data.errors || {}
+      const details = Object.values(errors.value).flat().join(', ')
+      error.value = 'Validation failed: ' + details
     } else if (err.response && err.response.data?.message) {
       error.value = err.response.data.message
     } else {
-      error.value = 'An unexpected error occurred.'
+      error.value = 'An unexpected error occurred: ' + (err.message || '')
     }
 
-    snackbarMessage.value = 'Failed to update seller. Please check your inputs.'
+    snackbarMessage.value = error.value || 'Failed to update seller. Please check your inputs.'
     snackbarColor.value = 'error'
     snackbar.value = true
   } finally {
