@@ -1101,7 +1101,7 @@ watch(
         <!-- Sidebar Actions -->
         <div class="sidebar-content">
           <VCard 
-            class="seller-card pa-6 mb-6 relative overflow-hidden cursor-pointer"
+            class="seller-card pa-4 mb-6 relative overflow-hidden cursor-pointer"
             :class="{
               'seller-card-gold': car.seller?.tier?.toLowerCase() === 'gold',
               'seller-card-platinum': car.seller?.tier?.toLowerCase() === 'platinum'
@@ -1109,24 +1109,27 @@ watch(
             @click="goSeller"
             hover
           >
-            <div class="d-flex align-center justify-space-between mb-4">
-              <div class="text-overline opacity-60">Listing Owner</div>
+            <div class="d-flex align-center justify-space-between mb-3">
+              <div class="text-overline opacity-60 text-caption">Listing Owner</div>
               <!-- Badges -->
               <div
                 v-if="car.seller?.tier?.toLowerCase() === 'platinum'"
-                class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+                class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.7rem !important;"
               >
                 ELITE
               </div>
               <div
                 v-else-if="car.seller?.tier?.toLowerCase() === 'gold'"
-                class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+                class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.7rem !important;"
               >
                 GOLD
               </div>
               <div
                 v-else
-                class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 text-uppercase rounded-pill text-caption"
+                class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.7rem !important;"
               >
                 SILVER
               </div>
@@ -1134,9 +1137,18 @@ watch(
 
             <!-- Seller Profile Link -->
             <div
-              class="d-flex align-start gap-4 mb-8 text-decoration-none text-high-emphasis seller-profile-header"
+              class="d-flex align-center gap-3 mb-2 text-decoration-none text-high-emphasis seller-profile-header"
             >
-              <div class="showroom-logo-wrapper d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" style="width: 70px; height: 70px; padding: 4px;">
+              <div 
+                class="showroom-logo-wrapper d-flex align-center justify-center flex-shrink-0 bg-white rounded-lg elevation-2 border" 
+                style="width: 54px; height: 54px; padding: 4px; transition: all 0.3s ease;"
+                :style="{
+                  borderColor: car.seller?.tier?.toLowerCase() === 'platinum' ? 'rgba(255, 109, 0, 0.8) !important' :
+                               (car.seller?.tier?.toLowerCase() === 'gold' ? 'rgba(218, 165, 32, 0.8) !important' : 'rgba(69, 90, 100, 0.6) !important'),
+                  boxShadow: car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 10px rgba(255, 109, 0, 0.4)' :
+                             (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 10px rgba(218, 165, 32, 0.3)' : '0 0 10px rgba(69, 90, 100, 0.2)')
+                }"
+              >
                 <img
                   v-if="car.seller?.store_logo"
                   :src="car.seller.store_logo"
@@ -1144,21 +1156,21 @@ watch(
                   class="w-100 h-100"
                   style="object-fit: contain; border-radius: 4px;"
                 />
-                <span v-else class="text-h4 font-weight-black text-primary">{{
+                <span v-else class="text-h5 font-weight-black text-primary">{{
                   (car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name)
                     ?.charAt(0)
                     ?.toUpperCase()
                 }}</span>
               </div>
-              <div class="flex-grow-1 overflow-hidden mt-1">
-                <div class="d-flex align-center gap-1 overflow-hidden mb-1">
-                  <div class="font-weight-bold text-h5 text-truncate flex-grow-1">
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="d-flex align-center gap-1 overflow-hidden">
+                  <div class="font-weight-black text-body-1 text-truncate flex-grow-1">
                     {{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}
                   </div>
                   <VIcon 
                     icon="tabler-discount-check-filled" 
                     :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#78909C' : 'info'))" 
-                    size="22" 
+                    size="18" 
                     title="Verified Dealer" 
                     class="flex-shrink-0"
                   />
