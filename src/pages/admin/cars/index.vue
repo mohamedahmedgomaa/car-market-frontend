@@ -145,10 +145,19 @@ const fetchAllStats = async () => {
 const fetchLists = async (page = 1) => {
   loading.value = true
   try {
+    const queryStr = search.value?.trim() || ''
+    const isIdSearch = queryStr.startsWith('#') ? queryStr.substring(1) : queryStr
+    const isNumeric = /^\d+$/.test(isIdSearch)
+
     const params = {
       page,
       perPage: perPage.value,
-      'filter[global]': search.value || undefined,
+    }
+
+    if (isNumeric) {
+      params['filter[id]'] = isIdSearch
+    } else if (queryStr) {
+      params['filter[global]'] = queryStr
     }
 
     // Apply active category filter
