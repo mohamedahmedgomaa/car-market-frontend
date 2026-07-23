@@ -210,8 +210,8 @@ onMounted(fetchSeller)
           :class="[seller.tier && seller.tier !== 'none' ? 'showroom-header-' + seller.tier.toLowerCase() : '']"
           :style="{
             background: seller.cover_image 
-              ? 'linear-gradient(to right, rgba(15, 15, 15, 0.95) 40%, rgba(15, 15, 15, 0.6) 100%), url(' + seller.cover_image + ') no-repeat center center / cover !important' 
-              : 'linear-gradient(to right, rgba(15, 15, 15, 0.95) 40%, rgba(15, 15, 15, 0.6) 100%), url(\'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80\') no-repeat center center / cover !important'
+              ? 'linear-gradient(to right, rgba(15, 15, 15, 0.6) 40%, rgba(15, 15, 15, 0.25) 100%), url(' + seller.cover_image + ') no-repeat center center / cover !important' 
+              : 'linear-gradient(to right, rgba(15, 15, 15, 0.6) 40%, rgba(15, 15, 15, 0.25) 100%), url(\'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80\') no-repeat center center / cover !important'
           }"
         >
           <div class="header-bg-glow"></div>
@@ -252,7 +252,7 @@ onMounted(fetchSeller)
                           border: '1px solid rgba(255,255,255,0.1)'
                         }"
                       >
-                        {{ seller.tier?.toLowerCase() === 'platinum' ? 'ELITE DEALER' : (seller.tier?.toLowerCase() === 'gold' ? 'GOLD SHOWROOM' : 'SILVER PARTNER') }}
+                        {{ seller.tier?.toUpperCase() }}
                       </span>
                     </div>
 
@@ -315,7 +315,7 @@ onMounted(fetchSeller)
                   </div>
 
                   <!-- Contact Hub Card (Transparent & Compact Control Deck) -->
-                  <div class="contact-hub-card pa-4 rounded-2xl d-flex flex-column gap-3 mt-4 mt-md-0 elevation-10 flex-shrink-0">
+                  <div class="contact-hub-card pa-4 rounded-2xl d-flex flex-column gap-3 mt-4 mt-md-0 flex-shrink-0">
                     <!-- Primary Actions (Call & WhatsApp) -->
                     <div class="d-flex align-center gap-3 w-100">
                       <VBtn
@@ -352,16 +352,17 @@ onMounted(fetchSeller)
                       </VBtn>
                     </div>
 
-                    <VDivider class="w-100 opacity-20" />
+                    <VDivider class="w-100 opacity-20" v-if="seller.facebook || seller.instagram || seller.website || seller.tiktok" />
 
                     <!-- Social Media Row (Centered & Simple without Connect Text) -->
                     <div class="d-flex align-center justify-center gap-3 w-100">
                       <VBtn
+                        v-if="seller.facebook"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-facebook"
-                        :href="seller.facebook || 'https://facebook.com'"
+                        :href="seller.facebook"
                         target="_blank"
                         v-tooltip="'Facebook'"
                       >
@@ -369,11 +370,12 @@ onMounted(fetchSeller)
                       </VBtn>
 
                       <VBtn
+                        v-if="seller.instagram"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-instagram"
-                        :href="seller.instagram || 'https://instagram.com'"
+                        :href="seller.instagram"
                         target="_blank"
                         v-tooltip="'Instagram'"
                       >
@@ -381,11 +383,12 @@ onMounted(fetchSeller)
                       </VBtn>
 
                       <VBtn
+                        v-if="seller.website"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-website"
-                        :href="seller.website || 'https://google.com'"
+                        :href="seller.website"
                         target="_blank"
                         v-tooltip="'Website'"
                       >
@@ -393,11 +396,12 @@ onMounted(fetchSeller)
                       </VBtn>
 
                       <VBtn
+                        v-if="seller.tiktok"
                         icon
                         size="small"
                         variant="flat"
                         class="social-btn social-btn-tiktok"
-                        :href="seller.tiktok || 'https://tiktok.com'"
+                        :href="seller.tiktok"
                         target="_blank"
                         v-tooltip="'TikTok'"
                       >
@@ -606,18 +610,30 @@ onMounted(fetchSeller)
   border: 2px solid rgba(218, 165, 32, 0.8) !important;
   box-shadow: 0 12px 40px rgba(218, 165, 32, 0.25) !important;
   .header-bg-glow { background: radial-gradient(circle, rgba(218, 165, 32, 0.2) 0%, transparent 70%); }
+  .showroom-logo-box {
+    border: 2px solid rgba(218, 165, 32, 0.8) !important;
+    box-shadow: 0 0 15px rgba(218, 165, 32, 0.4) !important;
+  }
 }
 
 .showroom-header-platinum {
   border: 2px solid rgba(255, 109, 0, 0.8) !important;
   box-shadow: 0 12px 40px rgba(255, 109, 0, 0.4), 0 0 25px rgba(255, 143, 0, 0.3) !important;
   .header-bg-glow { background: radial-gradient(circle, rgba(255, 109, 0, 0.3) 0%, transparent 75%); filter: blur(50px); }
+  .showroom-logo-box {
+    border: 2px solid rgba(255, 109, 0, 0.8) !important;
+    box-shadow: 0 0 15px rgba(255, 109, 0, 0.5) !important;
+  }
 }
 
 .showroom-header-silver {
   border: 2px solid rgba(69, 90, 100, 0.6) !important;
   box-shadow: 0 12px 40px rgba(69, 90, 100, 0.25) !important;
   .header-bg-glow { background: radial-gradient(circle, rgba(69, 90, 100, 0.2) 0%, transparent 70%); }
+  .showroom-logo-box {
+    border: 2px solid rgba(69, 90, 100, 0.6) !important;
+    box-shadow: 0 0 15px rgba(69, 90, 100, 0.3) !important;
+  }
 }
 
 .tier-badge-platinum {
@@ -695,10 +711,9 @@ onMounted(fetchSeller)
 
 /* Contact Hub Card */
 .contact-hub-card {
-  background: rgba(20, 20, 25, 0.75) !important;
-  backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   min-width: 290px;
 }
 
