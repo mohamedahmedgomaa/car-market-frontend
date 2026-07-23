@@ -375,14 +375,9 @@ onMounted(fetchSeller)
                         <VIcon icon="tabler-brand-tiktok" size="20" />
                       </VBtn>
                     </div>
-                  </div>"tabler-brand-tiktok" size="20" />
-                        </VBtn>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </VCard>
