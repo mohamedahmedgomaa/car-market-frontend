@@ -473,8 +473,8 @@ onMounted(async () => {
               { title: 'Normal / عادي', value: 'none' },
               { title: 'Silver Partner / شريك سيلفر', value: 'silver' },
               { title: 'Gold Partner / شريك جولد', value: 'gold' },
-              { title: 'Elite Partner / شريك النخبة', value: 'platinum' },
-              { title: 'Diamond Partner / شريك ماسي', value: 'diamond' }
+              { title: 'Diamond Partner / شريك ماسي', value: 'diamond' },
+              { title: 'Elite Partner / شريك النخبة', value: 'platinum' }
             ]"
             item-title="title"
             item-value="value"

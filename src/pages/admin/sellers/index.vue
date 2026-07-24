@@ -126,20 +126,20 @@ const stats = computed(() => [
     bg: 'linear-gradient(135deg, rgba(218,165,32,0.1) 0%, rgba(218,165,32,0.02) 100%)'
   },
   {
-    id: 'platinum',
-    title: 'Elite Sellers',
-    value: sellers.value.filter((s) => s.tier?.toLowerCase() === 'platinum').length,
-    icon: 'tabler-diamond',
-    color: '#FF6D00',
-    bg: 'linear-gradient(135deg, rgba(255,109,0,0.1) 0%, rgba(255,109,0,0.02) 100%)'
-  },
-  {
     id: 'diamond',
     title: 'Diamond Sellers',
     value: sellers.value.filter((s) => s.tier?.toLowerCase() === 'diamond').length,
     icon: 'tabler-jewel',
     color: '#00d2ff',
     bg: 'linear-gradient(135deg, rgba(0,210,255,0.1) 0%, rgba(0,210,255,0.02) 100%)'
+  },
+  {
+    id: 'platinum',
+    title: 'Elite Sellers',
+    value: sellers.value.filter((s) => s.tier?.toLowerCase() === 'platinum').length,
+    icon: 'tabler-diamond',
+    color: '#FF6D00',
+    bg: 'linear-gradient(135deg, rgba(255,109,0,0.1) 0%, rgba(255,109,0,0.02) 100%)'
   },
   {
     id: 'none',

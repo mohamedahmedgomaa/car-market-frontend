@@ -40,8 +40,8 @@ const resetFilters = () => {
 
 const tierOptions = computed(() => [
   { value: null, title: _t({ ar: 'كل الباقات', en: 'All Tiers' }) },
-  { value: 'diamond', title: _t({ ar: 'باقة دايموند (Diamond)', en: 'Diamond' }) },
   { value: 'platinum', title: _t({ ar: 'باقة إيليت (Elite)', en: 'Elite' }) },
+  { value: 'diamond', title: _t({ ar: 'باقة دايموند (Diamond)', en: 'Diamond' }) },
   { value: 'gold', title: _t({ ar: 'باقة جولد (Gold)', en: 'Gold' }) },
   { value: 'silver', title: _t({ ar: 'باقة سيلفر (Silver)', en: 'Silver' }) },
   { value: 'none', title: _t({ ar: 'باقة عادية (Standard)', en: 'Standard' }) }
