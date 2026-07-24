@@ -1178,9 +1178,9 @@ watch(
                     {{ car.seller?.store_name ? t(car.seller.store_name) : car.seller?.name }}
                   </div>
                   <VIcon 
-                    v-if="car.seller?.is_verified && car.seller?.tier && car.seller?.tier !== 'none'"
+                    v-if="car.seller?.is_verified"
                     icon="tabler-discount-check-filled" 
-                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#8E2DE2' : (car.seller?.tier?.toLowerCase() === 'diamond' ? '#00d2ff' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#78909C' : 'info')))" 
+                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#8E2DE2' : (car.seller?.tier?.toLowerCase() === 'diamond' ? '#00d2ff' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#78909C' : '#9E9E9E')))" 
                     size="18" 
                     title="Verified Dealer" 
                     class="flex-shrink-0"

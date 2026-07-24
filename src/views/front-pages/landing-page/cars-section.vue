@@ -418,14 +418,14 @@ watch(
                   {{ getSellerName(car) }}
                 </span>
                 <VIcon 
-                  v-if="car.seller?.is_verified && car.seller?.tier && car.seller.tier !== 'none'"
+                  v-if="car.seller?.is_verified"
                   icon="tabler-discount-check-filled"
                   size="12"
                   :class="{
                     'text-diamond': car.seller?.tier?.toLowerCase() === 'diamond',
                     'text-gold': car.seller?.tier?.toLowerCase() === 'gold',
                     'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
-                    'text-silver': car.seller?.tier?.toLowerCase() === 'silver'
+                    'text-silver': car.seller?.tier?.toLowerCase() === 'silver' || !car.seller?.tier || car.seller?.tier?.toLowerCase() === 'none'
                   }"
                 />
               </div>
