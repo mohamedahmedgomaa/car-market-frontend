@@ -560,6 +560,7 @@ onMounted(() => {
                           {{ _t(seller.store_name) || seller.name }}
                         </h3>
                         <VIcon 
+                          v-if="seller.is_verified && seller.tier && seller.tier !== 'none'"
                           icon="tabler-discount-check-filled" 
                           :color="seller.tier?.toLowerCase() === 'diamond' ? '#00d2ff' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#78909C' : (seller.tier?.toLowerCase() === 'platinum' ? '#8E2DE2' : 'info')))" 
                           size="22" 

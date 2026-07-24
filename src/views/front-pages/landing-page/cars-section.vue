@@ -418,7 +418,7 @@ watch(
                   {{ getSellerName(car) }}
                 </span>
                 <VIcon 
-                  v-if="car.seller?.tier && car.seller.tier !== 'none'"
+                  v-if="car.seller?.is_verified && car.seller?.tier && car.seller.tier !== 'none'"
                   icon="tabler-discount-check-filled"
                   size="12"
                   :class="{

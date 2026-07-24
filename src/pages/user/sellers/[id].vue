@@ -238,7 +238,7 @@ onMounted(fetchSeller)
                       <h1 class="text-h3 font-weight-black text-white mb-0" style="font-size: 2.2rem !important; line-height: 1.2;">
                         {{ _t(seller.store_name) || seller.name }}
                       </h1>
-                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" :color="verifiedBadgeColor" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
+                      <VIcon v-if="seller.is_verified && seller.tier && seller.tier !== 'none'" icon="tabler-discount-check-filled" :color="verifiedBadgeColor" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
                       
                       <!-- Package Badge (Without Diamond Icon, Placed Next to Name) -->
                       <span
