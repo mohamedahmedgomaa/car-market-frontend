@@ -1152,10 +1152,10 @@ watch(
                 style="width: 54px; height: 54px; padding: 4px; transition: all 0.3s ease;"
                 :style="{
                   borderColor: car.seller?.tier?.toLowerCase() === 'diamond' ? 'rgba(0, 210, 255, 0.8) !important' :
-                               (car.seller?.tier?.toLowerCase() === 'platinum' ? 'rgba(255, 109, 0, 0.8) !important' :
+                               (car.seller?.tier?.toLowerCase() === 'platinum' ? 'rgba(142, 45, 226, 0.8) !important' :
                                (car.seller?.tier?.toLowerCase() === 'gold' ? 'rgba(218, 165, 32, 0.8) !important' : 'rgba(69, 90, 100, 0.6) !important')),
-                  boxShadow: car.seller?.tier?.toLowerCase() === 'diamond' ? '0 0 10px rgba(0, 210, 255, 0.4)' :
-                             (car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 10px rgba(255, 109, 0, 0.4)' :
+                  boxShadow: car.seller?.tier?.toLowerCase() === 'diamond' ? '0 0 15px rgba(0, 210, 255, 0.5)' :
+                             (car.seller?.tier?.toLowerCase() === 'platinum' ? '0 0 15px rgba(142, 45, 226, 0.4)' :
                              (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 10px rgba(218, 165, 32, 0.3)' : '0 0 10px rgba(69, 90, 100, 0.2)'))
                 }"
               >
@@ -1179,7 +1179,7 @@ watch(
                   </div>
                   <VIcon 
                     icon="tabler-discount-check-filled" 
-                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#78909C' : 'info'))" 
+                    :color="car.seller?.tier?.toLowerCase() === 'platinum' ? '#8E2DE2' : (car.seller?.tier?.toLowerCase() === 'diamond' ? '#00d2ff' : (car.seller?.tier?.toLowerCase() === 'gold' ? '#DAA520' : (car.seller?.tier?.toLowerCase() === 'silver' ? '#78909C' : 'info')))" 
                     size="18" 
                     title="Verified Dealer" 
                     class="flex-shrink-0"
@@ -1883,12 +1883,12 @@ watch(
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(0, 210, 255, 0.15)) !important;
     border: 2px solid rgba(0, 210, 255, 0.8) !important;
     border-bottom: 2px solid rgba(0, 210, 255, 0.8) !important;
-    box-shadow: 0 12px 30px rgba(0, 210, 255, 0.25) !important;
+    box-shadow: 0 12px 35px rgba(0, 210, 255, 0.45) !important;
     
     &:hover {
       border-color: rgba(0, 210, 255, 1) !important;
       border-bottom-color: rgba(0, 210, 255, 1) !important;
-      box-shadow: 0 20px 45px rgba(0, 210, 255, 0.6), 0 0 50px rgba(0, 210, 255, 0.4) !important;
+      box-shadow: 0 20px 50px rgba(0, 210, 255, 0.65), 0 0 50px rgba(0, 210, 255, 0.4) !important;
     }
   }
 
@@ -1907,15 +1907,15 @@ watch(
   }
 
   &.seller-card-platinum {
-    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(255, 109, 0, 0.15)) !important;
-    border: 2px solid rgba(255, 109, 0, 0.8) !important;
-    border-bottom: 2px solid rgba(255, 109, 0, 0.8) !important;
-    box-shadow: 0 12px 30px rgba(255, 109, 0, 0.4), 0 0 25px rgba(255, 143, 0, 0.2) !important;
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(142, 45, 226, 0.15)) !important;
+    border: 2px solid rgba(142, 45, 226, 0.8) !important;
+    border-bottom: 2px solid rgba(142, 45, 226, 0.8) !important;
+    box-shadow: 0 12px 30px rgba(142, 45, 226, 0.45), 0 0 25px rgba(142, 45, 226, 0.25) !important;
     
     &:hover {
-      border-color: rgba(255, 109, 0, 1) !important;
-      border-bottom-color: rgba(255, 109, 0, 1) !important;
-      box-shadow: 0 20px 45px rgba(255, 109, 0, 0.6), 0 0 50px rgba(255, 143, 0, 0.4) !important;
+      border-color: rgba(142, 45, 226, 1) !important;
+      border-bottom-color: rgba(142, 45, 226, 1) !important;
+      box-shadow: 0 20px 45px rgba(142, 45, 226, 0.65), 0 0 50px rgba(142, 45, 226, 0.45) !important;
     }
   }
 }
@@ -1923,15 +1923,15 @@ watch(
 .tier-badge-diamond {
   background: linear-gradient(135deg, #00d2ff 0%, #0072ff 50%, #00c6ff 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.6), 0 0 15px rgba(0, 114, 255, 0.4);
+  box-shadow: 0 4px 25px rgba(0, 210, 255, 0.7), 0 0 20px rgba(0, 114, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.6);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .tier-badge-platinum {
-  background: linear-gradient(135deg, #FF6D00 0%, #FF8F00 50%, #FFA000 100%);
+  background: linear-gradient(135deg, #8E2DE2 0%, #667eea 50%, #4A00E1 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 20px rgba(255, 109, 0, 0.6), 0 0 15px rgba(255, 143, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.6), 0 0 15px rgba(142, 45, 226, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.6);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }

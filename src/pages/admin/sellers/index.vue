@@ -138,8 +138,8 @@ const stats = computed(() => [
     title: 'Elite Sellers',
     value: sellers.value.filter((s) => s.tier?.toLowerCase() === 'platinum').length,
     icon: 'tabler-diamond',
-    color: '#FF6D00',
-    bg: 'linear-gradient(135deg, rgba(255,109,0,0.1) 0%, rgba(255,109,0,0.02) 100%)'
+    color: '#8E2DE2',
+    bg: 'linear-gradient(135deg, rgba(142,45,226,0.1) 0%, rgba(142,45,226,0.02) 100%)'
   },
   {
     id: 'none',
@@ -321,11 +321,12 @@ const stats = computed(() => [
                 class="font-weight-black text-uppercase elevation-1 px-4"
                 :style="{
                   background: seller.tier?.toLowerCase() === 'diamond' ? 'linear-gradient(135deg, #00d2ff 0%, #0072ff 100%)' :
-                              (seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                              (seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #8E2DE2 0%, #4A00E1 100%)' :
                               (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
                               (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : '#2D2D30'))),
                   color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
-                  boxShadow: seller.tier?.toLowerCase() === 'diamond' ? '0 2px 10px rgba(0, 210, 255, 0.4)' : '0 2px 8px rgba(0,0,0,0.15)',
+                  boxShadow: seller.tier?.toLowerCase() === 'diamond' ? '0 2px 14px rgba(0, 210, 255, 0.75)' : 
+                             (seller.tier?.toLowerCase() === 'platinum' ? '0 2px 14px rgba(142, 45, 226, 0.7)' : '0 2px 8px rgba(0,0,0,0.15)'),
                   border: '1px solid rgba(255,255,255,0.08)'
                 }"
               >

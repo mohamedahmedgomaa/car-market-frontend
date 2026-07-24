@@ -561,7 +561,7 @@ onMounted(() => {
                         </h3>
                         <VIcon 
                           icon="tabler-discount-check-filled" 
-                          :color="seller.tier?.toLowerCase() === 'diamond' ? '#00d2ff' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#78909C' : (seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : 'info')))" 
+                          :color="seller.tier?.toLowerCase() === 'diamond' ? '#00d2ff' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#78909C' : (seller.tier?.toLowerCase() === 'platinum' ? '#8E2DE2' : 'info')))" 
                           size="22" 
                           :title="t('verifiedShowroom')" 
                           class="flex-shrink-0 ms-1"
@@ -596,7 +596,7 @@ onMounted(() => {
                 <div class="d-flex align-center gap-2">
                   <VBtn
                     v-if="seller.phone"
-                    :color="seller.tier?.toLowerCase() === 'diamond' ? '#0072ff' : (seller.tier?.toLowerCase() === 'platinum' ? '#FF6D00' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#455A64' : 'primary')))"
+                    :color="seller.tier?.toLowerCase() === 'diamond' ? '#0072ff' : (seller.tier?.toLowerCase() === 'platinum' ? '#8E2DE2' : (seller.tier?.toLowerCase() === 'gold' ? '#DAA520' : (seller.tier?.toLowerCase() === 'silver' ? '#455A64' : 'primary')))"
                     variant="elevated"
                     size="small"
                     rounded="pill"
@@ -773,11 +773,11 @@ onMounted(() => {
   &.showroom-card-diamond {
     background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(0, 210, 255, 0.15)) !important;
     border: 2px solid rgba(0, 210, 255, 0.8) !important;
-    box-shadow: 0 12px 30px rgba(0, 210, 255, 0.25) !important;
+    box-shadow: 0 12px 35px rgba(0, 210, 255, 0.45), 0 0 25px rgba(0, 210, 255, 0.3) !important;
     
     &:hover {
       border-color: rgba(0, 210, 255, 1) !important;
-      box-shadow: 0 20px 45px rgba(0, 210, 255, 0.4), 0 0 40px rgba(0, 210, 255, 0.25) !important;
+      box-shadow: 0 20px 50px rgba(0, 210, 255, 0.65), 0 0 50px rgba(0, 210, 255, 0.4) !important;
     }
   }
 
@@ -804,13 +804,13 @@ onMounted(() => {
   }
 
   &.showroom-card-platinum {
-    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(255, 109, 0, 0.15)) !important;
-    border: 2px solid rgba(255, 109, 0, 0.8) !important;
-    box-shadow: 0 12px 30px rgba(255, 109, 0, 0.4), 0 0 25px rgba(255, 143, 0, 0.2) !important;
+    background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95), rgba(142, 45, 226, 0.15)) !important;
+    border: 2px solid rgba(142, 45, 226, 0.8) !important;
+    box-shadow: 0 12px 30px rgba(142, 45, 226, 0.45), 0 0 25px rgba(142, 45, 226, 0.25) !important;
     
     &:hover {
-      border-color: rgba(255, 109, 0, 1) !important;
-      box-shadow: 0 20px 45px rgba(255, 109, 0, 0.6), 0 0 50px rgba(255, 143, 0, 0.4) !important;
+      border-color: rgba(142, 45, 226, 1) !important;
+      box-shadow: 0 20px 45px rgba(142, 45, 226, 0.65), 0 0 50px rgba(142, 45, 226, 0.45) !important;
     }
   }
 }
@@ -818,15 +818,15 @@ onMounted(() => {
 .tier-badge-diamond {
   background: linear-gradient(135deg, #00d2ff 0%, #0072ff 50%, #00c6ff 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.5), 0 0 15px rgba(0, 114, 255, 0.3);
+  box-shadow: 0 4px 25px rgba(0, 210, 255, 0.7), 0 0 20px rgba(0, 114, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.6);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .tier-badge-platinum {
-  background: linear-gradient(135deg, #FF6D00 0%, #FF8F00 50%, #FFA000 100%);
+  background: linear-gradient(135deg, #8E2DE2 0%, #667eea 50%, #4A00E1 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 20px rgba(255, 109, 0, 0.6), 0 0 15px rgba(255, 143, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.6), 0 0 15px rgba(142, 45, 226, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.6);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
@@ -1073,10 +1073,10 @@ onMounted(() => {
   }
 }
 
-.text-diamond { color: #00d2ff !important; text-shadow: 0 0 8px rgba(0, 210, 255, 0.4); }
+.text-diamond { color: #00d2ff !important; text-shadow: 0 0 12px rgba(0, 210, 255, 0.7); }
 .text-gold { color: #DAA520 !important; }
-.text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
-.v-theme--dark .text-platinum { color: #FF6D00 !important; text-shadow: 0 0 8px rgba(255, 109, 0, 0.4); }
+.text-platinum { color: #8E2DE2 !important; text-shadow: 0 0 12px rgba(142, 45, 226, 0.6); }
+.v-theme--dark .text-platinum { color: #8E2DE2 !important; text-shadow: 0 0 12px rgba(142, 45, 226, 0.6); }
 .text-silver { color: #78909C !important; }
 
 .premium-pill-trusted {
@@ -1124,16 +1124,16 @@ onMounted(() => {
 }
 
 .showroom-card-diamond .showroom-logo-wrapper {
-  border-color: rgba(0, 210, 255, 0.5) !important;
-  box-shadow: 0 0 12px rgba(0, 210, 255, 0.15) !important;
+  border-color: rgba(0, 210, 255, 0.7) !important;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.4) !important;
 }
 .showroom-card-gold .showroom-logo-wrapper {
   border-color: rgba(218, 165, 32, 0.5) !important;
   box-shadow: 0 0 12px rgba(218, 165, 32, 0.15) !important;
 }
 .showroom-card-platinum .showroom-logo-wrapper {
-  border-color: rgba(255, 109, 0, 0.5) !important;
-  box-shadow: 0 0 12px rgba(255, 109, 0, 0.15) !important;
+  border-color: rgba(142, 45, 226, 0.6) !important;
+  box-shadow: 0 0 15px rgba(142, 45, 226, 0.3) !important;
 }
 .showroom-card-silver .showroom-logo-wrapper {
   border-color: rgba(120, 144, 156, 0.4) !important;

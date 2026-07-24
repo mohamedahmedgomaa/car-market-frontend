@@ -81,7 +81,7 @@ const verifiedBadgeColor = computed(() => {
   if (t === 'diamond') return '#00d2ff' // Diamond
   if (t === 'gold') return '#DAA520' // Gold
   if (t === 'silver') return '#78909C' // Silver
-  if (t === 'platinum') return '#FF6D00' // Elite
+  if (t === 'platinum') return '#8E2DE2' // Elite
   return 'info' // Normal verified (blue)
 })
 
@@ -246,11 +246,12 @@ onMounted(fetchSeller)
                         class="d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption ms-2"
                         :style="{
                           background: seller.tier?.toLowerCase() === 'diamond' ? 'linear-gradient(135deg, #00d2ff 0%, #0072ff 100%)' :
-                                      (seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                                      (seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #8E2DE2 0%, #4A00E1 100%)' :
                                       (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
                                       'linear-gradient(135deg, #455A64 0%, #78909C 100%)')),
                           color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
-                          boxShadow: seller.tier?.toLowerCase() === 'diamond' ? '0 2px 10px rgba(0, 210, 255, 0.4)' : '0 2px 8px rgba(0,0,0,0.15)',
+                          boxShadow: seller.tier?.toLowerCase() === 'diamond' ? '0 2px 14px rgba(0, 210, 255, 0.75)' : 
+                                     (seller.tier?.toLowerCase() === 'platinum' ? '0 2px 14px rgba(142, 45, 226, 0.7)' : '0 2px 8px rgba(0,0,0,0.15)'),
                           border: '1px solid rgba(255,255,255,0.1)'
                         }"
                       >
@@ -327,9 +328,10 @@ onMounted(fetchSeller)
                         rounded="pill"
                         class="flex-grow-1 font-weight-bold text-subtitle-1 px-4 py-2 text-white"
                         :style="{
-                          background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #FF6D00 0%, #FF8F00 100%)' :
+                          background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #8E2DE2 0%, #4A00E1 100%)' :
+                                      (seller.tier?.toLowerCase() === 'diamond' ? 'linear-gradient(135deg, #00d2ff 0%, #0072ff 100%)' :
                                       (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
-                                      (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : 'var(--v-theme-primary)')),
+                                      (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : 'var(--v-theme-primary)'))),
                           color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
                           boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
                         }"
@@ -625,12 +627,12 @@ onMounted(fetchSeller)
 }
 
 .showroom-header-platinum {
-  border: 2px solid rgba(255, 109, 0, 0.8) !important;
-  box-shadow: 0 12px 40px rgba(255, 109, 0, 0.4), 0 0 25px rgba(255, 143, 0, 0.3) !important;
-  .header-bg-glow { background: radial-gradient(circle, rgba(255, 109, 0, 0.3) 0%, transparent 75%); filter: blur(50px); }
+  border: 2px solid rgba(142, 45, 226, 0.8) !important;
+  box-shadow: 0 12px 40px rgba(142, 45, 226, 0.45), 0 0 25px rgba(142, 45, 226, 0.3) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(142, 45, 226, 0.3) 0%, transparent 75%); filter: blur(50px); }
   .showroom-logo-box {
-    border: 2px solid rgba(255, 109, 0, 0.8) !important;
-    box-shadow: 0 0 15px rgba(255, 109, 0, 0.5) !important;
+    border: 2px solid rgba(142, 45, 226, 0.8) !important;
+    box-shadow: 0 0 20px rgba(142, 45, 226, 0.5) !important;
   }
 }
 
@@ -645,9 +647,9 @@ onMounted(fetchSeller)
 }
 
 .tier-badge-platinum {
-  background: linear-gradient(135deg, #FF6D00 0%, #FF8F00 50%, #FFA000 100%);
+  background: linear-gradient(135deg, #8E2DE2 0%, #667eea 50%, #4A00E1 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 20px rgba(255, 109, 0, 0.6), 0 0 15px rgba(255, 143, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.6), 0 0 15px rgba(142, 45, 226, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.6);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
