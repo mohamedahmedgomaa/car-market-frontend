@@ -1,0 +1,1 @@
+import{a as t}from"./index-dNa0nLHs.js";const s={login(r){return t.post("/user/auth/login",r)},register(r){return t.post("/user/auth/register",r)},logout(){return t.post("/user/auth/logout")},me(){return t.post("/user/auth/me")},update(r,e){return e instanceof FormData?(e.append("_method","PATCH"),t.post(`/user/users/${r}`,e)):t.patch(`/user/users/${r}`,e)}};export{s as u};

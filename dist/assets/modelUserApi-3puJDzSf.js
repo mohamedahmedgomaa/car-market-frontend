@@ -1,0 +1,1 @@
+import{a as r}from"./index-dNa0nLHs.js";const s={getAll(e){return r.get("/user/brands",{params:e})},getById(e){return r.get(`/user/brands/${e}`)}},n={getAll(e){return r.get("/user/models",{params:e})},getById(e){return r.get(`/user/models/${e}`)}};export{s as b,n as m};

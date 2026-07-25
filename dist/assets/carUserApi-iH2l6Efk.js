@@ -1,0 +1,1 @@
+import{a as e}from"./index-dNa0nLHs.js";const s={getAll(r){return e.get("/user/cars",{params:r})},getById(r){return e.get(`/user/cars/${r}`)},toggleFavorite(r){return e.post(`/user/cars/${r}/favorite`)}};export{s as c};
