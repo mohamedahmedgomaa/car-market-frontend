@@ -1115,29 +1115,29 @@ watch(
               <!-- Badges -->
               <div
                 v-if="car.seller?.tier?.toLowerCase() === 'diamond'"
-                class="tier-badge-diamond d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
-                style="font-size: 0.7rem !important;"
+                class="tier-badge-diamond d-inline-flex align-center justify-center font-weight-black tracking-widest px-4 py-1 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.75rem !important;"
               >
                 DIAMOND
               </div>
               <div
                 v-else-if="car.seller?.tier?.toLowerCase() === 'platinum'"
-                class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
-                style="font-size: 0.7rem !important;"
+                class="tier-badge-platinum d-inline-flex align-center justify-center font-weight-black tracking-widest px-4 py-1 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.75rem !important;"
               >
                 ELITE
               </div>
               <div
                 v-else-if="car.seller?.tier?.toLowerCase() === 'gold'"
-                class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
-                style="font-size: 0.7rem !important;"
+                class="tier-badge-gold d-inline-flex align-center justify-center font-weight-black tracking-widest px-4 py-1 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.75rem !important;"
               >
                 GOLD
               </div>
               <div
                 v-else
-                class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-2.5 py-0.5 text-uppercase rounded-pill text-caption"
-                style="font-size: 0.7rem !important;"
+                class="tier-badge-silver d-inline-flex align-center justify-center font-weight-black tracking-widest px-4 py-1 text-uppercase rounded-pill text-caption"
+                style="font-size: 0.75rem !important;"
               >
                 SILVER
               </div>
