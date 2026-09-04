@@ -116,15 +116,6 @@ const logout = async () => {
           </RouterLink>
 
           <RouterLink
-            to="/user/negm-sooq"
-            class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
-            @click="sidebar = false"
-          >
-            {{ t('importCars') }}
-          </RouterLink>
-
-          <RouterLink
             :to="{
               path: '/user/cars',
               query: { 'filter[type]': 'motorcycle', sort: '-created_at' },
@@ -341,14 +332,6 @@ const logout = async () => {
             :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
           >
             {{ t('bestDeals') }}
-          </RouterLink>
-
-          <RouterLink
-            to="/user/negm-sooq"
-            class="nav-link font-weight-bold"
-            :class="route.path.startsWith('/user/negm-sooq') ? 'active-link' : ''"
-          >
-            {{ t('importCars') }}
           </RouterLink>
 
           <RouterLink

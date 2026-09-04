@@ -51,7 +51,7 @@ const form = ref({
   is_whatsapp_same: false,
 
   is_best_deal: false,
-  is_import: false,
+  is_import: '0',
   is_global_ad: false,
   ad_expiry: null,
   featured_fee: '',
@@ -1487,9 +1487,9 @@ const handleSubmit = async () => {
               <VSelect
                 v-model="form.is_import"
                 :items="[
-                  { title: 'Local (وكيل)', value: false },
-                  { title: 'Imported (استيراد الخارج)', value: true },
-                  { title: 'Available for Import (متاحة للاستيراد)', value: 'available_for_import' }
+                  { title: 'Local (وكيل)', value: '0' },
+                  { title: 'Imported (استيراد الخارج)', value: '1' },
+                  { title: 'For Import (متاحة للاستيراد)', value: '2' }
                 ]"
                 label="Source"
                 prepend-inner-icon="tabler-world"

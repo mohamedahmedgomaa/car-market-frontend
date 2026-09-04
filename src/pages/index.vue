@@ -121,25 +121,6 @@ onMounted(() => {
         </template>
       </CarsSection>
     </div>
-
-    <div class="group-spacer"></div>
-
-    <!-- Import Cars Section -->
-    <div class="reveal-on-scroll">
-      <CarsSection
-        :title="t('importCars')"
-        :subtitle="t('importCarsSubtitle')"
-        :limit="ALL_VEHICLES.importCars.limit"
-        :params="ALL_VEHICLES.importCars.params"
-        :viewAllTo="ALL_VEHICLES.importCars.viewAllTo"
-      >
-        <template #header-extra>
-          <VChip size="small" color="success" variant="flat" class="import-badge">
-            {{ t('featuredBadge') }}
-          </VChip>
-        </template>
-      </CarsSection>
-    </div>
   </VContainer>
 
   <!-- Features Section -->

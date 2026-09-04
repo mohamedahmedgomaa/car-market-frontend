@@ -38,7 +38,7 @@ const form = ref({
   drivetrain: '',
   color: '',
   condition: 'used',
-  is_import: false,
+  is_import: '0',
   cylinders: null,
   engine_capacity: null,
 
@@ -1294,9 +1294,9 @@ const handleSubmit = async () => {
               <VSelect
                 v-model="form.is_import"
                 :items="[
-                  { title: 'Local (وكيل)', value: false },
-                  { title: 'Imported (استيراد الخارج)', value: true },
-                  { title: 'Available for Import (متاحة للاستيراد)', value: 'available_for_import' }
+                  { title: 'Local (وكيل)', value: '0' },
+                  { title: 'Imported (استيراد الخارج)', value: '1' },
+                  { title: 'For Import (متاحة للاستيراد)', value: '2' }
                 ]"
                 label="Source"
               />

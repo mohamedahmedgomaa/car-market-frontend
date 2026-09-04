@@ -445,7 +445,7 @@ const getSourceText = (c) => {
   if (!c) return 'Local (وكيل)'
   const val = c.is_import
   if (val === 'available_for_import' || val === 'available' || val === 2 || String(val) === '2') {
-    return 'Available for Import (متاحة للاستيراد)'
+    return 'For Import (متاحة للاستيراد)'
   }
   if (val === true || val === 1 || String(val) === '1' || val === 'imported') {
     return 'Imported (استيراد الخارج)'

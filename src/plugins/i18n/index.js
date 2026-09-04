@@ -60,7 +60,7 @@ const messages = {
     noCarsFound: 'No cars found.',
     imported: 'Imported',
     local: 'Local',
-    availableForImport: 'Available for Import',
+    availableForImport: 'For Import',
     unknownSeller: 'Unknown seller',
 
     // features

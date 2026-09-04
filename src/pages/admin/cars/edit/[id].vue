@@ -1149,12 +1149,12 @@ const loadCar = async () => {
   form.value.is_whatsapp_same = car.phone_number && car.phone_number === car.whatsapp_number
 
   form.value.is_best_deal = !!car.is_best_deal
-  if (car.is_import === 'available_for_import' || car.is_import === 'available' || car.is_import === 2 || String(car.is_import) === '2') {
-    form.value.is_import = 'available_for_import'
-  } else if (car.is_import === true || car.is_import === 1 || String(car.is_import) === '1' || car.is_import === 'imported') {
-    form.value.is_import = true
+  if (car.is_import === 'available_for_import' || car.is_import === 'available' || car.is_import === '2' || car.is_import === 2 || String(car.is_import) === '2') {
+    form.value.is_import = '2'
+  } else if (car.is_import === true || car.is_import === '1' || car.is_import === 1 || String(car.is_import) === '1' || car.is_import === 'imported') {
+    form.value.is_import = '1'
   } else {
-    form.value.is_import = false
+    form.value.is_import = '0'
   }
   form.value.is_featured = !!car.is_featured
   form.value.show_on_home = !!car.show_on_home
@@ -1688,9 +1688,9 @@ const handleSubmit = async () => {
               <VSelect
                 v-model="form.is_import"
                 :items="[
-                  { title: 'Local (وكيل)', value: false },
-                  { title: 'Imported (استيراد الخارج)', value: true },
-                  { title: 'Available for Import (متاحة للاستيراد)', value: 'available_for_import' }
+                  { title: 'Local (وكيل)', value: '0' },
+                  { title: 'Imported (استيراد الخارج)', value: '1' },
+                  { title: 'For Import (متاحة للاستيراد)', value: '2' }
                 ]"
                 label="Source"
                 prepend-inner-icon="tabler-world"
