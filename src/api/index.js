@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.negmcars.com/api',
   withCredentials: false,
   headers: { Accept: "application/json" },
 })
@@ -69,6 +69,10 @@ api.interceptors.response.use(
       
       // Determine which auth type failed and redirect accordingly
       if (url.startsWith("/admin/")) {
+        const token = localStorage.getItem("admin_token")
+        if (token && token.startsWith("mock_")) {
+          return Promise.reject(error)
+        }
         localStorage.removeItem("admin_token")
         localStorage.removeItem("admin_data")
         window.location.href = "/admin/login"
