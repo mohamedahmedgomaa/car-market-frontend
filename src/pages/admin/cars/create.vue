@@ -1488,7 +1488,8 @@ const handleSubmit = async () => {
                 v-model="form.is_import"
                 :items="[
                   { title: 'Local (وكيل)', value: false },
-                  { title: 'Imported (استيراد الخارج)', value: true }
+                  { title: 'Imported (استيراد الخارج)', value: true },
+                  { title: 'Available for Import (متاحة للاستيراد)', value: 'available_for_import' }
                 ]"
                 label="Source"
                 prepend-inner-icon="tabler-world"

@@ -97,6 +97,24 @@ const formatDateTime = (val) => {
   return '1 month ago'
 }
 
+const isAvailableForImport = (car) => {
+  if (!car) return false
+  const val = car.is_import
+  return val === 'available_for_import' || val === 'available' || val === 2 || String(val) === '2'
+}
+
+const getSourceText = (car) => {
+  if (!car) return t('local')
+  const val = car.is_import
+  if (val === 'available_for_import' || val === 'available' || val === 2 || String(val) === '2') {
+    return t('availableForImport')
+  }
+  if (val === true || val === 1 || String(val) === '1' || val === 'imported') {
+    return t('imported')
+  }
+  return t('local')
+}
+
 const formatPrice = (price) => {
   const n = Number(price)
   if (Number.isNaN(n)) return price ?? '—'
@@ -278,7 +296,7 @@ watch(
             'car-card--best-deal': Number(car.is_best_deal) === 1,
             'car-card--featured': Number(car.is_featured) === 1 && Number(car.is_best_deal) !== 1,
             'car-card--global': Number(car.is_global_ad) === 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1,
-            'car-card--import': Number(car.is_import) === 1 && Number(car.is_global_ad) !== 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1
+            'car-card--import': isAvailableForImport(car) && Number(car.is_global_ad) !== 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1
           }"
           :to="`/user/cars/${car.id}`"
         >
@@ -306,10 +324,10 @@ watch(
                 <span>Ad</span>
               </div>
 
-              <!-- Import Badge -->
-              <div v-if="Number(car.is_import) === 1" class="badge-item badge-import">
+              <!-- Available for Import Badge (Airplane Logo) -->
+              <div v-if="isAvailableForImport(car)" class="badge-item badge-import">
                 <VIcon icon="tabler-plane-arrival" size="12" class="me-1" />
-                <span>{{ t('imported') }}</span>
+                <span>{{ t('availableForImport') }}</span>
               </div>
             </div>
 
@@ -351,7 +369,7 @@ watch(
                 <span class="mx-2">|</span>
                 <span>{{ _t(car.model?.name) }}</span>
                 <span class="mx-2">|</span>
-                <span>{{ Number(car.is_import) === 1 ? t('imported') : t('local') }}</span>
+                <span>{{ getSourceText(car) }}</span>
               </div>
 
               <!-- ✅ Year & Condition -->

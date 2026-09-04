@@ -190,6 +190,8 @@ const syncDraftFromQuery = () => {
     adCat = 'featured'
   } else if (q['filter[is_best_deal]'] === '1') {
     adCat = 'best_deal'
+  } else if (q['filter[is_import]'] === 'available_for_import' || q['filter[is_import]'] === '2') {
+    adCat = 'available_for_import'
   } else if (q['filter[is_import]'] === '1') {
     adCat = 'imported'
   } else if (q['filter[is_import]'] === '0') {
@@ -240,6 +242,8 @@ const buildParams = (p = 1) => {
     params['filter[is_featured]'] = '1'
   } else if (d.adCategory === 'best_deal') {
     params['filter[is_best_deal]'] = '1'
+  } else if (d.adCategory === 'available_for_import') {
+    params['filter[is_import]'] = 'available_for_import'
   } else if (d.adCategory === 'imported') {
     params['filter[is_import]'] = '1'
   } else if (d.adCategory === 'local') {
@@ -493,6 +497,8 @@ const applyFilters = async () => {
     query['filter[is_featured]'] = '1'
   } else if (d.adCategory === 'best_deal') {
     query['filter[is_best_deal]'] = '1'
+  } else if (d.adCategory === 'available_for_import') {
+    query['filter[is_import]'] = 'available_for_import'
   } else if (d.adCategory === 'imported') {
     query['filter[is_import]'] = '1'
   } else if (d.adCategory === 'local') {
@@ -1014,6 +1020,7 @@ const activeAdvancedFiltersCount = computed(() => {
                         { title: t('featuredOnly'), value: 'featured' },
                         { title: t('bestDealsOnly'), value: 'best_deal' },
                         { title: t('importedOnly'), value: 'imported' },
+                        { title: t('availableForImport'), value: 'available_for_import' },
                         { title: t('localOnly'), value: 'local' }
                       ]"
                       item-value="value"
@@ -1296,6 +1303,7 @@ const activeAdvancedFiltersCount = computed(() => {
                         { title: t('featuredOnly'), value: 'featured' },
                         { title: t('bestDealsOnly'), value: 'best_deal' },
                         { title: t('importedOnly'), value: 'imported' },
+                        { title: t('availableForImport'), value: 'available_for_import' },
                         { title: 'Local Only', value: 'local' }
                       ]"
                       item-value="value"

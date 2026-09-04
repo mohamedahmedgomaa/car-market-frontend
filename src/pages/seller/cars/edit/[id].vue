@@ -1030,7 +1030,13 @@ const loadCar = async () => {
   form.value.fuel_type = car.fuel_type ?? ''
   form.value.drivetrain = car.drivetrain ?? ''
   form.value.condition = car.condition ?? 'used'
-  form.value.is_import = !!car.is_import
+  if (car.is_import === 'available_for_import' || car.is_import === 'available' || car.is_import === 2 || String(car.is_import) === '2') {
+    form.value.is_import = 'available_for_import'
+  } else if (car.is_import === true || car.is_import === 1 || String(car.is_import) === '1' || car.is_import === 'imported') {
+    form.value.is_import = true
+  } else {
+    form.value.is_import = false
+  }
   form.value.cylinders = car.cylinders ?? null
   form.value.engine_capacity = car.engine_capacity ?? null
 
@@ -1491,7 +1497,8 @@ const handleSubmit = async () => {
                 v-model="form.is_import"
                 :items="[
                   { title: 'Local (وكيل)', value: false },
-                  { title: 'Imported (استيراد الخارج)', value: true }
+                  { title: 'Imported (استيراد الخارج)', value: true },
+                  { title: 'Available for Import (متاحة للاستيراد)', value: 'available_for_import' }
                 ]"
                 label="Source"
               />

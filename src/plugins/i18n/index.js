@@ -60,6 +60,7 @@ const messages = {
     noCarsFound: 'No cars found.',
     imported: 'Imported',
     local: 'Local',
+    availableForImport: 'Available for Import',
     unknownSeller: 'Unknown seller',
 
     // features
@@ -249,8 +250,9 @@ const messages = {
     loadingCars: 'جاري تحميل السيارات...',
     failedToLoadCars: 'فشل تحميل السيارات',
     noCarsFound: 'لم يتم العثور على سيارات.',
-    imported: 'مستوردة',
-    local: 'محلية',
+    imported: 'استيراد الخارج',
+    local: 'وكيل',
+    availableForImport: 'متاحة للاستيراد',
     unknownSeller: 'بائع غير معروف',
 
     // features

@@ -451,8 +451,12 @@ const stats = computed(() => {
                   <VIcon icon="tabler-flame" size="14" class="me-1" /> Best Deal
                 </VChip>
 
-                <VChip v-if="car.is_import" color="success" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1 shadow-success">
-                  <VIcon icon="tabler-ship" size="14" class="me-1" /> Import
+                <VChip v-if="car.is_import === 'available_for_import' || car.is_import === 2 || String(car.is_import) === '2'" color="info" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">
+                  <VIcon icon="tabler-plane-arrival" size="14" class="me-1" /> Avail. Import
+                </VChip>
+
+                <VChip v-else-if="car.is_import" color="success" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1 shadow-success">
+                  <VIcon icon="tabler-ship" size="14" class="me-1" /> Imported
                 </VChip>
 
                 <VChip v-if="car.show_on_home" color="amber-darken-1" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">

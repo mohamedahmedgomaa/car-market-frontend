@@ -441,6 +441,18 @@ const closeCallDialog = () => {
 // ✅ Features Show More / Less Limit (8 * 3 = 24 items)
 const showAllFeatures = ref(false)
 
+const getSourceText = (c) => {
+  if (!c) return 'Local (وكيل)'
+  const val = c.is_import
+  if (val === 'available_for_import' || val === 'available' || val === 2 || String(val) === '2') {
+    return 'Available for Import (متاحة للاستيراد)'
+  }
+  if (val === true || val === 1 || String(val) === '1' || val === 'imported') {
+    return 'Imported (استيراد الخارج)'
+  }
+  return 'Local (وكيل)'
+}
+
 const HIGHLIGHT_KEYWORDS = [
   'استيراد الخارج',
   'imported',
@@ -1031,7 +1043,7 @@ watch(
             <div class="spec-card">
               <VIcon icon="tabler-world" class="mb-2" color="primary" />
               <span class="label">Source</span>
-              <span class="val">{{ car.is_import ? 'Imported' : 'Local' }}</span>
+              <span class="val">{{ getSourceText(car) }}</span>
             </div>
           </div>
 
