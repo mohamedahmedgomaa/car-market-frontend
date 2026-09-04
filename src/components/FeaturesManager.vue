@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import carFeatureAdminApi from '../api/admin/carFeatureAdminApi.js'
 import { predefinedFeatures } from '../utils/predefinedFeatures.js'
+
+const { locale } = useI18n({ useScope: 'global' })
 
 const props = defineProps({
   modelValue: {
@@ -107,7 +110,7 @@ const resolveHighlights = async () => {
 }
 
 watch(() => props.featuresList, (newList) => {
-  if (newList && newList.length > 0) {
+  if (newList) {
     resolveHighlights()
   }
 }, { immediate: true })
@@ -314,8 +317,16 @@ const removeMissing = (index) => {
 // Helper to translate names
 const getFeatureName = (f) => {
   if (!f) return ''
-  if (typeof f.name === 'string') return f.name
-  return f.name?.ar || f.name?.en || f.name || ''
+  const currentLocale = locale.value || 'ar'
+  if (typeof f.name === 'string') {
+    try {
+      const parsed = JSON.parse(f.name)
+      return parsed[currentLocale] || parsed.ar || parsed.en || f.name
+    } catch (e) {
+      return f.name
+    }
+  }
+  return f.name?.[currentLocale] || f.name?.ar || f.name?.en || f.name || ''
 }
 </script>
 
