@@ -295,8 +295,7 @@ watch(
           :class="{
             'car-card--best-deal': Number(car.is_best_deal) === 1,
             'car-card--featured': Number(car.is_featured) === 1 && Number(car.is_best_deal) !== 1,
-            'car-card--global': Number(car.is_global_ad) === 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1,
-            'car-card--import': isAvailableForImport(car) && Number(car.is_global_ad) !== 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1
+            'car-card--global': Number(car.is_global_ad) === 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1
           }"
           :to="`/user/cars/${car.id}`"
         >
@@ -322,12 +321,6 @@ watch(
               <div v-if="Number(car.is_global_ad) === 1" class="badge-item badge-global">
                 <VIcon icon="tabler-world" size="12" class="me-1" />
                 <span>Ad</span>
-              </div>
-
-              <!-- Available for Import Badge (Airplane Logo) -->
-              <div v-if="isAvailableForImport(car)" class="badge-item badge-import">
-                <VIcon icon="tabler-plane-arrival" size="12" class="me-1" />
-                <span>{{ t('availableForImport') }}</span>
               </div>
             </div>
 

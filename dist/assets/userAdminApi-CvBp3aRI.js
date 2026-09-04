@@ -1,1 +1,0 @@
-import{a as r}from"./index-CKTkbM5g.js";const u={getAll(e){return r.get("/admin/users",{params:e})},getById(e){return r.get(`/admin/users/${e}`)},create(e){return r.post("/admin/users",e)},update(e,t){return r.patch(`/admin/users/${e}`,t)},delete(e){return r.delete(`/admin/users/${e}`)}};export{u};

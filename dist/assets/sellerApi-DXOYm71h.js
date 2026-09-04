@@ -1,1 +1,0 @@
-import{a as e}from"./index-dNa0nLHs.js";const o={login(r){return e.post("/seller/auth/login",r)},register(r){return e.post("/seller/auth/register",r)},logout(){return e.post("/seller/auth/logout")}};export{o as s};

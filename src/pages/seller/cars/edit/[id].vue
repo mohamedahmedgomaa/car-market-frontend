@@ -1102,6 +1102,11 @@ const handleSubmit = async () => {
 
     // basic fields
     Object.entries(form.value).forEach(([key, value]) => {
+      if (key === 'is_import') {
+        fd.append('is_import', String(value ?? '0'))
+        return
+      }
+
       if (key === 'features') {
         ;(value || []).forEach(v => fd.append('features[]', v))
         return
@@ -1109,6 +1114,11 @@ const handleSubmit = async () => {
 
       if (key === 'images') {
         ;(value || []).forEach(file => fd.append('images[]', file))
+        return
+      }
+
+      if (typeof value === 'boolean') {
+        fd.append(key, value ? '1' : '0')
         return
       }
 

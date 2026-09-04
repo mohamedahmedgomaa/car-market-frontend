@@ -1043,7 +1043,9 @@ const handleSubmit = async () => {
     const formData = new FormData()
 
     Object.entries(form.value).forEach(([key, value]) => {
-      if (key === 'images' && Array.isArray(value)) {
+      if (key === 'is_import') {
+        formData.append('is_import', String(value ?? '0'))
+      } else if (key === 'images' && Array.isArray(value)) {
         value.forEach(file => formData.append('images[]', file))
       } else if (Array.isArray(value)) {
         value.forEach(v => formData.append(`${key}[]`, v))
@@ -1612,7 +1614,6 @@ const handleSubmit = async () => {
                 <VSwitch v-model="form.show_on_home" label="Show on Homepage Hero" color="primary" inset />
                 <VSwitch v-model="form.is_featured" label="Mark as Featured" color="warning" inset />
                 <VSwitch v-model="form.is_best_deal" label="Best Deal Badge" color="error" inset />
-                <VSwitch v-model="form.is_import" label="Import Cars Section" color="info" inset />
                 <VSwitch v-model="form.is_global_ad" label="Global Ad (All Pages)" color="secondary" inset />
               </VCol>
 

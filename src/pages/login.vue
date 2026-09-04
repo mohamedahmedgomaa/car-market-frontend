@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useConfigStore } from '@core/stores/config'
 import userApi from '@/api/userApi.js'
 import sellerApi from '@/api/sellerApi.js'
 import { themeConfig } from '@themeConfig'
@@ -15,6 +17,17 @@ definePage({
 
 const router = useRouter()
 const route = useRoute()
+const { locale } = useI18n({ useScope: 'global' })
+const configStore = useConfigStore()
+
+const safeLangConfig = computed(() => themeConfig.app.i18n?.langConfig || [
+  { label: 'English', i18nLang: 'en' },
+  { label: 'العربية', i18nLang: 'ar' },
+])
+
+const toggleTheme = () => {
+  configStore.theme = configStore.theme === 'dark' ? 'light' : 'dark'
+}
 
 // Tab state: 'login' | 'register'
 const activeTab = ref(route.query.tab === 'register' ? 'register' : 'login')
@@ -141,7 +154,39 @@ const handleAuth = async () => {
 </script>
 
 <template>
-  <div class="auth-wrapper d-flex flex-column align-center justify-center pa-4">
+  <div class="auth-wrapper d-flex flex-column align-center justify-center pa-4 position-relative">
+    <!-- Settings Bar (Language & Theme) -->
+    <div class="position-absolute top-0 end-0 pa-4 d-flex align-center gap-2" style="z-index: 10;">
+      <VMenu close-on-content-click="false" offset="8px" width="180">
+        <template #activator="{ props }">
+          <VBtn v-bind="props" variant="tonal" color="primary" rounded="pill" size="small" class="font-weight-bold">
+            <VIcon icon="tabler-world" class="me-1" size="18" />
+            {{ locale === 'ar' ? 'العربية' : 'English' }}
+            <VIcon icon="tabler-chevron-down" class="ms-1" size="14" />
+          </VBtn>
+        </template>
+        <VList class="pa-2" style="border-radius: 12px">
+          <VListItem
+            v-for="lang in safeLangConfig"
+            :key="lang.i18nLang"
+            :active="locale === lang.i18nLang"
+            color="primary"
+            rounded="lg"
+            class="mb-1"
+            @click="locale = lang.i18nLang"
+          >
+            <template #prepend>
+              <VIcon :icon="locale === lang.i18nLang ? 'tabler-circle-check-filled' : 'tabler-circle'" size="16" class="me-2" />
+            </template>
+            <VListItemTitle>{{ lang.label }}</VListItemTitle>
+          </VListItem>
+        </VList>
+      </VMenu>
+
+      <VBtn icon variant="tonal" color="primary" rounded="circle" size="small" @click="toggleTheme" title="Toggle Theme">
+        <VIcon :icon="configStore.theme === 'dark' ? 'tabler-sun' : 'tabler-moon'" size="18" />
+      </VBtn>
+    </div>
     <!-- App Logo -->
     <RouterLink
       to="/"

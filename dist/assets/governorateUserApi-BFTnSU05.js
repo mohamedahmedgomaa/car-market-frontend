@@ -1,0 +1,1 @@
+import{a as r}from"./index-D9_6IXV0.js";const s={getAll(e){return r.get("/user/cities",{params:e})},getById(e){return r.get(`/user/cities/${e}`)}},g={getAll(e){return r.get("/user/governorates",{params:e})},getById(e){return r.get(`/user/governorates/${e}`)}};export{s as c,g};

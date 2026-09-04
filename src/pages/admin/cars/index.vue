@@ -281,7 +281,6 @@ const stats = computed(() => {
     { title: 'Pending Review', filterKey: 'pending', value: db.filter(c => c.status === 'pending').length, icon: 'tabler-clock', color: 'warning' },
     { title: 'Featured Ads', filterKey: 'featured', value: db.filter(c => Number(c.is_featured) === 1 || Boolean(c.is_featured)).length, icon: 'tabler-star-filled', color: 'info' },
     { title: 'Best Deals', filterKey: 'best_deal', value: db.filter(c => Number(c.is_best_deal) === 1 || Boolean(c.is_best_deal)).length, icon: 'tabler-flame', color: 'error' },
-    { title: 'Import Cars', filterKey: 'import', value: db.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length, icon: 'tabler-ship', color: 'success' },
     { title: 'Homepage Ads', filterKey: 'home_page', value: db.filter(c => Number(c.show_on_home) === 1 || Boolean(c.show_on_home)).length, icon: 'tabler-home-star', color: 'amber' },
     { title: 'Global Banners', filterKey: 'global', value: db.filter(c => Number(c.is_global_ad) === 1 || Boolean(c.is_global_ad)).length, icon: 'tabler-broadcast', color: 'purple' },
   ]
@@ -451,14 +450,6 @@ const stats = computed(() => {
                   <VIcon icon="tabler-flame" size="14" class="me-1" /> Best Deal
                 </VChip>
 
-                <VChip v-if="car.is_import === 'available_for_import' || car.is_import === 2 || String(car.is_import) === '2'" color="info" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">
-                  <VIcon icon="tabler-plane-arrival" size="14" class="me-1" /> Avail. Import
-                </VChip>
-
-                <VChip v-else-if="car.is_import" color="success" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1 shadow-success">
-                  <VIcon icon="tabler-ship" size="14" class="me-1" /> Imported
-                </VChip>
-
                 <VChip v-if="car.show_on_home" color="amber-darken-1" variant="elevated" size="x-small" class="font-weight-bold px-2 py-1">
                   <VIcon icon="tabler-home" size="14" class="me-1" /> Home
                 </VChip>
@@ -467,7 +458,7 @@ const stats = computed(() => {
                   <VIcon icon="tabler-broadcast" size="14" class="me-1" /> Global Ad
                 </VChip>
 
-                <span v-if="!car.is_featured && !car.is_best_deal && !car.is_global_ad && !car.is_import && !car.show_on_home" class="text-caption opacity-40 font-weight-bold">Standard</span>
+                <span v-if="!car.is_featured && !car.is_best_deal && !car.is_global_ad && !car.show_on_home" class="text-caption opacity-40 font-weight-bold">Standard</span>
               </div>
             </td>
 
@@ -593,17 +584,6 @@ const stats = computed(() => {
                       <div class="ms-2">
                         <div class="font-weight-bold text-body-2">Best Deal Badge</div>
                         <div class="text-caption opacity-70">Highlight as limited offer</div>
-                      </div>
-                    </template>
-                  </VSwitch>
-                </div>
-
-                <div class="promotion-item rounded-xl pa-4" :class="{ active: promotionForm.is_import }">
-                  <VSwitch v-model="promotionForm.is_import" color="success" hide-details inset>
-                    <template v-slot:label>
-                      <div class="ms-2">
-                        <div class="font-weight-bold text-body-2">Import Cars</div>
-                        <div class="text-caption opacity-70">Show in specialized import list</div>
                       </div>
                     </template>
                   </VSwitch>

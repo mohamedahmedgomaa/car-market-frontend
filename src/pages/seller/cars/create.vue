@@ -919,10 +919,14 @@ const handleSubmit = async () => {
     const formData = new FormData()
 
     Object.entries(form.value).forEach(([key, value]) => {
-      if (key === 'images' && Array.isArray(value)) {
+      if (key === 'is_import') {
+        formData.append('is_import', String(value ?? '0'))
+      } else if (key === 'images' && Array.isArray(value)) {
         value.forEach(file => formData.append('images[]', file))
       } else if (Array.isArray(value)) {
         value.forEach(v => formData.append(`${key}[]`, v))
+      } else if (typeof value === 'boolean') {
+        formData.append(key, value ? '1' : '0')
       } else if (value !== null && value !== '') {
         formData.append(key, value)
       }

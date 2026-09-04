@@ -1,1 +1,0 @@
-import{a as t}from"./index-dNa0nLHs.js";const i={getAll(e){return t.get("/admin/countries",{params:e})},getById(e){return t.get(`/admin/countries/${e}`)},create(e){return t.post("/admin/countries",e)},update(e,r){return t.patch(`/admin/countries/${e}`,r)},delete(e){return t.delete(`/admin/countries/${e}`)}};export{i as c};
