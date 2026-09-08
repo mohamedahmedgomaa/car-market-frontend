@@ -82,7 +82,7 @@ const messages = {
     feature6Desc: 'Use our advanced filtering tools to find your perfect car in seconds.',
 
     // footer
-    brandDesc: "Egypt's premier automotive marketplace. Connecting buyers, sellers, and verified showrooms with intelligence and trust.",
+    brandDesc: "Egypt & Syria's premier automotive marketplace. Connecting buyers, sellers, and verified showrooms with intelligence and trust.",
     followUpdates: 'Follow Our Updates',
     downloadAppTitle: 'Download Our App',
     downloadAppDesc: 'Enjoy the ultimate vehicle trading experience anytime, anywhere. Get our apps for iOS and Android.',
@@ -90,7 +90,7 @@ const messages = {
     getItOn: 'GET IT ON',
     officialInfo: 'Official Information',
     registeredPlatform: 'Registered Platform',
-    registeredPlatformDesc: 'NegmCars is a legally registered company in Egypt, ensuring highly trusted transactions.',
+    registeredPlatformDesc: 'NegmCars is a legally registered company operating in Egypt & Syria, ensuring highly trusted transactions.',
     taxId: 'Tax ID',
     commReg: 'Comm. Reg',
     getInTouch: 'Get in Touch',
@@ -274,7 +274,7 @@ const messages = {
     feature6Desc: 'استخدم أدوات التصفية المتقدمة للعثور على سيارتك المثالية في ثوانٍ.',
 
     // footer
-    brandDesc: 'السوق الأول للسيارات في مصر. نربط المشترين والبائعين والمعارض الموثوقة بذكاء وثقة.',
+    brandDesc: 'السوق الأول للسيارات في مصر وسوريا. نربط المشترين والبائعين والمعارض الموثوقة بذكاء وثقة.',
     followUpdates: 'تابع آخر تحديثاتنا',
     downloadAppTitle: 'حمل تطبيقنا',
     downloadAppDesc: 'استمتع بأفضل تجربة لتجارة المركبات في أي وقت وفي أي مكان. احصل على تطبيقاتنا لنظامي iOS و Android.',
@@ -282,7 +282,7 @@ const messages = {
     getItOn: 'احصل عليه من',
     officialInfo: 'معلومات رسمية',
     registeredPlatform: 'منصة مسجلة',
-    registeredPlatformDesc: 'نجم كارز هي شركة مسجلة قانونياً في مصر، مما يضمن معاملات موثوقة للغاية.',
+    registeredPlatformDesc: 'نجم كارز هي شركة مسجلة ونشطة في مصر وسوريا، مما يضمن معاملات موثوقة للغاية.',
     taxId: 'الرقم الضريبي',
     commReg: 'السجل التجاري',
     getInTouch: 'تواصل معنا',
@@ -337,8 +337,8 @@ const messages = {
     noDealsFound: 'لا توجد صفقات حالياً',
 
     // Sell Page
-    sellYourCarTitle: 'بيع سيارتك في مصر أونلاين',
-    sellYourCarDesc: 'نجم كارز يربطك مباشرة بآلاف المشترين النشطين الموثوقين في مصر. اعرض مخزون معرضك أو سيارتك الشخصية بسهولة.',
+    sellYourCarTitle: 'بيع سيارتك في مصر وسوريا أونلاين',
+    sellYourCarDesc: 'نجم كارز يربطك مباشرة بآلاف المشترين النشطين الموثوقين في مصر وسوريا. اعرض مخزون معرضك أو سيارتك الشخصية بسهولة.',
     readyToSellTitle: 'جاهز لبيع مركبتك؟',
     readyToSellDesc: 'سجل كمعرض أو بائع فردي لتبدأ في عرض سيارتك على نجم كارز والتواصل مع المشترين النشطين فوراً.',
     registerShowroom: 'تسجيل معرض',
@@ -351,11 +351,11 @@ const messages = {
 
     // Showrooms Directory
     showroomsDirectory: 'دليل المعارض',
-    discoverShowrooms: 'اكتشف أفضل المعارض في مصر',
+    discoverShowrooms: 'اكتشف أفضل المعارض في مصر وسوريا',
     exploreShowroomsDesc: 'استكشف وكلاء السيارات المعتمدين في جميع أنحاء البلاد. حدد المعارض الموثوقة، تصفح المخزون المتميز، وتواصل مباشرة مع الملاك الموثوقين.',
     showroomsCount: '{count} معارض',
     verifiedDealers: 'تجار معتمدون',
-    egyptWide: 'في جميع أنحاء مصر',
+    egyptWide: 'في مصر وسوريا',
     activeCities: 'مدن نشطة',
     secure100: 'آمن ١٠٠٪',
     directConnection: 'اتصال مباشر',

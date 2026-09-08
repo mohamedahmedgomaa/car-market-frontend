@@ -63,9 +63,9 @@ const fetchTopCars = async () => {
 
 // ✅ Contact
 const contactInfo = [
-  { icon: 'tabler-mail', text: 'info@negmcars.com' },
+  { icon: 'tabler-mail', text: 'gomabdallah18@gmail.com' },
   { icon: 'tabler-phone', text: '+20 155 155 2993' },
-  { icon: 'tabler-map-pin', text: 'Cairo, Egypt' },
+  { icon: 'tabler-map-pin', text: 'Egypt & Syria' },
 ]
 
 // ✅ Social
@@ -201,11 +201,11 @@ onMounted(fetchTopCars)
                 <div class="tax-info-grid">
                   <div class="tax-item">
                     <span class="tax-label">{{ t('taxId') }}</span>
-                    <span class="tax-value">725-463-524</span>
+                    <span class="tax-value">Soon</span>
                   </div>
                   <div class="tax-item">
                     <span class="tax-label">{{ t('commReg') }}</span>
-                    <span class="tax-value">215486</span>
+                    <span class="tax-value">App Soon</span>
                   </div>
                 </div>
               </div>
