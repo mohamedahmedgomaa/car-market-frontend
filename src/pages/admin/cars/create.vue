@@ -65,6 +65,11 @@ const form = ref({
 const sellers = ref([])
 const brands = ref([])
 const models = ref([])
+const currencyOptions = [
+  { title: 'EGP (جنيه مصري)', value: 'EGP' },
+  { title: 'USD (دولار أمريكي $)', value: 'USD' },
+  { title: 'SYP (ليرة سورية)', value: 'SYP' },
+]
 const features = ref([])
 const countries = ref([])
 const governorates = ref([])
@@ -1336,15 +1341,27 @@ const handleSubmit = async () => {
           <h3 class="text-subtitle-1 font-weight-medium mb-4">Specifications & Technical Details</h3>
 
           <VRow dense>
-            <VCol cols="12" md="4">
+            <VCol cols="12" md="3">
               <VTextField
                 ref="refPrice"
                 v-model="displayPrice"
-                label="Price (EG)"
-                prepend-inner-icon="tabler-currency-pound"
+                label="Price / السعر"
+                prepend-inner-icon="tabler-currency-dollar"
                 :error-messages="fieldError('price')"
                 @keypress="isNumberKey"
                 maxlength="11"
+              />
+            </VCol>
+
+            <VCol cols="12" md="3">
+              <VSelect
+                v-model="form.currency"
+                :items="currencyOptions"
+                item-title="title"
+                item-value="value"
+                label="Currency / العملة"
+                prepend-inner-icon="tabler-coin"
+                :error-messages="fieldError('currency')"
               />
             </VCol>
 
