@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import carSellerApi from '../../../api/seller/carSellerApi.js'
+import CarQrDialog from '../../../components/dialogs/CarQrDialog.vue'
 
 const router = useRouter()
 
@@ -14,6 +15,15 @@ const currentPage = ref(1)
 const lastPage = ref(1)
 const total = ref(0)
 const perPage = 10
+
+// ===== QR Code Poster Dialog =====
+const qrDialog = ref(false)
+const qrSelectedCar = ref(null)
+
+const openQrModal = (car) => {
+  qrSelectedCar.value = car
+  qrDialog.value = true
+}
 
 // ===== Delete =====
 const deleteDialog = ref(false)
@@ -243,17 +253,12 @@ const getMainImageUrl = (car) => {
         <!-- Actions -->
         <td class="text-center">
           <div class="flex justify-center gap-2">
+            <VBtn icon color="success" variant="tonal" title="طباعة ورقة QR للسيارة" @click="openQrModal(car)">
+              <VIcon icon="tabler-qrcode" />
+            </VBtn>
             <VBtn icon @click="handleEdit(car.id)">
               <VIcon icon="tabler-edit" />
             </VBtn>
-
-<!--            <VBtn icon color="primary" variant="tonal" @click="openStatusDialog(car)">-->
-<!--              <VIcon icon="tabler-adjustments" />-->
-<!--            </VBtn>-->
-
-<!--            <VBtn icon color="error" @click="confirmDelete(car)">-->
-<!--              <VIcon icon="tabler-trash" />-->
-<!--            </VBtn>-->
           </div>
         </td>
       </tr>
@@ -334,5 +339,8 @@ const getMainImageUrl = (car) => {
         </VBtn>
       </div>
     </div>
+
+    <!-- Car QR Poster Dialog -->
+    <CarQrDialog v-model:is-dialog-visible="qrDialog" :car="qrSelectedCar" />
   </div>
 </template>

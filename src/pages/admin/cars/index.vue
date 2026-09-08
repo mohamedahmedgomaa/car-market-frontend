@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import carAdminApi from '../../../api/admin/carAdminApi.js'
+import CarQrDialog from '../../../components/dialogs/CarQrDialog.vue'
 
 const router = useRouter()
 const BASE_URL = import.meta.env.VITE_BASE_URL
@@ -15,6 +16,15 @@ const currentPage = ref(1)
 const lastPage = ref(1)
 const total = ref(0)
 const perPage = ref(100) // ✅ 100 items per page as requested
+
+// ===== QR Code Poster Dialog =====
+const qrDialog = ref(false)
+const qrSelectedCar = ref(null)
+
+const openQrModal = (car) => {
+  qrSelectedCar.value = car
+  qrDialog.value = true
+}
 
 // ✅ Active Filter State ('all', 'pending', 'featured', 'best_deal', 'import', 'home_page', 'global')
 const activeFilter = ref('all')
@@ -478,13 +488,16 @@ const stats = computed(() => {
             <!-- Actions -->
             <td class="text-end px-6">
               <div class="d-flex justify-end gap-2">
-                <VBtn icon variant="tonal" color="info" size="small" class="rounded-lg shadow-hover" @click="openPromotionDialog(car)">
+                <VBtn icon variant="tonal" color="success" size="small" class="rounded-lg shadow-hover" title="طباعة ورقة QR للسيارة" @click="openQrModal(car)">
+                  <VIcon icon="tabler-qrcode" />
+                </VBtn>
+                <VBtn icon variant="tonal" color="info" size="small" class="rounded-lg shadow-hover" title="إعدادات الظهور والترقية" @click="openPromotionDialog(car)">
                   <VIcon icon="tabler-settings-automation" />
                 </VBtn>
-                <VBtn icon variant="tonal" color="primary" size="small" class="rounded-lg shadow-hover" @click="handleEdit(car.id)">
+                <VBtn icon variant="tonal" color="primary" size="small" class="rounded-lg shadow-hover" title="تعديل" @click="handleEdit(car.id)">
                   <VIcon icon="tabler-edit" />
                 </VBtn>
-                <VBtn icon variant="tonal" color="error" size="small" class="rounded-lg shadow-hover" @click="confirmDelete(car)">
+                <VBtn icon variant="tonal" color="error" size="small" class="rounded-lg shadow-hover" title="حذف" @click="confirmDelete(car)">
                   <VIcon icon="tabler-trash" />
                 </VBtn>
               </div>
@@ -687,6 +700,9 @@ const stats = computed(() => {
         </div>
       </VCard>
     </VDialog>
+
+    <!-- Car QR Poster Dialog -->
+    <CarQrDialog v-model:is-dialog-visible="qrDialog" :car="qrSelectedCar" />
   </div>
 </template>
 

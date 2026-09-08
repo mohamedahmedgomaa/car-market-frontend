@@ -39,6 +39,9 @@ const fetchCountries = async () => {
   try {
     const res = await countryAdminApi.getAll()
     countries.value = res.data.data || res.data
+    if (countries.value.length > 0 && !form.value.country_id) {
+      form.value.country_id = countries.value[0].id
+    }
   } catch (e) {
     console.error('Failed to load countries', e)
   }
@@ -305,20 +308,19 @@ onMounted(() => {
 
       <VForm @submit.prevent="handleSubmit" class="space-y-7 ma-5">
 
-        <!-- Country (Fixed & Disabled to Egypt) -->
+        <!-- Country -->
         <div>
           <label class="block text-sm font-medium mb-2">Country</label>
           <VSelect
             v-model="form.country_id"
             :items="countries"
-            :item-title="country => country.name?.en || country.name"
+            :item-title="country => country.name?.en || country.name?.ar || country.name"
             item-value="id"
             variant="outlined"
             density="comfortable"
             placeholder="Select country"
             prepend-inner-icon="tabler-flag"
             hide-details="auto"
-            disabled
           />
         </div>
 
