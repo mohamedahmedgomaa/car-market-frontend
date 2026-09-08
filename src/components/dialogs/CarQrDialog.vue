@@ -43,7 +43,14 @@ const carMainImage = computed(() => {
 
 const formattedPrice = computed(() => {
   if (!props.car?.price) return 'تواصل للسعر'
-  return `${Number(props.car.price).toLocaleString()} EGP`
+  const amount = Number(props.car.price).toLocaleString()
+  const curr = props.car.currency || 'EGP'
+  const symbols = {
+    EGP: 'EGP',
+    USD: '$ USD',
+    SYP: 'SYP ليرة',
+  }
+  return `${amount} ${symbols[curr] || curr}`
 })
 
 const generateQrCode = async () => {

@@ -31,6 +31,7 @@ const form = ref({
   description_en: '',
 
   price: '',
+  currency: 'EGP',
   year: '',
   mileage: '',
 

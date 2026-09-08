@@ -444,7 +444,7 @@ const stats = computed(() => {
             <!-- Pricing -->
             <td>
               <div class="text-body-1 font-weight-black text-primary">
-                {{ Number(car.price).toLocaleString() }} <span class="text-caption font-weight-bold">EGP</span>
+                {{ Number(car.price).toLocaleString() }} <span class="text-caption font-weight-bold">{{ car.currency || 'EGP' }}</span>
               </div>
               <div class="text-caption text-medium-emphasis font-weight-medium">{{ Number(car.mileage || 0).toLocaleString() }} km</div>
             </td>

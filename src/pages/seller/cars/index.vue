@@ -225,7 +225,7 @@ const getMainImageUrl = (car) => {
         </td>
 
         <!-- Price -->
-        <td>{{ car.price }}</td>
+        <td>{{ Number(car.price || 0).toLocaleString() }} {{ car.currency || 'EGP' }}</td>
 
         <!-- ✅ Year / Mileage -->
         <td>
