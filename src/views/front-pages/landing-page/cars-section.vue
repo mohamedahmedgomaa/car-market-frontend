@@ -424,7 +424,6 @@ watch(
                     'text-platinum': car.seller?.tier?.toLowerCase() === 'platinum',
                     'text-silver': !car.seller?.tier || car.seller?.tier?.toLowerCase() === 'silver'
                   }"
-                  style="max-width: 110px"
                 >
                   {{ getSellerName(car) }}
                 </span>
@@ -463,6 +462,7 @@ watch(
 }
 .cars-section__container {
   width: 100%;
+  max-width: 1340px !important;
 }
 
 .cars-section__header {
@@ -664,22 +664,27 @@ watch(
 }
 
 .car-card__body {
-  padding: 18px;
+  padding: 16px 18px;
   flex-grow: 1;
 }
 .car-card__title {
   margin: 0 0 8px;
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 800;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .car-card__meta {
-  font-size: 13px;
-  opacity: 0.7;
+  font-size: 12.5px;
+  opacity: 0.8;
 }
 
 .car-card__info {
-  font-size: 13px;
+  font-size: 12.5px;
   display: flex;
   align-items: center;
   font-weight: 700;
@@ -703,7 +708,7 @@ watch(
 }
 .car-card__price {
   font-weight: 900;
-  font-size: 20px;
+  font-size: 19px;
   color: #FF6B00;
   background: linear-gradient(135deg, #FF6B00, #FFA800);
   -webkit-background-clip: text;

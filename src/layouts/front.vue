@@ -44,6 +44,10 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+
+  .v-container {
+    max-width: 1340px !important;
+  }
 }
 
 .bg-glow {
