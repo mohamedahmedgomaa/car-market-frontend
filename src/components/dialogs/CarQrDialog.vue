@@ -20,7 +20,7 @@ const isGenerating = ref(false)
 
 const carUrl = computed(() => {
   if (!props.car?.id) return ''
-  return `${window.location.origin}/cars/${props.car.id}`
+  return `${window.location.origin}/user/cars/${props.car.id}`
 })
 
 const carTitleEn = computed(() => {
