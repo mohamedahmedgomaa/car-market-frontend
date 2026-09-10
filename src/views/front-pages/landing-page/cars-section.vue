@@ -382,17 +382,17 @@ watch(
             <!-- ✅ Flexible Spacer to push price down -->
             <div class="flex-grow-1"></div>
 
-            <!-- ✅ Bottom Section: Price & Location (Location next to Price) -->
-            <div class="d-flex align-center justify-space-between mb-3 pt-2">
+            <!-- ✅ Bottom Section: Price & Location -->
+            <div class="d-flex flex-wrap align-center justify-space-between gap-x-2 gap-y-1 mb-3 pt-2">
               <div class="car-card__price">
                 {{ formatPrice(car.price) }}
                 <span class="text-caption price-currency opacity-60">EG</span>
               </div>
 
-              <!-- Location shown next to price -->
-              <div class="d-flex align-center gap-1 opacity-90 text-subtitle-2 font-weight-bold">
-                <VIcon icon="tabler-map-pin" size="16" class="me-0.5 text-primary" />
-                <span>{{ _t(car.city?.name) || 'Cairo' }}</span>
+              <!-- Location shown next to price (or wrapped below if no space) -->
+              <div class="car-card__location d-flex align-center gap-1 opacity-90 text-subtitle-2 font-weight-bold">
+                <VIcon icon="tabler-map-pin" size="16" class="me-0.5 text-white" style="color: #ffffff !important;" />
+                <span class="text-truncate">{{ _t(car.city?.name) || 'Cairo' }}</span>
               </div>
             </div>
 
@@ -691,6 +691,7 @@ watch(
   display: flex;
   align-items: center;
   font-size: 11px;
+  white-space: nowrap;
 }
 
 /* ✅ footer: price + date */

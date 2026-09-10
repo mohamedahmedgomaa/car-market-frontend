@@ -742,7 +742,7 @@ watch(
                   <template v-if="car.city?.name">
                     <span class="mx-2">•</span>
                     <span class="d-inline-flex align-center gap-1">
-                      <VIcon icon="tabler-map-pin" size="16" color="primary" class="mt-n0_5" />
+                      <VIcon icon="tabler-map-pin" size="16" class="mt-n0_5 text-white" style="color: #ffffff !important;" />
                       <span>{{ t(car.city?.name) }}</span>
                     </span>
                   </template>
