@@ -571,13 +571,26 @@ const adSlides = ref([])
 const adSlideIndex = ref(0)
 let adTimer = null
 
+const openSidebarAdLink = (link) => {
+  if (!link || link === '#' || link.trim() === '' || link === 'javascript:void(0)') {
+    alert('الإعلان لا يحتوي على رابط مخصص حالياً')
+    return
+  }
+  const url = link.trim()
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  } else {
+    router.push(url)
+  }
+}
+
 const fetchAdBanners = async () => {
   try {
     const res = await api.get('/user/banners', { params: { type: 'sidebar' } })
     if (res.data && res.data.data && res.data.data.length > 0) {
       adSlides.value = res.data.data.map((b) => ({
         image: b.image_path,
-        link: b.link || '#',
+        link: b.link || '',
       }))
     }
   } catch (err) {
@@ -1245,7 +1258,7 @@ watch(
           <!-- ✅ Premium Sidebar Ad Spot -->
           <VCard
             variant="flat"
-            class="pa-4 rounded-xl sidebar-ad-card mb-4 text-center relative overflow-hidden"
+            class="pa-0 rounded-xl sidebar-ad-card mb-4 text-center relative overflow-hidden"
             v-if="adSlides.length > 0"
             style="
               background: rgba(var(--v-theme-surface), 0.3);
@@ -1255,13 +1268,33 @@ watch(
             <div class="ad-label-tag">AD</div>
             <div class="ad-carousel-container">
               <Transition name="fade" mode="out-in">
-                <div :key="adSlideIndex" class="ad-item-slide">
+                <div
+                  :key="adSlideIndex"
+                  class="ad-item-slide cursor-pointer"
+                  @click="openSidebarAdLink(adSlides[adSlideIndex]?.link)"
+                >
                   <div
-                    class="ad-item-image"
+                    class="ad-image-blur"
                     :style="{ backgroundImage: `url(${adSlides[adSlideIndex].image})` }"
+                  />
+                  <img
+                    :src="adSlides[adSlideIndex].image"
+                    class="ad-image-main"
+                    alt="Sidebar Banner"
                   />
                 </div>
               </Transition>
+
+              <!-- Action Button at Bottom Right -->
+              <button
+                type="button"
+                class="ad-link-btn"
+                title="فتح رابط الإعلان"
+                @click.stop.prevent="openSidebarAdLink(adSlides[adSlideIndex]?.link)"
+              >
+                <VIcon icon="tabler-external-link" size="14" />
+                <span>فتح الإعلان</span>
+              </button>
             </div>
           </VCard>
 
@@ -1963,5 +1996,81 @@ watch(
   box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.3);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Sidebar Ad Spot */
+.sidebar-ad-card {
+  position: relative;
+  min-height: 200px;
+}
+
+.ad-carousel-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+}
+
+.ad-item-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0b0d14;
+}
+
+.ad-image-blur {
+  position: absolute;
+  inset: -15px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(28px) brightness(0.45);
+  opacity: 0.65;
+  transform: scale(1.15);
+  z-index: 1;
+}
+
+.ad-image-main {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  z-index: 2;
+  display: block;
+}
+
+.ad-link-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(15, 17, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 107, 0, 0.5);
+  border-radius: 99px;
+  color: #ffffff !important;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(255, 107, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover {
+    background: #FF6B00;
+    border-color: #FF6B00;
+    color: #ffffff !important;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5);
+  }
 }
 </style>

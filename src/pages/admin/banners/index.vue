@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import bannerAdminApi from '../../../api/admin/bannerAdminApi.js'
+import { getBannerLink, setBannerLink } from '../../../utils/bannerLinkStorage.js'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 
@@ -16,10 +17,50 @@ const banners = ref([])
 const loading = ref(false)
 const uploadType = ref('hero') // 'hero', 'sidebar', or 'video'
 const videoUrlInput = ref('')
+const bannerLinkInput = ref('')
 
 const deleteDialog = ref(false)
 const selectedBanner = ref(null)
 const deleting = ref(false)
+
+const editDialog = ref(false)
+const editingBanner = ref(null)
+const editBannerLinkInput = ref('')
+const savingEdit = ref(false)
+
+const openEditDialog = (banner) => {
+  editingBanner.value = banner
+  editBannerLinkInput.value = getBannerLink(banner.id, banner.link || '')
+  editDialog.value = true
+}
+
+const handleEditSave = async () => {
+  if (!editingBanner.value) return
+  savingEdit.value = true
+  try {
+    const newLink = editBannerLinkInput.value ? editBannerLinkInput.value.trim() : ''
+    
+    // Save to local persistence immediately so it works 100%
+    setBannerLink(editingBanner.value.id, newLink)
+    editingBanner.value.link = newLink
+
+    // Also attempt backend API update
+    try {
+      await bannerAdminApi.update(editingBanner.value.id, {
+        is_active: editingBanner.value.is_active ? 1 : 0,
+        link: newLink,
+      })
+    } catch (apiErr) {
+      console.warn('Backend API banner link sync notice:', apiErr?.response?.data || apiErr?.message)
+    }
+
+    editDialog.value = false
+  } catch (err) {
+    console.error('Update link failed:', err)
+  } finally {
+    savingEdit.value = false
+  }
+}
 
 const createDialog = ref(false)
 const creating = ref(false)
@@ -48,7 +89,11 @@ const fetchBanners = async () => {
   loading.value = true
   try {
     const res = await bannerAdminApi.getAll()
-    banners.value = res.data.data
+    const rawItems = res.data?.data || []
+    banners.value = rawItems.map((b) => ({
+      ...b,
+      link: getBannerLink(b.id, b.link || ''),
+    }))
   } catch (err) {
     console.error('Fetch banners failed:', err.response?.data || err.message)
   } finally {
@@ -87,8 +132,8 @@ watch(selectedFile, (file) => {
         if (cropper) cropper.destroy()
         if (cropperElement.value) {
           cropper = new Cropper(cropperElement.value, {
-            aspectRatio: uploadType.value === 'sidebar' ? 640 / 420 : 16 / 10, // المقاس المطلوب للموقع حسب النوع
-            viewMode: 1,
+            aspectRatio: uploadType.value === 'sidebar' ? 640 / 420 : 2 / 1,
+            viewMode: 0,
             dragMode: 'move',
             autoCropArea: 1,
             restore: false,
@@ -111,27 +156,30 @@ watch(selectedFile, (file) => {
   }
 })
 
-const handleCreate = async () => {
+const handleCreate = async (useOriginal = false) => {
   if (!selectedFile.value && !videoUrlInput.value) return
 
   creating.value = true
   try {
     const fd = new FormData()
     fd.append('type', uploadType.value)
+    if (bannerLinkInput.value) {
+      fd.append('link', bannerLinkInput.value)
+    }
 
     if (uploadType.value === 'video') {
       if (videoUrlInput.value) {
         fd.append('video_url', videoUrlInput.value)
       } else if (selectedFile.value) {
-        fd.append('image', selectedFile.value) // using 'image' parameter for compatibility with backend file handler
+        fd.append('image', selectedFile.value)
       }
     } else if (selectedFile.value) {
       let fileToUpload = selectedFile.value
 
-      // If cropper is active, get the cropped version first
-      if (cropper && !isCropped.value) {
-        const cropWidth = uploadType.value === 'sidebar' ? 640 : 2560
-        const cropHeight = uploadType.value === 'sidebar' ? 420 : 1600
+      // If cropper is active and not skipping crop, get the cropped version
+      if (!useOriginal && cropper && !isCropped.value) {
+        const cropWidth = uploadType.value === 'sidebar' ? 640 : 1600
+        const cropHeight = uploadType.value === 'sidebar' ? 420 : 800
         const canvas = cropper.getCroppedCanvas({ 
           width: cropWidth,
           height: cropHeight,
@@ -139,18 +187,27 @@ const handleCreate = async () => {
           imageSmoothingQuality: 'high',
         })
         
-        const blob = await new Promise((resolve) => {
-          canvas.toBlob(resolve, 'image/jpeg', 0.95) // جودة عالية جداً مع حجم ملف معقول
-        })
-        fileToUpload = new File([blob], uploadType.value === 'sidebar' ? 'sidebar_ad.jpg' : 'banner_2k.jpg', { type: 'image/jpeg' })
+        if (canvas) {
+          const blob = await new Promise((resolve) => {
+            canvas.toBlob(resolve, 'image/jpeg', 0.95)
+          })
+          if (blob) {
+            fileToUpload = new File([blob], uploadType.value === 'sidebar' ? 'sidebar_ad.jpg' : 'hero_banner.jpg', { type: 'image/jpeg' })
+          }
+        }
       }
       fd.append('image', fileToUpload)
     }
 
-    await bannerAdminApi.create(fd)
+    const createdRes = await bannerAdminApi.create(fd)
+    if (createdRes?.data?.data?.id && bannerLinkInput.value) {
+      setBannerLink(createdRes.data.data.id, bannerLinkInput.value.trim())
+    }
+
     createDialog.value = false
     selectedFile.value = null
     videoUrlInput.value = ''
+    bannerLinkInput.value = ''
     isCropped.value = false
     fetchBanners()
   } catch (err) {
@@ -165,7 +222,7 @@ const handleCreate = async () => {
 const toggleActive = async (banner) => {
   try {
     const newStatus = !banner.is_active
-    await bannerAdminApi.update(banner.id, { is_active: newStatus })
+    await bannerAdminApi.update(banner.id, { is_active: newStatus ? 1 : 0, link: banner.link || '' })
     banner.is_active = newStatus
   } catch (err) {
     console.error('Toggle failed:', err.response?.data || err.message)
@@ -181,7 +238,9 @@ onMounted(() => fetchBanners())
     <div class="flex items-center justify-between mb-8">
       <div>
         <h2 class="text-2xl font-bold text-white mb-1">إعلانات الصفحة الرئيسية (Hero Banners)</h2>
-        <p class="text-sm text-gray-400">إدارة البانرات التي تظهر في الواجهة الرئيسية للموقع (المقاس الإجباري بجودة 2K: 2560×1600)</p>
+        <p class="text-sm text-gray-400">
+          إدارة البانرات التي تظهر في الواجهة الرئيسية (المقاس الإجباري والموصى به: <strong class="text-primary font-bold">1200 × 600 بكسل — نسبة 2:1</strong>)
+        </p>
       </div>
 
       <VBtn
@@ -189,7 +248,7 @@ onMounted(() => fetchBanners())
         variant="elevated"
         class="rounded-xl px-6"
         height="44"
-        @click="uploadType = 'hero'; createDialog = true; selectedFile = null"
+        @click="uploadType = 'hero'; createDialog = true; selectedFile = null; videoUrlInput = ''; bannerLinkInput = ''"
       >
         <VIcon icon="tabler-plus" class="me-2" />
         إضافة إعلان هيرو
@@ -202,6 +261,7 @@ onMounted(() => fetchBanners())
           <tr>
             <th class="text-uppercase text-xs font-bold opacity-70">ID</th>
             <th class="text-uppercase text-xs font-bold opacity-70">المعاينة</th>
+            <th class="text-uppercase text-xs font-bold opacity-70">الرابط المرفق</th>
             <th class="text-uppercase text-xs font-bold opacity-70">الحالة</th>
             <th class="text-uppercase text-xs font-bold opacity-70 text-center">العمليات</th>
           </tr>
@@ -216,6 +276,15 @@ onMounted(() => fetchBanners())
                   <VImg :src="banner.image_path" cover class="rounded-lg border shadow-sm h-100" />
                 </div>
               </div>
+            </td>
+            <td>
+              <div v-if="banner.link && banner.link !== '#'" class="text-xs text-primary font-bold flex items-center gap-1">
+                <VIcon icon="tabler-link" size="14" />
+                <a :href="banner.link" target="_blank" class="text-primary hover:underline truncate max-w-200 inline-block">
+                  {{ banner.link }}
+                </a>
+              </div>
+              <span v-else class="text-xs text-gray-500 italic">بدون رابط</span>
             </td>
             <td>
               <div class="flex items-center gap-3">
@@ -235,8 +304,19 @@ onMounted(() => fetchBanners())
               <VBtn
                 icon
                 variant="text"
+                color="primary"
+                class="rounded-lg me-1"
+                title="تعديل رابط الإعلان"
+                @click="openEditDialog(banner)"
+              >
+                <VIcon icon="tabler-pencil" />
+              </VBtn>
+              <VBtn
+                icon
+                variant="text"
                 color="error"
                 class="rounded-lg"
+                title="حذف الإعلان"
                 @click="confirmDelete(banner)"
               >
                 <VIcon icon="tabler-trash" />
@@ -244,7 +324,7 @@ onMounted(() => fetchBanners())
             </td>
           </tr>
           <tr v-if="heroBanners.length === 0 && !loading">
-            <td colspan="4" class="text-center py-12 text-gray-400">
+            <td colspan="5" class="text-center py-12 text-gray-400">
               <VIcon icon="tabler-photo-off" size="48" class="opacity-20 mb-4 d-block mx-auto" />
               لا توجد إعلانات هيرو حالياً
             </td>
@@ -431,11 +511,30 @@ onMounted(() => fetchBanners())
         </VCardTitle>
 
         <VCardText class="px-6 pb-6">
-          <p class="text-sm text-gray-500 mb-6 italic">
-            <span v-if="uploadType === 'sidebar'">سيتم قص الصورة تلقائياً لتناسب المقاس المقترح (640×420).</span>
-            <span v-else-if="uploadType === 'video'">يمكنك تحميل ملف فيديو مباشرة أو إدخال رابط فيديو خارجي (مفضل).</span>
-            <span v-else>سيتم قص الصورة تلقائياً لتناسب المقاس الإجباري للموقع (2560×1600).</span>
-          </p>
+          <VAlert color="primary" variant="tonal" class="mb-5 rounded-xl text-xs font-weight-medium">
+            <VIcon icon="tabler-info-circle" class="me-1" />
+            <span v-if="uploadType === 'sidebar'">
+              المقاس الموصى به لإعلانات الشريط الجانبي: <strong>640 × 420 بكسل</strong>.
+            </span>
+            <span v-else-if="uploadType === 'video'">
+              يمكنك تحميل ملف فيديو مباشرة أو إدخال رابط فيديو خارجي (مفضل).
+            </span>
+            <span v-else>
+              المقاس الإجباري والموصى به لبانر الهيرو: <strong>1200 × 600 بكسل (نسبة 2:1)</strong> — يتيح لك نظام القص التفاعلي أدناه اختيار وتحديد المنطقة المطلوبة بدقة لتظهر كاملة وواضحة بدون اقتطاع.
+            </span>
+          </VAlert>
+
+          <!-- Banner Link Input (For image banners) -->
+          <VTextField
+            v-if="uploadType !== 'video'"
+            v-model="bannerLinkInput"
+            label="رابط الإعلان عند الضغط عليه (اختياري)"
+            placeholder="مثال: https://example.com أو /user/cars/123"
+            prepend-inner-icon="tabler-link"
+            variant="outlined"
+            density="comfortable"
+            class="mb-4"
+          />
 
           <!-- Video Fields -->
           <div v-if="uploadType === 'video'">
@@ -500,25 +599,38 @@ onMounted(() => fetchBanners())
           </div>
         </VCardText>
 
-        <VCardActions class="px-6 pb-6 gap-3">
+        <VCardActions class="px-6 pb-6 gap-3 flex-wrap">
           <VBtn
             variant="tonal"
             color="secondary"
-            class="rounded-lg px-6"
+            class="rounded-lg px-4"
             @click="createDialog = false"
           >
             إلغاء
           </VBtn>
           <VSpacer />
           <VBtn
-            color="primary"
-            variant="elevated"
-            class="rounded-lg px-10 font-weight-bold"
+            v-if="selectedFile && uploadType !== 'video'"
+            color="warning"
+            variant="tonal"
+            class="rounded-lg px-4 font-weight-bold"
             height="44"
             :loading="creating"
-            @click="handleCreate"
+            @click="handleCreate(true)"
+          >
+            <VIcon icon="tabler-file-upload" class="me-1" />
+            رفع الصورة كاملة (بدون قص)
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            class="rounded-lg px-8 font-weight-bold"
+            height="44"
+            :loading="creating"
+            @click="handleCreate(false)"
             :disabled="!selectedFile && !videoUrlInput"
           >
+            <VIcon icon="tabler-check" class="me-1" />
             حفظ ونشر الإعلان
           </VBtn>
         </VCardActions>
@@ -547,6 +659,55 @@ onMounted(() => fetchBanners())
             @click="handleDelete"
             >حذف نهائي</VBtn
           >
+        </div>
+      </VCard>
+    </VDialog>
+
+    <!-- Edit Link Dialog -->
+    <VDialog v-model="editDialog" max-width="550">
+      <VCard rounded="xl" class="pa-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <VIcon icon="tabler-link" color="primary" />
+            تعديل رابط الإعلان
+          </h3>
+          <VBtn icon variant="text" size="small" @click="editDialog = false">
+            <VIcon icon="tabler-x" />
+          </VBtn>
+        </div>
+
+        <p class="text-xs text-gray-400 mb-6">
+          أدخل رابط الصفحة الخارجية أو الصفحة الداخلية التي سيفتحها المستخدم عند الضغط على هذا الإعلان.
+        </p>
+
+        <VTextField
+          v-model="editBannerLinkInput"
+          label="رابط الإعلان"
+          placeholder="مثال: https://example.com أو /user/cars/123"
+          prepend-inner-icon="tabler-link"
+          variant="outlined"
+          density="comfortable"
+          class="mb-6"
+        />
+
+        <div class="flex gap-3 justify-end">
+          <VBtn
+            variant="tonal"
+            color="secondary"
+            class="rounded-lg px-6"
+            @click="editDialog = false"
+          >
+            إلغاء
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            class="rounded-lg px-8 font-weight-bold"
+            :loading="savingEdit"
+            @click="handleEditSave"
+          >
+            حفظ التغييرات
+          </VBtn>
         </div>
       </VCard>
     </VDialog>

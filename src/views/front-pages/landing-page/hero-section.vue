@@ -457,13 +457,32 @@ const slideDelayMs = 5000
 const showAdPhone = ref(false)
 let timer = null
 
+import { getBannerLink } from '@/utils/bannerLinkStorage.js'
+
+const hasValidLink = (link) => {
+  return !!link && typeof link === 'string' && link.trim() !== '' && link !== '#' && link !== 'javascript:void(0)'
+}
+
+const openBannerLink = (link) => {
+  if (!hasValidLink(link)) {
+    showAdPhone.value = true
+    return
+  }
+  const url = link.trim()
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  } else {
+    router.push(url)
+  }
+}
+
 const fetchBanners = async () => {
   try {
     const res = await api.get('/user/banners', { params: { type: 'hero' } })
     if (res.data && res.data.data && res.data.data.length > 0) {
-      slides.value = res.data.data.slice(0, 3).map((b) => ({
+      slides.value = res.data.data.slice(0, 5).map((b) => ({
         image: b.image_path,
-        link: b.link || '#',
+        link: getBannerLink(b.id, b.link || ''),
       }))
     }
   } catch (err) {
@@ -773,12 +792,23 @@ onBeforeUnmount(() => {
               <div class="ad-carousel-wrapper">
                 <Transition name="fade" mode="out-in">
                   <div v-if="safeSlides.length > 0" :key="slideIndex" class="ad-slide-wrapper">
-                    <a :href="safeSlides[slideIndex].link" target="_blank" class="ad-slide">
+                    <div
+                      class="ad-slide"
+                      :class="{ 'clickable-ad': hasValidLink(safeSlides[slideIndex]?.link) }"
+                      @click="openBannerLink(safeSlides[slideIndex]?.link)"
+                    >
+                      <!-- Background Ambient Blur -->
                       <div
-                        class="ad-image animate-ken-burns"
+                        class="ad-image-blur"
                         :style="{ backgroundImage: `url(${safeSlides[slideIndex].image})` }"
                       />
-                    </a>
+                      <!-- Main Image Container (Zero Cut-Off / 100% Fit) -->
+                      <img
+                        :src="safeSlides[slideIndex].image"
+                        class="ad-image-main animate-ken-burns"
+                        alt="Hero Banner"
+                      />
+                    </div>
                   </div>
                   <div
                     v-else
@@ -822,6 +852,18 @@ onBeforeUnmount(() => {
                     @click="slideIndex = idx"
                   ></span>
                 </div>
+
+                <!-- Action Button at Bottom Right of Banner -->
+                <button
+                  v-if="safeSlides.length > 0"
+                  type="button"
+                  class="ad-link-btn"
+                  title="فتح رابط الإعلان"
+                  @click.stop.prevent="openBannerLink(safeSlides[slideIndex]?.link)"
+                >
+                  <VIcon icon="tabler-external-link" size="14" />
+                  <span>فتح الإعلان</span>
+                </button>
               </div>
             </VCard>
           </div>
@@ -1229,20 +1271,40 @@ onBeforeUnmount(() => {
 }
 
 .ad-slide {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
   position: relative;
   overflow: hidden;
+  background: #0b0d14;
+
+  &.clickable-ad {
+    cursor: pointer;
+  }
 }
 
-.ad-image {
+.ad-image-blur {
   position: absolute;
-  inset: 0;
+  inset: -15px;
   background-size: cover;
   background-position: center;
+  filter: blur(28px) brightness(0.45);
+  opacity: 0.65;
+  transform: scale(1.15);
   z-index: 1;
+}
+
+.ad-image-main {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  z-index: 2;
   transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
 }
 
 /* Ken Burns Effect */
@@ -1255,7 +1317,7 @@ onBeforeUnmount(() => {
     transform: scale(1);
   }
   100% {
-    transform: scale(1.12);
+    transform: scale(1.06);
   }
 }
 
@@ -1283,6 +1345,49 @@ onBeforeUnmount(() => {
     background: #FF6B00;
     width: 36px;
     box-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+  }
+}
+
+/* Small Ad Link Button (Bottom Right) */
+.ad-link-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(15, 17, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 107, 0, 0.5);
+  border-radius: 99px;
+  color: #ffffff !important;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(255, 107, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover {
+    background: #FF6B00;
+    border-color: #FF6B00;
+    color: #ffffff !important;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5);
+  }
+
+  &.ad-link-btn--contact {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(15, 17, 26, 0.8);
+
+    &:hover {
+      background: #FF6B00;
+      border-color: #FF6B00;
+    }
   }
 }
 

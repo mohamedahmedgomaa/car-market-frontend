@@ -364,6 +364,9 @@
     "brandArabicMap": true,
     "customBrandFilter": true,
     "matchBrand": true,
-    "sortBrands": true
+    "sortBrands": true,
+    "getBannerLink": true,
+    "getSavedBannerLinks": true,
+    "setBannerLink": true
   }
 }
