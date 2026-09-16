@@ -843,6 +843,11 @@ watch(
           <!-- Main Image -->
           <div
             class="gallery-hero"
+            :class="{
+              'gallery-hero--best-deal': car.is_best_deal,
+              'gallery-hero--featured': car.is_featured && !car.is_best_deal,
+              'gallery-hero--global': car.is_global_ad && !car.is_featured && !car.is_best_deal
+            }"
             @click="handleGalleryHeroClick"
             @touchstart.passive="handleTouchStart"
             @touchmove.passive="handleTouchMove"
@@ -852,6 +857,22 @@ watch(
             @mouseup="handleMouseUp"
             @mouseleave="handleMouseUp"
           >
+            <!-- ✅ Status Badges Overlay -->
+            <div class="gallery-badges" v-if="car.is_best_deal || car.is_featured || car.is_global_ad">
+              <div v-if="car.is_best_deal" class="detail-badge badge-best-deal">
+                <VIcon icon="tabler-flame" size="14" class="me-1" />
+                <span>BEST DEAL</span>
+              </div>
+              <div v-else-if="car.is_featured" class="detail-badge badge-featured">
+                <VIcon icon="tabler-star" size="14" class="me-1" />
+                <span>FEATURED</span>
+              </div>
+              <div v-else-if="car.is_global_ad" class="detail-badge badge-global">
+                <VIcon icon="tabler-world" size="14" class="me-1" />
+                <span>HOMEPAGE AD</span>
+              </div>
+            </div>
+
             <Transition name="fade" mode="out-in">
               <img :key="activeImage" :src="activeImage" :alt="t(car.title)" class="main-img" />
             </Transition>
@@ -1573,6 +1594,66 @@ watch(
   cursor: grab;
   user-select: none;
   touch-action: pan-y;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* ✅ Status Borders & Glowing Shadows */
+.gallery-hero--best-deal {
+  border: 2px solid #ff4d4d !important;
+  box-shadow: 0 0 30px rgba(255, 77, 77, 0.35), 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+.gallery-hero--featured {
+  border: 2px solid #FF6B00 !important;
+  box-shadow: 0 0 30px rgba(255, 107, 0, 0.35), 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+.gallery-hero--global {
+  border: 2px solid #ff9f43 !important;
+  box-shadow: 0 0 30px rgba(255, 159, 67, 0.35), 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ✅ Detail Status Badges Overlay */
+.gallery-badges {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+.detail-badge {
+  display: flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px 18px 18px 8px;
+  font-size: 11px;
+  font-weight: 850;
+  color: #fff;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.detail-badge.badge-best-deal {
+  background: linear-gradient(135deg, #ff4d4d, #d63031);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 18px rgba(214, 48, 49, 0.45);
+}
+
+.detail-badge.badge-featured {
+  background: linear-gradient(135deg, #FF6B00, #FFA800);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 18px rgba(255, 107, 0, 0.45);
+}
+
+.detail-badge.badge-global {
+  background: linear-gradient(135deg, #ff9f43, #ff6b6b);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 18px rgba(255, 159, 67, 0.45);
 }
 
 .gallery-hero:active {
