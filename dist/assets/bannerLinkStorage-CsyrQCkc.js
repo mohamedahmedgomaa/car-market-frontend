@@ -1,0 +1,1 @@
+const e="negm_banner_links_map",s=()=>{try{const n=localStorage.getItem(e);return n?JSON.parse(n):{}}catch{return{}}},o=(n,r="")=>r&&r!=="#"&&r.trim()!==""?r:s()[n]||r||"",a=(n,r)=>{try{const t=s();t[n]=r||"",localStorage.setItem(e,JSON.stringify(t))}catch(t){console.error("Error saving banner link:",t)}};export{o as g,a as s};

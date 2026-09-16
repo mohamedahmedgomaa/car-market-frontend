@@ -46,7 +46,7 @@ onMounted(fetchSellers)
 
 const openSeller = (id) => router.push(`/user/sellers/${id}`)
 
-const display = computed(() => sellers.value || [])
+const display = computed(() => (sellers.value || []).filter(s => s.is_active !== false && s.is_active !== 0 && s.is_active !== '0'))
 </script>
 
 <template>

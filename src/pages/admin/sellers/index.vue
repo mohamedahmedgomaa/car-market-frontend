@@ -25,7 +25,12 @@ const fetchSellers = async (page = 1) => {
       perPage: 200, // Load all sellers for instant local searching and filtering
       sort: '-sort_order', // This bypasses the SQL column issue on the backend without needing a deploy!
     })
-    sellers.value = res.data?.data || []
+    const rawData = res.data?.data || []
+    sellers.value = rawData.map(s => ({
+      ...s,
+      is_active: s.is_active !== false && s.is_active !== 0 && s.is_active !== '0',
+      toggling: false
+    }))
     currentPage.value = res.data?.meta?.currentPage || 1
     lastPage.value = res.data?.meta?.lastPage || 1
     total.value = res.data?.meta?.total || 0
@@ -60,12 +65,16 @@ const handleDelete = async () => {
 const handleEdit = (id) => router.push(`/admin/sellers/edit/${id}`)
 
 const toggleActive = async (seller) => {
+  seller.toggling = true
   try {
-    const newVal = seller.is_active ? 0 : 1
+    const currentActive = seller.is_active !== false && seller.is_active !== 0 && seller.is_active !== '0'
+    const newVal = currentActive ? 0 : 1
     await sellerAdminApi.update(seller.id, { is_active: newVal })
-    seller.is_active = newVal
+    seller.is_active = newVal === 1
   } catch (err) {
     console.error('Toggle failed:', err.response?.data || err.message)
+  } finally {
+    seller.toggling = false
   }
 }
 
@@ -260,6 +269,7 @@ const stats = computed(() => [
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis">Partner Info</th>
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis">Contact Hub</th>
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-center">Package Tier</th>
+            <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-center">Visibility / الظهور</th>
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-center">Map Location</th>
             <th class="text-uppercase text-caption font-weight-bold tracking-widest text-medium-emphasis text-end px-6">Actions</th>
           </tr>
@@ -268,7 +278,7 @@ const stats = computed(() => [
           <!-- Loading State -->
           <template v-if="loading">
             <tr v-for="i in 5" :key="`skel-${i}`" class="skel-row">
-              <td colspan="5" class="pa-0">
+              <td colspan="6" class="pa-0">
                 <VSkeletonLoader type="table-row" class="bg-transparent" />
               </td>
             </tr>
@@ -276,7 +286,7 @@ const stats = computed(() => [
 
           <!-- Empty State -->
           <tr v-else-if="displayedSellers.length === 0">
-            <td colspan="5" class="text-center py-16">
+            <td colspan="6" class="text-center py-16">
               <VIcon icon="tabler-users-slash" size="64" color="disabled" class="mb-4" />
               <h3 class="text-h6 font-weight-bold text-medium-emphasis">No Sellers Found</h3>
               <p class="text-body-2 text-disabled mt-1">Try adjusting your search or select a different package tier.</p>
@@ -332,6 +342,23 @@ const stats = computed(() => [
               >
                 {{ seller.tier?.toLowerCase() === 'diamond' ? 'Diamond' : (seller.tier?.toLowerCase() === 'silver' ? 'Silver' : seller.tier?.toLowerCase() === 'gold' ? 'Gold' : (seller.tier?.toLowerCase() === 'platinum' ? 'Elite' : 'Standard')) }}
               </VChip>
+            </td>
+            <td class="text-center">
+              <VBtn
+                size="small"
+                rounded="pill"
+                :variant="seller.is_active ? 'flat' : 'tonal'"
+                :color="seller.is_active ? 'success' : 'grey-darken-1'"
+                class="font-weight-bold px-4 text-none elevation-1"
+                :loading="seller.toggling"
+                @click="toggleActive(seller)"
+              >
+                <VIcon :icon="seller.is_active ? 'tabler-eye' : 'tabler-eye-off'" size="16" class="me-1" />
+                {{ seller.is_active ? 'ظاهر (Visible)' : 'مخفي (Hidden)' }}
+                <VTooltip activator="parent" location="top">
+                  {{ seller.is_active ? 'معرض ظاهر في الموقع - انقر للإخفاء' : 'معرض مخفي من الموقع - انقر للإظهار' }}
+                </VTooltip>
+              </VBtn>
             </td>
             <td class="text-center">
               <VBtn

@@ -18,6 +18,7 @@ const seller = ref({
   store_description_en: '',
   bank_account: '',
   is_verified: false,
+  is_active: true,
   store_logo: null,
   governorate_id: null,
   city_id: null,
@@ -101,6 +102,7 @@ const fetchSeller = async () => {
     seller.value.store_description_en = data.store_description?.en || ''
     seller.value.bank_account = data.bank_account
     seller.value.is_verified = !!data.is_verified
+    seller.value.is_active = data.is_active !== undefined ? (data.is_active !== false && data.is_active !== 0 && data.is_active !== '0') : true
     seller.value.store_logo = null
     seller.value.governorate_id = data.governorate_id
     seller.value.city_id = data.city_id
@@ -148,7 +150,7 @@ const handleSubmit = async () => {
     const formData = new FormData()
     for (const key in seller.value) {
       if (seller.value[key] !== null && seller.value[key] !== undefined) {
-        if (key === 'is_verified') {
+        if (key === 'is_verified' || key === 'is_active') {
           formData.append(key, seller.value[key] ? '1' : '0')
         } else {
           formData.append(key, seller.value[key])
@@ -531,6 +533,12 @@ onMounted(async () => {
             hide-details="auto"
             prepend-inner-icon="tabler-medal"
           />
+        </div>
+
+        <!-- Showroom Visibility / ظهور المعرض -->
+        <div class="flex items-center justify-between">
+          <label class="text-sm font-medium">Showroom Visible in Platform? / ظهور المعرض في الموقع</label>
+          <VSwitch v-model="seller.is_active" color="success" inset />
         </div>
 
         <!-- Verified -->

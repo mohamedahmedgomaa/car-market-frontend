@@ -19,6 +19,7 @@ const form = ref({
   store_description_en: '',
   bank_account: '',
   is_verified: false,
+  is_active: true,
   store_logo: null,
   governorate_id: null,
   city_id: null,
@@ -106,8 +107,8 @@ const handleSubmit = async () => {
     const formData = new FormData()
     for (const key in form.value) {
       if (form.value[key] !== null && form.value[key] !== undefined) {
-        // ✅ Force is_verified to be 1 or 0
-        if (key === 'is_verified') {
+        // ✅ Force is_verified and is_active to be 1 or 0
+        if (key === 'is_verified' || key === 'is_active') {
           formData.append(key, form.value[key] ? '1' : '0')
         } else {
           formData.append(key, form.value[key])
@@ -483,6 +484,12 @@ onMounted(async () => {
             hide-details="auto"
             prepend-inner-icon="tabler-medal"
           />
+        </div>
+
+        <!-- Showroom Visibility / ظهور المعرض -->
+        <div class="flex items-center justify-between">
+          <label class="text-sm font-medium">Showroom Visible in Platform? / ظهور المعرض في الموقع</label>
+          <VSwitch v-model="form.is_active" color="success" inset />
         </div>
 
         <!-- Verified -->

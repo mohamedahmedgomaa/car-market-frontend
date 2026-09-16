@@ -118,7 +118,8 @@ watch(() => filters.value.cityId, (newCityId) => {
 })
 
 const filteredSellers = computed(() => {
-  let result = sellers.value
+  // Only show active (visible) showrooms on the public directory
+  let result = sellers.value.filter(s => s.is_active !== false && s.is_active !== 0 && s.is_active !== '0')
 
   // 1. Showroom Name Filter
   if (filters.value.storeName && filters.value.storeName.trim()) {
