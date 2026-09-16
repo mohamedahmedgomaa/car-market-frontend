@@ -890,9 +890,8 @@ watch(
               <span>Click to enlarge</span>
             </div>
 
-            <button class="fav-float" type="button" @click.prevent.stop="toggleFavorite">
+            <button class="fav-float" type="button" aria-label="Favorite" @click.prevent.stop="toggleFavorite">
               <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="22" :color="isFav ? 'error' : undefined" />
-              <span class="fav-count">{{ car.favorites_count ?? 0 }}</span>
             </button>
           </div>
         </div>
@@ -1773,19 +1772,30 @@ watch(
 
 .fav-float {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  padding: 10px 16px;
-  border-radius: 16px;
+  top: 16px;
+  right: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 8px;
-  border: 0;
+  justify-content: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  z-index: 3;
+  z-index: 10;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.fav-float:hover {
+  transform: scale(1.1);
+  background: rgba(255, 77, 77, 0.25);
+  border-color: #ff4d4d;
 }
 
 /* Lightbox Styles */
