@@ -1017,11 +1017,25 @@ const loadCar = async () => {
   ])
   await loadCities(true)
 
+  const descText = (car.description?.en || '') + ' ' + (car.description?.ar || '') + ' ' + (typeof car.description === 'string' ? car.description : '')
+  const extractSpecTag = (text, key) => {
+    if (!text) return ''
+    const m = String(text).match(/<!--specs:(.*?)-->/)
+    if (m) {
+      try { const p = JSON.parse(m[1]); if (p[key]) return p[key] } catch (e) {}
+    }
+    return ''
+  }
+  const cleanSpecTag = (text) => {
+    if (!text) return ''
+    return String(text).replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
+  }
+
   // Titles / Descriptions
   form.value.title_ar = car.title?.ar || ''
   form.value.title_en = car.title?.en || ''
-  form.value.description_ar = car.description?.ar || ''
-  form.value.description_en = car.description?.en || ''
+  form.value.description_ar = cleanSpecTag(car.description?.ar || '')
+  form.value.description_en = cleanSpecTag(car.description?.en || (typeof car.description === 'string' ? car.description : ''))
 
   // Specs
   form.value.price = car.price ?? ''
@@ -1041,8 +1055,8 @@ const loadCar = async () => {
   }
   form.value.cylinders = car.cylinders ?? null
   form.value.engine_capacity = car.engine_capacity ?? null
-  form.value.acceleration = car.acceleration ?? ''
-  form.value.weight = car.weight ?? ''
+  form.value.acceleration = car.acceleration || extractSpecTag(descText, 'acceleration') || ''
+  form.value.weight = car.weight || extractSpecTag(descText, 'weight') || ''
 
   // Color (عندك بيرجع string #xxxxxx)
   form.value.color = car.color || '#000000'
@@ -1104,8 +1118,31 @@ const handleSubmit = async () => {
     const fd = new FormData()
     fd.append('_method', 'PUT')
 
+    let descAr = (form.value.description_ar || '').replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
+    let descEn = (form.value.description_en || '').replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
+
+    const specsData = {}
+    if (form.value.acceleration) specsData.acceleration = String(form.value.acceleration)
+    if (form.value.weight) specsData.weight = String(form.value.weight)
+
+    if (Object.keys(specsData).length > 0) {
+      const tag = `<!--specs:${JSON.stringify(specsData)}-->`
+      if (descAr) descAr += `\n\n${tag}`
+      else descAr = tag
+      if (descEn) descEn += `\n\n${tag}`
+      else descEn = tag
+    }
+
     // basic fields
     Object.entries(form.value).forEach(([key, value]) => {
+      if (key === 'description_ar') {
+        fd.append('description_ar', descAr)
+        return
+      }
+      if (key === 'description_en') {
+        fd.append('description_en', descEn)
+        return
+      }
       if (key === 'is_import') {
         fd.append('is_import', String(value ?? '0'))
         return
@@ -1470,7 +1507,7 @@ const handleSubmit = async () => {
             <VCol cols="12" md="4">
               <VTextField
                 v-model="form.acceleration"
-                label="Acceleration 0-100 (sec) / التسارع 0-100"
+                label="Acceleration 0-100 (sec)"
                 prepend-inner-icon="tabler-dashboard"
                 placeholder="e.g. 4.5"
                 variant="outlined"
@@ -1481,7 +1518,7 @@ const handleSubmit = async () => {
             <VCol cols="12" md="4">
               <VTextField
                 v-model="form.weight"
-                label="Car Weight / وزن السيارة"
+                label="Car Weight"
                 prepend-inner-icon="tabler-weight"
                 placeholder="e.g. 1500 kg / 1.5 Ton"
                 variant="outlined"

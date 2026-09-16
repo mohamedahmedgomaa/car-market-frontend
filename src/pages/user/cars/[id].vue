@@ -248,6 +248,26 @@ const toggleFavorite = async () => {
   }
 }
 
+const extractSpecTag = (carObj, key) => {
+  if (!carObj) return ''
+  if (carObj[key]) return carObj[key]
+  
+  const descStr = typeof carObj.description === 'string' 
+    ? carObj.description 
+    : `${carObj.description?.en || ''} ${carObj.description?.ar || ''}`
+    
+  if (descStr) {
+    const match = descStr.match(/<!--specs:(.*?)-->/)
+    if (match) {
+      try {
+        const parsed = JSON.parse(match[1])
+        if (parsed[key]) return parsed[key]
+      } catch (e) {}
+    }
+  }
+  return ''
+}
+
 const formatAcceleration = (val) => {
   if (!val) return '—'
   const str = String(val).trim()
@@ -264,6 +284,22 @@ const formatWeight = (val) => {
   const num = parseFloat(str)
   if (!isNaN(num) && num < 10) return `${str} Ton`
   return `${str} kg`
+}
+
+const getAccelerationDisplay = (carObj) => {
+  const val = extractSpecTag(carObj, 'acceleration')
+  return formatAcceleration(val)
+}
+
+const getWeightDisplay = (carObj) => {
+  const val = extractSpecTag(carObj, 'weight')
+  return formatWeight(val)
+}
+
+const cleanDescriptionText = (desc) => {
+  const raw = t(desc)
+  if (!raw) return ''
+  return raw.replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
 }
 
 // -------------------------
@@ -1080,25 +1116,25 @@ watch(
             <!-- Acceleration (0-100) -->
             <div class="spec-card">
               <VIcon icon="tabler-dashboard" class="mb-2" color="primary" />
-              <span class="label">0-100 Km/h / التسارع</span>
-              <span class="val">{{ formatAcceleration(car.acceleration) }}</span>
+              <span class="label">0-100 Km/h</span>
+              <span class="val">{{ getAccelerationDisplay(car) }}</span>
             </div>
 
             <!-- Car Weight -->
             <div class="spec-card">
               <VIcon icon="tabler-weight" class="mb-2" color="primary" />
-              <span class="label">Weight / الوزن</span>
-              <span class="val">{{ formatWeight(car.weight) }}</span>
+              <span class="label">Weight</span>
+              <span class="val">{{ getWeightDisplay(car) }}</span>
             </div>
           </div>
 
           <!-- Description -->
-          <VCard variant="tonal" class="desc-card mb-8 pa-6" v-if="t(car.description)">
+          <VCard variant="tonal" class="desc-card mb-8 pa-6" v-if="cleanDescriptionText(car.description)">
             <h3 class="text-h5 font-weight-bold mb-4 d-flex align-center gap-2">
               <VIcon icon="tabler-align-left" color="primary" />
               Description
             </h3>
-            <p class="text-body-1 opacity-80 leading-relaxed">{{ t(car.description) }}</p>
+            <p class="text-body-1 opacity-80 leading-relaxed">{{ cleanDescriptionText(car.description) }}</p>
           </VCard>
 
           <!-- Equipment (Additional Specs) -->

@@ -1045,7 +1045,30 @@ const handleSubmit = async () => {
   try {
     const formData = new FormData()
 
+    let descAr = (form.value.description_ar || '').replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
+    let descEn = (form.value.description_en || '').replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
+
+    const specsData = {}
+    if (form.value.acceleration) specsData.acceleration = String(form.value.acceleration)
+    if (form.value.weight) specsData.weight = String(form.value.weight)
+
+    if (Object.keys(specsData).length > 0) {
+      const tag = `<!--specs:${JSON.stringify(specsData)}-->`
+      if (descAr) descAr += `\n\n${tag}`
+      else descAr = tag
+      if (descEn) descEn += `\n\n${tag}`
+      else descEn = tag
+    }
+
     Object.entries(form.value).forEach(([key, value]) => {
+      if (key === 'description_ar') {
+        formData.append('description_ar', descAr)
+        return
+      }
+      if (key === 'description_en') {
+        formData.append('description_en', descEn)
+        return
+      }
       if (key === 'is_import') {
         formData.append('is_import', String(value ?? '0'))
       } else if (key === 'images' && Array.isArray(value)) {
@@ -1429,7 +1452,7 @@ const handleSubmit = async () => {
             <VCol cols="12" md="4">
               <VTextField
                 v-model="form.acceleration"
-                label="Acceleration 0-100 (sec) / التسارع 0-100"
+                label="Acceleration 0-100 (sec)"
                 prepend-inner-icon="tabler-dashboard"
                 placeholder="e.g. 4.5"
                 variant="outlined"
@@ -1440,7 +1463,7 @@ const handleSubmit = async () => {
             <VCol cols="12" md="4">
               <VTextField
                 v-model="form.weight"
-                label="Car Weight / وزن السيارة"
+                label="Car Weight"
                 prepend-inner-icon="tabler-weight"
                 placeholder="e.g. 1500 kg / 1.5 Ton"
                 variant="outlined"
