@@ -470,6 +470,113 @@ const prevImage = () => {
   selectImage(images.value[prevIdx].url)
 }
 
+// ✅ Touch & Mouse Drag Slider for Main Gallery Image & Lightbox
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+const touchEndX = ref(0)
+const isDragging = ref(false)
+const hasMoved = ref(false)
+
+const handleTouchStart = (e) => {
+  if (e.touches && e.touches.length > 0) {
+    touchStartX.value = e.touches[0].clientX
+    touchStartY.value = e.touches[0].clientY
+    touchEndX.value = e.touches[0].clientX
+    hasMoved.value = false
+  }
+}
+
+const handleTouchMove = (e) => {
+  if (e.touches && e.touches.length > 0) {
+    const currentX = e.touches[0].clientX
+    const currentY = e.touches[0].clientY
+    const diffX = currentX - touchStartX.value
+    const diffY = currentY - touchStartY.value
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      touchEndX.value = currentX
+      if (Math.abs(diffX) > 10) {
+        hasMoved.value = true
+      }
+    }
+  }
+}
+
+const handleTouchEnd = () => {
+  const swipeThreshold = 40
+  const deltaX = touchEndX.value - touchStartX.value
+  if (hasMoved.value && Math.abs(deltaX) > swipeThreshold) {
+    if (deltaX < 0) {
+      nextImage()
+    } else {
+      prevImage()
+    }
+  }
+  touchStartX.value = 0
+  touchEndX.value = 0
+  setTimeout(() => {
+    hasMoved.value = false
+  }, 50)
+}
+
+const handleMouseDown = (e) => {
+  touchStartX.value = e.clientX
+  touchEndX.value = e.clientX
+  isDragging.value = true
+  hasMoved.value = false
+}
+
+const handleMouseMove = (e) => {
+  if (!isDragging.value) return
+  const diffX = e.clientX - touchStartX.value
+  touchEndX.value = e.clientX
+  if (Math.abs(diffX) > 10) {
+    hasMoved.value = true
+  }
+}
+
+const handleMouseUp = () => {
+  if (!isDragging.value) return
+  isDragging.value = false
+  const swipeThreshold = 40
+  const deltaX = touchEndX.value - touchStartX.value
+  if (hasMoved.value && Math.abs(deltaX) > swipeThreshold) {
+    if (deltaX < 0) {
+      nextImage()
+    } else {
+      prevImage()
+    }
+  }
+  touchStartX.value = 0
+  touchEndX.value = 0
+  setTimeout(() => {
+    hasMoved.value = false
+  }, 50)
+}
+
+const handleGalleryHeroClick = () => {
+  if (!hasMoved.value) {
+    openLightbox()
+  }
+}
+
+const handleLightboxTouchEnd = () => {
+  const swipeThreshold = 40
+  const deltaX = touchEndX.value - touchStartX.value
+  if (hasMoved.value && Math.abs(deltaX) > swipeThreshold) {
+    if (deltaX < 0) {
+      lightboxIndex.value = (lightboxIndex.value + 1) % images.value.length
+    } else {
+      lightboxIndex.value = (lightboxIndex.value - 1 + images.value.length) % images.value.length
+    }
+  }
+  touchStartX.value = 0
+  touchEndX.value = 0
+  setTimeout(() => {
+    hasMoved.value = false
+  }, 50)
+}
+
 // ✅ Lightbox
 const showLightbox = ref(false)
 const lightboxIndex = ref(0)
@@ -734,16 +841,26 @@ watch(
           </div>
 
           <!-- Main Image -->
-          <div class="gallery-hero" @click="openLightbox">
+          <div
+            class="gallery-hero"
+            @click="handleGalleryHeroClick"
+            @touchstart.passive="handleTouchStart"
+            @touchmove.passive="handleTouchMove"
+            @touchend="handleTouchEnd"
+            @mousedown="handleMouseDown"
+            @mousemove="handleMouseMove"
+            @mouseup="handleMouseUp"
+            @mouseleave="handleMouseUp"
+          >
             <Transition name="fade" mode="out-in">
               <img :key="activeImage" :src="activeImage" :alt="t(car.title)" class="main-img" />
             </Transition>
 
             <!-- Nav Arrows -->
-            <button class="nav-arrow left" @click.stop="prevImage">
+            <button class="nav-arrow left" type="button" aria-label="Previous Image" @click.stop="prevImage">
               <VIcon icon="tabler-chevron-left" />
             </button>
-            <button class="nav-arrow right" @click.stop="nextImage">
+            <button class="nav-arrow right" type="button" aria-label="Next Image" @click.stop="nextImage">
               <VIcon icon="tabler-chevron-right" />
             </button>
 
@@ -763,7 +880,14 @@ watch(
       <!-- ✅ Lightbox Overlay -->
       <Teleport to="body">
         <Transition name="fade">
-          <div v-if="showLightbox" class="lightbox-overlay" @click.self="closeLightbox">
+          <div
+            v-if="showLightbox"
+            class="lightbox-overlay"
+            @click.self="closeLightbox"
+            @touchstart.passive="handleTouchStart"
+            @touchmove.passive="handleTouchMove"
+            @touchend="handleLightboxTouchEnd"
+          >
             <div class="lightbox-content">
               <img :src="images[lightboxIndex]?.url" class="lightbox-img" />
 
@@ -1446,7 +1570,13 @@ watch(
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.gallery-hero:active {
+  cursor: grabbing;
 }
 
 .main-img {
@@ -1454,30 +1584,57 @@ watch(
   height: 100%;
   object-fit: contain;
   padding: 12px;
+  pointer-events: none;
 }
 
 .nav-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
-  color: #fff;
-  width: 48px;
-  height: 48px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  transition: all 0.2s;
-  opacity: 0;
-  z-index: 2;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.95;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.nav-arrow .v-icon {
+  font-size: 28px !important;
+  color: #ffffff;
 }
 
 .gallery-hero:hover .nav-arrow {
   opacity: 1;
+}
+
+.nav-arrow:hover {
+  background: rgb(var(--v-theme-primary));
+  color: #ffffff;
+  border-color: rgb(var(--v-theme-primary));
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 10px 28px rgba(var(--v-theme-primary), 0.5);
+}
+
+.nav-arrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.nav-arrow.left {
+  left: 20px;
+}
+.nav-arrow.right {
+  right: 20px;
 }
 
 .seller-profile-header {
@@ -1507,17 +1664,6 @@ watch(
   padding: 16px;
   border-radius: 16px;
   letter-spacing: 1px;
-}
-
-.nav-arrow:hover {
-  background: rgba(var(--v-theme-primary), 0.8);
-}
-
-.nav-arrow.left {
-  left: 20px;
-}
-.nav-arrow.right {
-  right: 20px;
 }
 
 .expand-hint {
@@ -1608,8 +1754,10 @@ watch(
   top: 50%;
   transform: translateY(-50%);
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
-  border: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -1617,17 +1765,23 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
 .lightbox-nav:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(var(--v-theme-primary));
+  border-color: rgb(var(--v-theme-primary));
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 10px 28px rgba(var(--v-theme-primary), 0.6);
 }
+
 .lightbox-nav.left {
-  left: 0;
+  left: 10px;
 }
 .lightbox-nav.right {
-  right: 0;
+  right: 10px;
 }
 
 .lightbox-counter {
