@@ -46,6 +46,8 @@ const form = ref({
   torque: '',
   engine_capacity: '',
   cylinders: null,
+  acceleration: '',
+  weight: '',
 
   phone_number: '',
   whatsapp_number: '',
@@ -1421,6 +1423,28 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-engine-off"
                 variant="outlined"
                 :error-messages="fieldError('cylinders')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.acceleration"
+                label="Acceleration 0-100 (sec) / التسارع 0-100"
+                prepend-inner-icon="tabler-dashboard"
+                placeholder="e.g. 4.5"
+                variant="outlined"
+                :error-messages="fieldError('acceleration')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.weight"
+                label="Car Weight / وزن السيارة"
+                prepend-inner-icon="tabler-weight"
+                placeholder="e.g. 1500 kg / 1.5 Ton"
+                variant="outlined"
+                :error-messages="fieldError('weight')"
               />
             </VCol>
 

@@ -1,1 +1,0 @@
-import{k as a,c as t,b as c,aS as o,a9 as n,i,o as u}from"./index-IbUhi-KA.js";const l={class:"d-flex align-center justify-center min-vh-100 pa-6"},m={__name:"[id]",setup(p){const s=n(),r=i();return a(()=>{const e=s.params.id;e?r.replace(`/user/cars/${e}`):r.replace("/user/cars")}),(e,d)=>(u(),t("div",l,[c(o,{indeterminate:"",color:"primary",size:"48"})]))}};export{m as default};

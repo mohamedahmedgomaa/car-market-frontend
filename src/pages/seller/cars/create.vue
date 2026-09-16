@@ -41,6 +41,8 @@ const form = ref({
   is_import: '0',
   cylinders: null,
   engine_capacity: null,
+  acceleration: '',
+  weight: '',
 
   features: [],
   images: [],
@@ -1245,6 +1247,28 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-piston"
                 variant="outlined"
                 :error-messages="fieldError('engine_capacity')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.acceleration"
+                label="Acceleration 0-100 (sec) / التسارع 0-100"
+                prepend-inner-icon="tabler-dashboard"
+                placeholder="e.g. 4.5"
+                variant="outlined"
+                :error-messages="fieldError('acceleration')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.weight"
+                label="Car Weight / وزن السيارة"
+                prepend-inner-icon="tabler-weight"
+                placeholder="e.g. 1500 kg / 1.5 Ton"
+                variant="outlined"
+                :error-messages="fieldError('weight')"
               />
             </VCol>
 

@@ -46,6 +46,8 @@ const form = ref({
 
   cylinders: null,
   engine_capacity: null,
+  acceleration: '',
+  weight: '',
 
   features: [],
 
@@ -1039,6 +1041,8 @@ const loadCar = async () => {
   }
   form.value.cylinders = car.cylinders ?? null
   form.value.engine_capacity = car.engine_capacity ?? null
+  form.value.acceleration = car.acceleration ?? ''
+  form.value.weight = car.weight ?? ''
 
   // Color (عندك بيرجع string #xxxxxx)
   form.value.color = car.color || '#000000'
@@ -1460,6 +1464,28 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-piston"
                 variant="outlined"
                 :error-messages="fieldError('engine_capacity')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.acceleration"
+                label="Acceleration 0-100 (sec) / التسارع 0-100"
+                prepend-inner-icon="tabler-dashboard"
+                placeholder="e.g. 4.5"
+                variant="outlined"
+                :error-messages="fieldError('acceleration')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="4">
+              <VTextField
+                v-model="form.weight"
+                label="Car Weight / وزن السيارة"
+                prepend-inner-icon="tabler-weight"
+                placeholder="e.g. 1500 kg / 1.5 Ton"
+                variant="outlined"
+                :error-messages="fieldError('weight')"
               />
             </VCol>
 

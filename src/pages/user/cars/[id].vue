@@ -248,6 +248,24 @@ const toggleFavorite = async () => {
   }
 }
 
+const formatAcceleration = (val) => {
+  if (!val) return '—'
+  const str = String(val).trim()
+  if (!str) return '—'
+  if (str.includes('s') || str.includes('sec') || str.includes('ث') || str.includes('ثانية')) return str
+  return `${str} s`
+}
+
+const formatWeight = (val) => {
+  if (!val) return '—'
+  const str = String(val).trim()
+  if (!str) return '—'
+  if (str.includes('kg') || str.includes('كجم') || str.includes('ton') || str.includes('طن')) return str
+  const num = parseFloat(str)
+  if (!isNaN(num) && num < 10) return `${str} Ton`
+  return `${str} kg`
+}
+
 // -------------------------
 // ✅ Fetch by id
 // -------------------------
@@ -1057,6 +1075,20 @@ watch(
               <VIcon icon="tabler-world" class="mb-2" color="primary" />
               <span class="label">Source</span>
               <span class="val">{{ getSourceText(car) }}</span>
+            </div>
+
+            <!-- Acceleration (0-100) -->
+            <div class="spec-card">
+              <VIcon icon="tabler-dashboard" class="mb-2" color="primary" />
+              <span class="label">0-100 Km/h / التسارع</span>
+              <span class="val">{{ formatAcceleration(car.acceleration) }}</span>
+            </div>
+
+            <!-- Car Weight -->
+            <div class="spec-card">
+              <VIcon icon="tabler-weight" class="mb-2" color="primary" />
+              <span class="label">Weight / الوزن</span>
+              <span class="val">{{ formatWeight(car.weight) }}</span>
             </div>
           </div>
 
