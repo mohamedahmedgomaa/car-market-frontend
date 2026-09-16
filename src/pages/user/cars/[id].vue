@@ -911,12 +911,16 @@ watch(
             <div class="lightbox-content">
               <img :src="images[lightboxIndex]?.url" class="lightbox-img" />
 
-              <button class="lightbox-close" @click="closeLightbox">
+              <button class="lightbox-close" type="button" aria-label="Close" @click="closeLightbox">
                 <VIcon icon="tabler-x" size="24" />
               </button>
 
+              <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ images.length }}</div>
+
               <button
                 class="lightbox-nav left"
+                type="button"
+                aria-label="Previous Image"
                 @click="lightboxIndex = (lightboxIndex - 1 + images.length) % images.length"
               >
                 <VIcon icon="tabler-chevron-left" size="32" />
@@ -924,12 +928,34 @@ watch(
 
               <button
                 class="lightbox-nav right"
+                type="button"
+                aria-label="Next Image"
                 @click="lightboxIndex = (lightboxIndex + 1) % images.length"
               >
                 <VIcon icon="tabler-chevron-right" size="32" />
               </button>
 
-              <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ images.length }}</div>
+              <!-- Lightbox Floating Contact Action Bar (Bottom Center) -->
+              <div class="lightbox-actions" v-if="car.seller?.phone">
+                <button
+                  type="button"
+                  class="lightbox-btn lightbox-btn--call"
+                  @click.stop="openCallDialog"
+                >
+                  <VIcon icon="tabler-phone" size="18" />
+                  <span>{{ _t('callBtn') || 'Call' }}</span>
+                </button>
+
+                <a
+                  class="lightbox-btn lightbox-btn--whatsapp"
+                  :href="whatsappLink"
+                  target="_blank"
+                  @click.stop
+                >
+                  <VIcon icon="tabler-brand-whatsapp" size="18" />
+                  <span>{{ _t('whatsappBtn') || 'WhatsApp' }}</span>
+                </a>
+              </div>
             </div>
           </div>
         </Transition>
@@ -1429,8 +1455,8 @@ watch(
           </VCard>
 
           <!-- ✅ Call Confirmation Dialog -->
-          <VDialog v-model="showCallDialog" max-width="400">
-            <VCard class="pa-6 text-center">
+          <VDialog v-model="showCallDialog" max-width="400" overlay-class="call-dialog-overlay">
+            <VCard class="pa-6 text-center call-dialog-card">
               <VAvatar color="primary" variant="tonal" size="70" class="mb-4">
                 <VIcon icon="tabler-phone-calling" size="40" />
               </VAvatar>
@@ -1876,11 +1902,81 @@ watch(
 }
 
 .lightbox-counter {
-  position: absolute;
-  bottom: -40px;
+  position: fixed;
+  top: 24px;
+  right: 88px;
   color: #fff;
   font-weight: 700;
-  opacity: 0.7;
+  font-size: 13px;
+  opacity: 0.95;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.lightbox-actions {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.lightbox-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff !important;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.lightbox-btn--call {
+  background: linear-gradient(135deg, #ff6b00, #ff8533);
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4);
+}
+
+.lightbox-btn--call:hover {
+  background: linear-gradient(135deg, #e66000, #ff6b00);
+  transform: scale(1.04);
+}
+
+.lightbox-btn--whatsapp {
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+}
+
+.lightbox-btn--whatsapp:hover {
+  background: linear-gradient(135deg, #20ba5a, #0e7569);
+  transform: scale(1.04);
+}
+
+/* Ensure Call confirmation dialog appears on top of Lightbox overlay */
+.call-dialog-overlay,
+.v-overlay:has(.call-dialog-card) {
+  z-index: 20000 !important;
 }
 
 .vertical-thumbs {
