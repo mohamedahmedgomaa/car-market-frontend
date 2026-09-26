@@ -10,6 +10,8 @@ import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useUserAuth } from '@/stores/userAuth.js'
 import { useConfigStore } from '@core/stores/config'
 import { useI18n } from 'vue-i18n'
+import logoDark from '@images/logo/logo-dark.png'
+import logoLight from '@images/logo/logo-light.png'
 
 const props = defineProps({ activeId: String })
 
@@ -20,6 +22,7 @@ const router = useRouter()
 
 const { locale, t } = useI18n({ useScope: 'global' })
 const configStore = useConfigStore()
+const appLogo = useGenerateImageVariant(logoLight, logoDark)
 
 const sidebar = ref(false)
 
@@ -301,14 +304,16 @@ const logout = async () => {
           <VIcon size="26" icon="tabler-menu-2" color="rgba(var(--v-theme-on-surface))" />
         </IconBtn>
 
-        <!-- Title -->
+        <!-- Title & Brand Logo -->
         <VAppBarTitle class="me-sm-8 me-2 logo-title-wrapper" style="flex: 0 0 auto; min-width: max-content; overflow: visible !important;">
           <RouterLink
             to="/"
-            class="d-flex gap-x-4 d-block"
-            style="text-decoration: none"
+            class="d-flex align-center gap-x-3 text-decoration-none"
           >
-            <h1 class="app-logo-title">NegmCars</h1>
+            <div class="navbar-logo-badge">
+              <img :src="appLogo" alt="NegmCars" class="navbar-logo-img" />
+            </div>
+            <h1 class="app-logo-title mb-0">NegmCars</h1>
           </RouterLink>
         </VAppBarTitle>
 
@@ -721,6 +726,33 @@ const logout = async () => {
   box-shadow:
     0 15px 35px rgba(47, 43, 61, 0.1),
     0 0 15px rgba(255, 107, 0, 0.05) !important;
+}
+
+.navbar-logo-badge {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(var(--v-theme-surface), 0.9);
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
+  padding: 2px;
+
+  &:hover {
+    transform: scale(1.08) rotate(4deg);
+    border-color: rgba(var(--v-theme-primary), 0.6);
+  }
+}
+
+.navbar-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .app-logo-title {

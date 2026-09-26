@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import footerDarkBg from '@images/front-pages/backgrounds/footer-bg-dark.png'
 import footerLightBg from '@images/front-pages/backgrounds/footer-bg-light.png'
+import logoDark from '@images/logo/logo-dark.png'
+import logoLight from '@images/logo/logo-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
 import carsUserApi from '@/api/user/carUserApi.js'
@@ -11,6 +13,7 @@ import carsUserApi from '@/api/user/carUserApi.js'
 const router = useRouter()
 const { t } = useI18n({ useScope: 'global' })
 const footerBg = useGenerateImageVariant(footerLightBg, footerDarkBg)
+const appLogo = useGenerateImageVariant(logoLight, logoDark)
 
 // -------------------------
 // Top 5 most expensive cars
@@ -68,12 +71,12 @@ const contactInfo = computed(() => [
   { icon: 'tabler-map-pin', text: t('egyptLocation') },
 ])
 
-// ✅ Social
+// ✅ Social Links (Updated with exact official channels)
 const socialLinks = [
-  { title: 'facebook', icon: 'tabler-brand-facebook-filled', href: 'https://facebook.com' },
-  { title: 'instagram', icon: 'tabler-brand-instagram', href: 'https://instagram.com' },
-  { title: 'tiktok', icon: 'tabler-brand-tiktok', href: 'https://tiktok.com' },
-  { title: 'youtube', icon: 'tabler-brand-youtube-filled', href: 'https://youtube.com' },
+  { title: 'facebook', icon: 'tabler-brand-facebook-filled', href: 'https://www.facebook.com/profile.php?id=61594862607985' },
+  { title: 'instagram', icon: 'tabler-brand-instagram', href: 'https://www.instagram.com/negmcs/' },
+  { title: 'tiktok', icon: 'tabler-brand-tiktok', href: 'https://www.tiktok.com/@negmcars.com' },
+  { title: 'youtube', icon: 'tabler-brand-youtube-filled', href: 'https://www.youtube.com/@NegmCars' },
 ]
 
 onMounted(fetchTopCars)
@@ -87,10 +90,10 @@ onMounted(fetchTopCars)
           <!-- 👉 Brand / About (Column 1) -->
           <VCol cols="12" md="3" sm="6">
             <div class="mb-4">
-              <!-- Gorgeous Brand Logo with New Platform Logo -->
+              <!-- Gorgeous Brand Logo with Theme Adaptive Logo -->
               <div class="app-logo mb-5">
                 <div class="logo-icon-wrapper">
-                  <img src="/images/logo/logo-dark.png" alt="NegmCars Logo" class="brand-img-logo" />
+                  <img :src="appLogo" alt="NegmCars Logo" class="brand-img-logo" />
                 </div>
                 <h1 class="logo-title font-weight-black">
                   Negm<span class="text-primary-glow">Cars</span>
