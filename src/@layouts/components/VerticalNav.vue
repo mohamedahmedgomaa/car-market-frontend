@@ -87,7 +87,9 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
           to="/"
           class="app-logo app-title-wrapper"
         >
-          <VNodeRenderer v-if="layoutConfig.app.logo" :nodes="layoutConfig.app.logo" />
+          <div class="admin-nav-logo-box">
+            <img src="/images/logo/logo-dark.png" alt="NegmCars" class="admin-nav-logo-img" />
+          </div>
 
           <Transition name="vertical-nav-app-title">
             <h1
@@ -157,6 +159,27 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
   display: flex;
   align-items: center;
   column-gap: 0.75rem;
+
+  .admin-nav-logo-box {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    overflow: hidden;
+    background: rgba(var(--v-theme-primary), 0.1);
+    border: 1px solid rgba(var(--v-theme-primary), 0.25);
+    box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
+    flex-shrink: 0;
+
+    .admin-nav-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 7px;
+    }
+  }
 
   .app-logo-title {
     font-size: 1.5rem;
