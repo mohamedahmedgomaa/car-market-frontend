@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import footerDarkBg from '@images/front-pages/backgrounds/footer-bg-dark.png'
@@ -62,11 +62,11 @@ const fetchTopCars = async () => {
 }
 
 // ✅ Contact
-const contactInfo = [
+const contactInfo = computed(() => [
   { icon: 'tabler-mail', text: 'gomabdallah18@gmail.com' },
   { icon: 'tabler-phone', text: '+20 155 155 2993' },
-  { icon: 'tabler-map-pin', text: 'Egypt & Syria' },
-]
+  { icon: 'tabler-map-pin', text: t('egyptLocation') },
+])
 
 // ✅ Social
 const socialLinks = [
@@ -87,27 +87,10 @@ onMounted(fetchTopCars)
           <!-- 👉 Brand / About (Column 1) -->
           <VCol cols="12" md="3" sm="6">
             <div class="mb-4">
-              <!-- Gorgeous Brand Logo with SVG Shield/Car badge -->
+              <!-- Gorgeous Brand Logo with New Platform Logo -->
               <div class="app-logo mb-5">
                 <div class="logo-icon-wrapper">
-                  <svg viewBox="0 0 100 100" class="brand-svg-logo">
-                    <!-- Shield outline -->
-                    <polygon points="50,15 85,35 85,75 50,95 15,75 15,35" fill="none" stroke="url(#logo-glow)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                    <!-- Sports Car silhouette -->
-                    <path d="M30,55 C35,42 45,38 50,38 C55,38 65,42 70,55 C72,60 68,64 64,64 L36,64 C32,64 28,60 30,55 Z" fill="url(#logo-grad)" />
-                    <!-- Speed/Chassis lines -->
-                    <path d="M25,65 H75 M35,48 L42,52 M65,48 L58,52" stroke="#FFF" stroke-width="3.5" stroke-linecap="round" opacity="0.8" />
-                    <defs>
-                      <linearGradient id="logo-glow" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="rgba(var(--v-theme-primary), 1)" />
-                        <stop offset="100%" stop-color="#ff9f43" />
-                      </linearGradient>
-                      <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffffff" />
-                        <stop offset="100%" stop-color="rgba(var(--v-theme-primary), 1)" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
+                  <img src="/images/logo/logo-dark.png" alt="NegmCars Logo" class="brand-img-logo" />
                 </div>
                 <h1 class="logo-title font-weight-black">
                   Negm<span class="text-primary-glow">Cars</span>
@@ -407,12 +390,15 @@ onMounted(fetchTopCars)
   background: rgba(var(--v-theme-primary), 0.08);
   border: 1px solid rgba(var(--v-theme-primary), 0.2);
   border-radius: 14px;
-  padding: 8px;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 30px rgba(var(--v-theme-primary), 0.1);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
   
   &:hover {
     transform: rotate(5deg) scale(1.08);
@@ -422,10 +408,11 @@ onMounted(fetchTopCars)
   }
 }
 
-.brand-svg-logo {
-  width: 34px;
-  height: 34px;
-  filter: drop-shadow(0 2px 8px rgba(var(--v-theme-primary), 0.3));
+.brand-img-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
 }
 
 .logo-title {
