@@ -536,56 +536,57 @@ watch(
 
 /* Card Colors by Theme */
 .v-theme--light .car-card {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 .v-theme--light .car-card:hover {
   background: #ffffff;
-  border-color: rgba(255, 107, 0, 0.25);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border-color: rgba(255, 107, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08), 0 0 20px rgba(255, 107, 0, 0.15);
 }
 .v-theme--light .car-card__title {
-  color: #2F2B3D !important;
+  color: #0F172A !important;
 }
 .v-theme--light .car-card__meta {
-  color: rgba(47, 43, 61, 0.85) !important;
+  color: #475569 !important;
 }
 .v-theme--light .car-card__info {
-  color: rgba(47, 43, 61, 0.7) !important;
+  color: #64748B !important;
 }
 .v-theme--light .car-card__location,
 .v-theme--light .car-card__date {
-  color: rgba(47, 43, 61, 0.9) !important;
+  color: #334155 !important;
 }
 .v-theme--light .border-t {
-  border-top-color: rgba(0, 0, 0, 0.08) !important;
+  border-top-color: rgba(203, 213, 225, 0.6) !important;
 }
 
 .v-theme--dark .car-card {
-  background: rgba(20, 24, 40, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, rgba(19, 24, 38, 0.85) 0%, rgba(15, 20, 32, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 .v-theme--dark .car-card:hover {
-  background: rgba(25, 30, 50, 0.75);
-  border-color: rgba(255, 107, 0, 0.25);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(145deg, rgba(25, 32, 50, 0.95) 0%, rgba(18, 24, 40, 0.95) 100%);
+  border-color: rgba(255, 107, 0, 0.45);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 107, 0, 0.2);
 }
 .v-theme--dark .car-card__title {
-  color: #ffffff !important;
+  color: #F8FAFC !important;
 }
 .v-theme--dark .car-card__meta {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(248, 250, 252, 0.85) !important;
 }
 .v-theme--dark .car-card__info {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: rgba(248, 250, 252, 0.7) !important;
 }
 .v-theme--dark .car-card__location,
 .v-theme--dark .car-card__date {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(248, 250, 252, 0.9) !important;
 }
 .v-theme--dark .border-t {
-  border-top-color: rgba(255, 255, 255, 0.08) !important;
+  border-top-color: rgba(255, 255, 255, 0.09) !important;
 }
 
 .car-card {
