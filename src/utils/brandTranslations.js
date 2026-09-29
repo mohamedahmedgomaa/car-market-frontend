@@ -133,3 +133,111 @@ export const customBrandFilter = (value, queryText, item) => {
   if (!queryText) return true
   return matchBrand(rawItem, queryText)
 }
+
+export const commonArabicTranslations = {
+  'cairo': 'القاهرة',
+  'giza': 'الجيزة',
+  'alexandria': 'الإسكندرية',
+  '5th settlement': 'التجمع الخامس',
+  'fifth settlement': 'التجمع الخامس',
+  'nasr city': 'مدينة نصر',
+  'heliopolis': 'مصر الجديدة',
+  'maadi': 'المعادي',
+  '6th of october': '٦ أكتوبر',
+  'october': 'أكتوبر',
+  'sheikh zayed': 'الشيخ زايد',
+  'zayed': 'الشيخ زايد',
+  'new cairo': 'القاهرة الجديدة',
+  'shorouk': 'الشروق',
+  'madinaty': 'مدينتي',
+  'obour': 'العبور',
+  'badr': 'بدر',
+  'rehab': 'الرحاب',
+  'dokki': 'الدقي',
+  'mohandessin': 'المهندسين',
+  'zamalek': 'الزمالك',
+  'harm': 'الهرم',
+  'faisal': 'فيصل',
+  '1st settlement': 'التجمع الأول',
+  '3rd settlement': 'التجمع الثالث',
+  'north coast': 'الساحل الشمالي',
+  'hurghada': 'الغردقة',
+  'sharm el sheikh': 'شرم الشيخ',
+  'mansoura': 'المنصورة',
+  'tanta': 'طنطا',
+  'zagazig': 'الزقازيق',
+  'ismailia': 'الإسماعيلية',
+  'suez': 'السويس',
+  'port said': 'بورسعيد',
+  'alex': 'الإسكندرية',
+  'qalyubia': 'القليوبية',
+  'sharqia': 'الشرقية',
+  'dakahlia': 'الدقهلية',
+  'monufia': 'المنوفية',
+  'gharbia': 'الغربية',
+  'beheira': 'البحيرة',
+  'damietta': 'دمياط',
+  'dumyat': 'دمياط',
+  'kafr el sheikh': 'كفر الشيخ',
+  'fayoum': 'الفيوم',
+  'beni suef': 'بني سويف',
+  'minya': 'المنيا',
+  'assiut': 'أسيوط',
+  'sohag': 'سوهاج',
+  'qena': 'قنا',
+  'luxor': 'الأقصر',
+  'aswan': 'أسوان',
+  'red sea': 'البحر الأحمر',
+  'matrouh': 'مطروح',
+}
+
+export const translateText = (val, localeStr = 'ar', parentObj = null) => {
+  const isAr = (localeStr || 'ar') === 'ar'
+
+  if (parentObj && typeof parentObj === 'object') {
+    if (isAr) {
+      if (parentObj.title_ar) return parentObj.title_ar
+      if (parentObj.store_name_ar) return parentObj.store_name_ar
+      if (parentObj.name_ar) return parentObj.name_ar
+      if (parentObj.description_ar) return parentObj.description_ar
+    } else {
+      if (parentObj.title_en) return parentObj.title_en
+      if (parentObj.store_name_en) return parentObj.store_name_en
+      if (parentObj.name_en) return parentObj.name_en
+      if (parentObj.description_en) return parentObj.description_en
+    }
+  }
+
+  if (!val) return ''
+
+  if (typeof val === 'object') {
+    return isAr ? (val.ar || val.en || '') : (val.en || val.ar || '')
+  }
+
+  if (typeof val === 'string') {
+    const trimmed = val.trim()
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (parsed && (parsed.ar || parsed.en)) {
+          return isAr ? (parsed.ar || parsed.en || '') : (parsed.en || parsed.ar || '')
+        }
+      } catch {}
+    }
+
+    if (isAr) {
+      const lower = trimmed.toLowerCase()
+      if (brandArabicMap[lower] && brandArabicMap[lower][0]) {
+        return brandArabicMap[lower][0]
+      }
+      if (commonArabicTranslations[lower]) {
+        return commonArabicTranslations[lower]
+      }
+    }
+
+    return val
+  }
+
+  return String(val)
+}
+

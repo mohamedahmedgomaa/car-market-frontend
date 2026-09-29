@@ -3,9 +3,10 @@ import { computed, onMounted, ref, watch } from 'vue'
 import carsUserApi from '@/api/user/carUserApi.js'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { translateText } from '@/utils/brandTranslations.js'
 
 const router = useRouter()
-const { t } = useI18n({ useScope: 'global' })
+const { t, locale } = useI18n({ useScope: 'global' })
 
 const props = defineProps({
   title: { type: String, default: 'Cars' },
@@ -32,10 +33,8 @@ const localCars = ref([])
 
 const API_BASE = import.meta.env.VITE_BASE_URL
 
-const _t = (val) => {
-  if (!val) return ''
-  if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+const _t = (val, parentObj = null) => {
+  return translateText(val, locale.value || 'ar', parentObj)
 }
 
 // ✅ لو الصورة جاية URL كامل (cloudinary / http) سيبها
@@ -55,10 +54,15 @@ const getMainImage = (car) => {
 }
 
 const getSellerName = (car) => {
-  return _t(car?.seller?.store_name) || car?.seller?.name || t('unknownSeller')
+  if (!car?.seller) return t('unknownSeller')
+  const s = car.seller
+  const isAr = (locale.value || 'ar') === 'ar'
+  if (isAr && s.store_name_ar) return s.store_name_ar
+  if (!isAr && s.store_name_en) return s.store_name_en
+  return _t(s.store_name, s) || s.name || t('unknownSeller')
 }
 
-// ✅ English "Time Ago" formatter with a 1 month ago cap
+// ✅ Localized "Time Ago" formatter
 const formatDateTime = (val) => {
   if (!val) return '—'
   const iso = String(val).replace(' ', 'T')
@@ -67,34 +71,35 @@ const formatDateTime = (val) => {
 
   const now = new Date()
   const diffInSeconds = Math.floor((now - date) / 1000)
+  const isAr = (locale.value || 'ar') === 'ar'
 
-  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 60) return isAr ? 'الآن' : 'Just now'
 
   const diffInMinutes = Math.floor(diffInSeconds / 60)
   if (diffInMinutes < 60) {
-    if (diffInMinutes === 1) return '1 minute ago'
-    return `${diffInMinutes} minutes ago`
+    if (isAr) return `منذ ${diffInMinutes} دقيقة`
+    return diffInMinutes === 1 ? '1 minute ago' : `${diffInMinutes} minutes ago`
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours < 24) {
-    if (diffInHours === 1) return '1 hour ago'
-    return `${diffInHours} hours ago`
+    if (isAr) return `منذ ${diffInHours} ساعة`
+    return diffInHours === 1 ? '1 hour ago' : `${diffInHours} hours ago`
   }
 
   const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays < 7) {
-    if (diffInDays === 1) return '1 day ago'
-    return `${diffInDays} days ago`
+    if (isAr) return `منذ ${diffInDays} يوم`
+    return diffInDays === 1 ? '1 day ago' : `${diffInDays} days ago`
   }
 
   const diffInWeeks = Math.floor(diffInDays / 7)
   if (diffInWeeks < 4) {
-    if (diffInWeeks === 1) return '1 week ago'
-    return `${diffInWeeks} weeks ago`
+    if (isAr) return `منذ ${diffInWeeks} أسبوع`
+    return diffInWeeks === 1 ? '1 week ago' : `${diffInWeeks} weeks ago`
   }
 
-  return '1 month ago'
+  return isAr ? 'منذ شهر' : '1 month ago'
 }
 
 const isAvailableForImport = (car) => {
@@ -353,14 +358,14 @@ watch(
                 class="car-card__title font-weight-bold mb-1"
                 style="min-height: 44px; line-height: 1.4"
               >
-                {{ _t(car.title) || `Car #${car.id}` }}
+                {{ _t(car.title, car) || `Car #${car.id}` }}
               </h3>
 
               <!-- ✅ Brand & Model -->
               <div class="car-card__meta mb-1 opacity-90">
-                <span class="font-weight-bold">{{ _t(car.brand?.name) }}</span>
+                <span class="font-weight-bold">{{ _t(car.brand?.name, car.brand) }}</span>
                 <span class="mx-2">|</span>
-                <span>{{ _t(car.model?.name) }}</span>
+                <span>{{ _t(car.model?.name, car.model) }}</span>
                 <span class="mx-2">|</span>
                 <span>{{ getSourceText(car) }}</span>
               </div>
@@ -392,7 +397,7 @@ watch(
               <!-- Location shown next to price (or wrapped below if no space) -->
               <div class="car-card__location d-flex align-center gap-1 opacity-90 text-subtitle-2 font-weight-bold">
                 <VIcon icon="tabler-map-pin" size="16" class="me-0.5 text-white" style="color: #ffffff !important;" />
-                <span class="text-truncate">{{ _t(car.city?.name) || 'Cairo' }}</span>
+                <span class="text-truncate">{{ _t(car.city?.name, car.city) || 'القاهرة' }}</span>
               </div>
             </div>
 

@@ -4,6 +4,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 import api from '@/api/index.js'
+import { translateText } from '@/utils/brandTranslations.js'
 
 definePage({
   meta: {
@@ -25,11 +26,8 @@ const API_BASE = import.meta.env.VITE_BASE_URL
 import { useI18n } from 'vue-i18n'
 const { t: _t, locale } = useI18n({ useScope: 'global' })
 
-const t = (val) => {
-  if (!val) return ''
-  if (typeof val === 'string') return val
-  const lang = locale.value || 'ar'
-  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
+const t = (val, parentObj = null) => {
+  return translateText(val, locale.value || 'ar', parentObj)
 }
 
 /**

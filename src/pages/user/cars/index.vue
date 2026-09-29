@@ -7,7 +7,7 @@ import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
 import featureUserApi from '@/api/user/carFeatureUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
-import { customBrandFilter, sortBrands, matchBrand, brandArabicMap } from '@/utils/brandTranslations.js'
+import { customBrandFilter, sortBrands, matchBrand, brandArabicMap, translateText } from '@/utils/brandTranslations.js'
 
 definePage({
   meta: { layout: 'front', public: true },
@@ -28,11 +28,8 @@ const isNumberKey = (evt) => {
   }
 }
 
-const _t = (val) => {
-  if (!val) return ''
-  if (typeof val === 'string') return val
-  const lang = locale.value || 'ar'
-  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
+const _t = (val, parentObj = null) => {
+  return translateText(val, locale.value || 'ar', parentObj)
 }
 
 const firstQueryVal = (v) => (Array.isArray(v) ? v[0] : v)
