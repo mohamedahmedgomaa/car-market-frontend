@@ -27,7 +27,8 @@ const sellerData = computed(() => {
 const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  const lang = locale.value || 'ar'
+  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
 }
 
 // Showroom dynamic stats

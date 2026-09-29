@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import sellerAdminApi from '../../../api/admin/sellerAdminApi.js'
 import cityUserApi from '@/api/user/cityUserApi.js'
 import governorateUserApi from '@/api/user/governorateUserApi.js'
 
 const router = useRouter()
+const { locale } = useI18n({ useScope: 'global' })
 
 const form = ref({
   name: '',
@@ -71,7 +73,8 @@ const fetchCities = async () => {
 const t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  const lang = locale.value || 'ar'
+  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
 }
 
 watch(() => form.value.governorate_id, (newGovId) => {

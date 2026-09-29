@@ -23,12 +23,13 @@ const car = ref(null)
 
 const API_BASE = import.meta.env.VITE_BASE_URL
 import { useI18n } from 'vue-i18n'
-const { t: _t } = useI18n()
+const { t: _t, locale } = useI18n({ useScope: 'global' })
 
 const t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  const lang = locale.value || 'ar'
+  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
 }
 
 /**

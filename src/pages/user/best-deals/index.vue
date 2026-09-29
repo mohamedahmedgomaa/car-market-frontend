@@ -12,7 +12,7 @@ definePage({
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n({ useScope: 'global' })
+const { t, locale } = useI18n({ useScope: 'global' })
 
 const loading = ref(true)
 const cars = ref([])
@@ -33,7 +33,8 @@ const sort = ref(String(route.query.sort || 'price'))
 const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  const lang = locale.value || 'ar'
+  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
 }
 
 // Show ONLY brands that exist in available best deal offers

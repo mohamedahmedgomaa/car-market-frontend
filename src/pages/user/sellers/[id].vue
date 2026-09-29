@@ -66,7 +66,7 @@ const _t = (val) => {
   }
   
   const currentLocale = locale.value || 'ar'
-  return val[currentLocale] || val.ar || val.en || ''
+  return currentLocale === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
 }
 
 const normalizeOne = (payload) => payload?.data?.data ?? payload?.data ?? payload ?? null

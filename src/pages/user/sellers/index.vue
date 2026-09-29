@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 
 definePage({ meta: { layout: 'front', public: true } })
 
-const { t } = useI18n({ useScope: 'global' })
+const { t, locale } = useI18n({ useScope: 'global' })
 
 const loading = ref(true)
 const error = ref('')
@@ -50,7 +50,8 @@ const tierOptions = computed(() => [
 const _t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  const lang = locale.value || 'ar'
+  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
 }
 
 const getCombinedName = (nameObj) => {

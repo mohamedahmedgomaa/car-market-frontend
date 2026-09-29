@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { VForm } from 'vuetify/components/VForm'
 import sellerApi from '@/api/sellerApi.js'
 import cityUserApi from '@/api/user/cityUserApi.js'
@@ -16,6 +17,7 @@ definePage({
 })
 
 const router = useRouter()
+const { locale } = useI18n({ useScope: 'global' })
 
 const form = ref({
   name: '',
@@ -100,7 +102,8 @@ onMounted(async () => {
 const t = (val) => {
   if (!val) return ''
   if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+  const lang = locale.value || 'ar'
+  return lang === 'ar' ? (val.ar || val.en || '') : (val.en || val.ar || '')
 }
 
 // Validation rules
