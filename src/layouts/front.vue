@@ -38,17 +38,17 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
 }
 
 .v-theme--dark .landing-page-wrapper {
-  background: linear-gradient(180deg, #090D16 0%, #0E1322 100%) !important;
+  background: #000000 !important;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
 }
 .v-theme--dark .bg-glow {
-  opacity: 0.65 !important;
+  opacity: 0.45 !important;
   background: 
-    radial-gradient(circle at 85% 15%, rgba(255, 107, 0, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 15% 85%, rgba(0, 212, 255, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.4) 0%, transparent 70%);
+    radial-gradient(circle at 85% 15%, rgba(255, 107, 0, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(255, 255, 255, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(39, 39, 42, 0.25) 0%, transparent 70%);
 }
 
 .landing-page-wrapper {

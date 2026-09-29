@@ -563,30 +563,30 @@ watch(
 }
 
 .v-theme--dark .car-card {
-  background: linear-gradient(145deg, rgba(19, 24, 38, 0.85) 0%, rgba(15, 20, 32, 0.9) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: rgba(18, 18, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
 }
 .v-theme--dark .car-card:hover {
-  background: linear-gradient(145deg, rgba(25, 32, 50, 0.95) 0%, rgba(18, 24, 40, 0.95) 100%);
-  border-color: rgba(255, 107, 0, 0.45);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 107, 0, 0.2);
+  background: rgba(26, 26, 26, 0.95);
+  border-color: rgba(255, 107, 0, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 107, 0, 0.2);
 }
 .v-theme--dark .car-card__title {
-  color: #F8FAFC !important;
+  color: #FFFFFF !important;
 }
 .v-theme--dark .car-card__meta {
-  color: rgba(248, 250, 252, 0.85) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 .v-theme--dark .car-card__info {
-  color: rgba(248, 250, 252, 0.7) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
 }
 .v-theme--dark .car-card__location,
 .v-theme--dark .car-card__date {
-  color: rgba(248, 250, 252, 0.9) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 .v-theme--dark .border-t {
-  border-top-color: rgba(255, 255, 255, 0.09) !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .car-card {
