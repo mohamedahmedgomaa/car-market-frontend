@@ -29,6 +29,178 @@ const openQrModal = (car) => {
 // ✅ Active Filter State ('all', 'pending', 'featured', 'best_deal', 'import', 'home_page', 'global')
 const activeFilter = ref('all')
 
+// ===== Date Published Filter System =====
+const dateRangeFilter = ref('all')
+
+const dateFilterOptions = [
+  { title: 'كل الأوقات (All Time)', value: 'all', icon: 'tabler-calendar-off' },
+  { title: 'اليوم فقط (Today)', value: 'today', icon: 'tabler-sun' },
+  { title: 'أمس فقط (Yesterday)', value: 'yesterday', icon: 'tabler-history' },
+  { title: 'هذا الأسبوع (0 - 7 أيام)', value: 'this_week', icon: 'tabler-calendar-week' },
+  { title: 'الأسبوع الماضي (7 - 14 يوم)', value: 'last_week', icon: 'tabler-calendar-time' },
+  { title: 'الأسبوع الثالث (14 - 21 يوم)', value: 'week_3', icon: 'tabler-calendar-due' },
+  { title: 'الأسبوع الرابع (21 - 30 يوم)', value: 'week_4', icon: 'tabler-calendar-event' },
+  { title: 'منذ 20 إلى 30 يوم (20 - 30 Days Ago)', value: 'days_20_30', icon: 'tabler-calendar-stats' },
+  { title: 'منذ 30 إلى 40 يوم (30 - 40 Days Ago)', value: 'days_30_40', icon: 'tabler-calendar-month' },
+  { title: 'منذ 40 إلى 60 يوم (40 - 60 Days Ago)', value: 'days_40_60', icon: 'tabler-calendar-clock' },
+  { title: 'أقدم من 60 يوم (Older than 60 Days)', value: 'older_60', icon: 'tabler-calendar-minus' },
+]
+
+const getDateRangeString = (rangeKey) => {
+  if (!rangeKey || rangeKey === 'all') return null
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const formatDate = (d) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+
+  const subDays = (n) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - n)
+    return d
+  }
+
+  if (rangeKey === 'today') {
+    const todayStr = formatDate(today)
+    return `${todayStr}.${todayStr}`
+  }
+
+  if (rangeKey === 'yesterday') {
+    const yesterdayStr = formatDate(subDays(1))
+    return `${yesterdayStr}.${yesterdayStr}`
+  }
+
+  if (rangeKey === 'this_week') {
+    return `${formatDate(subDays(7))}.${formatDate(today)}`
+  }
+
+  if (rangeKey === 'last_week') {
+    return `${formatDate(subDays(14))}.${formatDate(subDays(7))}`
+  }
+
+  if (rangeKey === 'week_3') {
+    return `${formatDate(subDays(21))}.${formatDate(subDays(14))}`
+  }
+
+  if (rangeKey === 'week_4') {
+    return `${formatDate(subDays(30))}.${formatDate(subDays(21))}`
+  }
+
+  if (rangeKey === 'days_20_30') {
+    return `${formatDate(subDays(30))}.${formatDate(subDays(20))}`
+  }
+
+  if (rangeKey === 'days_30_40') {
+    return `${formatDate(subDays(40))}.${formatDate(subDays(30))}`
+  }
+
+  if (rangeKey === 'days_40_60') {
+    return `${formatDate(subDays(60))}.${formatDate(subDays(40))}`
+  }
+
+  if (rangeKey === 'older_60') {
+    return `2020-01-01.${formatDate(subDays(60))}`
+  }
+
+  return null
+}
+
+const filterCarsByDate = (carList, rangeKey) => {
+  if (!rangeKey || rangeKey === 'all' || !Array.isArray(carList) || carList.length === 0) {
+    return carList
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const subDays = (n) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - n)
+    return d
+  }
+
+  const getCarDate = (car) => {
+    if (!car.created_at) return null
+    const d = new Date(car.created_at)
+    if (isNaN(d.getTime())) return null
+    d.setHours(0, 0, 0, 0)
+    return d
+  }
+
+  return carList.filter(car => {
+    const carDate = getCarDate(car)
+    if (!carDate) return true
+
+    const time = carDate.getTime()
+
+    if (rangeKey === 'today') {
+      return time === today.getTime()
+    }
+
+    if (rangeKey === 'yesterday') {
+      const yesterday = subDays(1)
+      return time === yesterday.getTime()
+    }
+
+    if (rangeKey === 'this_week') {
+      const sevenDaysAgo = subDays(7)
+      return time >= sevenDaysAgo.getTime() && time <= today.getTime()
+    }
+
+    if (rangeKey === 'last_week') {
+      const fourteenDaysAgo = subDays(14)
+      const sevenDaysAgo = subDays(7)
+      return time >= fourteenDaysAgo.getTime() && time < sevenDaysAgo.getTime()
+    }
+
+    if (rangeKey === 'week_3') {
+      const twentyOneDaysAgo = subDays(21)
+      const fourteenDaysAgo = subDays(14)
+      return time >= twentyOneDaysAgo.getTime() && time < fourteenDaysAgo.getTime()
+    }
+
+    if (rangeKey === 'week_4') {
+      const thirtyDaysAgo = subDays(30)
+      const twentyOneDaysAgo = subDays(21)
+      return time >= thirtyDaysAgo.getTime() && time < twentyOneDaysAgo.getTime()
+    }
+
+    if (rangeKey === 'days_20_30') {
+      const thirtyDaysAgo = subDays(30)
+      const twentyDaysAgo = subDays(20)
+      return time >= thirtyDaysAgo.getTime() && time <= twentyDaysAgo.getTime()
+    }
+
+    if (rangeKey === 'days_30_40') {
+      const fortyDaysAgo = subDays(40)
+      const thirtyDaysAgo = subDays(30)
+      return time >= fortyDaysAgo.getTime() && time <= thirtyDaysAgo.getTime()
+    }
+
+    if (rangeKey === 'days_40_60') {
+      const sixtyDaysAgo = subDays(60)
+      const fortyDaysAgo = subDays(40)
+      return time >= sixtyDaysAgo.getTime() && time <= fortyDaysAgo.getTime()
+    }
+
+    if (rangeKey === 'older_60') {
+      const sixtyDaysAgo = subDays(60)
+      return time < sixtyDaysAgo.getTime()
+    }
+
+    return true
+  })
+}
+
+const filteredLists = computed(() => {
+  return filterCarsByDate(lists.value, dateRangeFilter.value)
+})
+
 // ===== Promotion & Status Dialog =====
 const promotionDialog = ref(false)
 const promotionUpdating = ref(false)
@@ -178,6 +350,12 @@ const fetchLists = async (page = 1) => {
     if (activeFilter.value === 'home_page') params['filter[show_on_home]'] = 1
     if (activeFilter.value === 'global') params['filter[is_global_ad]'] = 1
 
+    // Apply Date Range filter
+    const dateRangeStr = getDateRangeString(dateRangeFilter.value)
+    if (dateRangeStr) {
+      params['filter[created_between]'] = dateRangeStr
+    }
+
     const res = await carAdminApi.getAll(params)
 
     lists.value = res.data.data
@@ -269,7 +447,7 @@ const handleDelete = async () => {
 
 const handleEdit = (id) => router.push(`/admin/cars/edit/${id}`)
 
-watch(search, () => fetchLists(1))
+watch([search, dateRangeFilter], () => fetchLists(1))
 
 onMounted(() => {
   fetchAllStats()
@@ -374,7 +552,7 @@ const stats = computed(() => {
     <!-- Main Content Card -->
     <VCard class="main-content-card pa-6 rounded-2xl" elevation="6">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6">
-        <div class="d-flex align-center gap-3 flex-grow-1 max-w-500">
+        <div class="d-flex align-center gap-3 flex-grow-1 flex-wrap max-w-700">
           <VTextField
             v-model="search"
             placeholder="Search by title, brand, model, or seller..."
@@ -384,12 +562,35 @@ const stats = computed(() => {
             hide-details
             flat
             rounded="pill"
-            class="search-input w-100 font-weight-medium"
+            class="search-input min-w-[280px] font-weight-medium flex-grow-1"
           >
             <template #append-inner v-if="search">
               <VBtn icon="tabler-x" size="small" variant="text" @click="search = ''" />
             </template>
           </VTextField>
+
+          <!-- Quick Date Published Filter Dropdown -->
+          <VSelect
+            v-model="dateRangeFilter"
+            :items="dateFilterOptions"
+            item-title="title"
+            item-value="value"
+            variant="solo-filled"
+            density="comfortable"
+            hide-details
+            flat
+            rounded="pill"
+            class="date-filter-select min-w-[220px] font-weight-bold"
+            prepend-inner-icon="tabler-calendar-time"
+          >
+            <template #item="{ props: itemProps, item }">
+              <VListItem v-bind="itemProps" :title="item.raw.title" class="font-weight-bold">
+                <template #prepend>
+                  <VIcon :icon="item.raw.icon" color="primary" class="me-2" size="18" />
+                </template>
+              </VListItem>
+            </template>
+          </VSelect>
         </div>
 
         <div class="d-flex align-center gap-2">
@@ -417,7 +618,21 @@ const stats = computed(() => {
             <td colspan="6" class="py-4"><VSkeletonLoader type="table-row" /></td>
           </tr>
           
-          <tr v-else v-for="car in lists" :key="car.id" class="table-row-hover font-weight-medium">
+          <tr v-else-if="filteredLists.length === 0">
+            <td colspan="6" class="text-center py-10">
+              <div class="d-flex flex-column align-center justify-center py-6">
+                <VAvatar color="warning" variant="tonal" size="64" class="mb-3">
+                  <VIcon icon="tabler-calendar-off" size="36" />
+                </VAvatar>
+                <h3 class="text-h6 font-weight-black mb-1">لم يتم نشر أي سيارات في هذا التاريخ</h3>
+                <p class="text-caption text-medium-emphasis mb-0 max-w-[360px] mx-auto">
+                  لم نجد إعلانات مطابقة للفترة الزمنية المحددة. جرب اختيار نطاق زمني آخر أو تصفح كل الأوقات.
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          <tr v-else v-for="car in filteredLists" :key="car.id" class="table-row-hover font-weight-medium">
             <!-- Vehicle Info -->
             <td>
               <div class="d-flex align-center py-3">
@@ -511,7 +726,8 @@ const stats = computed(() => {
       <!-- Pagination -->
       <div class="d-flex align-center justify-space-between flex-wrap gap-4 pt-2">
         <div class="text-caption font-weight-bold text-medium-emphasis">
-          Showing {{ (currentPage - 1) * perPage + 1 }} - {{ Math.min(currentPage * perPage, total) }} of {{ total }} listings
+          <span v-if="dateRangeFilter !== 'all'">Showing {{ filteredLists.length }} listing(s) matching selected date period</span>
+          <span v-else>Showing {{ (currentPage - 1) * perPage + 1 }} - {{ Math.min(currentPage * perPage, total) }} of {{ total }} listings</span>
         </div>
         <VPagination
           v-if="total > perPage"
