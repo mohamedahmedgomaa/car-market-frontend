@@ -119,7 +119,7 @@ const handlePrint = () => {
       <style>
         @page {
           size: A4 portrait;
-          margin: 6mm;
+          margin: 8mm;
         }
         * {
           box-sizing: border-box;
@@ -127,10 +127,9 @@ const handlePrint = () => {
           print-color-adjust: exact !important;
         }
         html, body {
-          height: 100vh;
-          max-height: 100vh;
-          margin: 0;
-          padding: 0;
+          height: 100%;
+          margin: 0 !important;
+          padding: 0 !important;
           overflow: hidden !important;
           background: #ffffff !important;
           color: #0f172a !important;
@@ -138,12 +137,14 @@ const handlePrint = () => {
           direction: ltr;
         }
         .print-container {
+          box-sizing: border-box;
           width: 100%;
-          max-height: 275mm;
-          margin: 0 auto;
-          padding: 24px;
+          height: 260mm;
+          max-height: 260mm;
+          margin: 0 auto !important;
+          padding: 20px 24px;
           border: 4px solid #0f172a;
-          border-radius: 28px;
+          border-radius: 24px;
           background: #ffffff;
           display: flex;
           flex-direction: column;
@@ -151,30 +152,31 @@ const handlePrint = () => {
           text-align: center;
           box-shadow: none;
           page-break-inside: avoid !important;
+          page-break-before: avoid !important;
           page-break-after: avoid !important;
         }
         .header-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding-bottom: 16px;
-          margin-bottom: 16px;
+          padding-bottom: 12px;
+          margin-bottom: 12px;
           border-bottom: 3px solid #e2e8f0;
         }
         .brand-box {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
         .brand-logo-img {
-          height: 44px;
-          max-height: 44px;
+          height: 38px;
+          max-height: 38px;
           width: auto;
           object-fit: contain;
-          border-radius: 8px;
+          border-radius: 6px;
         }
         .brand-text {
-          font-size: 28px;
+          font-size: 24px;
           font-weight: 900;
           color: #0f172a;
           letter-spacing: -0.5px;
@@ -184,35 +186,35 @@ const handlePrint = () => {
           color: #f97316;
         }
         .car-id {
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 900;
           color: #0f172a;
           background-color: #f1f5f9;
-          padding: 6px 18px;
-          border-radius: 20px;
+          padding: 5px 16px;
+          border-radius: 18px;
           border: 2px solid #cbd5e1;
         }
         .title-box {
-          margin-bottom: 20px;
-          padding: 20px;
+          margin-bottom: 14px;
+          padding: 16px;
           background-color: #0f172a;
-          border-radius: 24px;
+          border-radius: 20px;
           color: #ffffff;
           box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
         .car-title-en {
-          font-size: 26px;
+          font-size: 24px;
           font-weight: 900;
           color: #fbbf24;
-          line-height: 1.35;
+          line-height: 1.3;
           margin: 0;
           text-align: center;
         }
         .qr-card {
           background-color: #f8fafc;
           border: 3px dashed #cbd5e1;
-          border-radius: 28px;
-          padding: 24px 20px;
+          border-radius: 24px;
+          padding: 18px 16px;
           flex-grow: 1;
           display: flex;
           flex-direction: column;
@@ -221,27 +223,27 @@ const handlePrint = () => {
         }
         .qr-image-wrapper {
           background-color: #ffffff;
-          padding: 16px;
-          border-radius: 24px;
+          padding: 14px;
+          border-radius: 20px;
           border: 2px solid #e2e8f0;
           box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-          margin-bottom: 16px;
+          margin-bottom: 12px;
         }
         .qr-image {
-          width: 320px;
-          height: 320px;
+          width: 270px;
+          height: 270px;
           display: block;
           object-fit: contain;
         }
         .qr-hint {
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 900;
           color: #1e293b;
-          margin: 0 0 6px 0;
+          margin: 0 0 4px 0;
           direction: rtl;
         }
         .qr-url {
-          font-size: 14px;
+          font-size: 13px;
           font-family: monospace;
           font-weight: 600;
           color: #64748b;
