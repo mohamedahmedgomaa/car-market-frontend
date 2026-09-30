@@ -521,48 +521,53 @@ const handleDownloadQr = () => {
       </div>
 
       <!-- Printable Windshield Poster Card -->
-      <VCardText class="pa-5 printable-wrapper overflow-y-auto flex-grow max-h-[calc(90vh-110px)]">
-        <div id="printable-car-flyer" class="car-flyer-poster p-6 rounded-2xl bg-white text-slate-900 border-4 border-slate-900 shadow-xl max-w-[560px] mx-auto text-center">
+      <VCardText class="pa-4 printable-wrapper overflow-y-auto flex-grow max-h-[calc(88vh-110px)]">
+        <div id="printable-car-flyer" class="car-flyer-poster p-5 rounded-2xl bg-white text-slate-900 border-4 border-slate-900 shadow-xl max-w-[480px] mx-auto text-center">
           
           <!-- 1. Header Branding with Official Logo & Orange Text -->
-          <div class="flex justify-between items-center pb-4 mb-5 border-b-2 border-slate-200">
-            <div class="flex items-center gap-3">
+          <div class="flex justify-between items-center pb-3 mb-4 border-b-2 border-slate-200">
+            <div class="flex items-center gap-2.5">
               <img
                 src="/images/logo-black.png"
                 alt="NegmCars"
-                style="height: 38px !important; width: auto !important; max-height: 38px !important; max-width: 130px !important; object-fit: contain !important; display: inline-block !important;"
-                class="rounded-md shadow-sm flex-shrink-0"
+                style="height: 34px !important; width: auto !important; max-height: 34px !important; max-width: 120px !important; object-fit: contain !important; display: inline-block !important;"
+                class="rounded-md flex-shrink-0"
               />
-              <span class="text-2xl font-black tracking-tight text-slate-900 leading-none">
+              <span class="text-xl font-black tracking-tight text-slate-900 leading-none">
                 Negm<span class="text-amber-500">Cars</span>
               </span>
             </div>
 
             <div class="text-left">
-              <span class="text-xs font-black text-slate-700 bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-300">ID: #{{ car?.id }}</span>
+              <span class="text-xs font-black text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-300">ID: #{{ car?.id }}</span>
             </div>
           </div>
 
           <!-- 2. Car Title (English Only) -->
-          <div class="bg-slate-900 text-white rounded-2xl p-5 mb-6 text-center shadow-md">
-            <h1 class="text-2xl font-black text-amber-400 m-0 leading-snug dir-ltr">
+          <div class="bg-slate-900 text-white rounded-xl p-4 mb-4 text-center shadow-md">
+            <h1 class="text-xl font-black text-amber-400 m-0 leading-snug dir-ltr">
               {{ carTitleEnOnly }}
             </h1>
           </div>
 
           <!-- 3. CENTER: Large QR Code -->
-          <div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 text-center">
-            <div class="relative bg-white p-4 rounded-2xl shadow-md border border-slate-200 mb-4">
-              <img v-if="qrDataUrl" :src="qrDataUrl" alt="Car QR Code" class="w-64 h-64 object-contain block mx-auto" />
-              <div v-else class="w-64 h-64 flex items-center justify-center text-slate-400">
+          <div class="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 text-center">
+            <div class="relative bg-white p-3 rounded-2xl shadow-md border border-slate-200 mb-3 flex items-center justify-center" style="width: 220px !important; height: 220px !important; margin: 0 auto !important;">
+              <img
+                v-if="qrDataUrl"
+                :src="qrDataUrl"
+                alt="Car QR Code"
+                style="width: 194px !important; height: 194px !important; max-width: 194px !important; max-height: 194px !important; object-fit: contain !important; display: block !important; margin: 0 auto !important;"
+              />
+              <div v-else class="w-48 h-48 flex items-center justify-center text-slate-400">
                 <VProgressCircular indeterminate color="primary" />
               </div>
             </div>
-            <p class="text-sm font-black text-slate-800 m-0 flex items-center gap-1.5 justify-center">
-              <VIcon icon="tabler-scan" size="18" class="text-amber-600" />
+            <p class="text-xs font-black text-slate-800 m-0 flex items-center gap-1.5 justify-center">
+              <VIcon icon="tabler-scan" size="16" class="text-amber-600" />
               امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية
             </p>
-            <span class="text-xs text-slate-500 font-mono mt-1 block truncate max-w-[280px] dir-ltr">{{ carUrl }}</span>
+            <span class="text-[11px] text-slate-500 font-mono mt-1 block truncate max-w-[260px] dir-ltr">{{ carUrl }}</span>
           </div>
 
         </div>
