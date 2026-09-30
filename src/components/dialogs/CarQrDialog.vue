@@ -23,26 +23,33 @@ const carUrl = computed(() => {
   return `${window.location.origin}/user/cars/${props.car.id}`
 })
 
-const carTitleEn = computed(() => {
-  if (!props.car) return ''
-  return props.car.title?.en || props.car.title || `${props.car.brand?.name?.en || ''} ${props.car.model?.name?.en || ''}`
+const brandName = computed(() => {
+  if (!props.car?.brand) return ''
+  const b = props.car.brand
+  if (typeof b === 'string') return b
+  return b.name?.en || b.name?.ar || b.name || ''
 })
 
-const carTitleAr = computed(() => {
-  if (!props.car) return ''
-  return props.car.title?.ar || props.car.title || `${props.car.brand?.name?.ar || ''} ${props.car.model?.name?.ar || ''}`
+const modelName = computed(() => {
+  if (!props.car?.model) return ''
+  const m = props.car.model
+  if (typeof m === 'string') return m
+  return m.name?.en || m.name?.ar || m.name || ''
 })
 
-const carMainImage = computed(() => {
+const carTitleEnOnly = computed(() => {
   if (!props.car) return ''
-  if (props.car.main_image_url) return props.car.main_image_url
-  const main = props.car.images?.find(i => i.is_main === 1 || i.is_main === true)
-  if (main?.path) return main.path
-  return props.car.images?.[0]?.path || ''
+  if (typeof props.car.title === 'object' && props.car.title?.en) {
+    return props.car.title.en
+  }
+  if (typeof props.car.title === 'string' && props.car.title) {
+    return props.car.title
+  }
+  return `${brandName.value} ${modelName.value}`.trim()
 })
 
 const formattedPrice = computed(() => {
-  if (!props.car?.price) return 'تواصل للسعر'
+  if (!props.car?.price) return ''
   const amount = Number(props.car.price).toLocaleString()
   const curr = props.car.currency || 'EGP'
   const symbols = {
@@ -58,7 +65,7 @@ const generateQrCode = async () => {
   isGenerating.value = true
   try {
     qrDataUrl.value = await QRCode.toDataURL(carUrl.value, {
-      width: 400,
+      width: 500,
       margin: 2,
       color: {
         dark: '#0f172a',
@@ -99,7 +106,203 @@ const handleClose = () => {
 }
 
 const handlePrint = () => {
-  window.print()
+  const iframe = document.createElement('iframe')
+  iframe.style.position = 'fixed'
+  iframe.style.right = '0'
+  iframe.style.bottom = '0'
+  iframe.style.width = '0'
+  iframe.style.height = '0'
+  iframe.style.border = '0'
+  iframe.style.zIndex = '-9999'
+  
+  document.body.appendChild(iframe)
+
+  const doc = iframe.contentWindow.document
+
+  doc.open()
+  doc.write(`
+    <!DOCTYPE html>
+    <html dir="ltr" lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>NegmCars - ${carTitleEnOnly.value}</title>
+      <style>
+        @page {
+          size: A4 portrait;
+          margin: 12mm;
+        }
+        * {
+          box-sizing: border-box;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          background: #ffffff !important;
+          color: #0f172a !important;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          direction: ltr;
+        }
+        .print-container {
+          width: 100%;
+          max-width: 620px;
+          margin: 0 auto;
+          padding: 32px;
+          border: 3px solid #0f172a;
+          border-radius: 24px;
+          background: #ffffff;
+          text-align: center;
+          box-shadow: none;
+        }
+        .header-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 20px;
+          margin-bottom: 24px;
+          border-bottom: 2px solid #e2e8f0;
+        }
+        .brand-logo {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .logo-badge {
+          width: 48px;
+          height: 48px;
+          background-color: #0f172a;
+          color: #fbbf24;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 900;
+          font-size: 22px;
+        }
+        .brand-name {
+          font-size: 28px;
+          font-weight: 900;
+          color: #0f172a;
+          letter-spacing: -0.5px;
+          margin: 0;
+        }
+        .car-id {
+          font-size: 15px;
+          font-weight: 800;
+          color: #475569;
+          background-color: #f1f5f9;
+          padding: 6px 16px;
+          border-radius: 20px;
+          border: 1px solid #cbd5e1;
+        }
+        .title-box {
+          margin-bottom: 28px;
+          padding: 20px;
+          background-color: #0f172a;
+          border-radius: 20px;
+          color: #ffffff;
+        }
+        .car-title-en {
+          font-size: 24px;
+          font-weight: 900;
+          color: #fbbf24;
+          line-height: 1.35;
+          margin: 0;
+          text-align: center;
+        }
+        .qr-card {
+          background-color: #f8fafc;
+          border: 2px dashed #cbd5e1;
+          border-radius: 24px;
+          padding: 28px;
+          margin-bottom: 28px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .qr-image-wrapper {
+          background-color: #ffffff;
+          padding: 14px;
+          border-radius: 20px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          margin-bottom: 16px;
+        }
+        .qr-image {
+          width: 240px;
+          height: 240px;
+          display: block;
+          object-fit: contain;
+        }
+        .qr-hint {
+          font-size: 14px;
+          font-weight: 800;
+          color: #1e293b;
+          margin: 0 0 6px 0;
+          direction: rtl;
+        }
+        .qr-url {
+          font-size: 12px;
+          font-family: monospace;
+          color: #64748b;
+          margin: 0;
+          direction: ltr;
+        }
+        .price-box {
+          display: inline-block;
+          background-color: #fbbf24;
+          color: #0f172a;
+          font-size: 24px;
+          font-weight: 900;
+          padding: 12px 36px;
+          border-radius: 20px;
+          border: 2px solid #f59e0b;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-container">
+        <!-- 1. Header: NegmCars & ID -->
+        <div class="header-row">
+          <div class="brand-logo">
+            <div class="logo-badge">NC</div>
+            <h2 class="brand-name">NegmCars</h2>
+          </div>
+          <div class="car-id">ID: #${props.car?.id || ''}</div>
+        </div>
+
+        <!-- 2. English Title ONLY -->
+        <div class="title-box">
+          <h1 class="car-title-en">${carTitleEnOnly.value}</h1>
+        </div>
+
+        <!-- 3. QR Code -->
+        <div class="qr-card">
+          <div class="qr-image-wrapper">
+            <img src="${qrDataUrl.value}" class="qr-image" alt="Car QR Code" />
+          </div>
+          <p class="qr-hint">📷 امسح الكود بالكاميرا لرؤية التفاصيل والصور</p>
+          <p class="qr-url">${carUrl.value}</p>
+        </div>
+
+        <!-- 4. Price Banner -->
+        ${formattedPrice.value ? `<div class="price-box">Price: ${formattedPrice.value}</div>` : ''}
+      </div>
+    </body>
+    </html>
+  `)
+  doc.close()
+
+  setTimeout(() => {
+    iframe.contentWindow.focus()
+    iframe.contentWindow.print()
+    setTimeout(() => {
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe)
+      }
+    }, 2000)
+  }, 400)
 }
 
 const handleDownload = () => {
@@ -116,11 +319,11 @@ const handleDownload = () => {
 <template>
   <VDialog
     :model-value="isDialogVisible"
-    max-width="750"
+    max-width="620"
     scrollable
     @update:model-value="handleClose"
   >
-    <VCard class="qr-dialog-card rounded-2xl overflow-hidden shadow-2xl border border-slate-700 max-h-[88vh] flex flex-col">
+    <VCard class="qr-dialog-card rounded-2xl overflow-hidden shadow-2xl border border-slate-700 max-h-[90vh] flex flex-col">
       <!-- Modal Header -->
       <VCardTitle class="d-flex align-center justify-space-between pa-4 bg-surface text-foreground no-print border-b flex-shrink-0">
         <div class="d-flex align-center gap-3">
@@ -128,8 +331,8 @@ const handleDownload = () => {
             <VIcon icon="tabler-qrcode" size="26" />
           </div>
           <div>
-            <h3 class="text-base font-bold m-0">بطاقة QR Code للسيارة</h3>
-            <p class="text-xs opacity-75 m-0">جاهزة للطباعة والتعليق على زجاج السيارة للمعرض</p>
+            <h3 class="text-base font-bold m-0">بطاقة QR Code للسيارة - NegmCars</h3>
+            <p class="text-xs opacity-75 m-0">جاهزة للطباعة على ورقة A4 واحدة للتعليق على السيارة</p>
           </div>
         </div>
 
@@ -152,110 +355,60 @@ const handleDownload = () => {
 
         <span class="text-xs text-amber-400 font-medium d-flex align-center gap-1">
           <VIcon icon="tabler-info-circle" size="15" />
-          اختر A4 عند الطباعة
+          طباعة A4 صفحة واحدة
         </span>
       </div>
 
       <!-- Printable Windshield Poster Card -->
-      <VCardText class="pa-4 printable-wrapper overflow-y-auto flex-grow max-h-[calc(88vh-110px)]">
-        <div id="printable-car-flyer" class="car-flyer-poster p-6 rounded-2xl bg-white text-slate-900 border-4 border-slate-900 shadow-xl">
-          <!-- Poster Header Branding -->
-          <div class="flex justify-between items-center pb-4 mb-4 border-b-2 border-slate-200">
+      <VCardText class="pa-5 printable-wrapper overflow-y-auto flex-grow max-h-[calc(90vh-110px)]">
+        <div id="printable-car-flyer" class="car-flyer-poster p-6 rounded-2xl bg-white text-slate-900 border-4 border-slate-900 shadow-xl max-w-[560px] mx-auto text-center">
+          
+          <!-- 1. Header Branding -->
+          <div class="flex justify-between items-center pb-4 mb-5 border-b-2 border-slate-200">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center font-black text-xl shadow">
+              <div class="w-12 h-12 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center font-black text-2xl shadow">
                 NC
               </div>
               <div>
-                <h2 class="text-2xl font-black tracking-tight text-slate-900 m-0">NegmCars</h2>
-                <p class="text-xs font-bold text-slate-500 m-0">معرض السيارات الرقمي - Digital Car Showroom</p>
+                <h2 class="text-2xl font-black tracking-tight text-slate-900 m-0 leading-none">NegmCars</h2>
               </div>
             </div>
 
-            <div class="text-right">
-              <span class="inline-block bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                معروضة للبيع
-              </span>
-              <p class="text-xs font-bold text-slate-400 mt-1 mb-0">ID: #{{ car?.id }}</p>
+            <div class="text-left">
+              <span class="text-xs font-black text-slate-700 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-300">ID: #{{ car?.id }}</span>
             </div>
           </div>
 
-          <!-- Car Title & Main Banner -->
-          <div class="bg-slate-900 text-white rounded-xl p-4 mb-5 text-center shadow">
-            <h1 class="text-2xl font-black text-amber-400 mb-1 leading-tight">{{ carTitleEn || carTitleAr }}</h1>
-            <p v-if="carTitleAr && carTitleAr !== carTitleEn" class="text-sm font-medium text-slate-300 m-0">{{ carTitleAr }}</p>
-            
-            <div class="mt-3 inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-5 py-2 rounded-xl text-xl font-black shadow-md">
+          <!-- 2. Car Title (English Only) -->
+          <div class="bg-slate-900 text-white rounded-2xl p-5 mb-6 text-center shadow-md">
+            <h1 class="text-2xl font-black text-amber-400 m-0 leading-snug dir-ltr">
+              {{ carTitleEnOnly }}
+            </h1>
+          </div>
+
+          <!-- 3. CENTER: QR Code -->
+          <div class="flex flex-col items-center justify-center p-6 mb-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 text-center">
+            <div class="relative bg-white p-3 rounded-2xl shadow-md border border-slate-200 mb-3">
+              <img v-if="qrDataUrl" :src="qrDataUrl" alt="Car QR Code" class="w-52 h-52 object-contain block mx-auto" />
+              <div v-else class="w-52 h-52 flex items-center justify-center text-slate-400">
+                <VProgressCircular indeterminate color="primary" />
+              </div>
+            </div>
+            <p class="text-sm font-black text-slate-800 m-0 flex items-center gap-1.5 justify-center">
+              <VIcon icon="tabler-scan" size="18" class="text-amber-600" />
+              امسح الكود بالكاميرا لرؤية التفاصيل والصور
+            </p>
+            <span class="text-xs text-slate-500 font-mono mt-1 block truncate max-w-[260px] dir-ltr">{{ carUrl }}</span>
+          </div>
+
+          <!-- 4. Price Banner -->
+          <div v-if="formattedPrice" class="text-center">
+            <div class="inline-flex items-center justify-center bg-amber-400 text-slate-950 px-8 py-2.5 rounded-2xl text-2xl font-black shadow-md border-2 border-amber-300">
+              <span class="text-xs text-slate-900 ml-2 font-bold">Price:</span>
               <span>{{ formattedPrice }}</span>
             </div>
           </div>
 
-          <!-- QR & Details Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center my-4">
-            <!-- Left Side: Large QR Code -->
-            <div class="md:col-span-5 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 text-center">
-              <div class="relative bg-white p-3 rounded-xl shadow-md border border-slate-200 mb-3">
-                <img v-if="qrDataUrl" :src="qrDataUrl" alt="Car QR Code" class="w-40 h-40 object-contain" />
-                <div v-else class="w-40 h-40 flex items-center justify-center text-slate-400">
-                  <VProgressCircular indeterminate color="primary" />
-                </div>
-              </div>
-              <p class="text-xs font-black text-slate-800 m-0 flex items-center gap-1 justify-center">
-                <VIcon icon="tabler-scan" size="16" class="text-amber-600" />
-                امسح الكود بالكاميرا لرؤية التفاصيل والصور
-              </p>
-              <span class="text-[10px] text-slate-500 font-mono mt-1 block truncate max-w-[200px]">{{ carUrl }}</span>
-            </div>
-
-            <!-- Right Side: Specs Grid -->
-            <div class="md:col-span-7 space-y-3">
-              <div class="grid grid-cols-2 gap-3 text-sm">
-                <!-- Year -->
-                <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
-                  <span class="text-xs text-slate-500 font-bold block mb-1">📅 سنة الصنع</span>
-                  <span class="font-black text-slate-900 text-base">{{ car?.year || 'غير محدد' }}</span>
-                </div>
-
-                <!-- Mileage -->
-                <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
-                  <span class="text-xs text-slate-500 font-bold block mb-1">🛣️ العداد (الكيلومتر)</span>
-                  <span class="font-black text-slate-900 text-base">{{ car?.mileage != null ? Number(car.mileage).toLocaleString() + ' km' : '0 km' }}</span>
-                </div>
-
-                <!-- Transmission -->
-                <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
-                  <span class="text-xs text-slate-500 font-bold block mb-1">⚙️ ناقل الحركة</span>
-                  <span class="font-black text-slate-900 text-base">{{ car?.transmission || 'أتوماتيك' }}</span>
-                </div>
-
-                <!-- Fuel Type -->
-                <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
-                  <span class="text-xs text-slate-500 font-bold block mb-1">⛽ نوع الوقود</span>
-                  <span class="font-black text-slate-900 text-base">{{ car?.fuel_type || 'بنزين' }}</span>
-                </div>
-              </div>
-
-              <!-- Location & Showroom Info -->
-              <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-slate-900">
-                <div class="flex justify-between items-center text-xs font-bold mb-1">
-                  <span class="text-amber-800">📍 المكان والمعرض:</span>
-                  <span class="text-slate-700">{{ car?.city?.name?.ar || car?.city?.name?.en || car?.city?.name || 'مصر' }}</span>
-                </div>
-                <div class="font-black text-slate-900 text-sm">
-                  {{ car?.seller?.name || 'معرض NegmCars' }}
-                </div>
-                <div v-if="car?.seller?.phone || car?.phone" class="text-xs font-bold text-emerald-700 mt-1 flex items-center gap-1">
-                  <span>📞 للتواصل والواتساب:</span>
-                  <span dir="ltr">{{ car?.seller?.phone || car?.phone || '01000000000' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer Notice -->
-          <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center text-[11px] text-slate-500 font-medium">
-            <span>حقوق النشر والطبع محفوظة منصة NegmCars © {{ new Date().getFullYear() }}</span>
-            <span>قم بمسح QR لمعرفة خطط التقسيط المتاحة</span>
-          </div>
         </div>
       </VCardText>
     </VCard>
@@ -269,21 +422,44 @@ const handleDownload = () => {
 
 .car-flyer-poster {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  direction: rtl;
+}
+
+.dir-ltr {
+  direction: ltr;
 }
 
 /* Print Optimization CSS */
 @media print {
-  body * {
-    visibility: hidden !important;
+  html, body {
+    background: #ffffff !important;
+    height: 100vh !important;
+    overflow: hidden !important;
   }
-  
+
+  body > *:not(.v-overlay-container) {
+    display: none !important;
+  }
+
   .v-overlay-container,
   .v-overlay,
-  .v-dialog {
+  .v-overlay__container,
+  .v-overlay__content,
+  .v-dialog,
+  .qr-dialog-card,
+  .printable-wrapper {
     position: static !important;
     display: block !important;
-    background: transparent !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    transform: none !important;
+    opacity: 1 !important;
   }
 
   .no-print {
@@ -296,19 +472,23 @@ const handleDownload = () => {
   }
 
   #printable-car-flyer {
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
+    display: block !important;
+    position: relative !important;
     width: 100% !important;
-    height: auto !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 24px !important;
-    box-shadow: none !important;
     border: 3px solid #0f172a !important;
+    box-shadow: none !important;
     background: #ffffff !important;
     color: #0f172a !important;
-    z-index: 999999 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
     page-break-inside: avoid !important;
+    page-break-after: avoid !important;
   }
 }
 </style>
+
+
+
+
