@@ -221,7 +221,7 @@ const handlePrint = () => {
           border-radius: 16px;
           padding: 10px 16px;
           margin-bottom: 14px;
-          direction: rtl;
+          direction: ltr;
         }
         .showroom-info {
           display: flex;
@@ -229,28 +229,21 @@ const handlePrint = () => {
           gap: 10px;
         }
         .showroom-logo {
-          width: 36px;
-          height: 36px;
-          object-fit: contain;
-          border-radius: 8px;
-          border: 1px solid #cbd5e1;
-          background: #ffffff;
+          width: 36px !important;
+          height: 36px !important;
+          max-width: 36px !important;
+          max-height: 36px !important;
+          object-fit: contain !important;
+          border-radius: 8px !important;
+          border: 1px solid #cbd5e1 !important;
+          background: #ffffff !important;
+          flex-shrink: 0 !important;
         }
         .showroom-icon {
-          font-size: 24px;
-        }
-        .showroom-text {
-          display: flex;
-          flex-direction: column;
-          text-align: right;
-        }
-        .showroom-label {
-          font-size: 11px;
-          font-weight: 700;
-          color: #854d0e;
+          font-size: 22px;
         }
         .showroom-name {
-          font-size: 16px;
+          font-size: 17px;
           font-weight: 900;
           color: #0f172a;
         }
@@ -322,14 +315,11 @@ const handlePrint = () => {
         </div>
 
         ${sellerName.value ? `
-        <!-- Showroom Info Bar -->
+        <!-- Showroom Info Bar (Left to Right) -->
         <div class="showroom-bar">
           <div class="showroom-info">
-            ${sellerLogo.value ? `<img src="${sellerLogo.value}" class="showroom-logo" alt="Showroom Logo" />` : '<div class="showroom-icon">🏪</div>'}
-            <div class="showroom-text">
-              <span class="showroom-label">المعرض الناشر:</span>
-              <span class="showroom-name">${sellerName.value}</span>
-            </div>
+            ${sellerLogo.value ? `<img src="${sellerLogo.value}" class="showroom-logo" alt="Showroom Logo" />` : '<span class="showroom-icon">🏪</span>'}
+            <span class="showroom-name">${sellerName.value}</span>
           </div>
           ${sellerPhone.value ? `<div class="showroom-phone">📞 ${sellerPhone.value}</div>` : ''}
         </div>
@@ -340,12 +330,12 @@ const handlePrint = () => {
           <h1 class="car-title-en">${carTitleEnOnly.value}</h1>
         </div>
 
-        <!-- 3. CENTER: Large QR Code (without full link) -->
+        <!-- 3. CENTER: Large QR Code -->
         <div class="qr-card">
           <div class="qr-image-wrapper">
             <img src="${qrDataUrl.value}" class="qr-image" alt="Car QR Code" />
           </div>
-          <p class="qr-hint">📷 امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية</p>
+          <p class="qr-hint">لرؤية التفاصيل والسعر استخدم qr</p>
         </div>
       </div>
     </body>
@@ -460,18 +450,18 @@ const handleDownloadPoster = async () => {
 
     let currentY = 190
 
-    // Showroom Box if seller exists
+    // Showroom Box if seller exists (Left to Right)
     if (sellerName.value) {
       ctx.fillStyle = '#fffbe6'
       ctx.beginPath()
-      ctx.roundRect(60, currentY, 1080, 100, 20)
+      ctx.roundRect(60, currentY, 1080, 95, 20)
       ctx.fill()
       ctx.strokeStyle = '#fde047'
       ctx.lineWidth = 3
       ctx.stroke()
 
+      let textLeftX = 90
       // Load Showroom Logo if available
-      let textRightX = 1110
       if (sellerLogo.value) {
         const sLogoImg = new Image()
         sLogoImg.crossOrigin = 'anonymous'
@@ -481,30 +471,35 @@ const handleDownloadPoster = async () => {
           sLogoImg.onerror = resolve
         })
         if (sLogoImg.complete && sLogoImg.naturalWidth) {
-          ctx.drawImage(sLogoImg, 1030, currentY + 15, 70, 70)
-          textRightX = 1010
+          const maxDim = 60
+          let drawW = maxDim
+          let drawH = maxDim
+          const aspect = sLogoImg.naturalWidth / sLogoImg.naturalHeight
+          if (aspect > 1) {
+            drawH = maxDim / aspect
+          } else {
+            drawW = maxDim * aspect
+          }
+          ctx.drawImage(sLogoImg, 90, currentY + 17.5 + (maxDim - drawH) / 2, drawW, drawH)
+          textLeftX = 90 + maxDim + 20
         }
       }
 
-      ctx.direction = 'rtl'
-      ctx.textAlign = 'right'
-      ctx.fillStyle = '#854d0e'
-      ctx.font = 'bold 20px system-ui, sans-serif'
-      ctx.fillText('المعرض الناشر:', textRightX, currentY + 40)
-
+      ctx.direction = 'ltr'
+      ctx.textAlign = 'left'
       ctx.fillStyle = '#0f172a'
-      ctx.font = 'bold 30px system-ui, sans-serif'
-      ctx.fillText(sellerName.value, textRightX, currentY + 76)
+      ctx.font = 'bold 32px system-ui, sans-serif'
+      ctx.fillText(sellerName.value, textLeftX, currentY + 58)
 
       if (sellerPhone.value) {
         ctx.direction = 'ltr'
-        ctx.textAlign = 'left'
+        ctx.textAlign = 'right'
         ctx.fillStyle = '#1e293b'
         ctx.font = 'bold 26px system-ui, sans-serif'
-        ctx.fillText(`📞 ${sellerPhone.value}`, 90, currentY + 58)
+        ctx.fillText(`📞 ${sellerPhone.value}`, 1110, currentY + 58)
       }
 
-      currentY += 120
+      currentY += 115
     }
 
     // Title Box (Light Background & Black Text)
@@ -568,7 +563,7 @@ const handleDownloadPoster = async () => {
     ctx.fillStyle = '#0f172a'
     ctx.font = 'bold 36px system-ui, sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('📷 امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية', 600, currentY + 800)
+    ctx.fillText('لرؤية التفاصيل والسعر استخدم qr', 600, currentY + 800)
 
     // Download Canvas as PNG
     const link = document.createElement('a')
@@ -666,17 +661,20 @@ const handleDownloadQr = () => {
             </div>
           </div>
 
-          <!-- 2. Showroom Info Badge (if seller exists) -->
-          <div v-if="sellerName" class="flex items-center justify-between bg-amber-50/90 border border-amber-200 rounded-xl px-3.5 py-2 mb-3">
+          <!-- 2. Showroom Info Badge (Left to Right layout without "المعرض الناشر") -->
+          <div v-if="sellerName" class="flex items-center justify-between bg-amber-50/90 border border-amber-200 rounded-xl px-4 py-2.5 mb-3 dir-ltr">
             <div class="flex items-center gap-2.5">
-              <img v-if="sellerLogo" :src="sellerLogo" class="w-8 h-8 rounded-lg object-contain border border-amber-300 bg-white" alt="Showroom Logo" />
+              <img
+                v-if="sellerLogo"
+                :src="sellerLogo"
+                alt="Showroom Logo"
+                style="width: 34px !important; height: 34px !important; max-width: 34px !important; max-height: 34px !important; object-fit: contain !important; border-radius: 8px !important; flex-shrink: 0 !important;"
+                class="bg-white border border-amber-300"
+              />
               <VIcon v-else icon="tabler-building-store" size="22" class="text-amber-700" />
-              <div class="text-right">
-                <span class="text-[10px] text-amber-800 font-bold block leading-none">المعرض الناشر</span>
-                <span class="text-sm font-black text-slate-900">{{ sellerName }}</span>
-              </div>
+              <span class="text-base font-black text-slate-900">{{ sellerName }}</span>
             </div>
-            <div v-if="sellerPhone" class="text-xs font-bold text-slate-800 dir-ltr flex items-center gap-1">
+            <div v-if="sellerPhone" class="text-xs font-bold text-slate-800 flex items-center gap-1">
               <VIcon icon="tabler-phone" size="14" class="text-amber-700" />
               {{ sellerPhone }}
             </div>
@@ -704,7 +702,7 @@ const handleDownloadQr = () => {
             </div>
             <p class="text-xs font-black text-slate-800 m-0 flex items-center gap-1.5 justify-center">
               <VIcon icon="tabler-scan" size="16" class="text-amber-600" />
-              امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية
+              لرؤية التفاصيل والسعر استخدم qr
             </p>
           </div>
 
