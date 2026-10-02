@@ -49,6 +49,24 @@ const carTitleEnOnly = computed(() => {
   return `${brandName.value} ${modelName.value}`.trim()
 })
 
+const sellerName = computed(() => {
+  if (!props.car?.seller) return ''
+  const s = props.car.seller
+  if (typeof s.store_name === 'object' && s.store_name) {
+    return s.store_name?.ar || s.store_name?.en || s.name || ''
+  }
+  return s.store_name || s.name || ''
+})
+
+const sellerLogo = computed(() => {
+  if (!props.car?.seller) return ''
+  return props.car.seller.store_logo || props.car.seller.logo || ''
+})
+
+const sellerPhone = computed(() => {
+  return props.car?.seller?.phone || props.car?.phone_number || props.car?.phone || ''
+})
+
 const generateQrCode = async () => {
   if (!carUrl.value) return
   isGenerating.value = true
@@ -115,7 +133,7 @@ const handlePrint = () => {
     <html dir="ltr" lang="en">
     <head>
       <meta charset="utf-8">
-      <title>NegmCars - ${carTitleEnOnly.value}</title>
+      <title>NegmCars.com - ${carTitleEnOnly.value}</title>
       <style>
         @page {
           size: A4 portrait;
@@ -194,18 +212,66 @@ const handlePrint = () => {
           border-radius: 18px;
           border: 2px solid #cbd5e1;
         }
+        .showroom-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: #fffbe6;
+          border: 2px solid #fde047;
+          border-radius: 16px;
+          padding: 10px 16px;
+          margin-bottom: 14px;
+          direction: rtl;
+        }
+        .showroom-info {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .showroom-logo {
+          width: 36px;
+          height: 36px;
+          object-fit: contain;
+          border-radius: 8px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+        }
+        .showroom-icon {
+          font-size: 24px;
+        }
+        .showroom-text {
+          display: flex;
+          flex-direction: column;
+          text-align: right;
+        }
+        .showroom-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: #854d0e;
+        }
+        .showroom-name {
+          font-size: 16px;
+          font-weight: 900;
+          color: #0f172a;
+        }
+        .showroom-phone {
+          font-size: 14px;
+          font-weight: 800;
+          color: #1e293b;
+          direction: ltr;
+        }
         .title-box {
           margin-bottom: 14px;
           padding: 16px;
-          background-color: #0f172a;
+          background-color: #f8fafc;
+          border: 2px solid #cbd5e1;
           border-radius: 20px;
-          color: #ffffff;
-          box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+          color: #0f172a;
         }
         .car-title-en {
           font-size: 24px;
           font-weight: 900;
-          color: #fbbf24;
+          color: #0f172a;
           line-height: 1.3;
           margin: 0;
           text-align: center;
@@ -214,7 +280,7 @@ const handlePrint = () => {
           background-color: #f8fafc;
           border: 3px dashed #cbd5e1;
           border-radius: 24px;
-          padding: 18px 16px;
+          padding: 22px 16px;
           flex-grow: 1;
           display: flex;
           flex-direction: column;
@@ -227,7 +293,7 @@ const handlePrint = () => {
           border-radius: 20px;
           border: 2px solid #e2e8f0;
           box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-          margin-bottom: 12px;
+          margin-bottom: 14px;
         }
         .qr-image {
           width: 270px;
@@ -236,45 +302,50 @@ const handlePrint = () => {
           object-fit: contain;
         }
         .qr-hint {
-          font-size: 15px;
+          font-size: 16px;
           font-weight: 900;
-          color: #1e293b;
-          margin: 0 0 4px 0;
-          direction: rtl;
-        }
-        .qr-url {
-          font-size: 13px;
-          font-family: monospace;
-          font-weight: 600;
-          color: #64748b;
+          color: #0f172a;
           margin: 0;
-          direction: ltr;
+          direction: rtl;
         }
       </style>
     </head>
     <body>
       <div class="print-container">
-        <!-- 1. Header: NegmCars Logo & Orange Brand Name & ID -->
+        <!-- 1. Header: NegmCars.com Logo & Orange Brand Name & ID -->
         <div class="header-row">
           <div class="brand-box">
             <img src="/images/logo-black.png" alt="NegmCars" class="brand-logo-img" />
-            <h2 class="brand-text">Negm<span class="brand-cars">Cars</span></h2>
+            <h2 class="brand-text">Negm<span class="brand-cars">Cars.com</span></h2>
           </div>
           <div class="car-id">ID: #${props.car?.id || ''}</div>
         </div>
 
-        <!-- 2. English Title ONLY -->
+        ${sellerName.value ? `
+        <!-- Showroom Info Bar -->
+        <div class="showroom-bar">
+          <div class="showroom-info">
+            ${sellerLogo.value ? `<img src="${sellerLogo.value}" class="showroom-logo" alt="Showroom Logo" />` : '<div class="showroom-icon">🏪</div>'}
+            <div class="showroom-text">
+              <span class="showroom-label">المعرض الناشر:</span>
+              <span class="showroom-name">${sellerName.value}</span>
+            </div>
+          </div>
+          ${sellerPhone.value ? `<div class="showroom-phone">📞 ${sellerPhone.value}</div>` : ''}
+        </div>
+        ` : ''}
+
+        <!-- 2. English Title ONLY (Light Background with Black Text) -->
         <div class="title-box">
           <h1 class="car-title-en">${carTitleEnOnly.value}</h1>
         </div>
 
-        <!-- 3. CENTER: Large QR Code -->
+        <!-- 3. CENTER: Large QR Code (without full link) -->
         <div class="qr-card">
           <div class="qr-image-wrapper">
             <img src="${qrDataUrl.value}" class="qr-image" alt="Car QR Code" />
           </div>
           <p class="qr-hint">📷 امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية</p>
-          <p class="qr-url">${carUrl.value}</p>
         </div>
       </div>
     </body>
@@ -364,14 +435,14 @@ const handleDownloadPoster = async () => {
       startX = 60 + logoWidth + 20
     }
 
-    // NegmCars text (Negm in Slate, Cars in Orange)
+    // NegmCars.com text (Negm in Slate, Cars.com in Orange)
     ctx.textAlign = 'left'
     ctx.font = 'bold 44px system-ui, sans-serif'
     ctx.fillStyle = '#0f172a'
     ctx.fillText('Negm', startX, 108)
     const negmWidth = ctx.measureText('Negm').width
     ctx.fillStyle = '#f97316'
-    ctx.fillText('Cars', startX + negmWidth, 108)
+    ctx.fillText('Cars.com', startX + negmWidth, 108)
 
     // ID Badge
     ctx.fillStyle = '#f1f5f9'
@@ -387,14 +458,67 @@ const handleDownloadPoster = async () => {
     ctx.textAlign = 'center'
     ctx.fillText(`ID: #${props.car?.id || ''}`, 1040, 106)
 
-    // Title Box
-    ctx.fillStyle = '#0f172a'
-    ctx.beginPath()
-    ctx.roundRect(60, 190, 1080, 200, 28)
-    ctx.fill()
+    let currentY = 190
 
-    ctx.fillStyle = '#fbbf24'
-    ctx.font = 'bold 40px system-ui, sans-serif'
+    // Showroom Box if seller exists
+    if (sellerName.value) {
+      ctx.fillStyle = '#fffbe6'
+      ctx.beginPath()
+      ctx.roundRect(60, currentY, 1080, 100, 20)
+      ctx.fill()
+      ctx.strokeStyle = '#fde047'
+      ctx.lineWidth = 3
+      ctx.stroke()
+
+      // Load Showroom Logo if available
+      let textRightX = 1110
+      if (sellerLogo.value) {
+        const sLogoImg = new Image()
+        sLogoImg.crossOrigin = 'anonymous'
+        sLogoImg.src = sellerLogo.value
+        await new Promise(resolve => {
+          sLogoImg.onload = resolve
+          sLogoImg.onerror = resolve
+        })
+        if (sLogoImg.complete && sLogoImg.naturalWidth) {
+          ctx.drawImage(sLogoImg, 1030, currentY + 15, 70, 70)
+          textRightX = 1010
+        }
+      }
+
+      ctx.direction = 'rtl'
+      ctx.textAlign = 'right'
+      ctx.fillStyle = '#854d0e'
+      ctx.font = 'bold 20px system-ui, sans-serif'
+      ctx.fillText('المعرض الناشر:', textRightX, currentY + 40)
+
+      ctx.fillStyle = '#0f172a'
+      ctx.font = 'bold 30px system-ui, sans-serif'
+      ctx.fillText(sellerName.value, textRightX, currentY + 76)
+
+      if (sellerPhone.value) {
+        ctx.direction = 'ltr'
+        ctx.textAlign = 'left'
+        ctx.fillStyle = '#1e293b'
+        ctx.font = 'bold 26px system-ui, sans-serif'
+        ctx.fillText(`📞 ${sellerPhone.value}`, 90, currentY + 58)
+      }
+
+      currentY += 120
+    }
+
+    // Title Box (Light Background & Black Text)
+    ctx.fillStyle = '#f8fafc'
+    ctx.beginPath()
+    ctx.roundRect(60, currentY, 1080, 180, 28)
+    ctx.fill()
+    ctx.strokeStyle = '#cbd5e1'
+    ctx.lineWidth = 3
+    ctx.stroke()
+
+    ctx.direction = 'ltr'
+    ctx.fillStyle = '#0f172a'
+    ctx.font = 'bold 38px system-ui, sans-serif'
     ctx.textAlign = 'center'
     
     // Multi-line wrap helper for long car title
@@ -404,16 +528,19 @@ const handleDownloadPoster = async () => {
       const mid = Math.ceil(parts.length / 2)
       const line1 = parts.slice(0, mid).join(' ')
       const line2 = parts.slice(mid).join(' ')
-      ctx.fillText(line1, 600, 265)
-      ctx.fillText(line2, 600, 335)
+      ctx.fillText(line1, 600, currentY + 70)
+      ctx.fillText(line2, 600, currentY + 135)
     } else {
-      ctx.fillText(titleText, 600, 305)
+      ctx.fillText(titleText, 600, currentY + 105)
     }
 
+    currentY += 200
+
     // QR Code Container Box
+    const qrBoxHeight = 1530 - currentY
     ctx.fillStyle = '#f8fafc'
     ctx.beginPath()
-    ctx.roundRect(60, 420, 1080, 1080, 32)
+    ctx.roundRect(60, currentY, 1080, qrBoxHeight, 32)
     ctx.fill()
     ctx.strokeStyle = '#cbd5e1'
     ctx.lineWidth = 4
@@ -427,25 +554,21 @@ const handleDownloadPoster = async () => {
 
       ctx.fillStyle = '#ffffff'
       ctx.beginPath()
-      ctx.roundRect(260, 480, 680, 680, 32)
+      ctx.roundRect(260, currentY + 50, 680, 680, 32)
       ctx.fill()
       ctx.strokeStyle = '#e2e8f0'
       ctx.lineWidth = 4
       ctx.stroke()
 
-      ctx.drawImage(qrImg, 290, 510, 620, 620)
+      ctx.drawImage(qrImg, 290, currentY + 80, 620, 620)
     }
 
     // Scan Hint
-    ctx.fillStyle = '#1e293b'
+    ctx.direction = 'rtl'
+    ctx.fillStyle = '#0f172a'
     ctx.font = 'bold 36px system-ui, sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('📷 امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية', 600, 1270)
-
-    // URL
-    ctx.fillStyle = '#64748b'
-    ctx.font = '28px monospace'
-    ctx.fillText(carUrl.value, 600, 1340)
+    ctx.fillText('📷 امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية', 600, currentY + 800)
 
     // Download Canvas as PNG
     const link = document.createElement('a')
@@ -487,7 +610,7 @@ const handleDownloadQr = () => {
             <VIcon icon="tabler-qrcode" size="26" />
           </div>
           <div>
-            <h3 class="text-base font-bold m-0">بطاقة QR Code للسيارة - NegmCars</h3>
+            <h3 class="text-base font-bold m-0">بطاقة QR Code للسيارة - NegmCars.com</h3>
             <p class="text-xs opacity-75 m-0">جاهزة للطباعة وتحميل الصورة على ورقة A4 كاملة</p>
           </div>
         </div>
@@ -524,8 +647,8 @@ const handleDownloadQr = () => {
       <VCardText class="pa-4 printable-wrapper overflow-y-auto flex-grow max-h-[calc(88vh-110px)]">
         <div id="printable-car-flyer" class="car-flyer-poster p-5 rounded-2xl bg-white text-slate-900 border-4 border-slate-900 shadow-xl max-w-[480px] mx-auto text-center">
           
-          <!-- 1. Header Branding with Official Logo & Orange Text -->
-          <div class="flex justify-between items-center pb-3 mb-4 border-b-2 border-slate-200">
+          <!-- 1. Header Branding with Official Logo & Orange .com Text -->
+          <div class="flex justify-between items-center pb-3 mb-3 border-b-2 border-slate-200">
             <div class="flex items-center gap-2.5">
               <img
                 src="/images/logo-black.png"
@@ -534,7 +657,7 @@ const handleDownloadQr = () => {
                 class="rounded-md flex-shrink-0"
               />
               <span class="text-xl font-black tracking-tight text-slate-900 leading-none">
-                Negm<span class="text-amber-500">Cars</span>
+                Negm<span class="text-amber-500">Cars.com</span>
               </span>
             </div>
 
@@ -543,14 +666,30 @@ const handleDownloadQr = () => {
             </div>
           </div>
 
-          <!-- 2. Car Title (English Only) -->
-          <div class="bg-slate-900 text-white rounded-xl p-4 mb-4 text-center shadow-md">
-            <h1 class="text-xl font-black text-amber-400 m-0 leading-snug dir-ltr">
+          <!-- 2. Showroom Info Badge (if seller exists) -->
+          <div v-if="sellerName" class="flex items-center justify-between bg-amber-50/90 border border-amber-200 rounded-xl px-3.5 py-2 mb-3">
+            <div class="flex items-center gap-2.5">
+              <img v-if="sellerLogo" :src="sellerLogo" class="w-8 h-8 rounded-lg object-contain border border-amber-300 bg-white" alt="Showroom Logo" />
+              <VIcon v-else icon="tabler-building-store" size="22" class="text-amber-700" />
+              <div class="text-right">
+                <span class="text-[10px] text-amber-800 font-bold block leading-none">المعرض الناشر</span>
+                <span class="text-sm font-black text-slate-900">{{ sellerName }}</span>
+              </div>
+            </div>
+            <div v-if="sellerPhone" class="text-xs font-bold text-slate-800 dir-ltr flex items-center gap-1">
+              <VIcon icon="tabler-phone" size="14" class="text-amber-700" />
+              {{ sellerPhone }}
+            </div>
+          </div>
+
+          <!-- 3. Car Title (Light Background with Black Text) -->
+          <div class="bg-slate-100 border-2 border-slate-200 text-slate-900 rounded-xl p-3.5 mb-3.5 text-center shadow-sm">
+            <h1 class="text-lg font-black text-slate-900 m-0 leading-snug dir-ltr">
               {{ carTitleEnOnly }}
             </h1>
           </div>
 
-          <!-- 3. CENTER: Large QR Code -->
+          <!-- 4. CENTER: Large QR Code -->
           <div class="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 text-center">
             <div class="relative bg-white p-3 rounded-2xl shadow-md border border-slate-200 mb-3 flex items-center justify-center" style="width: 220px !important; height: 220px !important; margin: 0 auto !important;">
               <img
@@ -567,7 +706,6 @@ const handleDownloadQr = () => {
               <VIcon icon="tabler-scan" size="16" class="text-amber-600" />
               امسح الكود بالكاميرا لرؤية التفاصيل والصور والأسعار الحالية
             </p>
-            <span class="text-[11px] text-slate-500 font-mono mt-1 block truncate max-w-[260px] dir-ltr">{{ carUrl }}</span>
           </div>
 
         </div>
