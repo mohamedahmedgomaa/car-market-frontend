@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>NegmCars - دراسة جدوى شاملة ومتكاملة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --secondary: #d97706; /* Gold */
+            --accent: #2563eb;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --bg-light: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --dark-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --silver-color: #64748b;
+            --gold-color: #d97706;
+            --diamond-color: #2563eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #cbd5e1;
+            color: var(--text-dark);
+            line-height: 1.6;
+            font-size: 13.5px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 18mm 15mm;
+            margin: 15px auto;
+            background: var(--bg-card);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            page-break-after: always;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+            margin-bottom: 18px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .page-header .project-title {
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .page-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Cover Page */
+        .cover-page {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: var(--dark-gradient);
+            color: #ffffff;
+            padding: 30mm 20mm;
+        }
+
+        .cover-logo-wrapper {
+            margin-bottom: 25px;
+        }
+
+        .cover-logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 20px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(217, 119, 6, 0.4);
+        }
+
+        .cover-logo svg {
+            width: 60px;
+            height: 60px;
+            fill: #0f172a;
+        }
+
+        .cover-title {
+            font-size: 38px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .cover-subtitle {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f59e0b;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 12px;
+            display: inline-block;
+            width: 85%;
+        }
+
+        .cover-meta {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 550px;
+            font-size: 12.5px;
+        }
+
+        .meta-box {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .meta-box span {
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 4px;
+            font-size: 11px;
+        }
+
+        .meta-box strong {
+            color: #f59e0b;
+            font-size: 14px;
+        }
+
+        /* Headings & Typography */
+        h1, h2, h3, h4 {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            border-right: 5px solid var(--secondary);
+            padding-right: 10px;
+            background: #f1f5f9;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        p {
+            margin-bottom: 10px;
+            color: #334155;
+            text-align: justify;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--primary);
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: white;
+            font-weight: 700;
+            text-align: right;
+            padding: 8px 10px;
+            border: 1px solid var(--primary);
+        }
+
+        td {
+            padding: 7px 10px;
+            border: 1px solid var(--border-color);
+            color: #334155;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .highlight-box {
+            background: rgba(217, 119, 6, 0.08);
+            border-right: 4px solid var(--secondary);
+            padding: 10px 12px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 12px;
+            font-size: 12.5px;
+        }
+
+        .highlight-box-title {
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        /* SWOT Analysis Layout */
+        .swot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .swot-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-width: 1px;
+            border-style: solid;
+        }
+
+        .swot-s { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+        .swot-w { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+        .swot-o { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+        .swot-t { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+        .swot-title {
+            font-weight: 800;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10.5px;
+            font-weight: 800;
+            text-align: center;
+        }
+        .badge-silver { background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; }
+        .badge-gold { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-diamond { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+        .currency {
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        @media print {
+            body { background: white; }
+            .page {
+                width: 210mm;
+                height: 297mm;
+                padding: 12mm 15mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always;
+            }
+        }
+        @page { size: A4; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER PAGE -->
+    <div class="page cover-page">
+        <div class="cover-logo-wrapper">
+            <div class="cover-logo">
+                <svg viewBox="0 0 24 24">
+                    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.04 3H5.81l1.04-3zM19 17H5v-5h14v5z"/>
+                    <circle cx="7.5" cy="14.5" r="1.5"/>
+                    <circle cx="16.5" cy="14.5" r="1.5"/>
+                </svg>
+            </div>
+        </div>
+        <div class="cover-title">NegmCars</div>
+        <div class="cover-subtitle">دراسة جدوى استراتيجية ومالية وتجهيزية متكاملة (18 قسماً)</div>
+        <p style="color: rgba(255,255,255,0.8); max-width: 620px; margin: 0 auto 25px auto; font-size: 14px; text-align: center;">
+            منصة وسيطة متخصصة لعرض إعلانات السيارات والمركبات، تغطي السوق المصري بالكامل من اليوم الأول للإطلاق، مع حلول رقمية مبتكرة للمعارض وأدوات بحث ذكية للمشترين.
+        </p>
+
+        <div class="cover-meta">
+            <div class="meta-box">
+                <span>إعداد البيانات والتحليل</span>
+                <strong>فريق NegmCars الإداري</strong>
+            </div>
+            <div class="meta-box">
+                <span>تاريخ التحديث</span>
+                <strong>أغسطس 2026</strong>
+            </div>
+            <div class="meta-box">
+                <span>الميزانية المطلوبة</span>
+                <strong>2.5 مليون + 1 مليون (طوارئ) = 3.5 مليون ج.م</strong>
+            </div>
+            <div class="meta-box">
+                <span>عرض الشراكة والاستثمار</span>
+                <strong>ملكية حقيقية في الشركة + المقر والسيارة</strong>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- PAGE 2: EXECUTIVE SUMMARY & BUSINESS MODEL -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 1: ملخص المشروع ونموذج العمل</span>
+        </div>
+
+        <div class="section-title">1. ملخص المشروع ونموذج العمل (Executive Summary & Business Model)</div>
+
+        <div class="card">
+            <div class="card-header">📌 هوية المشروع ونطاق العمل</div>
+            <table>
+                <tr>
+                    <td style="width: 28%; font-weight: 700;">اسم المنصة التجاري</td>
+                    <td><strong>NegmCars</strong> (قابل للتعديل حال العثور على اسم تجاري أكثر جاذبية)</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 700;">طبيعة النشاط</td>
+                    <td>منصة وسيطة لإعلانات وعرض المركبات (جديد ومستعمل) دون التدخل في البيع أو اقتطاع عمولات.</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 700;">النطاق الجغرافي</td>
+                    <td><strong>جمهورية مصر العربية بالكامل من اليوم الأول للإطلاق الرسمي</strong> (دون حصر جغرافي)، مع التوسع المستقبلي لسوريا في السنة 2 أو 3.</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 700;">نموذج العمل الرئيسي</td>
+                    <td>اشتراكات سنوياً/موسمية للمعارض (B2B)، إعلانات مميزة وFeatured Ads، خدمات القيمة المضافة (QR code وإدارة المخزون)، وإعلانات تجارية.</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💡 الركائز الأساسية للمشروع</div>
+            <p>
+                يهدف مشروع <strong>NegmCars</strong> إلى إحداث نقلة نوعية في سوق إعلانات السيارات المصري، من خلال تقديم تجربة رقمية متكاملة بأسعار تنافسية. تعتمد المنصة على إتاحة الإعلانات العادية للأفراد مجاناً لجذب الحركة (Traffic)، وتوفير أدوات قوية للمعارض لرقمنة وإدارة مخزونها بالكامل، وإنشاء شبكة تجارية مغلقة بين التجار.
+            </p>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">🏬 للمعارض والتجار (B2B)</div>
+                <ul style="padding-right: 15px; font-size: 12px;">
+                    <li>صفحة مخصصة مميزة بلون الباقة (سيلفر، جولد، دايموند).</li>
+                    <li>إدارة كاملة للمخزون (سيارات منشورة للجمهور / سيارات خاصة للمعرض).</li>
+                    <li>رمز QR Code تلقائي لكل سيارة لطباعته ووضعه بالمعرض.</li>
+                    <li>سوق تبادل مغلق لبيع السيارات العاجلة بين المعارض بسرية.</li>
+                    <li>رؤية قسم "أفضل صفقة" قبل العامة بساعات.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-header">👤 للمشترين والأفراد (B2C)</div>
+                <ul style="padding-right: 15px; font-size: 12px;">
+                    <li>إعلانات عادية مجانية 100% للأفراد بدون أي عمولة بيع.</li>
+                    <li>بحث نصي ذكي بطريقة جوجل ("أفضل سيدان بـ 2 مليون").</li>
+                    <li>مجتمع تقييمات مدار لتقييم السيارات وقطع الغيار وأسعارها.</li>
+                    <li>تصفح سريع وخالٍ من الإعلانات الاحتيالية والوهمية.</li>
+                    <li>تواصل مباشر مع صاحبه أو المعرض عبر الواتساب والاتصال.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 2</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 3: EGYPT MARKET STUDY & CAR SALES ANALYSIS -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 2: دراسة السوق وحجم مبيعات السيارات في مصر</span>
+        </div>
+
+        <div class="section-title">2. دراسة السوق وحجم مبيعات السيارات في مصر</div>
+
+        <div class="highlight-box">
+            <div class="highlight-box-title">📊 تحليل حجم وقيمة سوق السيارات المصري</div>
+            يبلغ حجم مبيعات السيارات في مصر سنوياً (جديد ومستعمل) حوالي <strong>350,000 إلى 450,000 سيارة</strong> بإجمالي قيم تداول تتجاوز <strong>300 إلى 400 مليار جنيه مصري</strong>. تشكل السيارات المستعملة أكثر من 65% من حركة السوق.
+        </div>
+
+        <div class="card">
+            <div class="card-header">📈 التحليل التقديري لحصة NegmCars من السوق</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>المؤشر السوقي</th>
+                        <th>إجمالي السوق المصري سنوياً</th>
+                        <th>مستهدف NegmCars (السنة الأولى)</th>
+                        <th>نسبة الاستحواذ المستهدفة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>عدد معارض السيارات</strong></td>
+                        <td>حوالي 6,000 - 8,000 معرض</td>
+                        <td><strong>500 إلى 600 معرض</strong></td>
+                        <td><strong>7.5% - 8.5%</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>إجمالي السيارات المعروضة</strong></td>
+                        <td>~400,000 سيارة سنوياً</td>
+                        <td><strong>15,000 إلى 20,000 سيارة</strong></td>
+                        <td><strong>4% - 5%</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>حجم التداول المالي المقدر</strong></td>
+                        <td>350 مليار جنيه مصري</td>
+                        <td>خدمة إعلانات لصفقات بقيمة ~15 مليار ج.م</td>
+                        <td><strong>وساطة إعلانية فقط (صفر عمولة)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🔍 تحليل المنافسين في مصر والحقائق السوقية</div>
+            <p><strong>تفنيد وافتراضات المنافسة:</strong></p>
+            <ul style="padding-right: 18px; font-size: 12px; margin-bottom: 10px;">
+                <li style="margin-bottom: 6px;"><strong>دوبيزل (Dubizzle):</strong> منصة إعلانات عامة غير متخصصة، تعاني من زحام الإعلانات غير المفلترة وعدم تخصيص واجهة لعشاق السيارات، فضلاً عن ارتفاع أسعار الباقات للمعارض (تصل لـ 12 ألف سنوياً مقابل 2 إعلان مميز شهرياً فقط).</li>
+                <li style="margin-bottom: 6px;"><strong>كونتكت كارز (ContactCars):</strong> منصة تاريخية لكنها تحولت بشكل رئيسي للتركيز على تمويل وتقسيط السيارات والخدمات المالية وليست منصة متخصصة محايدة للإعلانات المبوبة فقط.</li>
+                <li style="margin-bottom: 6px;"><strong>تصحيح شائعة سنة الصنع:</strong> لا توجد منصات منافسة تضع قيوداً تمنع عرض موديلات ما قبل سنة معينة؛ المنصات تتيح كافة الموديلات، وبالتالي تميز NegmCars يكمن في جودة العرض والخدمات وليس ادعاء قيود وهمية.</li>
+            </ul>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 3</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 4: TARGET CUSTOMERS & VALUE PROPOSITION -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 3 & 4: العملاء المستهدفون والقيمة المضافة</span>
+        </div>
+
+        <div class="section-title">3. العملاء المستهدفون واحتياجهم (Target Audience)</div>
+
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-header">🏬 معارض السيارات</div>
+                <p style="font-size: 11.5px;">تحتاج للتواجد الرقمي، رقمنة المخزون، وسيلة لبيع السيارات العاجلة للتجار الآخرين بسرية، وتخفيض تكاليف الإعلانات الباهظة.</p>
+            </div>
+            <div class="card">
+                <div class="card-header">🚗 الأفراد البائعون</div>
+                <p style="font-size: 11.5px;">يبحثون عن طريقة سريعة ومجانية لنشر سياراتهم دون دفع عمولات أو الاشتراط بالدفع المسبق للإعلانات العادية.</p>
+            </div>
+            <div class="card">
+                <div class="card-header">🔎 المشترون والمستوردون</div>
+                <p style="font-size: 11.5px;">يحتاجون لمحرك بحث ذكي، تقييمات حقيقية لأسعار وقطع الغيار، والوصول لأفضل الصفحات والمعارض الموثوقة.</p>
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">4. القيمة المضافة التي تقدمها NegmCars</div>
+
+        <div class="card">
+            <div class="card-header">⭐ أبرز مميزات القيمة المضافة المبتكرة</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">الميزة / الخدمة</th>
+                        <th style="width: 40%;">شرح الميزة وتطبيقها</th>
+                        <th>الفائدة للمستفيد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>نظام الـ QR Code بالمعرض</strong></td>
+                        <td>إنشاء كود QR لكل سيارة يقوم المعرض بطباعته وتعليقه على السيارة داخل معرضه المادي.</td>
+                        <td>تمكين الزائر في المعرض الفعلي من مسح الكود لمشاهدة التفاصيل والصور كاملة.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>إدارة المخزون الخاص</strong></td>
+                        <td>إمكانية إضافة كافة سيارات المعرض بالكامل مع خيار تحديد سيارات مخفية عن العامة.</td>
+                        <td>تنظيم مخزون المعرض ومشاركته عند الطلب دون الحاجة بنشره للجمهور.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>سوق B2B للسيارات العاجلة</strong></td>
+                        <td>مكان خاص ومغلق لـ 250 معرض يتشاركون فيه عرض سيارات لبعضهم بسرية.</td>
+                        <td>تصريف السيارات وتدوير رأس المال سريعاً بين التجار دون معرفة الجمهور.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الأسبقية في "أفضل صفقة"</strong></td>
+                        <td>إتاحة رؤية السيارات المعروضة بقسم أفضل صفقة للمعارض المشتركة قبل العامة بساعات.</td>
+                        <td>اقتناص الفرص والصفقات الرابحة قبل نزولها للمشترين العاديين.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>تصوير صناع المحتوى (الماسية)</strong></td>
+                        <td>زيارات صناع المحتوى للمعارض ذات الباقة الكبيرة وتصوير مراجعة وذكر المعرض.</td>
+                        <td>تسويق مجاني قوي للمعرض وزيادة ثقة وتفاعل العملاء.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 4</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 5: LAUNCH & EXPANSION PLAN + TIMELINE -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 5: خطة الإطلاق والتوسع والجدول الزمني</span>
+        </div>
+
+        <div class="section-title">5. خطة الإطلاق والتوسع والجدول الزمني (Roadmap)</div>
+
+        <div class="highlight-box">
+            <div class="highlight-box-title">🚀 استراتيجية الإطلاق الشامل لكل مصر (Day-1 All Egypt Launch)</div>
+            على عكس الاستراتيجيات المجزأة، ينطلق تطبيق وموقع NegmCars في <strong>جميع محافظات مصر من اليوم الأول للإطلاق الرسمى</strong>، ليعكس قوة المنصة ويسمح لأي مستخدم في مصر بالبحث والرفع من اليوم الأول.
+        </div>
+
+        <div class="card">
+            <div class="card-header">📅 الجدول الزمني والتنفيذي لأول سنة</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">المرحلة والتوقيت</th>
+                        <th style="width: 45%;">الأنشطة والمهام الإجرائية</th>
+                        <th>المخرجات والأهداف المستهدفة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>المرحلة 1: أول 3 شهور</strong><br>(التحضير والتأسيس)</td>
+                        <td>
+                            • إنهاء الإجراءات القانونية وتأسيس الشركة بالعقود الرسمية.<br>
+                            • إنهاء التطوير البرمجي للموقع والتطبيقات.<br>
+                            • التعاقد الميداني مع <strong>أول 250 معرض</strong> تأسيسي.<br>
+                            • إدخال وتجهيز <strong>1,200 إلى 2,000 سيارة</strong> على المنصة.<br>
+                            • بناء الجمهور مع فريق صناع المحتوى الإرشادي.
+                        </td>
+                        <td>جاهزية المنصة بالكامل + 250 معرض + 1,200+ سيارة معروضة قبل فتح المنصة للجمهور.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الشهر 4</strong><br>(الإطلاق الرسمي)</td>
+                        <td>
+                            • الإطلاق الرسمي للسوق المصري بالكامل في وقت واحد.<br>
+                            • بدء الحملات الإعلانية الممولة المكثفة.<br>
+                            • <strong>بعد أسبوع واحد من الإطلاق:</strong> بدء بيع الاشتراكات المدفوعة بأسعارها المرتفعة بناءً على نتائج الأسبوع الأول المثبتة بالزيارات.
+                        </td>
+                        <td>تدفق الزوار + إثبات التفاعل للمعارض وتفعيل المبيعات المدفوعة.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الشهور 5 - 12</strong><br>(النمو والتوسع)</td>
+                        <td>
+                            • زيادات شهرية للمعارض المتعاقدة <strong>بما لا يقل عن 30 معرض شهرياً</strong>.<br>
+                            • إدخال فريق تسويق ودعاية كبير <strong>بعد 6 شهور</strong> لدعم النمو.<br>
+                            • تشغيل وتطوير قناة يوتيوب تابعة للمنصة (على نمط عرب جي تي) لتحقيق عوائد ترويجية.
+                        </td>
+                        <td>الوصول لـ 500+ معرض مدفوع، و10,000+ سيارة، مع استقرار التدفق النقدي.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>السنة 2 - 3</strong><br>(التوسع الإقليمي)</td>
+                        <td>• دراسة وتدشين التوسع الجغرافي لدولة <strong>سوريا</strong> الشقيقة بإنشاء نسخة موحدة.</td>
+                        <td>التحول لمنصة إقليمية في الشرق الأوسط.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 5</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 6: OPERATIONAL & TEAM PLAN -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 6: الخطة التشغيلية والموظفين</span>
+        </div>
+
+        <div class="section-title">6. الخطة التشغيلية والموظفين (Operational Plan & HR)</div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">👥 الهيكل التنظيمي وفريق العمل</div>
+                <ul style="padding-right: 15px; font-size: 12px;">
+                    <li style="margin-bottom: 8px;">
+                        <strong>فريق المبيعات (Sales Team):</strong>
+                        مكون من 3 مندوبين مبيعات ميدانيين للتعاقد مع المعارض (بمعدل مستهدف لا يقل عن 30 معرض جديد شهرياً). يتم توفير سيارة وبنزين للتنقل بواسطة المستثمر.
+                    </li>
+                    <li style="margin-bottom: 8px;">
+                        <strong>فريق البرمجة والتقنية:</strong>
+                        الموقع والتطبيق تم إنشاؤهما بجهود ذاتية، وسيتم تخصيص ميزانية سيرفرات ودعم تقني أعلى لضمان الأمان والسرعة.
+                    </li>
+                    <li style="margin-bottom: 8px;">
+                        <strong>فريق صناعة المحتوى:</strong>
+                        2 صناع محتوى متخصصين يحصلان على <strong>نسبة 5% من صافي الأرباح بالسنة الأولى فقط</strong> (بدون رواتب ثابتة)، مقابل تصوير وتغطية المعارض الماسية وإنشاء محتوى للقناة.
+                    </li>
+                    <li style="margin-bottom: 8px;">
+                        <strong>فريق التسويق التوسعي:</strong>
+                        إضافة فريق تسويق وإعلانات متخصص كبير <strong>بعد 6 شهور من الإطلاق</strong> لتسريع معدل النمو.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">⚙️ الضوابط التشغيلية واللوجستية</div>
+                <ul style="padding-right: 15px; font-size: 12px;">
+                    <li style="margin-bottom: 8px;">
+                        <strong>منع التحصيل الكاش نهائياً:</strong>
+                        لحماية الشركة من أي اختلاس، يقوم مندوب المبيعات بتسليم العقد الرسمي المرقم للمعرض، والدفع يتم إلكترونياً حصراً عبر بوابات الدفع بالمنصة لتفعيل الباقة تلقائياً.
+                    </li>
+                    <li style="margin-bottom: 8px;">
+                        <strong>المقر والسيارة:</strong>
+                        المكتب الرئيسي وسيارة تنقل فريق المبيعات يتم توفيرهما كلياً من جانب المستثمر الشريك ضمن مساهمته التأسيسية.
+                    </li>
+                    <li style="margin-bottom: 8px;">
+                        <strong>معدات التصوير:</strong>
+                        معدات التصوير والمونتاج خاصة بالمصور والمونتير وليست تكلفة على الشركة.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💻 البنية التحتية البرمجية والسيرفرات</div>
+            <p style="font-size: 12px;">
+                تم تخصيص ميزانية أكبر للسيرفرات والخدمات السحابية (Cloud Infrastructure) مع استخدام سيرفرات AWS/Hetzner وقواعد بيانات موزعة وتشفير عالي، لضمان استقرار المنصة حتى مع استقبال ملايين الزيارات وحماية بيانات المعارض والعملاء.
+            </p>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 6</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 7: MARKETING & SALES PLAN -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 7: الخطة التسويقية والمبيعات</span>
+        </div>
+
+        <div class="section-title">7. الخطة التسويقية والمبيعات (Marketing & Sales Strategy)</div>
+
+        <div class="card">
+            <div class="card-header">🎯 قنوات واستراتيجية التسويق</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">القناة التسويقية</th>
+                        <th style="width: 45%;">التكتيك وآلية التنفيذ</th>
+                        <th>الهدف والميزانية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>صناع المحتوى والقناة</strong></td>
+                        <td>تغطيات ميدانية للمعارض ذات الباقة الكبيرة، وإنشاء قناة يوتيوب (مثل عرب جي تي) تدر عوائد إعلانية.</td>
+                        <td>5% من الأرباح لصناع المحتوى (مجاناً كرواتب) لتوفير التكاليف.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الإعلانات الممولة الرقمية</strong></td>
+                        <td>حملات مركزة على Meta (Facebook/Instagram), TikTok, Google Ads لمشترين السيارات.</td>
+                        <td>تخصيص الحصة الكبرى من الميزانية للتسويق المباشر وجلب المشترين.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>فريق مبيعات الميدان</strong></td>
+                        <td>زيارات 3 مندوبين لمحافظات مصر للتعاقد مع المعارض وشرح الـ QR code وإدارة المخزون.</td>
+                        <td>حجم تعاقدات لا يقل عن 30 معرض شهرياً.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>فريق تسويق متقدم (الشهر 6)</strong></td>
+                        <td>تطوير الحملات التسويقية بعد 6 شهور من الإطلاق وتوسيع النطاق الإعلاني.</td>
+                        <td>زيادة معدلات التحويل واختراق أعمق للسوق.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🔍 محرك البحث النصي ومجتمع التقييم</div>
+            <div class="grid-2">
+                <div>
+                    <strong style="color: var(--accent);">🔎 البحث النصي الذكي (Google-like Search):</strong>
+                    <p style="font-size: 11.5px; margin-top: 4px;">
+                        يمكن للمستخدم كتابة جمل طبيعية مثل: <em>"أفضل عربية سيدان بـ 2 مليون"</em> ليقوم النظام بعرض السيارات المطابقة والمصنفة بالأعلى تقييماً مباشرة.
+                    </p>
+                </div>
+                <div>
+                    <strong style="color: var(--accent);">👥 مجتمع تقييم السيارات وقطع الغيار:</strong>
+                    <p style="font-size: 11.5px; margin-top: 4px;">
+                        قسم تفاعلي يدار بالكامل عبر المنصة، يشارك فيه المستخدمون تقييماتهم للسيارات، أسعار قطع الغيار ومدى توفرها، مما يضمن بناء أكبر مرجع موثوق للسيارات في مصر.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 7</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 8: INITIAL & MONTHLY EXPENSES -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 8 & 9: المصاريف التأسيسية والشهرية</span>
+        </div>
+
+        <div class="section-title">8. المصاريف التأسيسية (CapEx - Capital Expenditures)</div>
+
+        <div class="card">
+            <div class="card-header">🏗️ التكاليف التأسيسية المبدئية</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th>بند التأسيس</th>
+                        <th>الوصف والبيانات</th>
+                        <th>التكلفة التقديرية (ج.م)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>الرسوم القانونية والترخيص</strong></td>
+                        <td>تأسيس شركة مساهمة/مسؤولية محدودة، عقود الشراكة، وتراخيص العلامة.</td>
+                        <td>40,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>التطوير البرمجي والتأسيس التقني</strong></td>
+                        <td>تجهيز السيرفرات، بوابات الدفع، والتطبيقات (تم إنجاز جزء كبير بجهود ذاتية).</td>
+                        <td>60,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الهوية البصرية والمطبوعات</strong></td>
+                        <td>تصاميم الهوية، طباعة عقود مرقمة، ومطبوعات الـ QR codes للمعارض.</td>
+                        <td>30,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left; font-weight: bold;">إجمالي المصاريف التأسيسية المباشرة:</td>
+                        <td><strong>130,000 ج.م</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">9. المصاريف التشغيلية الشهرية (OpEx - Operating Expenses)</div>
+
+        <div class="card">
+            <div class="card-header">💸 الميزانية التشغيلية الشهرية (متوسط أول سنة)</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th>البند التشغيلي</th>
+                        <th>تفاصيل التكلفة الشهرية</th>
+                        <th>المبلغ الشهري (ج.م)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>رواتب فريق المبيعات (3 Sales)</strong></td>
+                        <td>راتب أساسي + عمولات على تحقيق الهدف (أكثر من 30 معرض شهرياً).</td>
+                        <td>30,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>مصاريف التنقل للبنزين والميدان</strong></td>
+                        <td>تنقلات السيلز بالسيارة المقدمة من المستثمر بين المحافظات والمعارض.</td>
+                        <td>15,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>خدمة العملاء والدعم الفني</strong></td>
+                        <td>موظفي الدعم ومراجعة الإعلانات والتحقق.</td>
+                        <td>15,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الحملات الإعلانية التسويقية الممولة</strong></td>
+                        <td>حملات Meta, Google, TikTok لجلب المشترين وتنشيط المنصة.</td>
+                        <td>80,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>السيرفرات والتقنية والدعم الفني</strong></td>
+                        <td>خوادم سحابية، استضافة، حماية، وبوابات دفع.</td>
+                        <td>25,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>صناع المحتوى (2 أشخاص)</strong></td>
+                        <td>مجاناً (بدون أجر شهري ثوابت مقابل 5% من أرباح نهاية السنة).</td>
+                        <td>0 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left; font-weight: bold;">إجمالي المصاريف التشغيلية الشهرية:</td>
+                        <td><strong>165,000 ج.م / شهرياً</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 8</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 9: REVENUE STREAMS & SUBSCRIPTION PACKAGES -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 10: مصادر الإيرادات والباقات التنافسية</span>
+        </div>
+
+        <div class="section-title">10. مصادر الإيرادات وباقات الاشتراكات (Revenue Streams)</div>
+
+        <div class="highlight-box">
+            <div class="highlight-box-title">👑 نظام باقات المعارض لـ أول 250 معرض تأسيسي</div>
+            لضمان التواجد المباشر وتوفير 1,200+ سيارة عند الإطلاق، تم تقسيم الباقات كالتالي: الباقة السيلفر <strong>مجاناً</strong> لأول 250 معرض، والباقيتين (جولد ودايموند) بأسعار رمزية ومناسبة جداً وليست مجانية لكل الباقات.
+        </div>
+
+        <div class="card">
+            <div class="card-header">📦 هيكلية باقات المعارض المخصصة</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th>الباقة واللون المميز</th>
+                        <th>عرض أول 250 معرض</th>
+                        <th>السعر بعد أسبوع من الإطلاق</th>
+                        <th>أبرز المميزات والخصائص</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-silver">السيلفر (Silver)</span></td>
+                        <td><strong>مجاناً بالكامل</strong></td>
+                        <td class="currency">3,000 ج.م / سنوياً</td>
+                        <td>إعلانات غير محدودة بالبداية، لون سيلفر مميز لصفحتهم وإعلاناتهم، QR code للمخزون، إدارة مخزون خاص، والاشتراك بشرط نشر دوري (أسبوعي/شهري) وإلا يُلغى العقد.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-gold">الجولد (Gold)</span></td>
+                        <td><strong>3,000 ج.م / لـ 5 شهور</strong></td>
+                        <td class="currency">6,000 ج.م / سنوياً</td>
+                        <td>جميع مميزات السيلفر + لون ذهبي فاخر للإعلانات والصفحة، أولوية ظهور المعارض القريبة مني (مجاناً)، رؤية أفضل صفقة قبل العامة بساعات، ظهور دوري عشوائي.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-diamond">الدايموند (Diamond)</span></td>
+                        <td><strong>6,000 ج.م / لـ 8 شهور</strong></td>
+                        <td class="currency">12,000 ج.م / سنوياً</td>
+                        <td>جميع مميزات الجولد + لون ماسي باهر، <strong>فيديوهات مجانية من صناع المحتوى</strong> تذكر اسم المعرض وسعر العربية وتُنشر للقناة والمنصة، إعلانات مميزة غير محدودة، وظهور عشوائي بالرئيسية.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💰 مصادر الإيرادات المكملة الأخرى</div>
+            <div class="grid-2" style="font-size: 11.5px;">
+                <div>
+                    <p><strong>🔥 قسم "أفضل صفقة" (Best Deal):</strong></p>
+                    <p>حجز أماكن للسيارات المعروضة بأقل من سعر السوق. السعر: 1,000 ج.م أسبوعياً لغير المشتركين بالباقات المتقدمة.</p>
+
+                    <p><strong>📍 خدمة "المعارض القريبة مني":</strong></p>
+                    <p>مجانية للمشتركين بالباقات المدفوعة، وبسعر <strong>2,000 ج.م سنوياً</strong> للمعارض الراغبة بالاشتراك فيها فقط دون باقة.</p>
+                </div>
+                <div>
+                    <p><strong>📢 الإعلانات البانر والتجارية:</strong></p>
+                    <p>بانرات على الصفحة الرئيسية وإعلانات موجهة لشركات التمويل والتأمين وقطع الغيار (3,000 - 6,000 ج.م/يومياً).</p>
+
+                    <p><strong>📺 عوائد قناة يوتيوب الإعلانية:</strong></p>
+                    <p>أرباح المشاهدات والإعلانات الترويجية على فيديوهات مراجعات السيارات.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 9</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 10: FINANCIAL PROJECTIONS & P&L -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 11 & 12: توقعات الإيرادات وقائمة الأرباح والخسائر</span>
+        </div>
+
+        <div class="section-title">11. توقعات الإيرادات لأول سنة (Revenue Projections - Year 1)</div>
+
+        <div class="card">
+            <div class="card-header">📊 جدول نمو الإيرادات التقديرية (حسب الأرباع السنوية)</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th>مصدر الإيراد</th>
+                        <th>Q1 (شهور 1-3)</th>
+                        <th>Q2 (شهور 4-6)</th>
+                        <th>Q3 (شهور 7-9)</th>
+                        <th>Q4 (شهور 10-12)</th>
+                        <th>إجمالي السنة الأولى</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>باقات المعارض التأسيسية والجديدة</strong></td>
+                        <td>450,000 ج.م</td>
+                        <td>600,000 ج.م</td>
+                        <td>900,000 ج.م</td>
+                        <td>1,200,000 ج.م</td>
+                        <td><strong>3,150,000 ج.م</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>خدمة المعارض القريبة مني (2,000ج)</strong></td>
+                        <td>0 ج.م</td>
+                        <td>60,000 ج.م</td>
+                        <td>100,000 ج.م</td>
+                        <td>140,000 ج.م</td>
+                        <td><strong>300,000 ج.م</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>إعلانات أفضل صفقة والمميزة</strong></td>
+                        <td>0 ج.م</td>
+                        <td>90,000 ج.م</td>
+                        <td>150,000 ج.م</td>
+                        <td>240,000 ج.م</td>
+                        <td><strong>480,000 ج.م</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>إعلانات البانرات والقناة</strong></td>
+                        <td>0 ج.م</td>
+                        <td>30,000 ج.م</td>
+                        <td>70,000 ج.م</td>
+                        <td>120,000 ج.م</td>
+                        <td><strong>220,000 ج.م</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">إجمالي الإيرادات المتوقعة:</td>
+                        <td style="font-weight: bold;">450,000 ج.م</td>
+                        <td style="font-weight: bold;">780,000 ج.م</td>
+                        <td style="font-weight: bold;">1,220,000 ج.م</td>
+                        <td style="font-weight: bold;">1,700,000 ج.م</td>
+                        <td style="font-weight: bold; color: var(--secondary);">4,150,000 ج.م</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">12. الأرباح والخسائر والتدفق النقدي (P&L & Cash Flow)</div>
+
+        <div class="card">
+            <div class="card-header">📑 قائمة الأرباح والخسائر التقديرية (Year-1 P&L Statement)</div>
+            <table style="font-size: 11.5px;">
+                <tr>
+                    <td style="width: 60%; font-weight: bold;">إجمالي الإيرادات المتوقعة (Year-1 Gross Revenue)</td>
+                    <td style="font-weight: bold; color: green;">4,150,000 ج.م</td>
+                </tr>
+                <tr>
+                    <td>يُخصم: المصاريف التأسيسية المباشرة (CapEx)</td>
+                    <td style="color: red;">(130,000 ج.م)</td>
+                </tr>
+                <tr>
+                    <td>يُخصم: المصاريف التشغيلية للسنة كاملة (165,000 × 12)</td>
+                    <td style="color: red;">(1,980,000 ج.م)</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">صافي الربح قبل خصم حصة صناع المحتوى (EBIT)</td>
+                    <td style="font-weight: bold; color: var(--primary);">2,040,000 ج.م</td>
+                </tr>
+                <tr>
+                    <td>يُخصم: حصة صناع المحتوى (5% من صافي أرباح أول سنة)</td>
+                    <td style="color: red;">(102,000 ج.م)</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; font-size: 13px;">صافي الربح النهائي القابل للتوزيع (Net Profit)</td>
+                    <td style="font-weight: bold; font-size: 13px; color: var(--secondary);">1,938,000 ج.م</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 10</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 11: BREAKEVEN & RISK ANALYSIS -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 13 & 14: نقطة التعادل وتحليل المخاطر</span>
+        </div>
+
+        <div class="section-title">13. نقطة التعادل (Break-Even Analysis)</div>
+
+        <div class="highlight-box">
+            <div class="highlight-box-title">⚖️ حساب نقطة التعادل الشهرية</div>
+            لتغطية المصاريف التشغيلية الشهرية الحالية والبالغة <strong>165,000 جنيه مصري</strong>، يحتاج المشروع إلى تحصيل اشتراكات شهرياً تعادل:
+            <br>• <strong>حوالي 28 إلى 35 معرض جديد أو مجدد شهرياً</strong> على الباقات المتوسطة والعالية (جولد ودايموند).
+            <br>• تحسُّن التدفق النقدي وتحقيق نقطة التعادل التشغيلية يستغرق <strong>حوالي 5 إلى 6 أشهر من الإطلاق الرسمى</strong>.
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">14. المخاطر القانونية والتجارية والتقنية وكيفية مواجهتها</div>
+
+        <div class="card">
+            <div class="card-header">🛡️ مصفوفة إدارة المخاطر (Risk Management Matrix)</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th>نوع الخطر</th>
+                        <th>وصف الخطر المحتمل</th>
+                        <th>شدة الأثر</th>
+                        <th>استراتيجية التخفيف والمواجهة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>خطر قانوني</strong></td>
+                        <td>نزاعات ملكية فكرية أو شكاوى محتوى احتيالي من بعض المستخدمين.</td>
+                        <td>متوسط</td>
+                        <td>تسجيل العلامة التجارية رسمياً، وضع شروط استخدام صارمة، وتطبيق OTP للتحقق من هوية المعلنين.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>خطر تجاري</strong></td>
+                        <td>قيام المنافسين بحملات تخفيض أسعار مضادة أو قيام بعض المعارض بالمقاومة.</td>
+                        <td>عالي</td>
+                        <td>تقديم مميزات فريدة لا يقدمها المنافسون (QR code، سوق B2B مغلق، لون الباقة، وتصوير صناع المحتوى).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>خطر تقني</strong></td>
+                        <td>تعطل السيرفرات أو الاختراق نتيجة الضغط وحجم الزيارات.</td>
+                        <td>عالي</td>
+                        <td>زيادة ميزانية التقنية، الاعتماد على سيرفرات سحابية مرنة، ونسخ احتياطي يومي متكرر.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>خطر سيولة</strong></td>
+                        <td>تأخر تحصيل اشتراكات المعارض في بعض الشهور.</td>
+                        <td>متوسط</td>
+                        <td><strong>وجود مليون جنيه احتياطي طوارئ/إنقاذ</strong> مُجنب بالكامل لمواجهة أي تعثر.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 11</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 12: REAL SWOT ANALYSIS & 3 SCENARIOS -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 15 & 16: تحليل SWOT والسيناريوهات الثلاثة</span>
+        </div>
+
+        <div class="section-title">15. تحليل SWOT الواقعي للمشروع</div>
+
+        <div class="swot-grid">
+            <div class="swot-item swot-s">
+                <div class="swot-title">💪 نقاط القوة (Strengths)</div>
+                <ul style="padding-right: 15px; font-size: 11px;">
+                    <li>خدمات فريدة (QR code لكل سيارة، سوق B2B المغلق للمعارض).</li>
+                    <li>إدارة مخزون خاص للمعارض ومميزات الباقات الملونة.</li>
+                    <li>بحث نصي ذكي ومجتمع تقييم حقيقي للسيارات وقطع الغيار.</li>
+                    <li>جاهزية الموقع والتطبيقات المبدئية.</li>
+                    <li>عدم اقتطاع عمولات على البيع (صفر عمولة).</li>
+                </ul>
+            </div>
+            <div class="swot-item swot-w">
+                <div class="swot-title">⚠️ نقاط الضعف (Weaknesses)</div>
+                <ul style="padding-right: 15px; font-size: 11px;">
+                    <li>علامة تجارية جديدة تحتاج لبناء الثقة في بداية الإطلاق.</li>
+                    <li>الحاجة لبناء قاعدة بيانات ضخمة من السيارات سريعاً.</li>
+                    <li>الاعتماد المبدئي على 3 مندوبين مبيعات فقط للتغطية الميدانية.</li>
+                </ul>
+            </div>
+            <div class="swot-item swot-o">
+                <div class="swot-title">🚀 الفرص المتاحة (Opportunities)</div>
+                <ul style="padding-right: 15px; font-size: 11px;">
+                    <li>غياب منصة سيارات متخصصة حقيقية (المنافسون إما مبوبات عامة أو تمويل).</li>
+                    <li>شراكة صناع المحتوى وإنشاء قناة يوتيوب للشركة (مثل عرب جي تي).</li>
+                    <li>إمكانية التوسع لسوق السيارات السوري في السنة 2 أو 3.</li>
+                </ul>
+            </div>
+            <div class="swot-item swot-t">
+                <div class="swot-title">⚡ التهديدات (Threats)</div>
+                <ul style="padding-right: 15px; font-size: 11px;">
+                    <li>حملات ترويجية مضادة وتخفيضات أسعار من المنصات الكبيرة.</li>
+                    <li>تقلبات سوق السيارات وأسعار الصرف وتأثيرها على حركة البيع.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 15px;">16. تحليل السيناريوهات الثلاثة (3 Scenarios Analysis)</div>
+
+        <div class="card">
+            <div class="card-header">📊 مقارنة السيناريوهات المالية للسنة الأولى</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th>السيناريو</th>
+                        <th>الفرضيات ومعدل النمو</th>
+                        <th>الإيرادات المتوقعة</th>
+                        <th>صافي الربح المتوقع</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>السيناريو المتحفظ (Conservative)</strong></td>
+                        <td>نمو بطيء، تعاقد مع 20 معرض فقط شهرياً، وتأخر إعلانات البانرات.</td>
+                        <td>2,400,000 ج.م</td>
+                        <td><strong>300,000 ج.م</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>السيناريو الواقعي (Realistic)</strong></td>
+                        <td>تعاقد مع 30-40 معرض شهرياً، نجاح باقات الجولد والدايموند، وتنشيط القناة.</td>
+                        <td>4,150,000 ج.م</td>
+                        <td><strong>1,938,000 ج.م</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>السيناريو المتفائل (Optimistic)</strong></td>
+                        <td>تعاقد مع 50+ معرض شهرياً، إقبال كاسح على الباقة الماسية وبانرات الشركات.</td>
+                        <td>6,500,000 ج.م</td>
+                        <td><strong>4,200,000 ج.م</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 12</span>
+        </div>
+    </div>
+
+
+    <!-- PAGE 13: REQUIRED FUNDING, FINAL VERDICT & RECOMMENDATIONS -->
+    <div class="page">
+        <div class="page-header">
+            <span class="project-title">NegmCars — دراسة الجدوى الشاملة</span>
+            <span>القسم 17 & 18: التمويل المطلوب والحكم النهائي</span>
+        </div>
+
+        <div class="section-title">17. التمويل المطلوب واستخدامه (Funding Required & Allocation)</div>
+
+        <div class="highlight-box">
+            <div class="highlight-box-title">💰 إجمالي رأس المال المطلوب وشروط الاستثمار</div>
+            • <strong>المبلغ الأساسي المطلوب:</strong> 2.5 مليون جنيه مصري (ميزانية التشغيل والتسويق والدعم).
+            <br>• <strong>احتياطي طوارئ / إنقاذ:</strong> 1.0 مليون جنيه مصري (مُجنب لحماية الشركة من الأزمات).
+            <br>• <strong>الإجمالي المطلق للتمويل:</strong> <strong>3.5 مليون جنيه مصري</strong> (المبلغ مبدئي ومرن؛ وكلما زاد التمويل كان أفضل للنمو).
+            <br>• <strong>مقابل الاستثمار:</strong> ملكية حقيقية للمستثمر في الشركة (وليس أرباح فقط) + توفير المقر والسيارة.
+        </div>
+
+        <div class="card">
+            <div class="card-header">📊 توزيع استخدام رأس المال (3.5 مليون جنيه)</div>
+            <table style="font-size: 11.5px;">
+                <thead>
+                    <tr>
+                        <th>بند التمويل والاستخدام</th>
+                        <th>نسبة التوزيع</th>
+                        <th>المبلغ المخصص (ج.م)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>الحملات الإعلانية والتسويق الرقمي</strong></td>
+                        <td>30%</td>
+                        <td>1,050,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>احتياطي طوارئ وإنقاذ (مُجنب بالكامل)</strong></td>
+                        <td>28.5%</td>
+                        <td>1,000,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الرواتب والأجور وتنقلات السيلز</strong></td>
+                        <td>20%</td>
+                        <td>700,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>السيرفرات والبنية التقنية والأمان</strong></td>
+                        <td>12.5%</td>
+                        <td>440,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td><strong>التأسيس القانوني والمطبوعات والـ QR Codes</strong></td>
+                        <td>9%</td>
+                        <td>310,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">الإجمالي:</td>
+                        <td style="font-weight: bold;">100%</td>
+                        <td style="font-weight: bold; color: var(--secondary);">3,500,000 ج.م</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">18. الحكم النهائي والتوصية الاستثمارية (Final Verdict)</div>
+
+        <div class="card" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <div class="card-header" style="color: #166534;">✅ الحكم النهائي: المشروع يستحق التنفيذ وبشدة (Highly Recommended)</div>
+            <p style="font-size: 12px; color: #166534;">
+                بناءً على دراسة السوق المصري، والتحليل المالي المستفيض، وتطوير النموذج العملي الذي يحل مشاكل واقعية للمعارض (QR code، مخزون خاص، B2B مغلق، وباقات متميزة)، فإن مشروع <strong>NegmCars</strong> يمتلك فرصة استثمارية استثنائية للاستحواذ على حصة رئيسية من سوق السيارات في مصر.
+            </p>
+            <p style="font-size: 12px; color: #166534; font-weight: bold; margin-bottom: 0;">
+                التوصية الإدارية: البدء فوراً في إغلاق الجولة الاستثمارية وتوقيع عقود الشراكة للتنفيذ الميداني والإطلاق بالكامل في مصر.
+            </p>
+        </div>
+
+        <div class="page-footer">
+            <span>NegmCars — سري وشخصي</span>
+            <span>صفحة 13</span>
+        </div>
+    </div>
+
+</body>
+</html>
