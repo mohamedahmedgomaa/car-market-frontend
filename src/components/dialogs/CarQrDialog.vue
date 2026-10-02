@@ -309,7 +309,7 @@ const handlePrint = () => {
         <div class="header-row">
           <div class="brand-box">
             <img src="/images/logo-black.png" alt="NegmCars" class="brand-logo-img" />
-            <h2 class="brand-text">Negm<span class="brand-cars">Cars.com</span></h2>
+            <h2 class="brand-text">Negm<span class="brand-cars">Cars</span>.com</h2>
           </div>
           <div class="car-id">ID: #${props.car?.id || ''}</div>
         </div>
@@ -425,14 +425,17 @@ const handleDownloadPoster = async () => {
       startX = 60 + logoWidth + 20
     }
 
-    // NegmCars.com text (Negm in Slate, Cars.com in Orange)
+    // NegmCars.com text (Negm in Slate, Cars in Orange, .com in Slate)
     ctx.textAlign = 'left'
     ctx.font = 'bold 44px system-ui, sans-serif'
     ctx.fillStyle = '#0f172a'
     ctx.fillText('Negm', startX, 108)
     const negmWidth = ctx.measureText('Negm').width
     ctx.fillStyle = '#f97316'
-    ctx.fillText('Cars.com', startX + negmWidth, 108)
+    ctx.fillText('Cars', startX + negmWidth, 108)
+    const carsWidth = ctx.measureText('Cars').width
+    ctx.fillStyle = '#0f172a'
+    ctx.fillText('.com', startX + negmWidth + carsWidth, 108)
 
     // ID Badge
     ctx.fillStyle = '#f1f5f9'
@@ -652,7 +655,7 @@ const handleDownloadQr = () => {
                 class="rounded-md flex-shrink-0"
               />
               <span class="text-xl font-black tracking-tight text-slate-900 leading-none">
-                Negm<span class="text-amber-500">Cars.com</span>
+                Negm<span class="text-amber-500">Cars</span>.com
               </span>
             </div>
 
