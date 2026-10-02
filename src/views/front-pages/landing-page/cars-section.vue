@@ -354,10 +354,7 @@ watch(
           <div class="car-card__body d-flex flex-column">
             <!-- Top Section: Title, Brand, Year -->
             <div>
-              <h3
-                class="car-card__title font-weight-bold mb-1"
-                style="min-height: 44px; line-height: 1.4"
-              >
+              <h3 class="car-card__title font-weight-bold mb-1">
                 {{ _t(car.title, car) || `Car #${car.id}` }}
               </h3>
 
@@ -461,6 +458,9 @@ watch(
 <style scoped>
 .cars-section {
   padding: 48px 0;
+  @media (max-width: 600px) {
+    padding: 24px 0;
+  }
 }
 .cars-section--embedded {
   padding: 0;
@@ -476,18 +476,32 @@ watch(
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 18px;
+  @media (max-width: 600px) {
+    margin-bottom: 12px;
+    align-items: center;
+  }
 }
 .cars-section__title {
   font-size: 24px;
   margin: 0;
+  @media (max-width: 600px) {
+    font-size: 19px;
+  }
 }
 .cars-section__subtitle {
   margin: 6px 0 0;
   opacity: 0.75;
+  @media (max-width: 600px) {
+    font-size: 12px;
+    margin-top: 2px;
+  }
 }
 .cars-section__link {
   text-decoration: none;
   font-weight: 600;
+  @media (max-width: 600px) {
+    font-size: 13px;
+  }
 }
 .cars-section__state {
   padding: 18px 0;
@@ -513,9 +527,10 @@ watch(
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   .cars-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 
@@ -531,6 +546,7 @@ watch(
 @media (max-width: 600px) {
   .cars-section--embedded .cars-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 
@@ -678,10 +694,50 @@ watch(
   font-size: 15.5px;
   font-weight: 800;
   line-height: 1.4;
+  min-height: 44px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .car-card {
+    border-radius: 18px !important;
+  }
+  .car-card__body {
+    padding: 12px 14px !important;
+  }
+  .car-card__title {
+    font-size: 14.5px !important;
+    margin-bottom: 6px !important;
+    min-height: auto !important;
+  }
+  .car-card__meta {
+    font-size: 11.5px !important;
+  }
+  .car-card__info {
+    font-size: 11.5px !important;
+  }
+  .car-card__price {
+    font-size: 17px !important;
+  }
+  .fav-btn {
+    top: 8px !important;
+    right: 8px !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 10px !important;
+  }
+  .car-card__badges {
+    top: 8px !important;
+    left: 8px !important;
+    gap: 4px !important;
+  }
+  .badge-item {
+    padding: 3px 8px !important;
+    font-size: 8px !important;
+  }
 }
 
 .car-card__meta {

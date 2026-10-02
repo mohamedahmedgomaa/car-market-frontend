@@ -1589,52 +1589,75 @@ onBeforeUnmount(() => {
 @media (max-width: 768px) {
   .hero-ads-column {
     flex-direction: column;
+    gap: 16px;
   }
   .premium-ad-card, .premium-video-card {
-    min-height: 260px !important;
+    min-height: 220px !important;
   }
 }
 
 @media (max-width: 600px) {
+  .hero__container {
+    padding-inline: 10px;
+  }
   .premium-search-card {
-    padding: 20px !important;
-    border-radius: 24px !important;
+    padding: 16px !important;
+    border-radius: 20px !important;
   }
   .search-form-grid {
     grid-template-columns: 1fr;
-    gap: 12px 10px !important;
+    gap: 10px !important;
   }
   .group-label {
-    font-size: 10px !important;
-    letter-spacing: 1px !important;
+    font-size: 9.5px !important;
+    letter-spacing: 0.8px !important;
   }
   .toggle-btn {
-    height: 34px !important;
-    font-size: 12px !important;
+    height: 32px !important;
+    font-size: 11.5px !important;
+    padding: 0 8px !important;
   }
   .premium-input :deep(.v-field) {
-    height: 40px !important;
-    border-radius: 12px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
   }
   .premium-input :deep(.v-field__input) {
-    min-height: 40px !important;
+    min-height: 42px !important;
     font-size: 13px !important;
   }
   .premium-id-input :deep(.v-field) {
-    height: 40px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
   }
   .premium-id-input :deep(.v-field__input) {
-    min-height: 40px !important;
+    min-height: 42px !important;
     font-size: 0.85rem !important;
   }
   .search-actions-row {
     gap: 8px !important;
-    margin-top: 16px !important;
+    margin-top: 14px !important;
   }
-  .search-main-btn, .sell-side-btn {
-    height: 44px !important;
+  .search-main-btn {
+    height: 46px !important;
     font-size: 15px !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
+  }
+  .sell-side-btn {
+    height: 46px !important;
+    font-size: 14px !important;
+    border-radius: 14px !important;
+    padding-inline: 12px !important;
+  }
+  .ad-label, .video-label {
+    top: 12px !important;
+    right: 12px !important;
+    padding: 4px 10px !important;
+    font-size: 9px !important;
+  }
+  .video-controls {
+    bottom: 12px !important;
+    right: 12px !important;
+    padding: 4px 8px !important;
   }
 }
 
@@ -1650,6 +1673,7 @@ onBeforeUnmount(() => {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
+    margin-bottom: 12px !important;
   }
   .smart-search-input {
     width: 100% !important;

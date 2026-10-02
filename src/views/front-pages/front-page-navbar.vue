@@ -91,31 +91,52 @@ const logout = async () => {
 
 <template>
   <!-- 👉 Navigation drawer for mobile devices -->
-  <VNavigationDrawer v-model="sidebar" width="275" data-allow-mismatch disable-resize-watcher>
+  <VNavigationDrawer v-model="sidebar" width="290" data-allow-mismatch disable-resize-watcher class="mobile-nav-drawer">
     <PerfectScrollbar :options="{ wheelPropagation: false }" class="h-100">
-      <div>
-        <div class="d-flex flex-column gap-y-4 pa-4">
-          <!-- ✅ Links -->
+      <div class="pa-4 d-flex flex-column h-100">
+        <!-- Mobile Drawer Header -->
+        <div class="d-flex align-center justify-space-between pb-4 border-b mb-4">
+          <RouterLink to="/" class="d-flex align-center gap-x-3 text-decoration-none" @click="sidebar = false">
+            <div class="navbar-logo-badge">
+              <img :src="appLogo" alt="NegmCars" class="navbar-logo-img" />
+            </div>
+            <h1 class="app-logo-title mb-0">NegmCars</h1>
+          </RouterLink>
+
+          <VBtn
+            icon="tabler-x"
+            variant="tonal"
+            size="small"
+            color="default"
+            rounded="circle"
+            @click="sidebar = false"
+          />
+        </div>
+
+        <div class="d-flex flex-column gap-y-2 flex-grow-1">
+          <!-- ✅ Main Links -->
           <RouterLink
             to="/user/cars"
-            class="nav-link font-weight-medium"
+            class="mobile-drawer-link font-weight-bold"
             :class="
               route.path === '/user/cars' && route.query['filter[type]'] !== 'motorcycle'
-                ? 'active-link'
+                ? 'active-drawer-link'
                 : ''
             "
             @click="sidebar = false"
           >
-            {{ t('cars') }}
+            <VIcon icon="tabler-car" size="20" class="me-3" />
+            <span>{{ t('cars') }}</span>
           </RouterLink>
 
           <RouterLink
             to="/user/best-deals"
-            class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/best-deals') ? 'active-link' : ''"
+            class="mobile-drawer-link font-weight-bold"
+            :class="route.path.startsWith('/user/best-deals') ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            {{ t('bestDeals') }}
+            <VIcon icon="tabler-discount-2" size="20" class="me-3" color="error" />
+            <span>{{ t('bestDeals') }}</span>
           </RouterLink>
 
           <RouterLink
@@ -123,45 +144,49 @@ const logout = async () => {
               path: '/user/cars',
               query: { 'filter[type]': 'motorcycle', sort: '-created_at' },
             }"
-            class="nav-link font-weight-medium"
+            class="mobile-drawer-link font-weight-bold"
             :class="
               route.path === '/user/cars' && route.query['filter[type]'] === 'motorcycle'
-                ? 'active-link'
+                ? 'active-drawer-link'
                 : ''
             "
             @click="sidebar = false"
           >
-            {{ t('bikes') }}
+            <VIcon icon="tabler-motorbike" size="20" class="me-3" />
+            <span>{{ t('bikes') }}</span>
           </RouterLink>
 
           <RouterLink
             to="/user/sell"
-            class="nav-link font-weight-medium"
-            :class="route.path === '/user/sell' ? 'active-link' : ''"
+            class="mobile-drawer-link font-weight-bold highlight-sell-link"
+            :class="route.path === '/user/sell' ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            {{ t('sell') }}
+            <VIcon icon="tabler-circle-plus" size="20" class="me-3" color="warning" />
+            <span>{{ t('sell') }}</span>
           </RouterLink>
 
           <RouterLink
             to="/user/favorites"
-            class="nav-link font-weight-medium"
-            :class="route.path.startsWith('/user/favorites') ? 'active-link' : ''"
+            class="mobile-drawer-link font-weight-bold"
+            :class="route.path.startsWith('/user/favorites') ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            {{ t('favorites') }}
+            <VIcon icon="tabler-heart" size="20" class="me-3" />
+            <span>{{ t('favorites') }}</span>
           </RouterLink>
 
           <RouterLink
             to="/user/sellers"
-            class="nav-link font-weight-medium"
-            :class="route.path === '/user/sellers' ? 'active-link' : ''"
+            class="mobile-drawer-link font-weight-bold"
+            :class="route.path === '/user/sellers' ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            {{ t('showrooms') }}
+            <VIcon icon="tabler-building-store" size="20" class="me-3" />
+            <span>{{ t('showrooms') }}</span>
           </RouterLink>
 
-          <VDivider class="my-2" />
+          <VDivider class="my-3" />
 
           <!-- ✅ Auth (User) -->
           <template v-if="!isLoggedIn">
@@ -170,10 +195,12 @@ const logout = async () => {
               color="primary"
               variant="elevated"
               to="/login"
-              class="mt-2"
+              size="large"
+              rounded="xl"
+              class="auth-main-btn mt-1"
               @click="sidebar = false"
             >
-              <VIcon icon="tabler-login" class="me-2" />
+              <VIcon icon="tabler-login" class="me-2" size="20" />
               {{ t('login') }}
             </VBtn>
           </template>
@@ -181,97 +208,93 @@ const logout = async () => {
           <template v-else>
             <RouterLink
               to="/user/profile"
-              class="nav-link font-weight-medium"
-              :class="route.path.startsWith('/user') ? 'active-link' : ''"
+              class="mobile-drawer-link font-weight-bold"
+              :class="route.path.startsWith('/user') ? 'active-drawer-link' : ''"
               @click="sidebar = false"
             >
-              {{ t('profile') }}
+              <VIcon icon="tabler-user-circle" size="20" class="me-3" />
+              <span>{{ t('profile') }}</span>
             </RouterLink>
 
             <div
-              class="nav-link font-weight-medium cursor-pointer"
-              style="color: rgba(var(--v-theme-on-surface))"
+              class="mobile-drawer-link font-weight-bold text-error cursor-pointer"
               @click="logout"
             >
-              {{ t('logout') }}
+              <VIcon icon="tabler-logout" size="20" class="me-3" />
+              <span>{{ t('logout') }}</span>
             </div>
           </template>
 
-          <VDivider class="my-2" />
+          <VDivider class="my-3" />
 
-          <!-- Mobile Settings -->
-          <div class="text-caption font-weight-bold opacity-60 px-4 mt-2">
-            {{ t('settings') }}
-          </div>
-
-          <!-- Language Switcher in Drawer -->
-          <div class="px-4 py-1">
-            <span class="text-subtitle-2 font-weight-medium">{{ t('language') }}:</span>
-            <div class="d-flex gap-x-2 mt-2">
-              <VBtn
-                v-for="lang in safeLangConfig"
-                :key="lang.i18nLang"
-                size="small"
-                :variant="locale === lang.i18nLang ? 'elevated' : 'tonal'"
-                color="primary"
-                rounded="lg"
-                class="flex-grow-1"
-                @click="locale = lang.i18nLang"
-              >
-                {{ lang.label }}
-              </VBtn>
+          <!-- Mobile Settings Section Card -->
+          <div class="drawer-settings-card pa-3 rounded-xl border">
+            <div class="text-caption font-weight-bold text-uppercase opacity-70 mb-2 d-flex align-center gap-1">
+              <VIcon icon="tabler-settings" size="14" />
+              <span>{{ t('settings') }}</span>
             </div>
-          </div>
 
-          <!-- Theme Switcher in Drawer -->
-          <div class="px-4 py-1">
-            <span class="text-subtitle-2 font-weight-medium">{{ t('theme') }}:</span>
-            <div class="d-flex gap-x-2 mt-2">
-              <VBtn
-                size="small"
-                :variant="configStore.theme === 'light' ? 'elevated' : 'tonal'"
-                color="primary"
-                rounded="lg"
-                class="flex-grow-1 px-1"
-                @click="configStore.theme = 'light'"
-              >
-                <VIcon icon="tabler-sun" size="14" class="me-1" />
-                {{ t('light') }}
-              </VBtn>
-              <VBtn
-                size="small"
-                :variant="configStore.theme === 'dark' ? 'elevated' : 'tonal'"
-                color="primary"
-                rounded="lg"
-                class="flex-grow-1 px-1"
-                @click="configStore.theme = 'dark'"
-              >
-                <VIcon icon="tabler-moon" size="14" class="me-1" />
-                {{ t('dark') }}
-              </VBtn>
-              <VBtn
-                size="small"
-                :variant="configStore.theme === 'system' ? 'elevated' : 'tonal'"
-                color="primary"
-                rounded="lg"
-                class="flex-grow-1 px-1"
-                @click="configStore.theme = 'system'"
-              >
-                <VIcon icon="tabler-device-desktop" size="14" class="me-1" />
-                {{ t('system') }}
-              </VBtn>
+            <!-- Language Switcher in Drawer -->
+            <div class="mb-3">
+              <div class="text-xs font-weight-medium opacity-80 mb-1.5">{{ t('language') }}</div>
+              <div class="d-flex gap-x-2">
+                <VBtn
+                  v-for="lang in safeLangConfig"
+                  :key="lang.i18nLang"
+                  size="small"
+                  :variant="locale === lang.i18nLang ? 'elevated' : 'tonal'"
+                  color="primary"
+                  rounded="lg"
+                  class="flex-grow-1 font-weight-bold"
+                  @click="locale = lang.i18nLang"
+                >
+                  {{ lang.label }}
+                </VBtn>
+              </div>
+            </div>
+
+            <!-- Theme Switcher in Drawer -->
+            <div>
+              <div class="text-xs font-weight-medium opacity-80 mb-1.5">{{ t('theme') }}</div>
+              <div class="d-flex gap-x-1.5">
+                <VBtn
+                  size="small"
+                  :variant="configStore.theme === 'light' ? 'elevated' : 'tonal'"
+                  color="primary"
+                  rounded="lg"
+                  class="flex-grow-1 px-1"
+                  @click="configStore.theme = 'light'"
+                >
+                  <VIcon icon="tabler-sun" size="14" class="me-1" />
+                  {{ t('light') }}
+                </VBtn>
+                <VBtn
+                  size="small"
+                  :variant="configStore.theme === 'dark' ? 'elevated' : 'tonal'"
+                  color="primary"
+                  rounded="lg"
+                  class="flex-grow-1 px-1"
+                  @click="configStore.theme = 'dark'"
+                >
+                  <VIcon icon="tabler-moon" size="14" class="me-1" />
+                  {{ t('dark') }}
+                </VBtn>
+                <VBtn
+                  size="small"
+                  :variant="configStore.theme === 'system' ? 'elevated' : 'tonal'"
+                  color="primary"
+                  rounded="lg"
+                  class="flex-grow-1 px-1"
+                  @click="configStore.theme = 'system'"
+                >
+                  <VIcon icon="tabler-device-desktop" size="14" class="me-1" />
+                  {{ t('system') }}
+                </VBtn>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Navigation drawer close icon -->
-      <VIcon
-        id="navigation-drawer-close-btn"
-        icon="tabler-x"
-        size="20"
-        @click="sidebar = !sidebar"
-      />
     </PerfectScrollbar>
   </VNavigationDrawer>
 
@@ -386,7 +409,7 @@ const logout = async () => {
           <!-- Settings Dropdown (Before Login) -->
           <VMenu close-on-content-click="false" offset="12px" width="230">
             <template #activator="{ props }">
-              <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-2 d-none d-sm-flex" icon>
+              <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-1 d-flex" icon>
                 <VIcon icon="tabler-dots-vertical" size="22" />
               </VBtn>
             </template>
@@ -900,5 +923,40 @@ const logout = async () => {
   cursor: pointer;
   inset-block-start: 0.5rem;
   inset-inline-end: 1rem;
+}
+
+/* ✅ Mobile Nav Drawer Styles */
+.mobile-drawer-link {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 14px;
+  color: rgba(var(--v-theme-on-surface), 0.85);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: rgba(var(--v-theme-primary), 0.08);
+    color: rgba(var(--v-theme-primary), 1);
+  }
+}
+
+.active-drawer-link {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.15) 0%, rgba(255, 62, 29, 0.08) 100%) !important;
+  color: #ff6b00 !important;
+  border-color: rgba(255, 107, 0, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.15);
+}
+
+.highlight-sell-link {
+  background: rgba(255, 168, 0, 0.08);
+  border: 1px dashed rgba(255, 168, 0, 0.4);
+}
+
+.drawer-settings-card {
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-color: rgba(var(--v-border-color), 0.12) !important;
 }
 </style>

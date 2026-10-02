@@ -495,4 +495,33 @@ onMounted(fetchTopCars)
     }
   }
 }
+
+@media (max-width: 600px) {
+  .footer-top {
+    border-radius: 28px 28px 0 0 !important;
+    padding-top: 28px !important;
+  }
+
+  .ps-md-6 {
+    padding-left: 0 !important;
+  }
+
+  .footer-line {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+
+    .d-flex {
+      justify-content: center !important;
+      text-align: center;
+      flex-direction: column-reverse;
+      gap: 12px !important;
+    }
+  }
+
+  .footer-bottom-links {
+    justify-content: center !important;
+    width: 100%;
+    gap: 16px !important;
+  }
+}
 </style>

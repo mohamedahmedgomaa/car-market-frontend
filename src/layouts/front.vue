@@ -23,6 +23,13 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
 </template>
 
 <style lang="scss">
+main {
+  margin-top: 90px;
+  @media (max-width: 600px) {
+    margin-top: 68px !important;
+  }
+}
+
 .v-theme--light .landing-page-wrapper {
   background: linear-gradient(180deg, #F1F3F7 0%, #E8ECF2 100%) !important;
   min-height: 100vh;
@@ -81,6 +88,14 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
   .landing-page-wrapper {
     .v-container {
       padding-inline: 2rem !important;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-page-wrapper {
+    .v-container {
+      padding-inline: 12px !important;
     }
   }
 }

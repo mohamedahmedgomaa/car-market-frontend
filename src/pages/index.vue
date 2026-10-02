@@ -318,4 +318,64 @@ onMounted(() => {
     color: #000 !important;
   }
 }
+
+/* =========================================
+   ✅ MOBILE RESPONSIVE OVERRIDES
+   ========================================= */
+@media (max-width: 600px) {
+  .hero__container {
+    padding-bottom: 16px;
+  }
+
+  .group-spacer {
+    height: 20px;
+  }
+
+  .cta-section {
+    padding-top: 32px !important;
+    padding-bottom: 32px !important;
+  }
+
+  .cta-card {
+    padding: 24px 16px !important;
+    border-radius: 24px !important;
+  }
+
+  .cta-content h2 {
+    font-size: 1.5rem !important;
+    line-height: 1.35 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .cta-content p {
+    font-size: 0.95rem !important;
+    margin-bottom: 24px !important;
+  }
+
+  .premium-btn,
+  .premium-btn-outline {
+    height: 48px !important;
+    font-size: 15px !important;
+    width: 100% !important;
+    padding-inline: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .disclaimer-section {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .disclaimer-alert {
+    padding: 16px !important;
+    border-radius: 16px !important;
+
+    .text-h6 {
+      font-size: 1rem !important;
+    }
+    .text-body-2 {
+      font-size: 0.85rem !important;
+    }
+  }
+}
 </style>

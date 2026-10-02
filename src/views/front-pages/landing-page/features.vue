@@ -135,4 +135,54 @@ const features = computed(() => [
     color: #000 !important;
   }
 }
+
+/* =========================================
+   ✅ MOBILE RESPONSIVE OVERRIDES
+   ========================================= */
+@media (max-width: 600px) {
+  .features-section {
+    padding-top: 32px !important;
+    padding-bottom: 32px !important;
+
+    .text-center.mb-16 {
+      margin-bottom: 24px !important;
+    }
+
+    h2 {
+      font-size: 1.5rem !important;
+      line-height: 1.35 !important;
+      margin-bottom: 8px !important;
+    }
+
+    p.text-h6 {
+      font-size: 0.95rem !important;
+    }
+  }
+
+  .feature-card {
+    padding: 20px 16px !important;
+    border-radius: 20px !important;
+
+    h3 {
+      font-size: 1.15rem !important;
+      margin-bottom: 6px !important;
+    }
+
+    p {
+      font-size: 0.88rem !important;
+      line-height: 1.55 !important;
+    }
+  }
+
+  .feature-icon-wrapper {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    margin-bottom: 14px !important;
+
+    :deep(.v-icon) {
+      font-size: 24px !important;
+    }
+  }
+}
 </style>
