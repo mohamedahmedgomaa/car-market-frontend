@@ -53,54 +53,57 @@ onMounted(async () => {
 
 <template>
   <div class="favorites-page">
-    <!-- Header Section -->
-    <section class="favorites-header py-16">
+    <!-- Compact Header Section -->
+    <section class="favorites-header py-6">
       <VContainer>
-        <div class="text-center mb-12 reveal-up">
-          <div class="d-flex align-center justify-center mb-4">
-            <div class="header-icon-wrapper">
-              <VIcon icon="tabler-heart-filled" color="error" size="32" />
+        <div class="favorites-header-card d-flex flex-column flex-sm-row align-center justify-space-between gap-4 pa-6 rounded-2xl reveal-up">
+          <div class="d-flex align-center gap-4 text-center text-sm-start">
+            <div class="header-icon-badge flex-shrink-0 d-flex align-center justify-center">
+              <VIcon icon="tabler-heart-filled" color="error" size="24" />
+            </div>
+            <div>
+              <h1 class="text-h4 font-weight-black mb-1">
+                My <span class="text-primary">Favorites</span>
+              </h1>
+              <p class="text-body-2 opacity-70 mb-0">
+                All the vehicles you've saved for later. Keep track of your dream cars in one place.
+              </p>
             </div>
           </div>
-          <h1 class="text-h4 font-weight-black text-high-emphasis mb-4">
-            My <span class="text-primary">Favorites</span>
-          </h1>
-          <p class="text-h6 opacity-70 max-w-600 mx-auto">
-            All the vehicles you've saved for later. Keep track of your dream cars in one place.
-          </p>
+
+          <VBtn
+            v-if="isLoaded"
+            variant="tonal"
+            color="primary"
+            prepend-icon="tabler-search"
+            to="/user/cars"
+            rounded="pill"
+            class="px-6 font-weight-bold flex-shrink-0"
+            size="small"
+          >
+            Browse Cars
+          </VBtn>
         </div>
       </VContainer>
       <div class="header-glow"></div>
     </section>
 
     <!-- Content Section -->
-    <VContainer class="pb-16 mt-n8 relative-z">
+    <VContainer class="pb-12 pt-2 relative-z">
       <div v-if="isLoaded" class="reveal-fade">
         <CarsSection
           v-if="favoriteParams"
           embedded
+          title=""
+          subtitle=""
           :showViewAll="false"
           :params="favoriteParams"
-          subtitle=""
         />
-        
-        <div class="text-center mt-12">
-          <VBtn
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-search"
-            to="/user/cars"
-            class="px-8"
-            rounded="xl"
-          >
-            Browse More Cars
-          </VBtn>
-        </div>
       </div>
 
-      <div v-else class="py-16 text-center">
-        <VProgressCircular indeterminate color="primary" size="64" width="6" class="mb-6" />
-        <h3 class="text-h5 opacity-50 font-weight-medium">Accessing your collection...</h3>
+      <div v-else class="py-12 text-center">
+        <VProgressCircular indeterminate color="primary" size="48" width="4" class="mb-4" />
+        <h3 class="text-body-1 opacity-50 font-weight-medium">Accessing your collection...</h3>
       </div>
     </VContainer>
   </div>
@@ -114,36 +117,37 @@ onMounted(async () => {
 .favorites-header {
   position: relative;
   overflow: hidden;
-  background: radial-gradient(circle at center, rgba(var(--v-theme-primary), 0.08) 0%, transparent 70%);
+}
+
+.favorites-header-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(var(--v-theme-surface), 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .header-glow {
   position: absolute;
-  top: -20%;
+  top: -40%;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at center, rgba(var(--v-theme-primary), 0.1) 0%, transparent 60%);
+  height: 180%;
+  background: radial-gradient(circle at center, rgba(var(--v-theme-primary), 0.12) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
 
-.header-icon-wrapper {
-  width: 64px;
-  height: 64px;
-  background: rgba(var(--v-theme-error), 0.1);
-  border: 1px solid rgba(var(--v-theme-error), 0.2);
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-}
-
-
-.max-w-600 {
-  max-width: 600px;
+.header-icon-badge {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: radial-gradient(circle at center, rgba(255, 77, 77, 0.22) 0%, rgba(255, 77, 77, 0.05) 100%);
+  border: 1.5px solid rgba(255, 77, 77, 0.35);
+  box-shadow: 0 0 20px rgba(255, 77, 77, 0.25);
 }
 
 .relative-z {
@@ -153,17 +157,17 @@ onMounted(async () => {
 
 /* Animations */
 .reveal-up {
-  animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: revealUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .reveal-fade {
-  animation: fadeIn 0.8s ease-out forwards;
+  animation: fadeIn 0.6s ease-out forwards;
 }
 
 @keyframes revealUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -183,7 +187,7 @@ onMounted(async () => {
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .text-h4 {
-    font-size: 1.75rem !important;
+    font-size: 1.5rem !important;
   }
 }
 </style>
