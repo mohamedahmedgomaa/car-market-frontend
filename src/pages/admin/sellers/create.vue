@@ -95,6 +95,19 @@ const handleCoverChange = (event) => {
   form.value.cover_image = event.target.files[0] || null
 }
 
+const packSocialLinks = (mapUrl, social) => {
+  let baseMap = (mapUrl || '').split('#soc')[0].trim()
+  const parts = []
+  if (social.facebook) parts.push('fb=' + social.facebook.trim())
+  if (social.instagram) parts.push('ig=' + social.instagram.trim())
+  if (social.tiktok) parts.push('tt=' + social.tiktok.trim())
+  if (social.youtube) parts.push('yt=' + social.youtube.trim())
+  if (social.website) parts.push('web=' + social.website.trim())
+
+  if (parts.length === 0) return baseMap
+  return baseMap + '#soc|' + parts.join('|')
+}
+
 // ✅ Handle Submit
 const handleSubmit = async () => {
   error.value = ''
@@ -107,17 +120,13 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    const socialData = {}
-    if (form.value.facebook_url || form.value.facebook) socialData.fb = form.value.facebook_url || form.value.facebook
-    if (form.value.instagram_url || form.value.instagram) socialData.ig = form.value.instagram_url || form.value.instagram
-    if (form.value.tiktok_url || form.value.tiktok) socialData.tt = form.value.tiktok_url || form.value.tiktok
-    if (form.value.youtube_url || form.value.youtube) socialData.yt = form.value.youtube_url || form.value.youtube
-
-    let baseMapUrl = (form.value.map_url || '').split('#social=')[0].trim()
-    let finalMapUrl = baseMapUrl
-    if (Object.keys(socialData).length > 0) {
-      finalMapUrl = baseMapUrl + '#social=' + encodeURIComponent(JSON.stringify(socialData))
-    }
+    const finalMapUrl = packSocialLinks(form.value.map_url, {
+      facebook: form.value.facebook_url || form.value.facebook,
+      instagram: form.value.instagram_url || form.value.instagram,
+      tiktok: form.value.tiktok_url || form.value.tiktok,
+      youtube: form.value.youtube_url || form.value.youtube,
+      website: form.value.website_url || form.value.website,
+    })
 
     const formData = new FormData()
     const socialKeys = ['map_url', 'facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
