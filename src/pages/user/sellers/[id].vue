@@ -289,7 +289,7 @@ onMounted(fetchSeller)
             <div class="header-bg-glow"></div>
           </div>
           
-          <div class="showroom-profile-container py-8 py-md-12 px-6 px-md-10 position-relative z-1">
+          <div class="showroom-profile-container py-12 py-md-16 px-6 px-md-10 position-relative z-1">
             <div class="d-flex flex-column flex-lg-row align-center align-lg-stretch justify-space-between gap-6 gap-md-8">
               
               <!-- Left Column: Logo + Showroom Info -->
@@ -772,14 +772,19 @@ onMounted(fetchSeller)
   background: #090d16 !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   overflow: hidden;
-  border-radius: 22px;
-  width: 150px;
-  height: 150px;
+  border-radius: 24px;
+  width: 170px;
+  height: 170px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 !important;
   transition: transform 0.3s ease;
+
+  @media (max-width: 600px) {
+    width: 130px;
+    height: 130px;
+  }
 
   &:hover {
     transform: scale(1.03);
@@ -820,11 +825,11 @@ onMounted(fetchSeller)
 .store-bio-card {
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px 20px;
+  border-radius: 18px;
+  padding: 18px 24px;
   backdrop-filter: blur(12px);
   max-width: 720px;
-  min-height: 64px;
+  min-height: 72px;
   display: flex;
   align-items: center;
 }
