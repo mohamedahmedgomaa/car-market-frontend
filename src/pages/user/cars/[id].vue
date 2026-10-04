@@ -1660,6 +1660,7 @@ watch(
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   text-transform: uppercase;
   backdrop-filter: blur(8px);
+  white-space: nowrap;
 }
 
 .detail-badge.badge-best-deal {
@@ -1863,6 +1864,9 @@ watch(
   border-radius: 50%;
   cursor: pointer;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .lightbox-nav {
@@ -1970,6 +1974,97 @@ watch(
 .lightbox-btn--whatsapp:hover {
   background: linear-gradient(135deg, #20ba5a, #0e7569);
   transform: scale(1.04);
+}
+
+/* ✅ Mobile & iPad Responsive Lightbox (Phones & Tablets) */
+@media (max-width: 1024px) {
+  .lightbox-content {
+    width: 100vw;
+    height: 100vh;
+    padding: 70px 0 95px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .lightbox-img {
+    width: 100%;
+    max-width: 100vw;
+    height: auto;
+    max-height: calc(100vh - 170px);
+    object-fit: contain;
+    box-shadow: none;
+  }
+
+  /* Compact navigation arrows positioned BELOW the car photo */
+  .lightbox-nav {
+    position: fixed;
+    top: auto;
+    bottom: 82px;
+    transform: none;
+    width: 44px;
+    height: 44px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    z-index: 101;
+  }
+
+  .lightbox-nav .v-icon {
+    font-size: 22px !important;
+  }
+
+  .lightbox-nav:hover {
+    transform: scale(1.08);
+  }
+
+  .lightbox-nav.left {
+    left: 16px;
+  }
+
+  .lightbox-nav.right {
+    right: 16px;
+  }
+
+  .lightbox-close {
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .lightbox-counter {
+    top: 22px;
+    right: 68px;
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+
+  .lightbox-actions {
+    bottom: 20px;
+    padding: 5px 8px;
+    max-width: calc(100vw - 120px);
+  }
+
+  .lightbox-btn {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+
+  .main-img {
+    padding: 2px;
+  }
+
+  .nav-arrow {
+    width: 42px;
+    height: 42px;
+  }
+  .nav-arrow .v-icon {
+    font-size: 22px !important;
+  }
 }
 
 /* Ensure Call confirmation dialog appears on top of Lightbox overlay */
