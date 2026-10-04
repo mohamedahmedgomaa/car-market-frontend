@@ -87,7 +87,22 @@ const getSocialUrl = (platform) => {
   if (direct) return direct
 
   const rawMap = s.map_url || ''
-  if (rawMap.includes('#social=')) {
+  if (rawMap.includes('#soc|')) {
+    const hash = rawMap.split('#soc|')[1] || ''
+    let found = null
+    hash.split('|').forEach(part => {
+      const idx = part.indexOf('=')
+      if (idx > -1) {
+        const k = part.substring(0, idx)
+        const v = part.substring(idx + 1)
+        if (platform === 'facebook' && k === 'fb') found = v
+        if (platform === 'instagram' && k === 'ig') found = v
+        if (platform === 'tiktok' && k === 'tt') found = v
+        if (platform === 'youtube' && k === 'yt') found = v
+      }
+    })
+    if (found) return found
+  } else if (rawMap.includes('#social=')) {
     try {
       const hash = rawMap.split('#social=')[1]
       const socialExtracted = JSON.parse(decodeURIComponent(hash))
@@ -181,8 +196,8 @@ const fetchSeller = async () => {
 
 const openMap = () => {
   let url = seller.value?.map_url || ''
-  if (url.includes('#social=')) {
-    url = url.split('#social=')[0]
+  if (url.includes('#soc')) {
+    url = url.split('#soc')[0]
   }
   url = url.trim()
   if (url) {
