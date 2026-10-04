@@ -3,6 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import carSellerApi from '../../../api/seller/carSellerApi.js'
 import CarQrDialog from '../../../components/dialogs/CarQrDialog.vue'
+import CarSocialCardDialog from '../../../components/dialogs/CarSocialCardDialog.vue'
 
 const router = useRouter()
 
@@ -23,6 +24,15 @@ const qrSelectedCar = ref(null)
 const openQrModal = (car) => {
   qrSelectedCar.value = car
   qrDialog.value = true
+}
+
+// ===== Social Card Share Dialog =====
+const socialCardDialog = ref(false)
+const socialSelectedCar = ref(null)
+
+const openSocialCardModal = (car) => {
+  socialSelectedCar.value = car
+  socialCardDialog.value = true
 }
 
 // ===== Delete =====
@@ -256,6 +266,9 @@ const getMainImageUrl = (car) => {
             <VBtn icon color="success" variant="tonal" title="طباعة ورقة QR للسيارة" @click="openQrModal(car)">
               <VIcon icon="tabler-qrcode" />
             </VBtn>
+            <VBtn icon color="info" variant="tonal" title="تحميل كارت الصورة للسوشيال ميديا (انستجرام)" @click="openSocialCardModal(car)">
+              <VIcon icon="tabler-photo-share" />
+            </VBtn>
             <VBtn icon @click="handleEdit(car.id)">
               <VIcon icon="tabler-edit" />
             </VBtn>
@@ -342,5 +355,8 @@ const getMainImageUrl = (car) => {
 
     <!-- Car QR Poster Dialog -->
     <CarQrDialog v-model:is-dialog-visible="qrDialog" :car="qrSelectedCar" />
+
+    <!-- Car Social Card Share Dialog -->
+    <CarSocialCardDialog v-model:is-dialog-visible="socialCardDialog" :car="socialSelectedCar" />
   </div>
 </template>

@@ -3,6 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import carAdminApi from '../../../api/admin/carAdminApi.js'
 import CarQrDialog from '../../../components/dialogs/CarQrDialog.vue'
+import CarSocialCardDialog from '../../../components/dialogs/CarSocialCardDialog.vue'
 
 const router = useRouter()
 const BASE_URL = import.meta.env.VITE_BASE_URL
@@ -24,6 +25,15 @@ const qrSelectedCar = ref(null)
 const openQrModal = (car) => {
   qrSelectedCar.value = car
   qrDialog.value = true
+}
+
+// ===== Social Card Share Dialog =====
+const socialCardDialog = ref(false)
+const socialSelectedCar = ref(null)
+
+const openSocialCardModal = (car) => {
+  socialSelectedCar.value = car
+  socialCardDialog.value = true
 }
 
 // ✅ Active Filter State ('all', 'pending', 'featured', 'best_deal', 'import', 'home_page', 'global')
@@ -706,7 +716,10 @@ const stats = computed(() => {
                 <VBtn icon variant="tonal" color="success" size="small" class="rounded-lg shadow-hover" title="طباعة ورقة QR للسيارة" @click="openQrModal(car)">
                   <VIcon icon="tabler-qrcode" />
                 </VBtn>
-                <VBtn icon variant="tonal" color="info" size="small" class="rounded-lg shadow-hover" title="إعدادات الظهور والترقية" @click="openPromotionDialog(car)">
+                <VBtn icon variant="tonal" color="info" size="small" class="rounded-lg shadow-hover" title="تحميل كارت الصورة للسوشيال ميديا (انستجرام)" @click="openSocialCardModal(car)">
+                  <VIcon icon="tabler-photo-share" />
+                </VBtn>
+                <VBtn icon variant="tonal" color="warning" size="small" class="rounded-lg shadow-hover" title="إعدادات الظهور والترقية" @click="openPromotionDialog(car)">
                   <VIcon icon="tabler-settings-automation" />
                 </VBtn>
                 <VBtn icon variant="tonal" color="primary" size="small" class="rounded-lg shadow-hover" title="تعديل" @click="handleEdit(car.id)">
@@ -919,6 +932,9 @@ const stats = computed(() => {
 
     <!-- Car QR Poster Dialog -->
     <CarQrDialog v-model:is-dialog-visible="qrDialog" :car="qrSelectedCar" />
+
+    <!-- Car Social Card Share Dialog -->
+    <CarSocialCardDialog v-model:is-dialog-visible="socialCardDialog" :car="socialSelectedCar" />
   </div>
 </template>
 
