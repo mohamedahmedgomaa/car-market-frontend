@@ -91,28 +91,37 @@ const handleClose = () => {
 }
 
 // ---------------------------------------------------------
-// Ultra High Resolution Canvas Exporter (1080 x 1350 4:5 PNG)
+// Reel / Story Reel Optimized Canvas Exporter (1080 x 1600 Vertical PNG)
 // ---------------------------------------------------------
 const downloadCardImage = async () => {
   isDownloading.value = true
   try {
     const canvas = document.createElement('canvas')
     canvas.width = 1080
-    canvas.height = 1350
+    canvas.height = 1600
     const ctx = canvas.getContext('2d')
 
-    // 1. Dark Card Background
-    ctx.fillStyle = '#0c1019'
-    ctx.fillRect(0, 0, 1080, 1350)
+    // 1. Dark Card Outer Background
+    ctx.fillStyle = '#0a0e17'
+    ctx.fillRect(0, 0, 1080, 1600)
 
-    // Outer Glow / Border Frame
-    ctx.strokeStyle = '#ff6d00'
+    // Outer Glow / Border Frame (Reddish-Orange Accent)
+    ctx.strokeStyle = '#ff3d00'
     ctx.lineWidth = 6
     ctx.beginPath()
-    ctx.roundRect(24, 24, 1032, 1302, 36)
+    ctx.roundRect(24, 24, 1032, 1552, 38)
     ctx.stroke()
 
-    // 2. Load Car Image
+    // Inner Card Container
+    ctx.fillStyle = '#0f1420'
+    ctx.beginPath()
+    ctx.roundRect(36, 36, 1008, 1528, 32)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(255, 61, 0, 0.25)'
+    ctx.lineWidth = 2
+    ctx.stroke()
+
+    // 2. Load & Draw Car Image (Narrower aspect ratio, vertical Reel height: 1008px width x 740px height)
     const carImg = new Image()
     carImg.crossOrigin = 'anonymous'
     carImg.src = carImage.value
@@ -121,78 +130,61 @@ const downloadCardImage = async () => {
       carImg.onerror = resolve
     })
 
-    // Draw Car Image (Top Container: 1000px width x 620px height)
     ctx.save()
     ctx.beginPath()
-    ctx.roundRect(40, 40, 1000, 620, 28)
+    ctx.roundRect(36, 36, 1008, 740, 32)
     ctx.clip()
 
     if (carImg.complete && carImg.naturalWidth) {
-      // Cover crop calculation
       const imgRatio = carImg.naturalWidth / carImg.naturalHeight
-      const targetRatio = 1000 / 620
+      const targetRatio = 1008 / 740
       let renderW, renderH, offsetX, offsetY
 
       if (imgRatio > targetRatio) {
-        renderH = 620
-        renderW = 620 * imgRatio
-        offsetX = 40 - (renderW - 1000) / 2
-        offsetY = 40
+        renderH = 740
+        renderW = 740 * imgRatio
+        offsetX = 36 - (renderW - 1008) / 2
+        offsetY = 36
       } else {
-        renderW = 1000
-        renderH = 1000 / imgRatio
-        offsetX = 40
-        offsetY = 40 - (renderH - 620) / 2
+        renderW = 1008
+        renderH = 1008 / imgRatio
+        offsetX = 36
+        offsetY = 36 - (renderH - 740) / 2
       }
       ctx.drawImage(carImg, offsetX, offsetY, renderW, renderH)
     } else {
       ctx.fillStyle = '#1e293b'
-      ctx.fillRect(40, 40, 1000, 620)
+      ctx.fillRect(36, 36, 1008, 740)
     }
     ctx.restore()
 
-    // FEATURED Badge on Top Left of Image
+    // FEATURED Badge on Top Left of Image (No Heart Icon!)
     if (isFeatured.value) {
       ctx.fillStyle = '#ff6d00'
       ctx.beginPath()
-      ctx.roundRect(64, 64, 210, 52, 26)
+      ctx.roundRect(60, 60, 220, 54, 27)
       ctx.fill()
 
       ctx.fillStyle = '#ffffff'
       ctx.font = 'bold 22px system-ui, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('★ FEATURED', 169, 98)
+      ctx.fillText('★ FEATURED', 170, 95)
     }
 
-    // Heart Icon Circle on Top Right
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.75)'
-    ctx.beginPath()
-    ctx.arc(976, 90, 32, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
-    ctx.lineWidth = 2
-    ctx.stroke()
-
-    ctx.fillStyle = '#ffffff'
-    ctx.font = '26px system-ui'
-    ctx.textAlign = 'center'
-    ctx.fillText('♥', 976, 98)
-
-    // 3. Card Title & Specifications (Middle Content Area)
-    let yCursor = 720
+    // 3. Card Title & Specifications
+    let yCursor = 840
 
     ctx.direction = 'ltr'
     ctx.textAlign = 'left'
     ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 44px system-ui, sans-serif'
 
-    // Multi-line title wrap (max width 980px)
     const words = carTitle.value.split(' ')
     let currentLine = ''
     const lines = []
     words.forEach(word => {
       const testLine = currentLine ? `${currentLine} ${word}` : word
-      if (ctx.measureText(testLine).width > 980) {
+      if (ctx.measureText(testLine).width > 940) {
         lines.push(currentLine)
         currentLine = word
       } else {
@@ -202,73 +194,64 @@ const downloadCardImage = async () => {
     if (currentLine) lines.push(currentLine)
 
     lines.slice(0, 2).forEach(line => {
-      ctx.fillText(line, 50, yCursor)
-      yCursor += 54
+      ctx.fillText(line, 60, yCursor)
+      yCursor += 56
     })
 
-    yCursor += 16
+    yCursor += 20
 
     // Specs Line 1: Brand | Model | Local
     ctx.font = '600 28px system-ui, sans-serif'
     ctx.fillStyle = '#94a3b8'
     const specLine1 = `${brandName.value}  |  ${modelName.value}  |  ${props.car?.is_import ? 'Import' : 'Local'}`
-    ctx.fillText(specLine1, 50, yCursor)
+    ctx.fillText(specLine1, 60, yCursor)
 
-    yCursor += 42
+    yCursor += 44
 
     // Specs Line 2: Year | Condition
     const conditionText = props.car?.condition === 'new' ? 'New' : 'Used'
     const specLine2 = `${props.car?.year || ''}  |  ${conditionText}`
-    ctx.fillText(specLine2, 50, yCursor)
+    ctx.fillText(specLine2, 60, yCursor)
+
+    yCursor += 75
+
+    // 4. PRICE & PHONE NUMBER ROW (NO PILL/OVAL BACKGROUND, GREEN PHONE TEXT!)
+    ctx.font = 'bold 58px system-ui, sans-serif'
+    ctx.fillStyle = '#ff8c00'
+    ctx.fillText(formattedPrice.value, 60, yCursor)
+
+    // Phone Number on Right Side of Price Row in WhatsApp/Call Green! (No Oval Container!)
+    if (customPhone.value) {
+      ctx.textAlign = 'right'
+      ctx.font = 'bold 40px system-ui, sans-serif'
+      ctx.fillStyle = '#25D366' // Vibrant WhatsApp Green!
+      ctx.fillText(`📞 ${customPhone.value}`, 1020, yCursor)
+    }
+
+    yCursor += 60
+
+    // Divider Line
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(60, yCursor)
+    ctx.lineTo(1020, yCursor)
+    ctx.stroke()
 
     yCursor += 65
 
-    // 4. PRICE & PHONE NUMBER ROW (REPLACES LOCATION AS REQUESTED BY USER)
-    ctx.font = 'bold 54px system-ui, sans-serif'
-    ctx.fillStyle = '#ff8c00'
-    ctx.fillText(formattedPrice.value, 50, yCursor)
-
-    // Phone Number on Right side of Price Row
-    if (customPhone.value) {
-      ctx.textAlign = 'right'
-      ctx.font = 'bold 34px system-ui, sans-serif'
-      ctx.fillStyle = '#ffffff'
-      
-      // Phone pill container
-      ctx.beginPath()
-      ctx.roundRect(580, yCursor - 46, 450, 62, 31)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.07)'
-      ctx.fill()
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
-      ctx.lineWidth = 2
-      ctx.stroke()
-
-      ctx.fillStyle = '#38bdf8'
-      ctx.fillText(`📞 ${customPhone.value}`, 1000, yCursor - 4)
-    }
-
-    yCursor += 50
-
-    // Divider Line
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(50, yCursor)
-    ctx.lineTo(1030, yCursor)
-    ctx.stroke()
-
-    yCursor += 50
-
-    // 5. FOOTER ROW: Seller Logo + Seller Name + Verified Badge + Timestamp
+    // 5. ENHANCED SHOWROOM FOOTER: Showroom Logo + Name + High Quality Verified Badge
     ctx.textAlign = 'left'
 
-    // Seller Logo Circle
+    // Showroom Logo Avatar
+    const logoX = 60
+    const logoY = yCursor - 30
     ctx.save()
     ctx.beginPath()
-    ctx.arc(90, yCursor + 20, 36, 0, Math.PI * 2)
+    ctx.arc(logoX + 36, logoY + 36, 36, 0, Math.PI * 2)
     ctx.clip()
     ctx.fillStyle = '#1e293b'
-    ctx.fillRect(54, yCursor - 16, 72, 72)
+    ctx.fillRect(logoX, logoY, 72, 72)
 
     if (sellerLogo.value) {
       const sLogoImg = new Image()
@@ -279,32 +262,50 @@ const downloadCardImage = async () => {
         sLogoImg.onerror = resolve
       })
       if (sLogoImg.complete && sLogoImg.naturalWidth) {
-        ctx.drawImage(sLogoImg, 54, yCursor - 16, 72, 72)
+        ctx.drawImage(sLogoImg, logoX, logoY, 72, 72)
       }
     }
     ctx.restore()
 
-    // Seller Name & Verified Badge
-    ctx.fillStyle = '#c084fc'
-    ctx.font = 'bold 32px system-ui, sans-serif'
-    ctx.fillText(sellerName.value, 145, yCursor + 28)
+    // Avatar Circle Border
+    ctx.strokeStyle = 'rgba(255, 109, 0, 0.6)'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(logoX + 36, logoY + 36, 36, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Showroom Name (Crisp Bold White)
+    const nameX = logoX + 90
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 34px system-ui, sans-serif'
+    ctx.fillText(sellerName.value, nameX, yCursor + 18)
 
     const sellerNameW = ctx.measureText(sellerName.value).width
-    ctx.fillStyle = '#38bdf8'
-    ctx.font = '24px system-ui'
-    ctx.fillText('✓', 155 + sellerNameW, yCursor + 28)
 
-    // Timestamp / Branding Watermark on Right
+    // Enhanced Verified Badge Icon (Filled Cyan/Blue Badge Circle with White Checkmark)
+    const badgeX = nameX + sellerNameW + 20
+    const badgeY = yCursor + 7
+    ctx.fillStyle = '#00d2ff'
+    ctx.beginPath()
+    ctx.arc(badgeX, badgeY, 15, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = '#0c1019'
+    ctx.font = 'bold 18px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('✓', badgeX, badgeY + 6)
+
+    // NegmCars.com Watermark on Right Side
     ctx.textAlign = 'right'
     ctx.fillStyle = '#94a3b8'
-    ctx.font = '500 26px system-ui, sans-serif'
-    ctx.fillText('NegmCars.com • Available Now', 1030, yCursor + 28)
+    ctx.font = '600 26px system-ui, sans-serif'
+    ctx.fillText('NegmCars.com', 1020, yCursor + 18)
 
-    // Trigger Download
+    // Trigger Image Download
     const dataUrl = canvas.toDataURL('image/png')
     const a = document.createElement('a')
     a.href = dataUrl
-    a.download = `NegmCars-PromoCard-${props.car?.id || 'share'}.png`
+    a.download = `NegmCars-ReelCard-${props.car?.id || 'promo'}.png`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -319,7 +320,7 @@ const downloadCardImage = async () => {
 <template>
   <VDialog
     :model-value="isDialogVisible"
-    max-width="580"
+    max-width="520"
     persistent
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
@@ -331,8 +332,8 @@ const downloadCardImage = async () => {
             <VIcon icon="tabler-photo-share" size="22" />
           </VAvatar>
           <div>
-            <h3 class="text-h6 font-weight-black mb-0 text-white">تحميل كارت الإعلان للسوشيال ميديا</h3>
-            <span class="text-caption text-grey-lighten-1">بطاقة مصممة خصيصاً للإنستغرام والتواصل</span>
+            <h3 class="text-h6 font-weight-black mb-0 text-white">تحميل كارت الريل والسوشيال ميديا</h3>
+            <span class="text-caption text-grey-lighten-1">تصميم رأسي مخصص للستوري والريلز (Reel Optimized)</span>
           </div>
         </div>
 
@@ -344,8 +345,8 @@ const downloadCardImage = async () => {
       <!-- Editable Phone Number Control -->
       <div class="phone-input-box mb-5 pa-4 rounded-xl border bg-slate-900">
         <label class="text-caption font-weight-bold text-grey-lighten-1 mb-2 d-block">
-          <VIcon icon="tabler-phone" size="16" class="me-1 text-primary" />
-          رقم الهاتف الظاهر على كارت الصورة (بدلاً من الموقع الجغرافي):
+          <VIcon icon="tabler-phone" size="16" class="me-1 text-success" />
+          رقم الهاتف الظاهر باللون الأخضر على الكارت (بدون أي خلفية):
         </label>
         <VTextField
           v-model="customPhone"
@@ -360,21 +361,19 @@ const downloadCardImage = async () => {
 
       <!-- Live Interactive Preview of Card -->
       <div class="card-preview-container mb-6 pa-3 rounded-2xl border bg-black">
-        <div class="preview-header text-caption font-weight-bold text-grey-lighten-2 text-center mb-2">
-          معاينة الكارت المصدر (يحتوي على رقم الهاتف بدلاً من الموقع الجغرافي)
+        <div class="preview-header text-caption font-weight-bold text-grey-lighten-2 text-center mb-3">
+          معاينة كارت الريلز (Reels / Stories Format)
         </div>
 
-        <!-- Card Mockup Component matching Image 1 -->
-        <div class="car-share-card-mockup rounded-2xl overflow-hidden border">
+        <!-- Card Mockup Component (No Heart Icon, Green Phone Text, Enhanced Showroom Name & Verified Badge) -->
+        <div class="car-share-card-mockup rounded-2xl overflow-hidden border max-w-400 mx-auto">
           <!-- Main Image -->
           <div class="card-media-box position-relative">
             <img :src="carImage" alt="Car Image" class="w-100 h-100 object-cover" />
             <div v-if="isFeatured" class="featured-badge position-absolute top-3 start-3">
               ★ FEATURED
             </div>
-            <div class="heart-btn position-absolute top-3 end-3">
-              ♥
-            </div>
+            <!-- NO HEART ICON AS REQUESTED -->
           </div>
 
           <!-- Card Content -->
@@ -390,28 +389,28 @@ const downloadCardImage = async () => {
               {{ props.car?.year }} &nbsp;|&nbsp; {{ props.car?.condition === 'new' ? 'New' : 'Used' }}
             </div>
 
-            <!-- Price & Custom Phone Row -->
+            <!-- Price & Green Phone Number (No Oval Background!) -->
             <div class="d-flex align-center justify-space-between gap-2 pt-2 pb-3 border-t border-b border-white-10">
               <div class="card-price text-h5 font-weight-black text-primary">
                 {{ formattedPrice }} <span class="text-caption font-weight-bold">EGP</span>
               </div>
-              <div class="card-phone-pill d-inline-flex align-center px-3 py-1 rounded-pill bg-info-subtle text-info text-caption font-weight-bold">
-                <VIcon icon="tabler-phone-calling" size="14" class="me-1" />
+              <div class="card-phone-green text-subtitle-1 font-weight-black text-success d-inline-flex align-center">
+                <VIcon icon="tabler-phone-calling" size="18" class="me-1 text-success" />
                 {{ customPhone }}
               </div>
             </div>
 
-            <!-- Footer -->
+            <!-- Footer: Enhanced Showroom Name & Verified Badge -->
             <div class="d-flex align-center justify-space-between pt-3 text-caption text-grey-lighten-1">
               <div class="d-flex align-center gap-2">
-                <VAvatar size="24" color="surface">
+                <VAvatar size="26" class="border border-primary">
                   <img v-if="sellerLogo" :src="sellerLogo" alt="logo" />
-                  <VIcon v-else icon="tabler-building-store" size="14" />
+                  <VIcon v-else icon="tabler-building-store" size="14" color="primary" />
                 </VAvatar>
-                <span class="font-weight-bold text-white">{{ sellerName }}</span>
-                <VIcon icon="tabler-discount-check-filled" color="info" size="16" />
+                <span class="font-weight-black text-white text-subtitle-2">{{ sellerName }}</span>
+                <VIcon icon="tabler-discount-check-filled" color="info" size="18" class="ms-0.5" />
               </div>
-              <span class="text-xxs">NegmCars.com</span>
+              <span class="text-xxs font-weight-bold text-grey-lighten-1">NegmCars.com</span>
             </div>
           </div>
         </div>
@@ -430,7 +429,7 @@ const downloadCardImage = async () => {
           @click="downloadCardImage"
         >
           <VIcon icon="tabler-download" class="me-2" size="22" />
-          تحميل صورة الكارت (PNG)
+          تحميل صورة الريل (PNG)
         </VBtn>
 
         <VBtn
@@ -455,14 +454,18 @@ const downloadCardImage = async () => {
   backdrop-filter: blur(25px);
 }
 
+.max-w-400 {
+  max-width: 400px;
+}
+
 .car-share-card-mockup {
   background: #0f1420;
-  border: 1px solid rgba(255, 109, 0, 0.4) !important;
+  border: 1px solid rgba(255, 61, 0, 0.4) !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
 .card-media-box {
-  height: 220px;
+  height: 250px;
   background: #1e293b;
   overflow: hidden;
 }
@@ -472,27 +475,15 @@ const downloadCardImage = async () => {
   color: #fff;
   font-size: 0.7rem;
   font-weight: 900;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 9999px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-.heart-btn {
-  background: rgba(15, 23, 42, 0.7);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.card-phone-pill {
-  background: rgba(56, 189, 248, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+.card-phone-green {
+  color: #25D366 !important;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(37, 211, 102, 0.2);
 }
 
 .border-white-10 {

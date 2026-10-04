@@ -1437,18 +1437,18 @@ const activeAdvancedFiltersCount = computed(() => {
 
 /* Premium Horizontal Search Deck Styles */
 .premium-horizontal-search {
-  background: rgba(var(--v-theme-on-surface), 0.02);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  background: rgba(15, 20, 32, 0.85);
+  border: 1.5px solid rgba(255, 109, 0, 0.5) !important;
   border-radius: 24px;
   padding: 20px 24px;
   margin-bottom: 30px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 15px 35px rgba(var(--v-theme-on-surface), 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 109, 0, 0.15) !important;
 }
 
 .premium-horizontal-search:hover {
-  border-color: rgba(var(--v-theme-primary), 0.15);
-  box-shadow: 0 20px 45px rgba(var(--v-theme-on-surface), 0.15);
+  border-color: rgba(255, 109, 0, 0.8) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 109, 0, 0.25) !important;
 }
 
 .search-main-row {
