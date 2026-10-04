@@ -78,10 +78,25 @@ const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_
 
 const getSocialUrl = (platform) => {
   const s = seller.value || {}
-  if (platform === 'facebook') return s.facebook || s.facebook_url || null
-  if (platform === 'instagram') return s.instagram || s.instagram_url || null
-  if (platform === 'youtube') return s.youtube || s.youtube_url || null
-  if (platform === 'tiktok') return s.tiktok || s.tiktok_url || null
+  
+  let direct = null
+  if (platform === 'facebook') direct = s.facebook || s.facebook_url
+  if (platform === 'instagram') direct = s.instagram || s.instagram_url
+  if (platform === 'youtube') direct = s.youtube || s.youtube_url
+  if (platform === 'tiktok') direct = s.tiktok || s.tiktok_url
+  if (direct) return direct
+
+  const rawMap = s.map_url || ''
+  if (rawMap.includes('#social=')) {
+    try {
+      const hash = rawMap.split('#social=')[1]
+      const socialExtracted = JSON.parse(decodeURIComponent(hash))
+      if (platform === 'facebook') return socialExtracted.fb || null
+      if (platform === 'instagram') return socialExtracted.ig || null
+      if (platform === 'youtube') return socialExtracted.yt || null
+      if (platform === 'tiktok') return socialExtracted.tt || null
+    } catch (e) {}
+  }
   return null
 }
 
@@ -165,11 +180,19 @@ const fetchSeller = async () => {
 }
 
 const openMap = () => {
-  if (seller.value?.map_url) {
-    window.open(seller.value.map_url, '_blank')
+  let url = seller.value?.map_url || ''
+  if (url.includes('#social=')) {
+    url = url.split('#social=')[0]
+  }
+  url = url.trim()
+  if (url) {
+    if (!/^https?:\/\//i.test(url)) {
+      url = 'https://' + url
+    }
+    window.open(url, '_blank')
     return
   }
-  const query = encodeURIComponent((t(seller.value?.store_name) || seller.value?.name || 'Showroom') + ' ' + (t(seller.value?.city?.name) || ''))
+  const query = encodeURIComponent((_t(seller.value?.store_name) || seller.value?.name || 'Showroom') + ' ' + (_t(seller.value?.city?.name) || ''))
   window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
 }
 

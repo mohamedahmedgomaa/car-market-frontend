@@ -95,6 +95,19 @@ const fetchSeller = async () => {
     const res = await sellerAdminApi.getById(route.params.id)
     const data = res.data.data
 
+    let rawMap = data.map_url || ''
+    let socialExtracted = {}
+
+    if (rawMap.includes('#social=')) {
+      const parts = rawMap.split('#social=')
+      rawMap = parts[0]
+      try {
+        socialExtracted = JSON.parse(decodeURIComponent(parts[1]))
+      } catch (e) {
+        console.error('Failed to parse socialData hash:', e)
+      }
+    }
+
     // Map data to form fields
     seller.value.name = data.name
     seller.value.email = data.email ? String(data.email).trim().replace(/\s+/g, '') : ''
@@ -111,12 +124,12 @@ const fetchSeller = async () => {
     seller.value.city_id = data.city_id
     seller.value.address_ar = data.address?.ar || ''
     seller.value.address_en = data.address?.en || ''
-    seller.value.map_url = data.map_url || ''
-    seller.value.facebook = data.facebook || data.facebook_url || ''
-    seller.value.instagram = data.instagram || data.instagram_url || ''
-    seller.value.tiktok = data.tiktok || data.tiktok_url || ''
-    seller.value.youtube = data.youtube || data.youtube_url || ''
-    seller.value.website = data.website || data.website_url || ''
+    seller.value.map_url = rawMap
+    seller.value.facebook = data.facebook || data.facebook_url || socialExtracted.fb || ''
+    seller.value.instagram = data.instagram || data.instagram_url || socialExtracted.ig || ''
+    seller.value.tiktok = data.tiktok || data.tiktok_url || socialExtracted.tt || ''
+    seller.value.youtube = data.youtube || data.youtube_url || socialExtracted.yt || ''
+    seller.value.website = data.website || data.website_url || socialExtracted.web || ''
     seller.value.sort_order = data.sort_order || 0
     seller.value.tier = data.tier || 'none'
 
@@ -151,8 +164,21 @@ const handleSubmit = async () => {
   errors.value = {}
   loading.value = true
   try {
+    const socialData = {}
+    if (seller.value.facebook) socialData.fb = seller.value.facebook
+    if (seller.value.instagram) socialData.ig = seller.value.instagram
+    if (seller.value.tiktok) socialData.tt = seller.value.tiktok
+    if (seller.value.youtube) socialData.yt = seller.value.youtube
+    if (seller.value.website) socialData.web = seller.value.website
+
+    let baseMapUrl = (seller.value.map_url || '').split('#social=')[0].trim()
+    let finalMapUrl = baseMapUrl
+    if (Object.keys(socialData).length > 0) {
+      finalMapUrl = baseMapUrl + '#social=' + encodeURIComponent(JSON.stringify(socialData))
+    }
+
     const formData = new FormData()
-    const socialKeys = ['facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
+    const socialKeys = ['map_url', 'facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
 
     for (const key in seller.value) {
       if (socialKeys.includes(key)) continue // Handled separately below
@@ -176,32 +202,36 @@ const handleSubmit = async () => {
       }
     }
 
-    // Append both parameter variants for all social links to ensure 100% compatibility
-    const fb = seller.value.facebook || seller.value.facebook_url
+    if (finalMapUrl) {
+      formData.append('map_url', finalMapUrl)
+    }
+
+    // Append both parameter variants for all social links
+    const fb = seller.value.facebook
     if (fb) {
       formData.append('facebook', fb)
       formData.append('facebook_url', fb)
     }
 
-    const ig = seller.value.instagram || seller.value.instagram_url
+    const ig = seller.value.instagram
     if (ig) {
       formData.append('instagram', ig)
       formData.append('instagram_url', ig)
     }
 
-    const tt = seller.value.tiktok || seller.value.tiktok_url
+    const tt = seller.value.tiktok
     if (tt) {
       formData.append('tiktok', tt)
       formData.append('tiktok_url', tt)
     }
 
-    const yt = seller.value.youtube || seller.value.youtube_url
+    const yt = seller.value.youtube
     if (yt) {
       formData.append('youtube', yt)
       formData.append('youtube_url', yt)
     }
 
-    const web = seller.value.website || seller.value.website_url
+    const web = seller.value.website
     if (web) {
       formData.append('website', web)
       formData.append('website_url', web)

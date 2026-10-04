@@ -107,8 +107,20 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
+    const socialData = {}
+    if (form.value.facebook_url || form.value.facebook) socialData.fb = form.value.facebook_url || form.value.facebook
+    if (form.value.instagram_url || form.value.instagram) socialData.ig = form.value.instagram_url || form.value.instagram
+    if (form.value.tiktok_url || form.value.tiktok) socialData.tt = form.value.tiktok_url || form.value.tiktok
+    if (form.value.youtube_url || form.value.youtube) socialData.yt = form.value.youtube_url || form.value.youtube
+
+    let baseMapUrl = (form.value.map_url || '').split('#social=')[0].trim()
+    let finalMapUrl = baseMapUrl
+    if (Object.keys(socialData).length > 0) {
+      finalMapUrl = baseMapUrl + '#social=' + encodeURIComponent(JSON.stringify(socialData))
+    }
+
     const formData = new FormData()
-    const socialKeys = ['facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
+    const socialKeys = ['map_url', 'facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
 
     for (const key in form.value) {
       if (socialKeys.includes(key)) continue
@@ -132,6 +144,10 @@ const handleSubmit = async () => {
       }
     }
 
+    if (finalMapUrl) {
+      formData.append('map_url', finalMapUrl)
+    }
+
     const fb = form.value.facebook_url || form.value.facebook
     if (fb) {
       formData.append('facebook', fb)
@@ -147,11 +163,10 @@ const handleSubmit = async () => {
       formData.append('tiktok', tt)
       formData.append('tiktok_url', tt)
     }
-    const yt = form.value.youtube_url || form.value.youtube || form.value.website
+    const yt = form.value.youtube_url || form.value.youtube
     if (yt) {
       formData.append('youtube', yt)
       formData.append('youtube_url', yt)
-      formData.append('website', yt)
     }
 
     await sellerAdminApi.create(formData)
