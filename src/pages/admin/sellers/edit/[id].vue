@@ -88,6 +88,52 @@ watch(() => seller.value.governorate_id, (newGovId) => {
   }
 })
 
+const unpackSocialLinks = (rawMapUrl) => {
+  const raw = rawMapUrl || ''
+  let baseMap = raw
+  const social = { fb: '', ig: '', tt: '', yt: '', web: '' }
+
+  if (raw.includes('#soc|')) {
+    const split = raw.split('#soc|')
+    baseMap = split[0]
+    const hash = split[1] || ''
+    hash.split('|').forEach(part => {
+      const idx = part.indexOf('=')
+      if (idx > -1) {
+        const k = part.substring(0, idx)
+        const v = part.substring(idx + 1)
+        if (k in social) social[k] = v
+      }
+    })
+  } else if (raw.includes('#social=')) {
+    const split = raw.split('#social=')
+    baseMap = split[0]
+    try {
+      const parsed = JSON.parse(decodeURIComponent(split[1]))
+      if (parsed.fb) social.fb = parsed.fb
+      if (parsed.ig) social.ig = parsed.ig
+      if (parsed.tt) social.tt = parsed.tt
+      if (parsed.yt) social.yt = parsed.yt
+      if (parsed.web) social.web = parsed.web
+    } catch (e) {}
+  }
+
+  return { baseMap, social }
+}
+
+const packSocialLinks = (mapUrl, social) => {
+  let baseMap = (mapUrl || '').split('#soc')[0].trim()
+  const parts = []
+  if (social.facebook) parts.push('fb=' + social.facebook.trim())
+  if (social.instagram) parts.push('ig=' + social.instagram.trim())
+  if (social.tiktok) parts.push('tt=' + social.tiktok.trim())
+  if (social.youtube) parts.push('yt=' + social.youtube.trim())
+  if (social.website) parts.push('web=' + social.website.trim())
+
+  if (parts.length === 0) return baseMap
+  return baseMap + '#soc|' + parts.join('|')
+}
+
 // ✅ Fetch seller data
 const fetchSeller = async () => {
   loading.value = true
@@ -95,18 +141,7 @@ const fetchSeller = async () => {
     const res = await sellerAdminApi.getById(route.params.id)
     const data = res.data.data
 
-    let rawMap = data.map_url || ''
-    let socialExtracted = {}
-
-    if (rawMap.includes('#social=')) {
-      const parts = rawMap.split('#social=')
-      rawMap = parts[0]
-      try {
-        socialExtracted = JSON.parse(decodeURIComponent(parts[1]))
-      } catch (e) {
-        console.error('Failed to parse socialData hash:', e)
-      }
-    }
+    const { baseMap, social: socialExtracted } = unpackSocialLinks(data.map_url)
 
     // Map data to form fields
     seller.value.name = data.name
@@ -124,7 +159,7 @@ const fetchSeller = async () => {
     seller.value.city_id = data.city_id
     seller.value.address_ar = data.address?.ar || ''
     seller.value.address_en = data.address?.en || ''
-    seller.value.map_url = rawMap
+    seller.value.map_url = baseMap
     seller.value.facebook = data.facebook || data.facebook_url || socialExtracted.fb || ''
     seller.value.instagram = data.instagram || data.instagram_url || socialExtracted.ig || ''
     seller.value.tiktok = data.tiktok || data.tiktok_url || socialExtracted.tt || ''
@@ -164,18 +199,13 @@ const handleSubmit = async () => {
   errors.value = {}
   loading.value = true
   try {
-    const socialData = {}
-    if (seller.value.facebook) socialData.fb = seller.value.facebook
-    if (seller.value.instagram) socialData.ig = seller.value.instagram
-    if (seller.value.tiktok) socialData.tt = seller.value.tiktok
-    if (seller.value.youtube) socialData.yt = seller.value.youtube
-    if (seller.value.website) socialData.web = seller.value.website
-
-    let baseMapUrl = (seller.value.map_url || '').split('#social=')[0].trim()
-    let finalMapUrl = baseMapUrl
-    if (Object.keys(socialData).length > 0) {
-      finalMapUrl = baseMapUrl + '#social=' + encodeURIComponent(JSON.stringify(socialData))
-    }
+    const finalMapUrl = packSocialLinks(seller.value.map_url, {
+      facebook: seller.value.facebook,
+      instagram: seller.value.instagram,
+      tiktok: seller.value.tiktok,
+      youtube: seller.value.youtube,
+      website: seller.value.website,
+    })
 
     const formData = new FormData()
     const socialKeys = ['map_url', 'facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
