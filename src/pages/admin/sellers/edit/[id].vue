@@ -27,10 +27,10 @@ const seller = ref({
   address_ar: '',
   address_en: '',
   map_url: '',
-  facebook_url: '',
-  instagram_url: '',
-  tiktok_url: '',
-  youtube_url: '',
+  facebook: '',
+  instagram: '',
+  tiktok: '',
+  youtube: '',
   sort_order: 0,
   tier: 'none',
   cover_image: null,
@@ -97,7 +97,7 @@ const fetchSeller = async () => {
 
     // Map data to form fields
     seller.value.name = data.name
-    seller.value.email = data.email
+    seller.value.email = data.email ? String(data.email).trim().replace(/\s+/g, '') : ''
     seller.value.phone = data.phone
     seller.value.store_name_ar = data.store_name?.ar || ''
     seller.value.store_name_en = data.store_name?.en || ''
@@ -112,10 +112,10 @@ const fetchSeller = async () => {
     seller.value.address_ar = data.address?.ar || ''
     seller.value.address_en = data.address?.en || ''
     seller.value.map_url = data.map_url || ''
-    seller.value.facebook_url = data.facebook_url || data.facebook || ''
-    seller.value.instagram_url = data.instagram_url || data.instagram || ''
-    seller.value.tiktok_url = data.tiktok_url || data.tiktok || ''
-    seller.value.youtube_url = data.youtube_url || data.youtube || data.website || ''
+    seller.value.facebook = data.facebook || data.facebook_url || ''
+    seller.value.instagram = data.instagram || data.instagram_url || ''
+    seller.value.tiktok = data.tiktok || data.tiktok_url || ''
+    seller.value.youtube = data.youtube || data.youtube_url || data.website || ''
     seller.value.sort_order = data.sort_order || 0
     seller.value.tier = data.tier || 'none'
 
@@ -152,11 +152,21 @@ const handleSubmit = async () => {
   try {
     const formData = new FormData()
     const socialKeys = ['facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
-    
-    for (const key in seller.value) {
-      if (socialKeys.includes(key)) continue // Skip social keys to avoid duplicate appends
 
-      if (seller.value[key] !== null && seller.value[key] !== undefined) {
+    for (const key in seller.value) {
+      if (socialKeys.includes(key)) continue // Handled separately below
+
+      // Validate email: if empty or not valid email syntax, do NOT send it so Laravel's sometimes rule is skipped
+      if (key === 'email') {
+        const rawEmail = String(seller.value.email || '').trim().replace(/\s+/g, '')
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)
+        if (isValidEmail) {
+          formData.append('email', rawEmail)
+        }
+        continue
+      }
+
+      if (seller.value[key] !== null && seller.value[key] !== undefined && seller.value[key] !== '') {
         if (key === 'is_verified' || key === 'is_active') {
           formData.append(key, seller.value[key] ? '1' : '0')
         } else {
@@ -165,22 +175,26 @@ const handleSubmit = async () => {
       }
     }
 
-    const fb = seller.value.facebook_url || seller.value.facebook
+    // Append both parameter variants for all social links to ensure 100% compatibility with api.negmcars.com
+    const fb = seller.value.facebook || seller.value.facebook_url
     if (fb) {
       formData.append('facebook', fb)
       formData.append('facebook_url', fb)
     }
-    const ig = seller.value.instagram_url || seller.value.instagram
+
+    const ig = seller.value.instagram || seller.value.instagram_url
     if (ig) {
       formData.append('instagram', ig)
       formData.append('instagram_url', ig)
     }
-    const tt = seller.value.tiktok_url || seller.value.tiktok
+
+    const tt = seller.value.tiktok || seller.value.tiktok_url
     if (tt) {
       formData.append('tiktok', tt)
       formData.append('tiktok_url', tt)
     }
-    const yt = seller.value.youtube_url || seller.value.youtube || seller.value.website
+
+    const yt = seller.value.youtube || seller.value.youtube_url || seller.value.website
     if (yt) {
       formData.append('youtube', yt)
       formData.append('youtube_url', yt)
@@ -442,56 +456,56 @@ onMounted(async () => {
         <div>
           <label class="block text-sm font-medium mb-2">Facebook Link (Optional)</label>
           <VTextField
-            v-model="seller.facebook_url"
+            v-model="seller.facebook"
             variant="outlined"
             density="comfortable"
             placeholder="Ex: https://facebook.com/..."
             prepend-inner-icon="tabler-brand-facebook"
             hide-details="auto"
-            :error="!!errors.facebook_url"
-            :error-messages="errors.facebook_url"
+            :error="!!errors.facebook || !!errors.facebook_url"
+            :error-messages="errors.facebook || errors.facebook_url"
           />
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-2">Instagram Link (Optional)</label>
           <VTextField
-            v-model="seller.instagram_url"
+            v-model="seller.instagram"
             variant="outlined"
             density="comfortable"
             placeholder="Ex: https://instagram.com/..."
             prepend-inner-icon="tabler-brand-instagram"
             hide-details="auto"
-            :error="!!errors.instagram_url"
-            :error-messages="errors.instagram_url"
+            :error="!!errors.instagram || !!errors.instagram_url"
+            :error-messages="errors.instagram || errors.instagram_url"
           />
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-2">TikTok Link (Optional)</label>
           <VTextField
-            v-model="seller.tiktok_url"
+            v-model="seller.tiktok"
             variant="outlined"
             density="comfortable"
             placeholder="Ex: https://tiktok.com/@..."
             prepend-inner-icon="tabler-brand-tiktok"
             hide-details="auto"
-            :error="!!errors.tiktok_url"
-            :error-messages="errors.tiktok_url"
+            :error="!!errors.tiktok || !!errors.tiktok_url"
+            :error-messages="errors.tiktok || errors.tiktok_url"
           />
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-2">YouTube Link (Optional)</label>
           <VTextField
-            v-model="seller.youtube_url"
+            v-model="seller.youtube"
             variant="outlined"
             density="comfortable"
             placeholder="Ex: https://youtube.com/..."
             prepend-inner-icon="tabler-brand-youtube"
             hide-details="auto"
-            :error="!!errors.youtube_url"
-            :error-messages="errors.youtube_url"
+            :error="!!errors.youtube || !!errors.youtube_url"
+            :error-messages="errors.youtube || errors.youtube_url"
           />
         </div>
 

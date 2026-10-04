@@ -1,0 +1,1 @@
+import{l as r,c as s,b as a,aR as t,i as o,o as c}from"./index-ARNPUm4N.js";const n={class:"d-flex align-center justify-center min-vh-100 pa-6"},p={__name:"index",setup(i){const e=o();return r(()=>{e.replace("/user/cars")}),(l,u)=>(c(),s("div",n,[a(t,{indeterminate:"",color:"primary",size:"48"})]))}};export{p as default};

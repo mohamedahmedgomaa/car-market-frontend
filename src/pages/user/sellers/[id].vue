@@ -280,7 +280,7 @@ onMounted(fetchSeller)
         >
           <div class="header-bg-glow"></div>
           
-          <div class="showroom-profile-container pa-6 pa-md-10 position-relative z-1">
+          <div class="showroom-profile-container pa-10 pa-md-16 position-relative z-1">
             <div class="d-flex flex-column flex-md-row align-center align-md-start gap-6 gap-md-8 text-center text-md-start">
               
               <!-- Showroom Avatar / Logo -->
@@ -349,29 +349,6 @@ onMounted(fetchSeller)
                       >
                         {{ t('openMap') || 'Open Map' }}
                       </VChip>
-                    </div>
-
-                    <!-- Reviews / Ratings -->
-                    <div class="d-flex align-center justify-center justify-md-start gap-1 mt-2 mb-3 flex-wrap text-white">
-                      <div class="d-flex align-center text-amber-accent-4 cursor-pointer" @click="openReviewDialog" title="Click to see reviews">
-                        <VIcon icon="tabler-star-filled" size="16" />
-                        <VIcon icon="tabler-star-filled" size="16" />
-                        <VIcon icon="tabler-star-filled" size="16" />
-                        <VIcon icon="tabler-star-filled" size="16" />
-                        <VIcon icon="tabler-star-half-filled" size="16" />
-                      </div>
-                      <span class="text-caption font-weight-medium ms-2 text-white" style="color: rgba(255, 255, 255, 0.7) !important;">4.8 (124 {{ t('reviews') || 'Reviews' }})</span>
-                      
-                      <VBtn 
-                        variant="tonal" 
-                        size="x-small" 
-                        color="amber-accent-4" 
-                        class="ms-3 font-weight-bold rounded-pill px-3 shadow-sm text-white"
-                        @click="openReviewDialog"
-                      >
-                        <VIcon icon="tabler-edit" size="12" class="me-1" />
-                        {{ t('rateShowroom') || 'Rate' }}
-                      </VBtn>
                     </div>
 
                     <!-- Showroom Bio / Description (4-line fixed space) -->
@@ -669,6 +646,10 @@ onMounted(fetchSeller)
   border-radius: 32px !important;
   overflow: hidden;
   position: relative;
+  min-height: 480px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .header-bg-glow {
@@ -754,9 +735,9 @@ onMounted(fetchSeller)
   background: #09090b;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  border-radius: 16px;
-  width: 140px;
-  height: 140px;
+  border-radius: 20px;
+  width: 165px;
+  height: 165px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -771,14 +752,14 @@ onMounted(fetchSeller)
 
 /* Typography & Info */
 .store-bio {
-  line-height: 1.6;
-  max-width: 720px;
-  font-size: 0.95rem !important;
+  line-height: 1.7;
+  max-width: 760px;
+  font-size: 1rem !important;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 90px; /* Fixed height for exactly 4 lines (1.6 * 0.95rem * 4 lines ≈ 90px) */
+  min-height: 100px;
 }
 
 .text-white-50 {

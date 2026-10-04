@@ -113,7 +113,16 @@ const handleSubmit = async () => {
     for (const key in form.value) {
       if (socialKeys.includes(key)) continue
 
-      if (form.value[key] !== null && form.value[key] !== undefined) {
+      if (key === 'email') {
+        const emailVal = String(form.value.email || '').trim().replace(/\s+/g, '')
+        const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)
+        if (isValidEmail) {
+          formData.append('email', emailVal)
+        }
+        continue
+      }
+
+      if (form.value[key] !== null && form.value[key] !== undefined && form.value[key] !== '') {
         // ✅ Force is_verified and is_active to be 1 or 0
         if (key === 'is_verified' || key === 'is_active') {
           formData.append(key, form.value[key] ? '1' : '0')
