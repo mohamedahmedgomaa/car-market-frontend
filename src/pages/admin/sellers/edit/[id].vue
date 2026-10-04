@@ -151,7 +151,11 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     const formData = new FormData()
+    const socialKeys = ['facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
+    
     for (const key in seller.value) {
+      if (socialKeys.includes(key)) continue // Skip social keys to avoid duplicate appends
+
       if (seller.value[key] !== null && seller.value[key] !== undefined) {
         if (key === 'is_verified' || key === 'is_active') {
           formData.append(key, seller.value[key] ? '1' : '0')
@@ -161,12 +165,26 @@ const handleSubmit = async () => {
       }
     }
 
-    if (seller.value.facebook_url) formData.append('facebook', seller.value.facebook_url)
-    if (seller.value.instagram_url) formData.append('instagram', seller.value.instagram_url)
-    if (seller.value.tiktok_url) formData.append('tiktok', seller.value.tiktok_url)
-    if (seller.value.youtube_url) {
-      formData.append('youtube', seller.value.youtube_url)
-      formData.append('website', seller.value.youtube_url)
+    const fb = seller.value.facebook_url || seller.value.facebook
+    if (fb) {
+      formData.append('facebook', fb)
+      formData.append('facebook_url', fb)
+    }
+    const ig = seller.value.instagram_url || seller.value.instagram
+    if (ig) {
+      formData.append('instagram', ig)
+      formData.append('instagram_url', ig)
+    }
+    const tt = seller.value.tiktok_url || seller.value.tiktok
+    if (tt) {
+      formData.append('tiktok', tt)
+      formData.append('tiktok_url', tt)
+    }
+    const yt = seller.value.youtube_url || seller.value.youtube || seller.value.website
+    if (yt) {
+      formData.append('youtube', yt)
+      formData.append('youtube_url', yt)
+      formData.append('website', yt)
     }
 
     await sellerAdminApi.update(route.params.id, formData)

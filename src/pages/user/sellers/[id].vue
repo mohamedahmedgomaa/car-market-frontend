@@ -207,10 +207,17 @@ const openMap = () => {
   window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
 }
 
-// ✅ Call Dialog
+// ✅ Call Dialog & Copying
 const showCallDialog = ref(false)
+const copiedSnackbar = ref(false)
 const openCallDialog = () => { showCallDialog.value = true }
 const closeCallDialog = () => { showCallDialog.value = false }
+const copyPhone = () => {
+  if (seller.value?.phone) {
+    navigator.clipboard.writeText(String(seller.value.phone))
+    copiedSnackbar.value = true
+  }
+}
 
 // ✅ Review Dialog State
 const showReviewDialog = ref(false)
@@ -516,18 +523,19 @@ onMounted(fetchSeller)
         </div>
 
         <!-- ✅ Call Confirmation Dialog -->
-        <VDialog v-model="showCallDialog" max-width="400">
-          <VCard class="pa-6 text-center rounded-2xl" elevation="10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(var(--v-border-color), 0.15);">
+        <VDialog v-model="showCallDialog" max-width="420">
+          <VCard class="pa-6 text-center rounded-2xl elevation-12" style="background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15);">
             <VAvatar color="primary" variant="tonal" size="70" class="mx-auto mb-4 elevation-4">
-              <VIcon icon="tabler-phone-calling" size="40" />
+              <VIcon icon="tabler-phone-calling" size="38" color="primary" />
             </VAvatar>
             
-            <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">{{ t('callShowroom') || 'Call Showroom' }}</h3>
-            <p class="text-body-1 mb-6 text-medium-emphasis">
-              {{ t('contact') || 'Contact' }} <strong>{{ t(seller.store_name) || seller.name }}</strong> {{ t('directlyAt') || 'directly at:' }}
+            <h3 class="text-h5 font-weight-black mb-1 text-white">{{ t('callShowroom') || 'الاتصال بالمعرض' }}</h3>
+            <p class="text-body-2 mb-4 text-grey-lighten-1">
+              {{ t('contact') || 'التواصل مع' }} <strong class="text-white">{{ _t(seller.store_name) || seller.name }}</strong>
             </p>
 
-            <div class="phone-display mb-8 pa-4 rounded-xl font-weight-black text-h5 text-primary tracking-wide bg-primary-subtle border">
+            <!-- Prominent Phone Number Display -->
+            <div class="phone-display mb-6 pa-4 rounded-xl font-weight-black text-h4 text-primary tracking-widest bg-slate-800 border" style="background: rgba(30, 41, 59, 0.9); border-color: rgba(255, 255, 255, 0.15) !important;">
               {{ seller.phone }}
             </div>
 
@@ -535,30 +543,52 @@ onMounted(fetchSeller)
               <VBtn
                 color="primary"
                 block
-                height="50"
+                height="48"
                 size="large"
                 rounded="pill"
-                class="font-weight-bold shadow-primary"
+                class="font-weight-bold shadow-primary text-subtitle-1"
                 :href="`tel:${seller.phone}`"
                 @click="closeCallDialog"
               >
-                <VIcon icon="tabler-phone" class="me-2" />
-                {{ t('callNow') || 'Call Now' }}
+                <VIcon icon="tabler-phone-outgoing" class="me-2" />
+                {{ t('callNow') || 'اتصال الآن' }}
+              </VBtn>
+
+              <VBtn
+                variant="tonal"
+                color="info"
+                block
+                height="48"
+                size="large"
+                rounded="pill"
+                class="font-weight-bold text-subtitle-1"
+                @click="copyPhone"
+              >
+                <VIcon icon="tabler-copy" class="me-2" />
+                نسخ الرقم
               </VBtn>
 
               <VBtn
                 variant="text"
                 block
-                height="50"
+                height="40"
                 rounded="pill"
-                class="text-medium-emphasis font-weight-medium"
+                class="text-grey-lighten-1 font-weight-medium"
                 @click="closeCallDialog"
               >
-                {{ t('cancel') || 'Cancel' }}
+                {{ t('cancel') || 'إلغاء' }}
               </VBtn>
             </div>
           </VCard>
         </VDialog>
+
+        <!-- Snackbar for copied phone number -->
+        <VSnackbar v-model="copiedSnackbar" color="success" location="top" timeout="2500" class="rounded-lg">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="tabler-check" size="20" />
+            <span>تم نسخ رقم الهاتف بنجاح!</span>
+          </div>
+        </VSnackbar>
 
         <!-- ✅ Rate & Review Dialog -->
         <VDialog v-model="showReviewDialog" max-width="500">

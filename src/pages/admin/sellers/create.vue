@@ -108,7 +108,11 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     const formData = new FormData()
+    const socialKeys = ['facebook', 'instagram', 'tiktok', 'youtube', 'website', 'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url', 'website_url']
+
     for (const key in form.value) {
+      if (socialKeys.includes(key)) continue
+
       if (form.value[key] !== null && form.value[key] !== undefined) {
         // ✅ Force is_verified and is_active to be 1 or 0
         if (key === 'is_verified' || key === 'is_active') {
@@ -119,12 +123,26 @@ const handleSubmit = async () => {
       }
     }
 
-    if (form.value.facebook_url) formData.append('facebook', form.value.facebook_url)
-    if (form.value.instagram_url) formData.append('instagram', form.value.instagram_url)
-    if (form.value.tiktok_url) formData.append('tiktok', form.value.tiktok_url)
-    if (form.value.youtube_url) {
-      formData.append('youtube', form.value.youtube_url)
-      formData.append('website', form.value.youtube_url)
+    const fb = form.value.facebook_url || form.value.facebook
+    if (fb) {
+      formData.append('facebook', fb)
+      formData.append('facebook_url', fb)
+    }
+    const ig = form.value.instagram_url || form.value.instagram
+    if (ig) {
+      formData.append('instagram', ig)
+      formData.append('instagram_url', ig)
+    }
+    const tt = form.value.tiktok_url || form.value.tiktok
+    if (tt) {
+      formData.append('tiktok', tt)
+      formData.append('tiktok_url', tt)
+    }
+    const yt = form.value.youtube_url || form.value.youtube || form.value.website
+    if (yt) {
+      formData.append('youtube', yt)
+      formData.append('youtube_url', yt)
+      formData.append('website', yt)
     }
 
     await sellerAdminApi.create(formData)
