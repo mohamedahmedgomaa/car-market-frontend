@@ -568,13 +568,11 @@ const handleDownloadPoster = async () => {
     ctx.textAlign = 'center'
     ctx.fillText('لرؤية التفاصيل والسعر استخدم qr', 600, currentY + 800)
 
-    // Download Canvas as PNG
-    const link = document.createElement('a')
-    link.href = canvas.toDataURL('image/png')
-    link.download = `NegmCars-Poster-${props.car?.id || 'car'}.png`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    // Convert Canvas to Blob and trigger Native Mobile Share or Blob Download
+    canvas.toBlob(async (blob) => {
+      if (!blob) return
+      await downloadOrShareImage(blob, `NegmCars-Poster-${props.car?.id || 'car'}.png`)
+    }, 'image/png', 1.0)
   } catch (err) {
     console.error('Failed to generate poster image:', err)
   } finally {
@@ -582,14 +580,47 @@ const handleDownloadPoster = async () => {
   }
 }
 
-const handleDownloadQr = () => {
-  if (!qrDataUrl.value) return
+// Download or Share image natively on iOS / Android / Desktop
+const downloadOrShareImage = async (blob, filename) => {
+  const file = new File([blob], filename, { type: 'image/png' })
+
+  // 1. Native Mobile Share Sheet (iOS Safari / Android Chrome) -> Saves directly to iPhone Photos app / Android Gallery
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: filename,
+      })
+      return
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.warn('Web Share API failed, using direct download fallback:', err)
+      } else {
+        return // User dismissed native share sheet
+      }
+    }
+  }
+
+  // 2. Blob URL Download Fallback (Desktop & Web)
+  const blobUrl = URL.createObjectURL(blob)
   const link = document.createElement('a')
-  link.href = qrDataUrl.value
-  link.download = `car-qr-${props.car?.id || 'poster'}.png`
+  link.href = blobUrl
+  link.download = filename
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 10000)
+}
+
+const handleDownloadQr = async () => {
+  if (!qrDataUrl.value) return
+  try {
+    const res = await fetch(qrDataUrl.value)
+    const blob = await res.blob()
+    await downloadOrShareImage(blob, `car-qr-${props.car?.id || 'poster'}.png`)
+  } catch (e) {
+    console.error('Failed to download QR:', e)
+  }
 }
 </script>
 
@@ -600,11 +631,11 @@ const handleDownloadQr = () => {
     scrollable
     @update:model-value="handleClose"
   >
-    <VCard class="qr-dialog-card rounded-2xl overflow-hidden shadow-2xl border border-slate-700 max-h-[92vh] flex flex-col">
+    <VCard class="qr-dialog-card rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
       <!-- Modal Header -->
       <VCardTitle class="d-flex align-center justify-space-between pa-4 bg-surface text-foreground no-print border-b flex-shrink-0">
         <div class="d-flex align-center gap-3">
-          <div class="qr-header-icon-box rounded-xl p-2 bg-primary-subtle text-primary">
+          <div class="qr-header-icon-box rounded-xl p-2 bg-primary-subtle text-primary flex-shrink-0">
             <VIcon icon="tabler-qrcode" size="26" />
           </div>
           <div>
@@ -617,16 +648,16 @@ const handleDownloadQr = () => {
       </VCardTitle>
 
       <!-- Action Buttons Bar -->
-      <div class="px-4 py-3 bg-slate-900/60 d-flex justify-space-between align-center flex-wrap gap-2 no-print border-b flex-shrink-0">
-        <div class="d-flex gap-2">
+      <div class="px-4 py-3 bg-slate-900/80 d-flex justify-space-between align-center flex-wrap gap-2 no-print border-b flex-shrink-0">
+        <div class="d-flex flex-wrap gap-2">
           <VBtn color="primary" size="small" class="font-bold rounded-lg shadow" @click="handlePrint">
             <VIcon icon="tabler-printer" class="me-1.5" />
-            طباعة الورقة (Print A4)
+            طباعة (Print)
           </VBtn>
 
           <VBtn color="success" size="small" class="font-bold rounded-lg shadow" :loading="isDownloadingPoster" @click="handleDownloadPoster">
             <VIcon icon="tabler-photo-down" class="me-1.5" />
-            تحميل الورقة كـ صورة (PNG)
+            تحميل صورة (PNG)
           </VBtn>
 
           <VBtn color="secondary" variant="outlined" size="small" class="font-bold rounded-lg" @click="handleDownloadQr">
@@ -642,7 +673,7 @@ const handleDownloadQr = () => {
       </div>
 
       <!-- Printable Windshield Poster Card -->
-      <VCardText class="pa-4 printable-wrapper overflow-y-auto flex-grow max-h-[calc(88vh-110px)]">
+      <VCardText class="pa-4 printable-wrapper">
         <div id="printable-car-flyer" class="car-flyer-poster p-5 rounded-2xl bg-white text-slate-900 border-4 border-slate-900 shadow-xl max-w-[480px] mx-auto text-center">
           
           <!-- 1. Header Branding with Official Logo & Orange .com Text -->
@@ -726,6 +757,36 @@ const handleDownloadQr = () => {
 
 .dir-ltr {
   direction: ltr;
+}
+
+.qr-dialog-card {
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.printable-wrapper {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  flex: 1 1 auto !important;
+  max-height: calc(90vh - 130px) !important;
+}
+
+@media (max-width: 600px) {
+  .qr-dialog-card {
+    max-height: 94vh !important;
+    margin: 8px !important;
+  }
+
+  .printable-wrapper {
+    max-height: calc(94vh - 140px) !important;
+    padding: 10px !important;
+  }
+
+  .car-flyer-poster {
+    padding: 12px 10px !important;
+  }
 }
 
 /* Print Optimization CSS */
