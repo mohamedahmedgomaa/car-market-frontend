@@ -511,7 +511,7 @@ watch(
   opacity: 1;
 }
 
-/* default: 4 columns */
+/* default: 4 columns across all pages */
 .cars-grid {
   display: grid;
   gap: 16px;
@@ -534,11 +534,18 @@ watch(
   }
 }
 
-/* embedded: 3 columns */
+/* embedded: 4 columns on desktop just like home page */
 .cars-section--embedded .cars-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 @media (max-width: 1200px) {
+  .cars-section--embedded .cars-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
   .cars-section--embedded .cars-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
