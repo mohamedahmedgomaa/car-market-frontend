@@ -117,9 +117,10 @@ onMounted(fetchTopCars)
                     :href="item.href"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="social-btn social-btn--small"
+                    class="social-btn"
+                    :class="`social-btn-${item.title}`"
                   >
-                    <VIcon :icon="item.icon" size="18" />
+                    <VIcon :icon="item.icon" size="19" />
                   </a>
                 </div>
               </div>
@@ -350,31 +351,62 @@ onMounted(fetchTopCars)
 }
 
 .social-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(var(--v-theme-on-surface), 0.05);
-  border: 1px solid rgba(var(--v-border-color), 0.15);
-  color: rgba(var(--v-theme-on-surface), 0.9);
-  display: flex;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-decoration: none;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+  text-decoration: none !important;
+}
 
+.social-btn-facebook {
+  color: #1877F2 !important;
   &:hover {
-    background: rgba(var(--v-theme-primary), 1);
-    border-color: rgba(var(--v-theme-primary), 1);
-    color: #fff;
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(var(--v-theme-primary), 0.3);
+    background: #1877F2 !important;
+    color: #ffffff !important;
+    border-color: #1877F2 !important;
+    box-shadow: 0 0 20px rgba(24, 119, 242, 0.6) !important;
+    transform: translateY(-4px) scale(1.08);
   }
 }
 
-.social-btn--small {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+.social-btn-instagram {
+  color: #E1306C !important;
+  &:hover {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+    color: #ffffff !important;
+    border-color: #E1306C !important;
+    box-shadow: 0 0 20px rgba(225, 48, 108, 0.6) !important;
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+.social-btn-youtube {
+  color: #FF0000 !important;
+  &:hover {
+    background: #FF0000 !important;
+    color: #ffffff !important;
+    border-color: #FF0000 !important;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6) !important;
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+.social-btn-tiktok {
+  color: #00F2FE !important;
+  &:hover {
+    background: #000000 !important;
+    border-color: #FE2C55 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 20px rgba(254, 44, 85, 0.6) !important;
+    transform: translateY(-4px) scale(1.08);
+  }
 }
 
 .footer-line {

@@ -684,7 +684,8 @@ onMounted(() => {
 <style lang="scss" scoped>
 .showrooms-directory-page {
   min-height: 100vh;
-  background: transparent;
+  background: radial-gradient(circle at top right, rgba(255, 61, 0, 0.08), transparent 50%),
+              radial-gradient(circle at bottom left, rgba(255, 61, 0, 0.03), transparent 60%);
 }
 
 .text-gradient {
@@ -708,6 +709,16 @@ onMounted(() => {
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
       transform: translateY(-4px);
     }
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(255, 61, 0, 0.15), transparent 70%);
+    z-index: 0;
+    pointer-events: none;
   }
 }
 
