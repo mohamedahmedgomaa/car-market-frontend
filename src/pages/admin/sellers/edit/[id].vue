@@ -115,7 +115,8 @@ const fetchSeller = async () => {
     seller.value.facebook = data.facebook || data.facebook_url || ''
     seller.value.instagram = data.instagram || data.instagram_url || ''
     seller.value.tiktok = data.tiktok || data.tiktok_url || ''
-    seller.value.youtube = data.youtube || data.youtube_url || data.website || ''
+    seller.value.youtube = data.youtube || data.youtube_url || ''
+    seller.value.website = data.website || data.website_url || ''
     seller.value.sort_order = data.sort_order || 0
     seller.value.tier = data.tier || 'none'
 
@@ -175,7 +176,7 @@ const handleSubmit = async () => {
       }
     }
 
-    // Append both parameter variants for all social links to ensure 100% compatibility with api.negmcars.com
+    // Append both parameter variants for all social links to ensure 100% compatibility
     const fb = seller.value.facebook || seller.value.facebook_url
     if (fb) {
       formData.append('facebook', fb)
@@ -194,11 +195,16 @@ const handleSubmit = async () => {
       formData.append('tiktok_url', tt)
     }
 
-    const yt = seller.value.youtube || seller.value.youtube_url || seller.value.website
+    const yt = seller.value.youtube || seller.value.youtube_url
     if (yt) {
       formData.append('youtube', yt)
       formData.append('youtube_url', yt)
-      formData.append('website', yt)
+    }
+
+    const web = seller.value.website || seller.value.website_url
+    if (web) {
+      formData.append('website', web)
+      formData.append('website_url', web)
     }
 
     await sellerAdminApi.update(route.params.id, formData)

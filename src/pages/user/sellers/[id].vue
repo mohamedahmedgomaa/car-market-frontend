@@ -80,7 +80,7 @@ const getSocialUrl = (platform) => {
   const s = seller.value || {}
   if (platform === 'facebook') return s.facebook || s.facebook_url || null
   if (platform === 'instagram') return s.instagram || s.instagram_url || null
-  if (platform === 'youtube') return s.youtube || s.youtube_url || s.website || s.website_url || null
+  if (platform === 'youtube') return s.youtube || s.youtube_url || null
   if (platform === 'tiktok') return s.tiktok || s.tiktok_url || null
   return null
 }
@@ -621,17 +621,18 @@ onMounted(fetchSeller)
 
 .header-cover-img {
   position: absolute;
-  inset: -20px;
+  inset: 0;
   background-size: cover;
   background-position: center;
-  filter: blur(24px) brightness(0.22);
-  transform: scale(1.08);
+  filter: brightness(0.65) contrast(1.05);
+  transition: all 0.5s ease;
 }
 
 .header-cover-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(11, 15, 25, 0.95) 0%, rgba(15, 23, 42, 0.88) 50%, rgba(11, 15, 25, 0.96) 100%);
+  background: linear-gradient(180deg, rgba(10, 14, 26, 0.45) 0%, rgba(10, 14, 26, 0.88) 100%),
+              linear-gradient(to right, rgba(10, 14, 26, 0.85) 0%, rgba(10, 14, 26, 0.3) 50%, rgba(10, 14, 26, 0.85) 100%);
 }
 
 .header-bg-glow {
@@ -730,16 +731,16 @@ onMounted(fetchSeller)
 
 /* Avatar & Logo Styling */
 .showroom-logo-box {
-  background: #ffffff !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background: #090d16 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   border-radius: 22px;
-  width: 145px;
-  height: 145px;
+  width: 150px;
+  height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
+  padding: 0 !important;
   transition: transform 0.3s ease;
 
   &:hover {
@@ -747,9 +748,10 @@ onMounted(fetchSeller)
   }
 
   img {
-    object-fit: contain;
-    width: 100%;
-    height: 100%;
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
   }
 }
 
