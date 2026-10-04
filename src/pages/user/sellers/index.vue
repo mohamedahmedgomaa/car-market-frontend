@@ -684,9 +684,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .showrooms-directory-page {
   min-height: 100vh;
-  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.12), transparent 50%),
-              radial-gradient(circle at top left, rgba(var(--v-theme-surface), 0.8), transparent 60%),
-              radial-gradient(circle at bottom left, rgba(var(--v-theme-primary), 0.05), transparent 70%);
+  background: transparent;
 }
 
 .text-gradient {
@@ -696,10 +694,10 @@ onMounted(() => {
 }
 
 .dealer-promo-card {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15), rgba(var(--v-theme-surface), 0.9)) !important;
+  background: rgba(var(--v-theme-surface), 0.85) !important;
   backdrop-filter: blur(30px);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1) !important;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(var(--v-theme-on-surface), 0.15) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
   transition: all 0.4s ease;
 
   &.border-glow {
@@ -707,19 +705,9 @@ onMounted(() => {
     
     &:hover {
       border-color: rgba(var(--v-theme-primary), 0.6) !important;
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(var(--v-theme-primary), 0.15) !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
       transform: translateY(-4px);
     }
-  }
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%; right: -20%;
-    width: 250px; height: 250px;
-    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.35), transparent 70%);
-    z-index: 0;
-    pointer-events: none;
   }
 }
 
@@ -878,7 +866,7 @@ onMounted(() => {
 }
 
 .shadow-primary {
-  box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.35) !important;
+  box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.25) !important;
 }
 
 .shadow-success {

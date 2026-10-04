@@ -75,7 +75,7 @@ const contactInfo = computed(() => [
 const socialLinks = [
   { title: 'facebook', icon: 'tabler-brand-facebook-filled', href: 'https://www.facebook.com/profile.php?id=61594862607985' },
   { title: 'instagram', icon: 'tabler-brand-instagram', href: 'https://www.instagram.com/negmcs/' },
-  { title: 'tiktok', icon: 'tabler-brand-tiktok', href: 'https://www.tiktok.com/@negmcars.com' },
+  { title: 'tiktok', icon: 'tabler-brand-tiktok', href: 'https://www.tiktok.com/@negmcars.com?lang=ar' },
   { title: 'youtube', icon: 'tabler-brand-youtube-filled', href: 'https://www.youtube.com/@NegmCars' },
 ]
 
@@ -132,6 +132,7 @@ onMounted(fetchTopCars)
               <h6 class="footer-title text-high-emphasis text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-device-mobile" size="20" color="primary" />
                 <span>{{ t('downloadAppTitle') }}</span>
+                <VChip color="amber" size="x-small" variant="elevated" class="font-weight-black ms-1">SOON</VChip>
               </h6>
               
               <p class="text-medium-emphasis text-body-2 mb-5 leading-relaxed">
@@ -140,30 +141,36 @@ onMounted(fetchTopCars)
 
               <div class="d-flex flex-column gap-y-3">
                 <!-- App Store Button -->
-                <a href="#" class="app-download-btn">
-                  <div class="app-icon">
-                    <svg viewBox="0 0 384 512" fill="currentColor">
-                      <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-48-20.1-77.5-19.6-37.4.5-74.3 21.8-94 54.8-41 67.3-10.7 168.2 28.7 224.4 19.9 28.2 43.1 59.6 74.1 58.4 29.4-1.2 40.3-19 75.8-19 35.4 0 45.6 19 75.8 18.3 31.1-.5 51.1-28.5 70-55.7 22.1-31.9 30.9-63 31.3-64.6-.6-.2-60.4-23.2-61-91.8zM245.8 91.4c24.1-29 40.3-69.1 35.8-109.1-34.4 1.4-76.3 22.8-101 51.6-21.1 24.6-39.7 65.5-34.7 104.9 38.3 3 76.8-18.6 99.9-47.4z" />
-                    </svg>
+                <div class="app-download-btn d-flex align-center justify-space-between opacity-85 cursor-not-allowed">
+                  <div class="d-flex align-center gap-3">
+                    <div class="app-icon">
+                      <svg viewBox="0 0 384 512" fill="currentColor">
+                        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-48-20.1-77.5-19.6-37.4.5-74.3 21.8-94 54.8-41 67.3-10.7 168.2 28.7 224.4 19.9 28.2 43.1 59.6 74.1 58.4 29.4-1.2 40.3-19 75.8-19 35.4 0 45.6 19 75.8 18.3 31.1-.5 51.1-28.5 70-55.7 22.1-31.9 30.9-63 31.3-64.6-.6-.2-60.4-23.2-61-91.8zM245.8 91.4c24.1-29 40.3-69.1 35.8-109.1-34.4 1.4-76.3 22.8-101 51.6-21.1 24.6-39.7 65.5-34.7 104.9 38.3 3 76.8-18.6 99.9-47.4z" />
+                      </svg>
+                    </div>
+                    <div class="app-text">
+                      <span class="app-subtitle">{{ t('downloadOn') }}</span>
+                      <span class="app-title">App Store</span>
+                    </div>
                   </div>
-                  <div class="app-text">
-                    <span class="app-subtitle">{{ t('downloadOn') }}</span>
-                    <span class="app-title">App Store</span>
-                  </div>
-                </a>
+                  <VChip color="amber" size="x-small" variant="flat" class="font-weight-black me-2">SOON</VChip>
+                </div>
 
                 <!-- Google Play Button -->
-                <a href="#" class="app-download-btn">
-                  <div class="app-icon">
-                    <svg viewBox="0 0 512 512" fill="currentColor">
-                      <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58-33.2-65.2 65.2 65.2 65.2 58-33.2c22.3-12.7 22.3-34.3 0-47zM385.4 337.5L104.6 499l220.7-126.5 60.1-60.1z" />
-                    </svg>
+                <div class="app-download-btn d-flex align-center justify-space-between opacity-85 cursor-not-allowed">
+                  <div class="d-flex align-center gap-3">
+                    <div class="app-icon">
+                      <svg viewBox="0 0 512 512" fill="currentColor">
+                        <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58-33.2-65.2 65.2 65.2 65.2 58-33.2c22.3-12.7 22.3-34.3 0-47zM385.4 337.5L104.6 499l220.7-126.5 60.1-60.1z" />
+                      </svg>
+                    </div>
+                    <div class="app-text">
+                      <span class="app-subtitle">{{ t('getItOn') }}</span>
+                      <span class="app-title">Google Play</span>
+                    </div>
                   </div>
-                  <div class="app-text">
-                    <span class="app-subtitle">{{ t('getItOn') }}</span>
-                    <span class="app-title">Google Play</span>
-                  </div>
-                </a>
+                  <VChip color="amber" size="x-small" variant="flat" class="font-weight-black me-2">SOON</VChip>
+                </div>
               </div>
             </div>
           </VCol>

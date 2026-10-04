@@ -232,26 +232,40 @@ const valueProps = [
 
         <template v-else>
           <!-- Guest / Not Logged In at all -->
-          <div class="d-inline-flex align-center gap-2 px-4 py-1 rounded-pill bg-amber-subtle mb-4">
-            <VIcon icon="tabler-rocket" size="18" color="amber-darken-1" />
-            <span class="text-caption font-weight-bold text-amber-darken-1 text-uppercase tracking-wider">
-              Sell Your Vehicle Fast
+          <div class="d-inline-flex align-center gap-2 px-4 py-2 rounded-pill bg-amber-subtle mb-4 border" style="border-color: rgba(255, 179, 0, 0.4) !important;">
+            <VIcon icon="tabler-clock-filled" size="18" color="amber-darken-1" />
+            <span class="text-caption font-weight-black text-amber-darken-1 text-uppercase tracking-wider">
+              SOON • قريباً ستتمكن من عرض سيارتك للبيع
             </span>
           </div>
 
           <h1 class="text-h2 font-weight-black text-high-emphasis mb-3">
             <span dir="ltr">{{ t('sellYourCarTitle') }}</span>
           </h1>
-          <p class="text-h6 text-medium-emphasis max-w-700 mx-auto font-weight-medium mb-8">
+          <p class="text-h6 text-medium-emphasis max-w-700 mx-auto font-weight-medium mb-6">
             {{ t('sellYourCarDesc') }}
           </p>
+
+          <!-- Featured SOON Announcement Box -->
+          <div class="soon-announcement-card max-w-850 mx-auto pa-5 rounded-2xl border mb-8 text-center" style="background: rgba(255, 179, 0, 0.08); border: 1px solid rgba(255, 179, 0, 0.3) !important;">
+            <div class="d-flex align-center justify-center gap-2 mb-2 flex-wrap">
+              <VChip color="amber" variant="elevated" size="small" class="font-weight-black text-subtitle-2 px-3">SOON</VChip>
+              <h3 class="text-h5 font-weight-black text-amber-lighten-2 mb-0">
+                {{ locale === 'ar' ? 'قريباً: ستتمكن من إضافة وعرض سيارتك للبيع مباشرة على المنصة!' : 'SOON: You will be able to list & sell your car on NegmCars!' }}
+              </h3>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mb-0">
+              {{ locale === 'ar' ? 'جاري التجهيز لإطلاق ميزة إضافة السيارات للأفراد والمعارض، لتقديم تجربة بيع مباشرة وسهلة.' : 'We are finalizing this feature to bring you the best vehicle listing experience in Egypt.' }}
+            </p>
+          </div>
 
           <!-- Call to Action Card for Registration -->
           <VCard class="cta-card max-w-850 mx-auto pa-8 rounded-3xl elevation-12 border relative overflow-hidden mb-12">
             <div class="d-flex flex-column flex-md-row align-center justify-space-between gap-6 relative z-1">
               <div class="text-center text-md-start">
                 <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
-                  <VIcon icon="tabler-gift" size="16" /> Easy Onboarding
+                  <VIcon icon="tabler-sparkles" size="16" /> Easy Onboarding
+                  <VChip color="warning" size="x-small" class="ms-1 font-weight-black" density="compact">SOON</VChip>
                 </div>
                 <h2 class="text-h4 font-weight-black text-high-emphasis mb-2"><span dir="ltr">{{ t('readyToSellTitle') }}</span></h2>
                 <p class="text-subtitle-1 text-medium-emphasis mb-0">
@@ -270,6 +284,7 @@ const valueProps = [
                 >
                   <VIcon icon="tabler-building-store" size="22" class="me-2" />
                   {{ t('registerShowroom') }}
+                  <VChip color="amber" variant="flat" size="x-small" class="ms-2 font-weight-black">SOON</VChip>
                 </VBtn>
 
                 <VBtn
@@ -282,6 +297,7 @@ const valueProps = [
                 >
                   <VIcon icon="tabler-user-plus" size="18" class="me-2" />
                   {{ t('registerIndividual') }}
+                  <VChip color="amber" variant="tonal" size="x-small" class="ms-2 font-weight-black">SOON</VChip>
                 </VBtn>
 
                 <VBtn
@@ -373,8 +389,7 @@ const valueProps = [
 <style lang="scss" scoped>
 .sell-onboarding-page {
   min-height: 100vh;
-  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.08), transparent 60%),
-              radial-gradient(circle at bottom left, rgba(var(--v-theme-surface), 0.7), transparent 70%);
+  background: transparent;
 }
 
 .text-medium-emphasis {

@@ -137,6 +137,34 @@ const verifiedBadgeColor = computed(() => {
   return '#9E9E9E' // Normal verified (gray)
 })
 
+// ✅ Detailed Address Extractor
+const detailedAddress = computed(() => {
+  const s = seller.value
+  if (!s) return ''
+
+  const currentLang = locale.value || 'ar'
+
+  let addr = ''
+  if (typeof s.address === 'object' && s.address !== null) {
+    addr = currentLang === 'ar' ? (s.address.ar || s.address.en || '') : (s.address.en || s.address.ar || '')
+  } else if (typeof s.address === 'string' && s.address.trim()) {
+    addr = s.address
+  }
+
+  if (!addr) {
+    addr = currentLang === 'ar' ? (s.address_ar || s.address_en || '') : (s.address_en || s.address_ar || '')
+  }
+
+  if (!addr) {
+    const parts = []
+    if (s.district) parts.push(_t(s.district))
+    if (s.street) parts.push(_t(s.street))
+    addr = parts.join(' - ')
+  }
+
+  return (addr || '').trim()
+})
+
 // 🔥 Brand Filtering Logic
 const selectedBrandId = ref(null)
 const uniqueBrands = computed(() => {
@@ -351,6 +379,16 @@ onMounted(fetchSeller)
                       <VIcon icon="tabler-map" size="15" class="me-1" />
                       {{ t('openMap') || 'Open Map' }}
                     </VBtn>
+                  </div>
+
+                  <!-- Detailed Address Row (Under Location, Above Bio) -->
+                  <div v-if="detailedAddress" class="detailed-address-row d-flex align-center justify-center justify-md-start mb-3">
+                    <div class="detailed-address-pill d-inline-flex align-center px-4 py-2 rounded-xl">
+                      <VIcon icon="tabler-map-pins" size="18" class="me-2 text-primary flex-shrink-0" />
+                      <span class="text-subtitle-2 font-weight-bold text-white leading-relaxed">
+                        {{ detailedAddress }}
+                      </span>
+                    </div>
                   </div>
 
                   <!-- Showroom Bio Card -->
@@ -633,8 +671,7 @@ onMounted(fetchSeller)
 
 <style lang="scss" scoped>
 .showroom-page {
-  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.15), transparent 60%),
-              radial-gradient(circle at bottom left, rgba(var(--v-theme-surface), 0.8), transparent 70%);
+  background: transparent;
   min-height: 80vh;
 }
 
@@ -820,6 +857,15 @@ onMounted(fetchSeller)
     background: rgba(var(--v-theme-primary), 0.35) !important;
     transform: translateY(-2px);
   }
+}
+
+.detailed-address-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px);
+  max-width: 720px;
+  line-height: 1.5;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .store-bio-card {
