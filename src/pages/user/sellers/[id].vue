@@ -76,6 +76,62 @@ const featuredCarsCount = computed(() => sellerCars.value.filter(c => c.is_featu
 const bestDealCarsCount = computed(() => sellerCars.value.filter(c => c.is_best_deal).length)
 const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length)
 
+const formatSocialUrl = (input, platform) => {
+  if (!input) return null
+  let url = String(input).trim()
+  if (!url) return null
+
+  if (/^https?:\/\//i.test(url)) {
+    return url
+  }
+
+  const cleanHandle = url.replace(/^@/, '')
+
+  switch (platform) {
+    case 'facebook':
+      if (cleanHandle.includes('facebook.com') || cleanHandle.includes('fb.com')) {
+        return `https://${cleanHandle}`
+      }
+      return `https://facebook.com/${cleanHandle}`
+
+    case 'instagram':
+      if (cleanHandle.includes('instagram.com') || cleanHandle.includes('instagr.am')) {
+        return `https://${cleanHandle}`
+      }
+      return `https://instagram.com/${cleanHandle}`
+
+    case 'youtube':
+      if (cleanHandle.includes('youtube.com') || cleanHandle.includes('youtu.be')) {
+        return `https://${cleanHandle}`
+      }
+      return `https://youtube.com/${url.startsWith('@') ? url : '@' + cleanHandle}`
+
+    case 'tiktok':
+      if (cleanHandle.includes('tiktok.com')) {
+        return `https://${cleanHandle}`
+      }
+      return `https://tiktok.com/@${cleanHandle}`
+
+    default:
+      return `https://${cleanHandle}`
+  }
+}
+
+const formattedSocials = computed(() => {
+  const s = seller.value || {}
+  const fb = s.facebook || s.facebook_url
+  const ig = s.instagram || s.instagram_url
+  const yt = s.youtube || s.youtube_url || s.website || s.website_url
+  const tt = s.tiktok || s.tiktok_url
+
+  return {
+    facebook: fb ? formatSocialUrl(fb, 'facebook') : 'https://facebook.com',
+    instagram: ig ? formatSocialUrl(ig, 'instagram') : 'https://instagram.com',
+    youtube: yt ? formatSocialUrl(yt, 'youtube') : 'https://youtube.com',
+    tiktok: tt ? formatSocialUrl(tt, 'tiktok') : 'https://tiktok.com',
+  }
+})
+
 const verifiedBadgeColor = computed(() => {
   const t = seller.value?.tier?.toLowerCase()
   if (t === 'diamond') return '#00d2ff' // Diamond
@@ -96,41 +152,6 @@ const uniqueBrands = computed(() => {
   })
   return Array.from(brandsMap.values())
 })
-
-const formatSocialUrl = (url, platform) => {
-  if (!url) return ''
-  let clean = String(url).trim()
-  if (!clean) return ''
-
-  if (clean.startsWith('@')) {
-    clean = clean.slice(1)
-  }
-
-  if (clean.startsWith('http://') || clean.startsWith('https://')) {
-    return clean
-  }
-
-  if (clean.startsWith('instagram.com') || clean.startsWith('www.instagram.com') ||
-      clean.startsWith('facebook.com') || clean.startsWith('www.facebook.com') ||
-      clean.startsWith('tiktok.com') || clean.startsWith('www.tiktok.com') ||
-      clean.startsWith('youtube.com') || clean.startsWith('www.youtube.com') ||
-      clean.startsWith('youtu.be')) {
-    return `https://${clean}`
-  }
-
-  const baseUrls = {
-    facebook: 'https://facebook.com/',
-    instagram: 'https://instagram.com/',
-    youtube: 'https://youtube.com/',
-    tiktok: 'https://tiktok.com/@',
-  }
-
-  if (baseUrls[platform]) {
-    return `${baseUrls[platform]}${clean}`
-  }
-
-  return `https://${clean}`
-}
 
 const carParams = computed(() => {
   const params = {
@@ -393,49 +414,47 @@ onMounted(fetchSeller)
 
                     <VDivider class="w-100 opacity-20" />
 
-                    <!-- Social Media Row (Centered in dark frosted glass backdrop) -->
-                    <div class="d-flex align-center justify-center w-100">
-                      <div class="social-bar-backdrop">
-                        <a
-                          class="social-btn social-btn-facebook"
-                          :href="formatSocialUrl(seller.facebook || seller.facebook_url || 'https://facebook.com', 'facebook')"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          v-tooltip="'Facebook'"
-                        >
-                          <VIcon icon="tabler-brand-facebook" size="20" />
-                        </a>
+                    <!-- Social Media Row (Shaded Glass Backdrop & Responsive 4 Platforms) -->
+                    <div class="d-flex align-center justify-center gap-3 w-100">
+                      <a
+                        class="social-btn social-btn-facebook"
+                        :href="formattedSocials.facebook"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        v-tooltip="'Facebook'"
+                      >
+                        <VIcon icon="tabler-brand-facebook" size="20" />
+                      </a>
 
-                        <a
-                          class="social-btn social-btn-instagram"
-                          :href="formatSocialUrl(seller.instagram || seller.instagram_url || 'https://instagram.com', 'instagram')"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          v-tooltip="'Instagram'"
-                        >
-                          <VIcon icon="tabler-brand-instagram" size="20" />
-                        </a>
+                      <a
+                        class="social-btn social-btn-instagram"
+                        :href="formattedSocials.instagram"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        v-tooltip="'Instagram'"
+                      >
+                        <VIcon icon="tabler-brand-instagram" size="20" />
+                      </a>
 
-                        <a
-                          class="social-btn social-btn-youtube"
-                          :href="formatSocialUrl(seller.youtube || seller.youtube_url || seller.website || seller.website_url || 'https://youtube.com', 'youtube')"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          v-tooltip="'YouTube'"
-                        >
-                          <VIcon icon="tabler-brand-youtube" size="20" />
-                        </a>
+                      <a
+                        class="social-btn social-btn-youtube"
+                        :href="formattedSocials.youtube"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        v-tooltip="'YouTube'"
+                      >
+                        <VIcon icon="tabler-brand-youtube" size="20" />
+                      </a>
 
-                        <a
-                          class="social-btn social-btn-tiktok"
-                          :href="formatSocialUrl(seller.tiktok || seller.tiktok_url || 'https://tiktok.com', 'tiktok')"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          v-tooltip="'TikTok'"
-                        >
-                          <VIcon icon="tabler-brand-tiktok" size="20" />
-                        </a>
-                      </div>
+                      <a
+                        class="social-btn social-btn-tiktok"
+                        :href="formattedSocials.tiktok"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        v-tooltip="'TikTok'"
+                      >
+                        <VIcon icon="tabler-brand-tiktok" size="20" />
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -760,78 +779,64 @@ onMounted(fetchSeller)
   opacity: 0.2 !important;
 }
 
-.social-bar-backdrop {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  padding: 8px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
 .social-btn {
-  width: 42px !important;
-  height: 42px !important;
+  width: 44px !important;
+  height: 44px !important;
   border-radius: 50% !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
   text-decoration: none !important;
 }
 
 .social-btn-facebook {
-  background: rgba(24, 119, 242, 0.18) !important;
-  border: 1px solid rgba(24, 119, 242, 0.45) !important;
+  border: 1.5px solid rgba(24, 119, 242, 0.5) !important;
   color: #1877F2 !important;
 }
 .social-btn-facebook:hover {
   background: #1877F2 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 15px rgba(24, 119, 242, 0.6) !important;
-  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 0 20px rgba(24, 119, 242, 0.6) !important;
+  transform: translateY(-4px) scale(1.08);
 }
 
 .social-btn-instagram {
-  background: rgba(225, 48, 108, 0.18) !important;
-  border: 1px solid rgba(225, 48, 108, 0.45) !important;
+  border: 1.5px solid rgba(225, 48, 108, 0.5) !important;
   color: #E1306C !important;
 }
 .social-btn-instagram:hover {
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 15px rgba(225, 48, 108, 0.6) !important;
-  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 0 20px rgba(225, 48, 108, 0.6) !important;
+  transform: translateY(-4px) scale(1.08);
 }
 
 .social-btn-youtube {
-  background: rgba(255, 0, 0, 0.18) !important;
-  border: 1px solid rgba(255, 0, 0, 0.45) !important;
+  border: 1.5px solid rgba(255, 0, 0, 0.5) !important;
   color: #FF0000 !important;
 }
 .social-btn-youtube:hover {
   background: #FF0000 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.6) !important;
-  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.6) !important;
+  transform: translateY(-4px) scale(1.08);
 }
 
 .social-btn-tiktok {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  color: #ffffff !important;
+  border: 1.5px solid rgba(0, 242, 254, 0.5) !important;
+  color: #00F2FE !important;
 }
 .social-btn-tiktok:hover {
   background: #000000 !important;
   border-color: #FE2C55 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 15px rgba(254, 44, 85, 0.6) !important;
-  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 0 20px rgba(254, 44, 85, 0.6) !important;
+  transform: translateY(-4px) scale(1.08);
 }
 
 /* Stats Cards */

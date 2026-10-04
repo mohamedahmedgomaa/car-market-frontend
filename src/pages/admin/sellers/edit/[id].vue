@@ -112,10 +112,10 @@ const fetchSeller = async () => {
     seller.value.address_ar = data.address?.ar || ''
     seller.value.address_en = data.address?.en || ''
     seller.value.map_url = data.map_url || ''
-    seller.value.facebook_url = data.facebook_url || ''
-    seller.value.instagram_url = data.instagram_url || ''
-    seller.value.tiktok_url = data.tiktok_url || ''
-    seller.value.youtube_url = data.youtube_url || ''
+    seller.value.facebook_url = data.facebook_url || data.facebook || ''
+    seller.value.instagram_url = data.instagram_url || data.instagram || ''
+    seller.value.tiktok_url = data.tiktok_url || data.tiktok || ''
+    seller.value.youtube_url = data.youtube_url || data.youtube || data.website || ''
     seller.value.sort_order = data.sort_order || 0
     seller.value.tier = data.tier || 'none'
 
@@ -159,6 +159,14 @@ const handleSubmit = async () => {
           formData.append(key, seller.value[key])
         }
       }
+    }
+
+    if (seller.value.facebook_url) formData.append('facebook', seller.value.facebook_url)
+    if (seller.value.instagram_url) formData.append('instagram', seller.value.instagram_url)
+    if (seller.value.tiktok_url) formData.append('tiktok', seller.value.tiktok_url)
+    if (seller.value.youtube_url) {
+      formData.append('youtube', seller.value.youtube_url)
+      formData.append('website', seller.value.youtube_url)
     }
 
     await sellerAdminApi.update(route.params.id, formData)

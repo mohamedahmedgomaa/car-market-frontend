@@ -119,6 +119,14 @@ const handleSubmit = async () => {
       }
     }
 
+    if (form.value.facebook_url) formData.append('facebook', form.value.facebook_url)
+    if (form.value.instagram_url) formData.append('instagram', form.value.instagram_url)
+    if (form.value.tiktok_url) formData.append('tiktok', form.value.tiktok_url)
+    if (form.value.youtube_url) {
+      formData.append('youtube', form.value.youtube_url)
+      formData.append('website', form.value.youtube_url)
+    }
+
     await sellerAdminApi.create(formData)
 
     snackbarMessage.value = 'Seller created successfully!'
