@@ -76,61 +76,27 @@ const featuredCarsCount = computed(() => sellerCars.value.filter(c => c.is_featu
 const bestDealCarsCount = computed(() => sellerCars.value.filter(c => c.is_best_deal).length)
 const importCarsCount = computed(() => sellerCars.value.filter(c => Number(c.is_import) === 1 || Boolean(c.is_import)).length)
 
-const formatSocialUrl = (input, platform) => {
-  if (!input) return null
-  let url = String(input).trim()
-  if (!url) return null
-
-  if (/^https?:\/\//i.test(url)) {
-    return url
-  }
-
-  const cleanHandle = url.replace(/^@/, '')
-
-  switch (platform) {
-    case 'facebook':
-      if (cleanHandle.includes('facebook.com') || cleanHandle.includes('fb.com')) {
-        return `https://${cleanHandle}`
-      }
-      return `https://facebook.com/${cleanHandle}`
-
-    case 'instagram':
-      if (cleanHandle.includes('instagram.com') || cleanHandle.includes('instagr.am')) {
-        return `https://${cleanHandle}`
-      }
-      return `https://instagram.com/${cleanHandle}`
-
-    case 'youtube':
-      if (cleanHandle.includes('youtube.com') || cleanHandle.includes('youtu.be')) {
-        return `https://${cleanHandle}`
-      }
-      return `https://youtube.com/${url.startsWith('@') ? url : '@' + cleanHandle}`
-
-    case 'tiktok':
-      if (cleanHandle.includes('tiktok.com')) {
-        return `https://${cleanHandle}`
-      }
-      return `https://tiktok.com/@${cleanHandle}`
-
-    default:
-      return `https://${cleanHandle}`
-  }
+const getSocialUrl = (platform) => {
+  const s = seller.value || {}
+  if (platform === 'facebook') return s.facebook || s.facebook_url || null
+  if (platform === 'instagram') return s.instagram || s.instagram_url || null
+  if (platform === 'youtube') return s.youtube || s.youtube_url || s.website || s.website_url || null
+  if (platform === 'tiktok') return s.tiktok || s.tiktok_url || null
+  return null
 }
 
-const formattedSocials = computed(() => {
-  const s = seller.value || {}
-  const fb = s.facebook || s.facebook_url
-  const ig = s.instagram || s.instagram_url
-  const yt = s.youtube || s.youtube_url || s.website || s.website_url
-  const tt = s.tiktok || s.tiktok_url
+const openSocial = (platform) => {
+  const raw = getSocialUrl(platform)
+  if (!raw) return
 
-  return {
-    facebook: fb ? formatSocialUrl(fb, 'facebook') : 'https://facebook.com',
-    instagram: ig ? formatSocialUrl(ig, 'instagram') : 'https://instagram.com',
-    youtube: yt ? formatSocialUrl(yt, 'youtube') : 'https://youtube.com',
-    tiktok: tt ? formatSocialUrl(tt, 'tiktok') : 'https://tiktok.com',
+  let url = String(raw).trim()
+  if (!url) return
+
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url
   }
-})
+  window.open(url, '_blank')
+}
 
 const verifiedBadgeColor = computed(() => {
   const t = seller.value?.tier?.toLowerCase()
@@ -270,178 +236,174 @@ onMounted(fetchSeller)
         <!-- Showroom Header Card -->
         <VCard 
           class="showroom-header-card mb-8 animate-fade-in-up" 
-          elevation="10"
+          elevation="12"
           :class="[seller.tier && seller.tier !== 'none' ? 'showroom-header-' + seller.tier.toLowerCase() : '']"
-          :style="{
-            background: seller.cover_image 
-              ? 'linear-gradient(to right, rgba(15, 15, 15, 0.6) 40%, rgba(15, 15, 15, 0.25) 100%), url(' + seller.cover_image + ') no-repeat center center / cover !important' 
-              : 'linear-gradient(to right, rgba(15, 15, 15, 0.6) 40%, rgba(15, 15, 15, 0.25) 100%), url(\'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80\') no-repeat center center / cover !important'
-          }"
         >
-          <div class="header-bg-glow"></div>
+          <!-- Deep Ambient Cover Backdrop (prevents text clashing with cover watermarks) -->
+          <div class="header-cover-backdrop">
+            <div 
+              class="header-cover-img" 
+              :style="{
+                backgroundImage: 'url(' + (seller.cover_image || 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1600&q=80') + ')'
+              }"
+            ></div>
+            <div class="header-cover-gradient"></div>
+            <div class="header-bg-glow"></div>
+          </div>
           
-          <div class="showroom-profile-container pa-10 pa-md-16 position-relative z-1">
-            <div class="d-flex flex-column flex-md-row align-center align-md-start gap-6 gap-md-8 text-center text-md-start">
+          <div class="showroom-profile-container pa-6 pa-md-10 position-relative z-1">
+            <div class="d-flex flex-column flex-lg-row align-center align-lg-stretch justify-space-between gap-6 gap-md-8">
               
-              <!-- Showroom Avatar / Logo -->
-              <div class="avatar-wrapper animate-float flex-shrink-0">
-                <div class="showroom-logo-box elevation-8">
-                  <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" />
-                  <span v-else class="text-h2 font-weight-black text-primary">{{ (_t(seller.store_name) || seller.name || 'S')[0].toUpperCase() }}</span>
+              <!-- Left Column: Logo + Showroom Info -->
+              <div class="d-flex flex-column flex-md-row align-center align-md-start gap-6 gap-md-8 flex-grow-1 text-center text-md-start">
+                
+                <!-- Showroom Avatar / Logo -->
+                <div class="avatar-wrapper flex-shrink-0 animate-float">
+                  <div class="showroom-logo-box elevation-10">
+                    <img v-if="seller.store_logo" :src="seller.store_logo" alt="Showroom Logo" />
+                    <span v-else class="text-h2 font-weight-black text-primary">{{ (_t(seller.store_name) || seller.name || 'S')[0].toUpperCase() }}</span>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Profile Details -->
-              <div class="showroom-info flex-grow-1 overflow-hidden">
-                <div class="d-flex flex-column flex-md-row align-center align-md-start justify-space-between gap-4">
-                  <div class="flex-grow-1 w-100 text-center text-md-start text-white">
+                <!-- Showroom Details -->
+                <div class="showroom-info flex-grow-1">
+                  <!-- Name & Badges -->
+                  <div class="d-flex align-center justify-center justify-md-start gap-3 mb-2 flex-wrap">
+                    <h1 class="text-h3 font-weight-black text-white mb-0 showroom-title">
+                      {{ _t(seller.store_name) || seller.name }}
+                    </h1>
+                    <VIcon 
+                      v-if="seller.is_verified" 
+                      icon="tabler-discount-check-filled" 
+                      :color="verifiedBadgeColor" 
+                      size="30" 
+                      class="ms-1" 
+                      v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" 
+                    />
                     
-                    <!-- Name & Badge Line -->
-                    <div class="d-flex align-center justify-center justify-md-start gap-2 mb-1 flex-wrap">
-                      <h1 class="text-h3 font-weight-black text-white mb-0" style="font-size: 2.2rem !important; line-height: 1.2;">
-                        {{ _t(seller.store_name) || seller.name }}
-                      </h1>
-                      <VIcon v-if="seller.is_verified" icon="tabler-discount-check-filled" :color="verifiedBadgeColor" size="32" class="ms-1" v-tooltip="t('verifiedShowroom') || 'Verified Showroom'" />
-                      
-                      <!-- Package Badge (Without Diamond Icon, Placed Next to Name) -->
-                      <span
-                        v-if="seller.tier && seller.tier?.toLowerCase() !== 'none'"
-                        class="d-inline-flex align-center justify-center font-weight-black tracking-widest px-3 py-1 rounded-pill text-caption ms-2"
-                        :style="{
-                          background: seller.tier?.toLowerCase() === 'diamond' ? 'linear-gradient(135deg, #00d2ff 0%, #0072ff 100%)' :
-                                      (seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #8E2DE2 0%, #4A00E1 100%)' :
-                                      (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
-                                      'linear-gradient(135deg, #455A64 0%, #78909C 100%)')),
-                          color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
-                          boxShadow: seller.tier?.toLowerCase() === 'diamond' ? '0 2px 14px rgba(0, 210, 255, 0.75)' : 
-                                     (seller.tier?.toLowerCase() === 'platinum' ? '0 2px 14px rgba(142, 45, 226, 0.7)' : '0 2px 8px rgba(0,0,0,0.15)'),
-                          border: '1px solid rgba(255,255,255,0.1)'
-                        }"
-                      >
-                        {{ seller.tier?.toLowerCase() === 'diamond' ? 'DIAMOND' : (seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER')) }}
-                      </span>
-                    </div>
+                    <!-- Tier Badge -->
+                    <span
+                      v-if="seller.tier && seller.tier?.toLowerCase() !== 'none'"
+                      class="tier-pill-badge"
+                      :class="'tier-badge-' + seller.tier.toLowerCase()"
+                    >
+                      {{ seller.tier?.toLowerCase() === 'diamond' ? 'DIAMOND' : (seller.tier?.toLowerCase() === 'platinum' ? 'ELITE' : (seller.tier?.toLowerCase() === 'gold' ? 'GOLD' : 'SILVER')) }}
+                    </span>
+                  </div>
 
-                    <!-- City & Location line -->
-                    <div class="location-line d-flex align-center justify-center justify-md-start flex-wrap gap-x-2 gap-y-1 mt-2 mb-2 text-white" style="color: rgba(255, 255, 255, 0.7) !important;">
-                      <VIcon icon="tabler-map-pin" size="18" style="color: rgba(255, 255, 255, 0.8) !important;" />
+                  <!-- Location & Map Line -->
+                  <div class="location-badge-row d-flex align-center justify-center justify-md-start flex-wrap gap-2 mb-3">
+                    <div class="location-pill d-inline-flex align-center px-3 py-1 rounded-pill">
+                      <VIcon icon="tabler-map-pin" size="16" class="me-1 text-primary" />
                       <span class="text-subtitle-2 font-weight-bold text-white">
                         {{ seller.governorate ? _t(seller.governorate.name) : '' }}
-                        {{ seller.governorate && seller.city ? ' - ' : '' }}
-                        {{ seller.city ? _t(seller.city.name) : (!seller.governorate ? t('egypt') || 'Egypt' : '') }}
+                        {{ seller.governorate && seller.city ? ' • ' : '' }}
+                        {{ seller.city ? _t(seller.city.name) : (!seller.governorate ? (t('egypt') || 'Egypt') : '') }}
                       </span>
-                      <span v-if="_t(seller.district)" class="text-subtitle-2 font-weight-medium text-white" style="opacity: 0.8;">
-                        • {{ _t(seller.district) }}
-                      </span>
-                      <span v-if="_t(seller.street)" class="text-subtitle-2 font-weight-medium text-white" style="opacity: 0.8;">
-                        • {{ _t(seller.street) }}
-                      </span>
-                      <span v-if="_t(seller.address)" class="text-subtitle-2 font-weight-medium text-white" style="opacity: 0.8;">
-                        ({{ _t(seller.address) }})
-                      </span>
-                      <VChip
-                        size="x-small"
-                        color="error"
-                        variant="elevated"
-                        class="ms-2 font-weight-bold cursor-pointer open-map-chip text-white"
-                        @click="openMap"
-                        prepend-icon="tabler-map"
-                      >
-                        {{ t('openMap') || 'Open Map' }}
-                      </VChip>
                     </div>
 
-                    <!-- Showroom Bio / Description (4-line fixed space) -->
-                    <p class="store-bio mt-3 text-subtitle-2 max-w-700 mx-auto mx-md-0 text-center text-md-start text-white" style="color: rgba(255, 255, 255, 0.7) !important;">
+                    <VBtn
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      rounded="pill"
+                      class="open-map-btn font-weight-bold px-3 text-white"
+                      @click="openMap"
+                    >
+                      <VIcon icon="tabler-map" size="15" class="me-1" />
+                      {{ t('openMap') || 'Open Map' }}
+                    </VBtn>
+                  </div>
+
+                  <!-- Showroom Bio Card -->
+                  <div class="store-bio-card">
+                    <p class="store-bio-text mb-0">
                       {{ _t(seller.store_description) || seller.bio || t('showroomDefaultBio') || 'Welcome to our premium showroom. We offer a high-quality selection of certified pre-owned and brand new vehicles.' }}
                     </p>
                   </div>
+                </div>
 
-                  <!-- Contact Hub Card (Transparent & Compact Control Deck) -->
-                  <div class="contact-hub-card pa-4 rounded-2xl d-flex flex-column gap-3 mt-4 mt-md-0 flex-shrink-0">
-                    <!-- Primary Actions (Call & WhatsApp) -->
-                    <div class="d-flex align-center gap-3 w-100">
-                      <VBtn
-                        v-if="seller.phone"
-                        variant="flat"
-                        size="large"
-                        rounded="pill"
-                        class="flex-grow-1 font-weight-bold text-subtitle-1 px-4 py-2 text-white"
-                        :style="{
-                          background: seller.tier?.toLowerCase() === 'platinum' ? 'linear-gradient(135deg, #8E2DE2 0%, #4A00E1 100%)' :
-                                      (seller.tier?.toLowerCase() === 'diamond' ? 'linear-gradient(135deg, #00d2ff 0%, #0072ff 100%)' :
-                                      (seller.tier?.toLowerCase() === 'gold' ? 'linear-gradient(135deg, #DAA520 0%, #FFD700 100%)' : 
-                                      (seller.tier?.toLowerCase() === 'silver' ? 'linear-gradient(135deg, #455A64 0%, #78909C 100%)' : 'var(--v-theme-primary)'))),
-                          color: seller.tier?.toLowerCase() === 'gold' ? '#3E2723 !important' : '#FFFFFF !important',
-                          boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
-                        }"
-                        @click="openCallDialog"
-                      >
-                        <VIcon icon="tabler-phone" size="18" class="me-2" />
-                        {{ t('call') || 'Call' }}
-                      </VBtn>
+              </div>
 
-                      <VBtn
-                        v-if="seller.phone"
-                        color="success"
-                        variant="elevated"
-                        size="large"
-                        rounded="pill"
-                        class="flex-grow-1 font-weight-bold shadow-success text-subtitle-1 px-4 py-2"
-                        :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
-                        target="_blank"
-                      >
-                        <VIcon icon="tabler-brand-whatsapp" size="18" class="me-2" />
-                        {{ t('whatsapp') || 'WhatsApp' }}
-                      </VBtn>
-                    </div>
+              <!-- Right Column: Premium Contact Hub Deck -->
+              <div class="contact-hub-deck flex-shrink-0 d-flex flex-column justify-center align-center">
+                <!-- Action Buttons: Call & WhatsApp -->
+                <div class="d-flex flex-row flex-lg-column gap-3 w-100 mb-3">
+                  <VBtn
+                    v-if="seller.phone"
+                    variant="flat"
+                    size="large"
+                    rounded="pill"
+                    class="action-btn call-action-btn font-weight-black text-subtitle-1 w-100 text-white"
+                    :class="'call-btn-' + (seller.tier?.toLowerCase() || 'default')"
+                    @click="openCallDialog"
+                  >
+                    <VIcon icon="tabler-phone" size="19" class="me-2" />
+                    {{ t('call') || 'Call' }}
+                  </VBtn>
 
-                    <VDivider class="w-100 opacity-20" />
+                  <VBtn
+                    v-if="seller.phone"
+                    variant="flat"
+                    size="large"
+                    rounded="pill"
+                    class="action-btn whatsapp-action-btn font-weight-black text-subtitle-1 w-100 text-white"
+                    :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
+                    target="_blank"
+                  >
+                    <VIcon icon="tabler-brand-whatsapp" size="20" class="me-2" />
+                    {{ t('whatsapp') || 'WhatsApp' }}
+                  </VBtn>
+                </div>
 
-                    <!-- Social Media Row (Shaded Glass Backdrop & Responsive 4 Platforms) -->
-                    <div class="d-flex align-center justify-center gap-3 w-100">
-                      <a
-                        class="social-btn social-btn-facebook"
-                        :href="formattedSocials.facebook"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        v-tooltip="'Facebook'"
-                      >
-                        <VIcon icon="tabler-brand-facebook" size="20" />
-                      </a>
+                <!-- Social Media Channel Row -->
+                <div class="social-links-wrapper w-100 pt-3">
+                  <div class="social-header-label text-center mb-2">
+                    <span>{{ t('followUs') || 'Connect With Us' }}</span>
+                  </div>
+                  <div class="d-flex align-center justify-center gap-3">
+                    <button
+                      type="button"
+                      class="social-btn social-btn-facebook"
+                      :class="{ 'opacity-30 cursor-not-allowed': !getSocialUrl('facebook') }"
+                      @click="openSocial('facebook')"
+                      v-tooltip="getSocialUrl('facebook') ? 'Facebook' : 'Facebook (غير متوفر)'"
+                    >
+                      <VIcon icon="tabler-brand-facebook" size="19" />
+                    </button>
 
-                      <a
-                        class="social-btn social-btn-instagram"
-                        :href="formattedSocials.instagram"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        v-tooltip="'Instagram'"
-                      >
-                        <VIcon icon="tabler-brand-instagram" size="20" />
-                      </a>
+                    <button
+                      type="button"
+                      class="social-btn social-btn-instagram"
+                      :class="{ 'opacity-30 cursor-not-allowed': !getSocialUrl('instagram') }"
+                      @click="openSocial('instagram')"
+                      v-tooltip="getSocialUrl('instagram') ? 'Instagram' : 'Instagram (غير متوفر)'"
+                    >
+                      <VIcon icon="tabler-brand-instagram" size="19" />
+                    </button>
 
-                      <a
-                        class="social-btn social-btn-youtube"
-                        :href="formattedSocials.youtube"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        v-tooltip="'YouTube'"
-                      >
-                        <VIcon icon="tabler-brand-youtube" size="20" />
-                      </a>
+                    <button
+                      type="button"
+                      class="social-btn social-btn-youtube"
+                      :class="{ 'opacity-30 cursor-not-allowed': !getSocialUrl('youtube') }"
+                      @click="openSocial('youtube')"
+                      v-tooltip="getSocialUrl('youtube') ? 'YouTube' : 'YouTube (غير متوفر)'"
+                    >
+                      <VIcon icon="tabler-brand-youtube" size="19" />
+                    </button>
 
-                      <a
-                        class="social-btn social-btn-tiktok"
-                        :href="formattedSocials.tiktok"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        v-tooltip="'TikTok'"
-                      >
-                        <VIcon icon="tabler-brand-tiktok" size="20" />
-                      </a>
-                    </div>
+                    <button
+                      type="button"
+                      class="social-btn social-btn-tiktok"
+                      :class="{ 'opacity-30 cursor-not-allowed': !getSocialUrl('tiktok') }"
+                      @click="openSocial('tiktok')"
+                      v-tooltip="getSocialUrl('tiktok') ? 'TikTok' : 'TikTok (غير متوفر)'"
+                    >
+                      <VIcon icon="tabler-brand-tiktok" size="19" />
+                    </button>
                   </div>
                 </div>
+
               </div>
 
             </div>
@@ -640,85 +602,123 @@ onMounted(fetchSeller)
 
 /* Header Card */
 .showroom-header-card {
-  background: rgba(var(--v-theme-surface), 0.4) !important;
-  backdrop-filter: blur(40px);
+  background: #0b0f19 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 32px !important;
+  border-radius: 28px !important;
   overflow: hidden;
   position: relative;
-  min-height: 480px !important;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Ambient Cover Backdrop */
+.header-cover-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.header-cover-img {
+  position: absolute;
+  inset: -20px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(24px) brightness(0.22);
+  transform: scale(1.08);
+}
+
+.header-cover-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(11, 15, 25, 0.95) 0%, rgba(15, 23, 42, 0.88) 50%, rgba(11, 15, 25, 0.96) 100%);
 }
 
 .header-bg-glow {
   position: absolute;
-  top: -50%;
-  left: -20%;
-  width: 70%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.2) 0%, transparent 70%);
-  filter: blur(60px);
-  z-index: 0;
+  top: -40%;
+  left: 10%;
+  width: 60%;
+  height: 180%;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.18) 0%, transparent 70%);
+  filter: blur(70px);
+  z-index: 1;
   pointer-events: none;
 }
 
 /* Tier Glow Classes */
 .showroom-header-diamond {
-  border: 2px solid rgba(0, 210, 255, 0.8) !important;
-  box-shadow: 0 12px 40px rgba(0, 210, 255, 0.25) !important;
-  .header-bg-glow { background: radial-gradient(circle, rgba(0, 210, 255, 0.2) 0%, transparent 70%); }
+  border: 2px solid rgba(0, 210, 255, 0.65) !important;
+  box-shadow: 0 12px 40px rgba(0, 210, 255, 0.22), 0 0 20px rgba(0, 210, 255, 0.1) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(0, 210, 255, 0.22) 0%, transparent 70%); }
   .showroom-logo-box {
     border: 2px solid rgba(0, 210, 255, 0.8) !important;
-    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4) !important;
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.35) !important;
   }
 }
 
 .showroom-header-gold {
-  border: 2px solid rgba(218, 165, 32, 0.8) !important;
-  box-shadow: 0 12px 40px rgba(218, 165, 32, 0.25) !important;
-  .header-bg-glow { background: radial-gradient(circle, rgba(218, 165, 32, 0.2) 0%, transparent 70%); }
+  border: 2px solid rgba(218, 165, 32, 0.65) !important;
+  box-shadow: 0 12px 40px rgba(218, 165, 32, 0.22) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(218, 165, 32, 0.22) 0%, transparent 70%); }
   .showroom-logo-box {
     border: 2px solid rgba(218, 165, 32, 0.8) !important;
-    box-shadow: 0 0 15px rgba(218, 165, 32, 0.4) !important;
+    box-shadow: 0 0 20px rgba(218, 165, 32, 0.35) !important;
   }
 }
 
 .showroom-header-platinum {
-  border: 2px solid rgba(142, 45, 226, 0.8) !important;
-  box-shadow: 0 12px 40px rgba(142, 45, 226, 0.45), 0 0 25px rgba(142, 45, 226, 0.3) !important;
-  .header-bg-glow { background: radial-gradient(circle, rgba(142, 45, 226, 0.3) 0%, transparent 75%); filter: blur(50px); }
+  border: 2px solid rgba(142, 45, 226, 0.65) !important;
+  box-shadow: 0 12px 40px rgba(142, 45, 226, 0.3) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(142, 45, 226, 0.28) 0%, transparent 75%); filter: blur(60px); }
   .showroom-logo-box {
     border: 2px solid rgba(142, 45, 226, 0.8) !important;
-    box-shadow: 0 0 20px rgba(142, 45, 226, 0.5) !important;
+    box-shadow: 0 0 20px rgba(142, 45, 226, 0.4) !important;
   }
 }
 
 .showroom-header-silver {
-  border: 2px solid rgba(69, 90, 100, 0.6) !important;
-  box-shadow: 0 12px 40px rgba(69, 90, 100, 0.25) !important;
-  .header-bg-glow { background: radial-gradient(circle, rgba(69, 90, 100, 0.2) 0%, transparent 70%); }
+  border: 2px solid rgba(120, 144, 156, 0.5) !important;
+  box-shadow: 0 12px 30px rgba(120, 144, 156, 0.2) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(120, 144, 156, 0.2) 0%, transparent 70%); }
   .showroom-logo-box {
-    border: 2px solid rgba(69, 90, 100, 0.6) !important;
-    box-shadow: 0 0 15px rgba(69, 90, 100, 0.3) !important;
+    border: 2px solid rgba(120, 144, 156, 0.7) !important;
+    box-shadow: 0 0 15px rgba(120, 144, 156, 0.3) !important;
   }
+}
+
+/* Tier Pill Badges */
+.tier-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  font-size: 0.72rem;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.tier-badge-diamond {
+  background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 14px rgba(0, 210, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .tier-badge-platinum {
   background: linear-gradient(135deg, #8E2DE2 0%, #667eea 50%, #4A00E1 100%);
   color: #FFFFFF !important;
-  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.6), 0 0 15px rgba(142, 45, 226, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 18px rgba(142, 45, 226, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .tier-badge-gold {
-  background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #FFF8DC 100%);
-  color: #3E2723 !important;
-  box-shadow: 0 4px 15px rgba(218, 165, 32, 0.5);
-  border: 1px solid #FFF8DC;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+  color: #211300 !important;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .tier-badge-silver {
@@ -726,120 +726,190 @@ onMounted(fetchSeller)
   color: #FFFFFF !important;
   box-shadow: 0 4px 15px rgba(69, 90, 100, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Avatar Styling */
+/* Avatar & Logo Styling */
 .showroom-logo-box {
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  background: #09090b;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  background: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  border-radius: 20px;
-  width: 165px;
-  height: 165px;
+  border-radius: 22px;
+  width: 145px;
+  height: 145px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 12px;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.03);
+  }
 
   img {
     object-fit: contain;
     width: 100%;
     height: 100%;
-    padding: 10px;
   }
 }
 
-/* Typography & Info */
-.store-bio {
-  line-height: 1.7;
-  max-width: 760px;
-  font-size: 1rem !important;
+/* Typography & Content Info */
+.showroom-title {
+  font-size: 2.1rem !important;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.location-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.open-map-btn {
+  background: rgba(var(--v-theme-primary), 0.18) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.35) !important;
+  transition: all 0.25s ease;
+  &:hover {
+    background: rgba(var(--v-theme-primary), 0.35) !important;
+    transform: translateY(-2px);
+  }
+}
+
+.store-bio-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px 18px;
+  backdrop-filter: blur(12px);
+  max-width: 720px;
+}
+
+.store-bio-text {
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.85);
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 100px;
 }
 
-.text-white-50 {
-  color: rgba(255, 255, 255, 0.7) !important;
+/* Contact Hub Deck */
+.contact-hub-deck {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  padding: 18px 22px;
+  backdrop-filter: blur(20px);
+  min-width: 270px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
 }
 
-.tracking-wide {
-  letter-spacing: 1.5px;
-}
-
-.open-map-chip {
+.action-btn {
+  height: 48px !important;
+  border-radius: 9999px !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
   }
 }
 
-/* Contact Hub Card */
-.contact-hub-card {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  min-width: 290px;
+.call-btn-diamond, .call-btn-default {
+  background: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%) !important;
+  box-shadow: 0 4px 16px rgba(0, 114, 255, 0.4);
+  &:hover {
+    box-shadow: 0 6px 22px rgba(0, 210, 255, 0.6);
+  }
 }
 
-.opacity-20 {
-  opacity: 0.2 !important;
+.call-btn-gold {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%) !important;
+  color: #211300 !important;
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
+  &:hover {
+    box-shadow: 0 6px 22px rgba(255, 215, 0, 0.6);
+  }
+}
+
+.call-btn-platinum {
+  background: linear-gradient(135deg, #8E2DE2 0%, #4A00E1 100%) !important;
+  box-shadow: 0 4px 16px rgba(142, 45, 226, 0.4);
+  &:hover {
+    box-shadow: 0 6px 22px rgba(142, 45, 226, 0.6);
+  }
+}
+
+.whatsapp-action-btn {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%) !important;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+  &:hover {
+    box-shadow: 0 6px 22px rgba(37, 211, 102, 0.6);
+  }
+}
+
+.social-links-wrapper {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.social-header-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .social-btn {
-  width: 44px !important;
-  height: 44px !important;
+  width: 42px !important;
+  height: 42px !important;
   border-radius: 50% !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.75) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
   text-decoration: none !important;
 }
 
 .social-btn-facebook {
-  border: 1.5px solid rgba(24, 119, 242, 0.5) !important;
   color: #1877F2 !important;
 }
 .social-btn-facebook:hover {
   background: #1877F2 !important;
   color: #ffffff !important;
+  border-color: #1877F2 !important;
   box-shadow: 0 0 20px rgba(24, 119, 242, 0.6) !important;
   transform: translateY(-4px) scale(1.08);
 }
 
 .social-btn-instagram {
-  border: 1.5px solid rgba(225, 48, 108, 0.5) !important;
   color: #E1306C !important;
 }
 .social-btn-instagram:hover {
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
   color: #ffffff !important;
+  border-color: #E1306C !important;
   box-shadow: 0 0 20px rgba(225, 48, 108, 0.6) !important;
   transform: translateY(-4px) scale(1.08);
 }
 
 .social-btn-youtube {
-  border: 1.5px solid rgba(255, 0, 0, 0.5) !important;
   color: #FF0000 !important;
 }
 .social-btn-youtube:hover {
   background: #FF0000 !important;
   color: #ffffff !important;
+  border-color: #FF0000 !important;
   box-shadow: 0 0 20px rgba(255, 0, 0, 0.6) !important;
   transform: translateY(-4px) scale(1.08);
 }
 
 .social-btn-tiktok {
-  border: 1.5px solid rgba(0, 242, 254, 0.5) !important;
   color: #00F2FE !important;
 }
 .social-btn-tiktok:hover {
@@ -849,6 +919,7 @@ onMounted(fetchSeller)
   box-shadow: 0 0 20px rgba(254, 44, 85, 0.6) !important;
   transform: translateY(-4px) scale(1.08);
 }
+
 
 /* Stats Cards */
 .stat-card {
