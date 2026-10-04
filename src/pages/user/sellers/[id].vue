@@ -289,7 +289,7 @@ onMounted(fetchSeller)
             <div class="header-bg-glow"></div>
           </div>
           
-          <div class="showroom-profile-container pa-6 pa-md-10 position-relative z-1">
+          <div class="showroom-profile-container py-8 py-md-12 px-6 px-md-10 position-relative z-1">
             <div class="d-flex flex-column flex-lg-row align-center align-lg-stretch justify-space-between gap-6 gap-md-8">
               
               <!-- Left Column: Logo + Showroom Info -->
@@ -397,7 +397,7 @@ onMounted(fetchSeller)
                 <!-- Social Media Channel Row -->
                 <div class="social-links-wrapper w-100 pt-3">
                   <div class="social-header-label text-center mb-2">
-                    <span>{{ t('followUs') || 'Connect With Us' }}</span>
+                    <span>{{ t('followUs') || 'FOLLOW US' }}</span>
                   </div>
                   <div class="d-flex align-center justify-center gap-3">
                     <button
@@ -821,9 +821,12 @@ onMounted(fetchSeller)
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 14px 18px;
+  padding: 16px 20px;
   backdrop-filter: blur(12px);
   max-width: 720px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
 }
 
 .store-bio-text {
@@ -894,11 +897,11 @@ onMounted(fetchSeller)
 }
 
 .social-header-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .social-btn {

@@ -190,6 +190,7 @@ const messages = {
     filterByBrand: 'Filter by Brand:',
     allBrands: 'All Brands',
     call: 'Call',
+    followUs: 'FOLLOW US',
   },
   ar: {
     settings: 'الإعدادات',
@@ -379,6 +380,7 @@ const messages = {
     whatsappBtn: 'واتساب',
     exploreShowroom: 'استكشاف المعرض',
     elitePartner: 'شريك النخبة',
+    followUs: 'تابعنا',
   }
 }
 
