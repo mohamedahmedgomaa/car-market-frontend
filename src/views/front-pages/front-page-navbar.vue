@@ -125,7 +125,6 @@ const logout = async () => {
             "
             @click="sidebar = false"
           >
-            <VIcon icon="tabler-car" size="20" class="me-3" />
             <span>{{ t('cars') }}</span>
           </RouterLink>
 
@@ -135,7 +134,6 @@ const logout = async () => {
             :class="route.path.startsWith('/user/best-deals') ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            <VIcon icon="tabler-discount-2" size="20" class="me-3" color="error" />
             <span>{{ t('bestDeals') }}</span>
           </RouterLink>
 
@@ -152,7 +150,6 @@ const logout = async () => {
             "
             @click="sidebar = false"
           >
-            <VIcon icon="tabler-motorbike" size="20" class="me-3" />
             <span>{{ t('bikes') }}</span>
           </RouterLink>
 
@@ -162,7 +159,6 @@ const logout = async () => {
             :class="route.path === '/user/sell' ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            <VIcon icon="tabler-circle-plus" size="20" class="me-3" color="warning" />
             <span>{{ t('sell') }}</span>
           </RouterLink>
 
@@ -172,7 +168,6 @@ const logout = async () => {
             :class="route.path.startsWith('/user/favorites') ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            <VIcon icon="tabler-heart" size="20" class="me-3" />
             <span>{{ t('favorites') }}</span>
           </RouterLink>
 
@@ -182,7 +177,6 @@ const logout = async () => {
             :class="route.path === '/user/sellers' ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
-            <VIcon icon="tabler-building-store" size="20" class="me-3" />
             <span>{{ t('showrooms') }}</span>
           </RouterLink>
 
@@ -212,7 +206,6 @@ const logout = async () => {
               :class="route.path.startsWith('/user') ? 'active-drawer-link' : ''"
               @click="sidebar = false"
             >
-              <VIcon icon="tabler-user-circle" size="20" class="me-3" />
               <span>{{ t('profile') }}</span>
             </RouterLink>
 
@@ -220,7 +213,6 @@ const logout = async () => {
               class="mobile-drawer-link font-weight-bold text-error cursor-pointer"
               @click="logout"
             >
-              <VIcon icon="tabler-logout" size="20" class="me-3" />
               <span>{{ t('logout') }}</span>
             </div>
           </template>
@@ -279,17 +271,6 @@ const logout = async () => {
                   <VIcon icon="tabler-moon" size="14" class="me-1" />
                   {{ t('dark') }}
                 </VBtn>
-                <VBtn
-                  size="small"
-                  :variant="configStore.theme === 'system' ? 'elevated' : 'tonal'"
-                  color="primary"
-                  rounded="lg"
-                  class="flex-grow-1 px-1"
-                  @click="configStore.theme = 'system'"
-                >
-                  <VIcon icon="tabler-device-desktop" size="14" class="me-1" />
-                  {{ t('system') }}
-                </VBtn>
               </div>
             </div>
           </div>
@@ -328,10 +309,10 @@ const logout = async () => {
         </IconBtn>
 
         <!-- Title & Brand Logo -->
-        <VAppBarTitle class="me-sm-8 me-2 logo-title-wrapper" style="flex: 0 0 auto; min-width: max-content; overflow: visible !important;">
+        <VAppBarTitle class="me-sm-8 me-1 logo-title-wrapper" style="flex: 0 1 auto; min-width: 0; max-width: 100%;">
           <RouterLink
             to="/"
-            class="d-flex align-center gap-x-3 text-decoration-none"
+            class="d-flex align-center gap-x-2 text-decoration-none"
           >
             <div class="navbar-logo-badge">
               <img :src="appLogo" alt="NegmCars" class="navbar-logo-img" />
@@ -463,25 +444,12 @@ const logout = async () => {
                 :active="configStore.theme === 'dark'"
                 color="primary"
                 rounded="lg"
-                class="mb-1"
                 @click="configStore.theme = 'dark'"
               >
                 <template #prepend>
                   <VIcon icon="tabler-moon" size="18" class="me-2" />
                 </template>
                 <VListItemTitle>{{ t('dark') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem
-                :active="configStore.theme === 'system'"
-                color="primary"
-                rounded="lg"
-                @click="configStore.theme = 'system'"
-              >
-                <template #prepend>
-                  <VIcon icon="tabler-device-desktop" size="18" class="me-2" />
-                </template>
-                <VListItemTitle>{{ t('system') }}</VListItemTitle>
               </VListItem>
             </VList>
           </VMenu>
@@ -591,25 +559,12 @@ const logout = async () => {
                 :active="configStore.theme === 'dark'"
                 color="primary"
                 rounded="lg"
-                class="mb-1"
                 @click="configStore.theme = 'dark'"
               >
                 <template #prepend>
                   <VIcon icon="tabler-moon" size="18" class="me-2" />
                 </template>
                 <VListItemTitle>{{ t('dark') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem
-                :active="configStore.theme === 'system'"
-                color="primary"
-                rounded="lg"
-                @click="configStore.theme = 'system'"
-              >
-                <template #prepend>
-                  <VIcon icon="tabler-device-desktop" size="18" class="me-2" />
-                </template>
-                <VListItemTitle>{{ t('system') }}</VListItemTitle>
               </VListItem>
             </VList>
           </VMenu>
@@ -822,14 +777,17 @@ const logout = async () => {
 
   @media (max-width: 600px) {
     height: 36px !important;
-    padding-inline: 12px !important;
-    font-size: 0.85rem !important;
+    padding-inline: 10px !important;
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
 }
 
 .auth-btn-icon {
   @media (max-width: 600px) {
-    size: 16px !important;
+    font-size: 16px !important;
+    margin-inline-end: 4px !important;
   }
 }
 
@@ -862,7 +820,11 @@ const logout = async () => {
     padding-inline: 30px !important; /* ✅ نفس الأصل */
 
     @media (max-width: 600px) {
-      padding-inline: 12px !important; /* ✅ Less padding on mobile to prevent clipping */
+      padding-inline: 8px !important; /* ✅ Less padding on mobile to prevent clipping */
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      overflow: hidden !important;
     }
   }
 
@@ -873,6 +835,8 @@ const logout = async () => {
 
     @media (max-width: 600px) {
       margin-block-start: 0.5rem !important;
+      max-inline-size: calc(100% - 16px) !important;
+      width: calc(100% - 16px) !important;
     }
   }
 }
@@ -914,6 +878,7 @@ const logout = async () => {
   .front-page-navbar {
     .v-toolbar {
       max-inline-size: calc(100% - 16px) !important;
+      width: calc(100% - 16px) !important;
     }
   }
 }

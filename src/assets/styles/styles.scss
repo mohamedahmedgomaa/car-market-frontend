@@ -83,3 +83,14 @@
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
+
+/* Prevent horizontal scrolling globally across all viewports */
+html,
+body,
+#app,
+.v-application,
+.v-application__wrap {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+}

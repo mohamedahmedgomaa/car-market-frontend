@@ -1502,8 +1502,8 @@ watch(
               border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
             "
           >
-            <div class="ad-label-tag">AD</div>
             <div class="ad-carousel-container">
+              <div class="ad-label-tag">AD</div>
               <Transition name="fade" mode="out-in">
                 <div
                   :key="adSlideIndex"
@@ -2376,16 +2376,17 @@ watch(
 .ad-label-tag {
   position: absolute;
   top: 12px;
-  left: 12px;
-  background: rgba(var(--v-theme-primary), 0.9);
+  inset-inline-start: 12px;
+  background: rgba(var(--v-theme-primary), 0.95);
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
   letter-spacing: 1px;
-  z-index: 2;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 25 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
 }
 
 .ad-carousel-container {
@@ -2504,13 +2505,13 @@ watch(
 /* Sidebar Ad Spot */
 .sidebar-ad-card {
   position: relative;
-  min-height: 200px;
+  min-height: 220px;
 }
 
 .ad-carousel-container {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 220px;
 }
 
 .ad-item-slide {
@@ -2539,7 +2540,7 @@ watch(
   position: relative;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   z-index: 2;
   display: block;

@@ -66,7 +66,6 @@ const fetchTopCars = async () => {
 
 // ✅ Contact
 const contactInfo = computed(() => [
-  { icon: 'tabler-mail', text: 'gomabdallah18@gmail.com' },
   { icon: 'tabler-phone', text: '+20 155 155 2993' },
   { icon: 'tabler-map-pin', text: t('egyptLocation') },
 ])
@@ -161,8 +160,11 @@ onMounted(fetchTopCars)
                 <div class="app-download-btn d-flex align-center justify-space-between opacity-85 cursor-not-allowed">
                   <div class="d-flex align-center gap-3">
                     <div class="app-icon">
-                      <svg viewBox="0 0 512 512" fill="currentColor">
-                        <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58-33.2-65.2 65.2 65.2 65.2 58-33.2c22.3-12.7 22.3-34.3 0-47zM385.4 337.5L104.6 499l220.7-126.5 60.1-60.1z" />
+                      <svg viewBox="0 0 512 512" width="24" height="24">
+                        <path fill="#00D2FF" d="M47 35.3v441.4c0 16.1 8.7 28.5 21.7 35.3l256.6-256L68.7 0C55.7 6.8 47 19.2 47 35.3z" />
+                        <path fill="#00F076" d="M385.4 337.5L325.3 277.4 68.7 512l316.7-174.5z" />
+                        <path fill="#FFC700" d="M472.2 225.6c11.2 6.4 17.8 17.2 17.8 28.4s-6.6 22-17.8 28.4l-58 33.2-65.2-65.2 65.2-65.2 58 33.2z" />
+                        <path fill="#FF3A44" d="M385.4 174.5L68.7 0l256.6 256 60.1-60.1z" />
                       </svg>
                     </div>
                     <div class="app-text">

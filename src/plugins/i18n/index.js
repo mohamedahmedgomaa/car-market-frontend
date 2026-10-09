@@ -385,11 +385,11 @@ const messages = {
 }
 
 export default function (app) {
-  const cookieLanguage = cookieRef('language', 'ar') // Default to Arabic (ar) as specified by the screenshot
+  const cookieLanguage = cookieRef('language', 'en') // Default to English (en)
   const i18n = createI18n({
     legacy: false,
-    locale: cookieLanguage.value || 'ar',
-    fallbackLocale: 'ar',
+    locale: cookieLanguage.value || 'en',
+    fallbackLocale: 'en',
     messages,
   })
 
