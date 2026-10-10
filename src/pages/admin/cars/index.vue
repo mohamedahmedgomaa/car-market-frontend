@@ -389,9 +389,67 @@ const selectFilter = (type) => {
   fetchLists(1)
 }
 
+const setPublishDateToNow = () => {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  const h = String(now.getHours()).padStart(2, '0')
+  const min = String(now.getMinutes()).padStart(2, '0')
+  const s = String(now.getSeconds()).padStart(2, '0')
+  promotionForm.value.created_at = `${y}-${m}-${d} ${h}:${min}:${s}`
+}
+
+const renewConfirmDialog = ref(false)
+const selectedCarForRenew = ref(null)
+
+const promptRenewCarDate = (car) => {
+  selectedCarForRenew.value = car
+  renewConfirmDialog.value = true
+}
+
+const confirmAndRenewCarDate = async () => {
+  if (!selectedCarForRenew.value) return
+  const car = selectedCarForRenew.value
+  car.renewing = true
+  renewConfirmDialog.value = false
+
+  try {
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const d = String(now.getDate()).padStart(2, '0')
+    const h = String(now.getHours()).padStart(2, '0')
+    const min = String(now.getMinutes()).padStart(2, '0')
+    const s = String(now.getSeconds()).padStart(2, '0')
+    const nowFormatted = `${y}-${m}-${d} ${h}:${min}:${s}`
+
+    const res = await carAdminApi.updateStatus(car.id, { created_at: nowFormatted })
+    
+    // Update in local lists
+    const updatedDate = res.data?.data?.created_at || nowFormatted
+    const idx = lists.value.findIndex(c => c.id === car.id)
+    if (idx !== -1) {
+      lists.value[idx] = { ...lists.value[idx], created_at: updatedDate }
+    }
+
+    const sIdx = allCarsForStats.value.findIndex(c => c.id === car.id)
+    if (sIdx !== -1) {
+      allCarsForStats.value[sIdx] = { ...allCarsForStats.value[sIdx], created_at: updatedDate }
+    }
+  } catch (err) {
+    console.error('Renew date failed:', err.response?.data || err.message)
+    alert('فشل تجديد التاريخ: ' + (err.response?.data?.message || err.message))
+  } finally {
+    car.renewing = false
+  }
+}
+
 const openPromotionDialog = (car) => {
   currentCar.value = car
   const expiry = car.ad_expiry ? car.ad_expiry.split('T')[0] : null
+  const createdAtFormatted = car.created_at ? car.created_at.replace('T', ' ').substring(0, 19) : ''
+
   promotionForm.value = {
     status: car.status || 'pending',
     is_featured: !!car.is_featured,
@@ -400,7 +458,8 @@ const openPromotionDialog = (car) => {
     show_on_home: !!car.show_on_home,
     is_global_ad: !!car.is_global_ad,
     featured_fee: car.featured_fee || 0,
-    ad_expiry: expiry
+    ad_expiry: expiry,
+    created_at: createdAtFormatted
   }
   selectedPreset.value = detectPreset(expiry)
   promotionDialog.value = true
@@ -719,13 +778,16 @@ const stats = computed(() => {
             <!-- Actions -->
             <td class="text-end px-6">
               <div class="d-flex justify-end gap-2">
+                <VBtn icon variant="tonal" color="teal" size="small" class="rounded-lg shadow-hover" title="تجديد وتحديث تاريخ النشر فوراً إلى الآن (Renew Publish Date)" :loading="car.renewing" @click="promptRenewCarDate(car)">
+                  <VIcon icon="tabler-rotate-clockwise" />
+                </VBtn>
                 <VBtn icon variant="tonal" color="success" size="small" class="rounded-lg shadow-hover" title="طباعة ورقة QR للسيارة" @click="openQrModal(car)">
                   <VIcon icon="tabler-qrcode" />
                 </VBtn>
                 <VBtn icon variant="tonal" color="info" size="small" class="rounded-lg shadow-hover" title="تحميل كارت الصورة للسوشيال ميديا (انستجرام)" @click="openSocialCardModal(car)">
                   <VIcon icon="tabler-photo-share" />
                 </VBtn>
-                <VBtn icon variant="tonal" color="warning" size="small" class="rounded-lg shadow-hover" title="إعدادات الظهور والترقية" @click="openPromotionDialog(car)">
+                <VBtn icon variant="tonal" color="warning" size="small" class="rounded-lg shadow-hover" title="إعدادات الظهور والترقية والتاريخ" @click="openPromotionDialog(car)">
                   <VIcon icon="tabler-settings-automation" />
                 </VBtn>
                 <VBtn icon variant="tonal" color="primary" size="small" class="rounded-lg shadow-hover" title="تعديل" @click="handleEdit(car.id)">
@@ -897,6 +959,42 @@ const stats = computed(() => {
                 persistent-hint
               />
             </VCol>
+
+            <!-- 🔄 Renew Publish Date / تجديد تاريخ النشر -->
+            <VCol cols="12">
+              <VCard variant="tonal" color="success" class="pa-4 rounded-xl border">
+                <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-2">
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="tabler-calendar-time" color="success" size="22" />
+                    <span class="text-subtitle-1 font-weight-black text-high-emphasis">تحديث وتجديد تاريخ النشر (Publish Date)</span>
+                  </div>
+                  <VBtn
+                    color="success"
+                    variant="elevated"
+                    size="small"
+                    rounded="pill"
+                    class="font-weight-black px-4 text-white"
+                    style="color: #fff !important; -webkit-text-fill-color: #fff !important;"
+                    @click="setPublishDateToNow"
+                  >
+                    <VIcon icon="tabler-rotate-clockwise" size="18" class="me-1" />
+                    تجديد إلى الآن (Set to NOW)
+                  </VBtn>
+                </div>
+                <p class="text-caption text-medium-emphasis mb-3">
+                  تاريخ النشر يحدد ترتيب السيارة في نتائج البحث وفلاتر الأحدث. اضغط على "تجديد إلى الآن" لتحديث تاريخ الإعلان إلى اللحظة الحالية.
+                </p>
+                <VTextField
+                  v-model="promotionForm.created_at"
+                  label="تاريخ وتوقيت النشر (Created At)"
+                  placeholder="YYYY-MM-DD HH:mm:ss"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="tabler-clock"
+                  hide-details
+                />
+              </VCard>
+            </VCol>
           </VRow>
         </VCardText>
 
@@ -931,6 +1029,25 @@ const stats = computed(() => {
           <VBtn variant="tonal" rounded="pill" @click="deleteDialog = false" class="px-6 font-weight-bold flex-grow-1">Keep it</VBtn>
           <VBtn color="error" rounded="pill" :loading="deleting" @click="handleDelete" variant="elevated" class="px-8 font-weight-bold flex-grow-1 shadow-error">
             Delete Car
+          </VBtn>
+        </div>
+      </VCard>
+    </VDialog>
+
+    <!-- Renew Date Confirmation Dialog -->
+    <VDialog v-model="renewConfirmDialog" max-width="440">
+      <VCard class="pa-6 text-center rounded-2xl elevation-10" style="background: rgba(var(--v-theme-surface), 0.95); backdrop-filter: blur(20px);">
+        <VAvatar color="teal" variant="tonal" size="72" class="mx-auto mb-4 border">
+          <VIcon icon="tabler-rotate-clockwise" size="40" />
+        </VAvatar>
+        <h3 class="text-h5 font-weight-black mb-2">تأكيد تجديد تاريخ النشر</h3>
+        <p class="text-medium-emphasis font-weight-medium mb-6">
+          هل أنت متأكد من رغبتك في تجديد تاريخ نشر السيارة <strong>"{{ selectedCarForRenew?.title?.en || selectedCarForRenew?.title || ('#' + selectedCarForRenew?.id) }}"</strong> وتحديثه إلى اللحظة الحالية (الآن)؟
+        </p>
+        <div class="d-flex justify-center gap-3">
+          <VBtn variant="tonal" rounded="pill" @click="renewConfirmDialog = false" class="px-6 font-weight-bold flex-grow-1">إلغاء</VBtn>
+          <VBtn color="teal" rounded="pill" :loading="selectedCarForRenew?.renewing" @click="confirmAndRenewCarDate" variant="elevated" class="px-8 font-weight-black flex-grow-1 shadow-primary text-white" style="color: #fff !important; -webkit-text-fill-color: #fff !important;">
+            نعم، جدّد الآن
           </VBtn>
         </div>
       </VCard>
