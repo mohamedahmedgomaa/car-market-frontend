@@ -262,6 +262,12 @@ const stats = computed(() => [
         </VBtn>
       </div>
 
+      <!-- Mobile Scroll Hint Banner -->
+      <div class="d-flex d-md-none align-center gap-2 mx-6 my-2 text-caption font-weight-bold text-primary bg-primary-subtle px-3 py-2 rounded-lg">
+        <VIcon icon="tabler-arrows-left-right" size="16" />
+        <span>مرر أفقياً لرؤية جميع تفاصيل المعارض والتحكم (Scroll horizontally for full options)</span>
+      </div>
+
       <!-- Table -->
       <VTable class="premium-table bg-surface">
         <thead>
