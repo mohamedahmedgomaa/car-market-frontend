@@ -45,17 +45,17 @@ main {
 }
 
 .v-theme--dark .landing-page-wrapper {
-  background: #0b0e14 !important;
+  background: #0e121a !important;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
 }
 .v-theme--dark .bg-glow {
-  opacity: 0.35 !important;
+  opacity: 0.3 !important;
   background: 
-    radial-gradient(circle at 50% 0%, rgba(255, 107, 0, 0.10) 0%, transparent 55%),
-    radial-gradient(circle at 85% 20%, rgba(255, 159, 67, 0.06) 0%, transparent 45%),
-    radial-gradient(circle at 15% 70%, rgba(255, 107, 0, 0.04) 0%, transparent 45%);
+    radial-gradient(circle at 50% 0%, rgba(255, 107, 0, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 85% 20%, rgba(255, 159, 67, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 15% 70%, rgba(255, 107, 0, 0.04) 0%, transparent 50%);
 }
 
 .landing-page-wrapper {

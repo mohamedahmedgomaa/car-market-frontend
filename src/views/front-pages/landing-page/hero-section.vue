@@ -957,16 +957,22 @@ onBeforeUnmount(() => {
 
 /* Search Card */
 .premium-search-card {
-  background: rgba(20, 24, 40, 0.65) !important;
-  backdrop-filter: blur(30px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
   border-radius: 32px !important;
   padding: 28px !important;
   height: 100%;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 20px 50px rgba(0, 0, 0, 0.45) !important;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(var(--v-theme-primary), 0.3) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+  }
 }
 
 /* Welcome Chip */
