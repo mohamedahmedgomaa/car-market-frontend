@@ -744,12 +744,12 @@ onMounted(fetchSeller)
 }
 
 .showroom-header-platinum {
-  border: 2px solid rgba(142, 45, 226, 0.65) !important;
-  box-shadow: 0 12px 40px rgba(142, 45, 226, 0.3) !important;
-  .header-bg-glow { background: radial-gradient(circle, rgba(142, 45, 226, 0.28) 0%, transparent 75%); filter: blur(60px); }
+  border: 2px solid rgba(0, 207, 232, 0.65) !important;
+  box-shadow: 0 12px 40px rgba(0, 207, 232, 0.25) !important;
+  .header-bg-glow { background: radial-gradient(circle, rgba(0, 207, 232, 0.25) 0%, transparent 75%); filter: blur(60px); }
   .showroom-logo-box {
-    border: 2px solid rgba(142, 45, 226, 0.8) !important;
-    box-shadow: 0 0 20px rgba(142, 45, 226, 0.4) !important;
+    border: 2px solid rgba(0, 207, 232, 0.8) !important;
+    box-shadow: 0 0 20px rgba(0, 207, 232, 0.4) !important;
   }
 }
 

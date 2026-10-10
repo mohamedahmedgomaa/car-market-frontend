@@ -368,11 +368,11 @@ onMounted(() => {
         </VCol>
       </VRow>
 
-      <!-- Premium Structured Search Deck (Spanning Full Width - Compact!) -->
-      <div class="premium-horizontal-search mb-8 animate-fade-in">
-        <div class="search-main-row">
+      <!-- Premium Structured Search Deck (Clean & Balanced Row!) -->
+      <VCard class="premium-horizontal-search pa-6 rounded-3xl border elevation-6 mb-10">
+        <VRow class="align-center" density="comfortable">
           <!-- 1. Showroom Name Field -->
-          <div class="search-col search-col-name">
+          <VCol cols="12" sm="6" md="3">
             <VTextField
               v-model="filters.storeName"
               :placeholder="t('showroomNamePlaceholder')"
@@ -383,10 +383,10 @@ onMounted(() => {
               class="premium-input-field"
               clearable
             />
-          </div>
+          </VCol>
 
           <!-- 2. Governorate Field -->
-          <div class="search-col search-col-governorate">
+          <VCol cols="12" sm="6" md="3">
             <VAutocomplete
               v-model="filters.governorateId"
               :items="governorates"
@@ -407,10 +407,10 @@ onMounted(() => {
                 {{ getCombinedName(item.raw.name) }}
               </template>
             </VAutocomplete>
-          </div>
+          </VCol>
 
           <!-- 3. City Field -->
-          <div class="search-col search-col-city">
+          <VCol cols="12" sm="6" md="3">
             <VAutocomplete
               v-model="filters.cityId"
               :items="filteredCities"
@@ -431,54 +431,53 @@ onMounted(() => {
                 {{ getCombinedName(item.raw.name) }}
               </template>
             </VAutocomplete>
-          </div>
+          </VCol>
 
-          <!-- 4. Tier Package Selector -->
-          <div class="search-col search-col-tier">
-            <VSelect
-              v-model="filters.tier"
-              :items="tierOptions"
-              item-value="value"
-              item-title="title"
-              :placeholder="_t({ ar: 'اختر الباقة', en: 'Select Tier' })"
-              prepend-inner-icon="tabler-crown"
-              variant="outlined"
-              density="comfortable"
-              hide-details
-              class="premium-input-field"
-              clearable
-            />
-          </div>
+          <!-- 4. Tier Package Selector & Actions -->
+          <VCol cols="12" sm="6" md="3">
+            <div class="d-flex align-center gap-2">
+              <VSelect
+                v-model="filters.tier"
+                :items="tierOptions"
+                item-value="value"
+                item-title="title"
+                :placeholder="_t({ ar: 'اختر الباقة', en: 'Select Tier' })"
+                prepend-inner-icon="tabler-crown"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input-field flex-grow-1"
+                clearable
+              />
 
-          <!-- 4. Action Buttons (Near Me and Reset Filters) -->
-          <div class="search-col-actions">
-            <VBtn
-              color="primary"
-              variant="elevated"
-              class="px-5 font-weight-bold shadow-primary text-subtitle-2"
-              height="48"
-              rounded="lg"
-              :loading="isLocating"
-              @click="locateNearMe"
-            >
-              <VIcon icon="tabler-map-pin-up" size="20" class="me-1" />
-              {{ t('nearMe') }}
-            </VBtn>
+              <VBtn
+                color="primary"
+                variant="flat"
+                class="px-4 font-weight-black flex-shrink-0"
+                height="48"
+                rounded="lg"
+                :loading="isLocating"
+                :title="t('nearMe')"
+                @click="locateNearMe"
+              >
+                <VIcon icon="tabler-map-pin-up" size="20" />
+              </VBtn>
 
-            <VBtn
-              variant="tonal"
-              height="48"
-              color="secondary"
-              class="px-4"
-              rounded="lg"
-              :title="t('resetFilters')"
-              @click="resetFilters"
-            >
-              <VIcon icon="tabler-refresh" />
-            </VBtn>
-          </div>
-        </div>
-      </div>
+              <VBtn
+                variant="tonal"
+                height="48"
+                color="secondary"
+                class="px-3 flex-shrink-0"
+                rounded="lg"
+                :title="t('resetFilters')"
+                @click="resetFilters"
+              >
+                <VIcon icon="tabler-refresh" size="20" />
+              </VBtn>
+            </div>
+          </VCol>
+        </VRow>
+      </VCard>
 
       <div class="d-flex align-center gap-2 mb-6 animate-fade-in">
         <div class="divider flex-grow-1 bg-white-10" style="height: 1px;"></div>
@@ -695,30 +694,16 @@ onMounted(() => {
 }
 
 .dealer-promo-card {
-  background: rgba(var(--v-theme-surface), 0.85) !important;
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
-  transition: all 0.4s ease;
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  transition: all 0.3s ease;
 
-  &.border-glow {
-    border-color: rgba(var(--v-theme-primary), 0.3) !important;
-    
-    &:hover {
-      border-color: rgba(var(--v-theme-primary), 0.6) !important;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
-      transform: translateY(-4px);
-    }
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%; right: -20%;
-    width: 250px; height: 250px;
-    background: radial-gradient(circle, rgba(255, 61, 0, 0.15), transparent 70%);
-    z-index: 0;
-    pointer-events: none;
+  &:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(var(--v-theme-primary), 0.35) !important;
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
   }
 }
 
@@ -760,9 +745,9 @@ onMounted(() => {
 }
 
 .showroom-card {
-  background: rgba(var(--v-theme-surface), 0.35) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 

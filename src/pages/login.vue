@@ -20,6 +20,9 @@ const route = useRoute()
 const { locale } = useI18n({ useScope: 'global' })
 const configStore = useConfigStore()
 
+const isAr = computed(() => locale.value === 'ar')
+const tr = (en, ar) => (isAr.value ? ar : en)
+
 const safeLangConfig = computed(() => themeConfig.app.i18n?.langConfig || [
   { label: 'English', i18nLang: 'en' },
   { label: 'العربية', i18nLang: 'ar' },
@@ -163,7 +166,9 @@ const handleAuth = async () => {
         class="auth-logo d-flex align-center gap-x-3 text-decoration-none"
       >
         <VNodeRenderer v-slot="{ nodes }" v-if="themeConfig.app.logo" :nodes="themeConfig.app.logo" />
-        <h1 class="auth-title text-high-emphasis text-h4 font-weight-bold mb-0">{{ themeConfig.app.title }}</h1>
+        <h1 class="auth-title text-h4 font-weight-bold mb-0">
+          <span class="logo-brand-text">Negm</span><span class="logo-accent-text">Cars</span>
+        </h1>
       </RouterLink>
 
       <!-- Settings Controls (Language & Theme) -->
@@ -208,21 +213,21 @@ const handleAuth = async () => {
           :class="{ active: activeTab === 'login' }"
           @click="activeTab = 'login'"
         >
-          Sign In
+          {{ tr('Sign In', 'تسجيل الدخول') }}
         </button>
         <button
           class="auth-tab"
           :class="{ active: activeTab === 'register' }"
           @click="activeTab = 'register'"
         >
-          Register
+          {{ tr('Register', 'حساب جديد') }}
         </button>
       </div>
 
       <VCardText class="pa-10">
         <!-- Title -->
-        <h2 class="text-h4 font-weight-bold mb-8 text-center text-high-emphasis" dir="ltr">
-          {{ activeTab === 'login' ? 'Hello! Welcome back!' : 'Create your account!' }}
+        <h2 class="text-h4 font-weight-bold mb-8 text-center text-high-emphasis">
+          {{ activeTab === 'login' ? tr('Hello! Welcome back!', 'مرحباً بك مجدداً!') : tr('Create your account!', 'أنشئ حسابك الجديد!') }}
         </h2>
 
         <!-- Social Buttons -->
@@ -232,10 +237,10 @@ const handleAuth = async () => {
             variant="outlined"
             class="social-btn apple-btn mb-4"
             height="52"
-            @click="errorMessage = 'Apple Sign-in is coming soon! Please use Email/Password for now.'"
+            @click="errorMessage = tr('Apple Sign-in is coming soon! Please use Email/Password for now.', 'تسجيل الدخول عبر Apple سيتوفر قريباً! يرجى استخدام البريد الإلكتروني حالياً.')"
           >
             <VIcon icon="tabler-brand-apple-filled" class="me-3" size="24" />
-            Sign in with Apple
+            {{ tr('Sign in with Apple', 'تسجيل الدخول عبر Apple') }}
           </VBtn>
 
           <VBtn
@@ -243,16 +248,16 @@ const handleAuth = async () => {
             variant="outlined"
             class="social-btn google-btn"
             height="52"
-            @click="errorMessage = 'Google Sign-in is coming soon! Please use Email/Password for now.'"
+            @click="errorMessage = tr('Google Sign-in is coming soon! Please use Email/Password for now.', 'تسجيل الدخول عبر Google سيتوفر قريباً! يرجى استخدام البريد الإلكتروني حالياً.')"
           >
             <VIcon icon="tabler-brand-google-filled" class="me-3 google-icon" size="24" />
-            Sign in with Google
+            {{ tr('Sign in with Google', 'تسجيل الدخول عبر Google') }}
           </VBtn>
         </div>
 
         <!-- Divider -->
         <div class="d-flex align-center my-8 text-disabled">
-          <VDivider /><span class="mx-4 font-weight-bold opacity-60">or</span><VDivider />
+          <VDivider /><span class="mx-4 font-weight-bold opacity-60">{{ tr('or', 'أو') }}</span><VDivider />
         </div>
 
         <!-- Form -->
@@ -260,7 +265,7 @@ const handleAuth = async () => {
           <VRow>
             <!-- Account Type Selection (Register Only) -->
             <VCol v-if="activeTab === 'register'" cols="12" class="mb-4">
-              <label class="input-label">I am registering as:</label>
+              <label class="input-label">{{ tr('I am registering as:', 'التسجيل كـ:') }}</label>
               <div class="role-selector d-flex gap-2 p-1">
                 <VBtn
                   variant="flat"
@@ -270,7 +275,7 @@ const handleAuth = async () => {
                   @click="form.accountType = 'individual'"
                 >
                   <VIcon icon="tabler-user" class="me-2" />
-                  Individual
+                  {{ tr('Individual', 'حساب فردي') }}
                 </VBtn>
                 <VBtn
                   variant="flat"
@@ -280,16 +285,16 @@ const handleAuth = async () => {
                   @click="form.accountType = 'showroom'"
                 >
                   <VIcon icon="tabler-building-store" class="me-2" />
-                  Showroom
+                  {{ tr('Showroom', 'معرض سيارات') }}
                 </VBtn>
               </div>
             </VCol>
 
             <VCol v-if="activeTab === 'register'" cols="12">
-              <label class="input-label">Full Name</label>
+              <label class="input-label">{{ tr('Full Name', 'الاسم الكامل') }}</label>
               <VTextField
                 v-model="form.name"
-                placeholder="Your full name"
+                :placeholder="tr('Your full name', 'ادخل اسمك الكامل')"
                 variant="outlined"
                 density="comfortable"
                 hide-details
@@ -298,10 +303,10 @@ const handleAuth = async () => {
             </VCol>
 
             <VCol v-if="activeTab === 'register' && form.accountType === 'showroom'" cols="12">
-              <label class="input-label">Showroom Name</label>
+              <label class="input-label">{{ tr('Showroom Name', 'اسم المعرض') }}</label>
               <VTextField
                 v-model="form.showroomName"
-                placeholder="Ex: Golden Motors"
+                :placeholder="tr('Ex: Golden Motors', 'مثال: معرض الذهبي للسيارات')"
                 variant="outlined"
                 density="comfortable"
                 hide-details
@@ -310,7 +315,7 @@ const handleAuth = async () => {
             </VCol>
 
             <VCol cols="12">
-              <label class="input-label">Email Address</label>
+              <label class="input-label">{{ tr('Email Address', 'البريد الإلكتروني') }}</label>
               <VTextField
                 v-model="form.email"
                 placeholder="name@example.com"
@@ -322,7 +327,7 @@ const handleAuth = async () => {
             </VCol>
 
             <VCol v-if="activeTab === 'register'" cols="12">
-              <label class="input-label">Phone Number</label>
+              <label class="input-label">{{ tr('Phone Number', 'رقم الهاتف') }}</label>
               <VTextField
                 v-model="form.phone"
                 placeholder="+20 123 456 7890"
@@ -334,7 +339,7 @@ const handleAuth = async () => {
             </VCol>
 
             <VCol cols="12">
-              <label class="input-label">Password</label>
+              <label class="input-label">{{ tr('Password', 'كلمة المرور') }}</label>
               <VTextField
                 v-model="form.password"
                 :type="isPasswordVisible ? 'text' : 'password'"
@@ -348,12 +353,12 @@ const handleAuth = async () => {
               />
 
               <div v-if="activeTab === 'login'" class="mt-4 text-end">
-                <a href="javascript:void(0)" class="text-body-2 text-disabled text-decoration-underline hover-white"><span dir="ltr">Forgot password?</span></a>
+                <a href="javascript:void(0)" class="text-body-2 text-disabled text-decoration-underline hover-white"><span>{{ tr('Forgot password?', 'نسيت كلمة المرور؟') }}</span></a>
               </div>
             </VCol>
 
             <VCol v-if="activeTab === 'register'" cols="12">
-              <label class="input-label">Confirm Password</label>
+              <label class="input-label">{{ tr('Confirm Password', 'تأكيد كلمة المرور') }}</label>
               <VTextField
                 v-model="form.password_confirmation"
                 :type="isConfirmPasswordVisible ? 'text' : 'password'"
@@ -372,15 +377,15 @@ const handleAuth = async () => {
               <div class="password-requirements d-flex flex-column gap-y-2 mt-4">
                 <div class="req-item d-flex align-center text-disabled">
                   <VIcon icon="tabler-circle-check" size="16" class="me-2 text-success" />
-                  Min. 8 characters
+                  {{ tr('Min. 8 characters', '٨ عناصر على الأقل') }}
                 </div>
                 <div class="req-item d-flex align-center text-disabled">
                   <VIcon icon="tabler-circle-check" size="16" class="me-2 text-success" />
-                  Includes letters
+                  {{ tr('Includes letters', 'تتضمن أحرفاً') }}
                 </div>
                 <div class="req-item d-flex align-center text-disabled">
                   <VIcon icon="tabler-circle-check" size="16" class="me-2 text-success" />
-                  Numbers or symbols
+                  {{ tr('Numbers or symbols', 'أرقام أو رموز') }}
                 </div>
               </div>
 
@@ -391,8 +396,8 @@ const handleAuth = async () => {
               >
                 <template #label>
                   <div class="text-body-2 text-disabled line-height-1-6">
-                    I agree to the processing of my data as described in the 
-                    <a href="#" class="text-high-emphasis text-decoration-underline font-weight-bold">privacy policy</a>.
+                    {{ tr('I agree to the processing of my data as described in the', 'أوافق على معالجة بياناتي كما هو موضح في') }}
+                    <a href="#" class="text-high-emphasis text-decoration-underline font-weight-bold">{{ tr('privacy policy', 'سياسة الخصوصية') }}</a>.
                   </div>
                 </template>
               </VCheckbox>
@@ -408,16 +413,15 @@ const handleAuth = async () => {
                 :loading="loading"
                 class="auth-submit-btn"
               >
-                {{ activeTab === 'login' ? 'Login' : 'Register' }}
+                {{ activeTab === 'login' ? tr('Login', 'تسجيل الدخول') : tr('Register', 'إنشاء حساب') }}
               </VBtn>
             </VCol>
           </VRow>
         </VForm>
-
         <!-- Terms Footer -->
         <div v-if="activeTab === 'register'" class="mt-8 text-center text-caption text-disabled px-4 line-height-1-6">
-          The <a href="#" class="text-high-emphasis font-weight-bold">AGB</a> of NegmCars apply. Information on data processing is described in the
-          <a href="#" class="text-high-emphasis font-weight-bold">Privacy Policy</a>.
+          {{ tr('The AGB of NegmCars apply. Information on data processing is described in the', 'تطبق الشروط والأحكام الخاصة بـ NegmCars. معلومات معالجة البيانات مبيّنة في') }}
+          <a href="#" class="text-high-emphasis font-weight-bold">{{ tr('Privacy Policy', 'سياسة الخصوصية') }}</a>.
         </div>
       </VCardText>
     </VCard>
@@ -549,6 +553,22 @@ const handleAuth = async () => {
 }
 
 .auth-title {
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+
+  .logo-brand-text {
+    transition: color 0.3s ease;
+  }
+  .logo-accent-text {
+    color: #FF6B00 !important;
+  }
+}
+
+.v-theme--dark .auth-title .logo-brand-text {
+  color: #FFFFFF !important;
+}
+.v-theme--light .auth-title .logo-brand-text {
+  color: #0F172A !important;
 }
 </style>

@@ -100,7 +100,9 @@ const logout = async () => {
             <div class="navbar-logo-badge">
               <img :src="appLogo" alt="NegmCars" class="navbar-logo-img" />
             </div>
-            <h1 class="app-logo-title mb-0">NegmCars</h1>
+            <h1 class="app-logo-title mb-0">
+              <span class="logo-brand-text">Negm</span><span class="logo-accent-text">Cars</span>
+            </h1>
           </RouterLink>
 
           <VBtn
@@ -317,7 +319,9 @@ const logout = async () => {
             <div class="navbar-logo-badge">
               <img :src="appLogo" alt="NegmCars" class="navbar-logo-img" />
             </div>
-            <h1 class="app-logo-title mb-0">NegmCars</h1>
+            <h1 class="app-logo-title mb-0">
+              <span class="logo-brand-text">Negm</span><span class="logo-accent-text">Cars</span>
+            </h1>
           </RouterLink>
         </VAppBarTitle>
 
@@ -737,20 +741,33 @@ const logout = async () => {
   font-size: 1.65rem;
   font-weight: 900;
   letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #ff6b00 0%, #ffa800 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 2px 8px rgba(255, 107, 0, 0.15));
+  display: inline-flex;
+  align-items: center;
+
+  .logo-brand-text {
+    transition: color 0.3s ease;
+  }
+  .logo-accent-text {
+    color: #FF6B00 !important;
+    text-shadow: 0 0 12px rgba(255, 107, 0, 0.3);
+  }
 
   &:hover {
     transform: scale(1.04);
-    filter: drop-shadow(0 4px 12px rgba(255, 107, 0, 0.35));
   }
 
   @media (max-width: 600px) {
     font-size: 1.3rem !important;
   }
+}
+
+.is-dark-theme .app-logo-title .logo-brand-text {
+  color: #FFFFFF !important;
+}
+
+.is-light-theme .app-logo-title .logo-brand-text {
+  color: #0F172A !important;
 }
 
 .logo-title-wrapper .v-toolbar-title__placeholder {

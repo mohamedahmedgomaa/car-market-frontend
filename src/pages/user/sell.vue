@@ -391,99 +391,62 @@ const valueProps = [
   min-height: 100vh;
   background: transparent;
   position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 800px;
-    height: 400px;
-    background: radial-gradient(ellipse at top, rgba(255, 107, 0, 0.08) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
 }
 
 /* SOON Hero Pill - Subtle Soft Banner */
 .soon-hero-pill {
-  background: rgba(255, 159, 67, 0.08) !important;
-  border: 1px solid rgba(255, 159, 67, 0.28) !important;
+  background: rgba(255, 107, 0, 0.08) !important;
+  border: 1px solid rgba(255, 107, 0, 0.3) !important;
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
   
   &:hover {
-    background: rgba(255, 159, 67, 0.12) !important;
-    border-color: rgba(255, 159, 67, 0.4) !important;
+    background: rgba(255, 107, 0, 0.15) !important;
+    border-color: rgba(255, 107, 0, 0.5) !important;
   }
 }
 
 .soon-pill-icon {
-  color: #FF9F43 !important;
+  color: #FF6B00 !important;
 }
 
 .soon-pill-text {
-  color: #FF9F43 !important;
-  font-size: 0.85rem !important;
+  color: #FF6B00 !important;
+  font-size: 0.88rem !important;
   letter-spacing: 1px;
 }
 
 /* Custom Sleek SOON Badges */
 .soon-chip-on-primary {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.25) !important;
   color: #FFFFFF !important;
   font-size: 0.68rem !important;
   font-weight: 800 !important;
   padding: 2px 8px !important;
   border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
   display: inline-flex;
   align-items: center;
   line-height: 1.2;
-  letter-spacing: 0.5px;
 }
 
 .soon-chip-vibrant {
-  background: rgba(255, 159, 67, 0.14) !important;
-  color: #FF9F43 !important;
+  background: rgba(255, 107, 0, 0.14) !important;
+  color: #FF6B00 !important;
   font-size: 0.68rem !important;
   font-weight: 800 !important;
   padding: 2px 8px !important;
   border-radius: 12px !important;
-  border: 1px solid rgba(255, 159, 67, 0.3) !important;
+  border: 1px solid rgba(255, 107, 0, 0.35) !important;
   display: inline-flex;
   align-items: center;
   line-height: 1.2;
-  letter-spacing: 0.5px;
 }
 
-/* Announcement Card */
-.soon-announcement-card {
-  background: rgba(255, 159, 67, 0.05) !important;
-  border: 1px solid rgba(255, 159, 67, 0.2) !important;
-  backdrop-filter: blur(12px);
-}
-
-.text-medium-emphasis {
-  color: rgba(255, 255, 255, 0.75) !important;
-}
-
-.max-w-700 {
-  max-width: 700px;
-}
-
-.max-w-850 {
-  max-width: 850px;
-}
-
-.max-w-900 {
-  max-width: 900px;
-}
-
-.tracking-wider {
-  letter-spacing: 1.5px;
-}
+.max-w-700 { max-width: 700px; }
+.max-w-850 { max-width: 850px; }
+.max-w-900 { max-width: 900px; }
+.tracking-wider { letter-spacing: 1.5px; }
 
 .shadow-primary {
   box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.35) !important;
@@ -493,23 +456,113 @@ const valueProps = [
   font-family: 'Cairo', 'Inter', sans-serif !important;
 }
 
-/* Onboarding CTA Card */
-.cta-card {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.18), rgba(20, 24, 34, 0.85)) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
-  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4) !important;
-  position: relative;
+/* ====================================================
+   LIGHT THEME PARITY
+   ==================================================== */
+.v-theme--light {
+  .soon-announcement-card {
+    background: #FFF8F0 !important;
+    border: 1px solid rgba(255, 107, 0, 0.25) !important;
+    box-shadow: 0 6px 20px rgba(255, 107, 0, 0.08) !important;
+  }
+  
+  .cta-card {
+    background: linear-gradient(135deg, #FFFFFF 0%, #FFF4EB 100%) !important;
+    border: 1px solid rgba(255, 107, 0, 0.25) !important;
+    box-shadow: 0 12px 35px rgba(255, 107, 0, 0.1) !important;
+  }
 
-  &::before {
-    content: '';
+  .stat-card,
+  .step-card,
+  .prop-card {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05) !important;
+
+    &:hover {
+      border-color: rgba(255, 107, 0, 0.4) !important;
+      box-shadow: 0 10px 30px rgba(255, 107, 0, 0.12) !important;
+      transform: translateY(-4px);
+    }
+  }
+
+  .step-card .step-number {
+    color: rgba(15, 23, 42, 0.07) !important;
+  }
+
+  .text-medium-emphasis {
+    color: #475569 !important;
+  }
+
+  .soon-chip-vibrant {
+    background: #FFFFFF !important;
+    color: #FF6B00 !important;
+    border: 1px solid rgba(255, 107, 0, 0.35) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .text-high-emphasis {
+    color: #0F172A !important;
+  }
+}
+
+/* ====================================================
+   DARK THEME PARITY (OBSIDIAN NO-PURPLE)
+   ==================================================== */
+.v-theme--dark {
+  .soon-announcement-card {
+    background: rgba(255, 107, 0, 0.06) !important;
+    border: 1px solid rgba(255, 107, 0, 0.25) !important;
+    backdrop-filter: blur(12px);
+  }
+
+  .cta-card {
+    background: linear-gradient(135deg, rgba(255, 107, 0, 0.12), rgba(15, 18, 26, 0.95)) !important;
+    border: 1px solid rgba(255, 107, 0, 0.3) !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .stat-card,
+  .step-card,
+  .prop-card {
+    background: rgba(18, 22, 32, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(16px);
+
+    &:hover {
+      border-color: rgba(255, 107, 0, 0.4) !important;
+      background: rgba(24, 29, 42, 0.8) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4) !important;
+      transform: translateY(-4px);
+    }
+  }
+
+  .step-card .step-number {
+    color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .text-medium-emphasis {
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+
+  .text-high-emphasis {
+    color: #FFFFFF !important;
+  }
+}
+
+.step-card {
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  .step-number {
     position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.25), transparent 70%);
-    z-index: 0;
+    top: 8px;
+    right: 16px;
+    font-size: 80px;
+    font-weight: 900;
+    line-height: 1;
+    pointer-events: none;
   }
 }
 
@@ -519,68 +572,7 @@ const valueProps = [
 }
 
 .bg-success-subtle {
-  background: rgba(40, 199, 111, 0.12);
-  border: 1px solid rgba(40, 199, 111, 0.25);
-}
-
-.bg-amber-subtle {
-  background: rgba(255, 159, 67, 0.12);
-  border: 1px solid rgba(255, 159, 67, 0.25);
-}
-
-.primary-subtle-text {
-  color: rgba(var(--v-theme-primary), 0.9) !important;
-}
-
-/* Stat Cards */
-.stat-card {
-  background: rgba(22, 27, 38, 0.5) !important;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    border-color: rgba(var(--v-theme-primary), 0.35) !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
-  }
-}
-
-/* Timeline Cards */
-.step-card {
-  background: rgba(22, 27, 38, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  transition: all 0.3s ease;
-  overflow: hidden;
-  backdrop-filter: blur(12px);
-
-  .step-number {
-    color: rgba(255, 255, 255, 0.1);
-    pointer-events: none;
-    line-height: 1;
-    font-size: 80px;
-    font-weight: 900;
-  }
-
-  &:hover {
-    transform: translateY(-6px);
-    border-color: rgba(var(--v-theme-primary), 0.3);
-    background: rgba(26, 32, 46, 0.6);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
-  }
-}
-
-/* Value Props Cards */
-.prop-card {
-  background: rgba(22, 27, 38, 0.4) !important;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-6px);
-    border-color: rgba(var(--v-theme-primary), 0.35) !important;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35) !important;
-  }
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 </style>

@@ -277,6 +277,12 @@ onMounted(() => {
   border-radius: 20px !important;
 }
 
+.v-theme--dark .disclaimer-alert {
+  background: rgba(15, 18, 26, 0.85) !important;
+  border: 1px solid rgba(255, 107, 0, 0.3) !important;
+  border-inline-start: 4px solid #FF6B00 !important;
+}
+
 /* =========================================
    ✅ LIGHT THEME OVERRIDES
    ========================================= */

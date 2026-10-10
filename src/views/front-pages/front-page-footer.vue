@@ -94,8 +94,8 @@ onMounted(fetchTopCars)
                 <div class="logo-icon-wrapper">
                   <img :src="appLogo" alt="NegmCars Logo" class="brand-img-logo" />
                 </div>
-                <h1 class="logo-title font-weight-black">
-                  Negm<span class="text-primary-glow">Cars</span>
+                <h1 class="logo-title font-weight-black mb-0">
+                  <span class="logo-brand-text">Negm</span><span class="logo-accent-text">Cars</span>
                 </h1>
               </div>
 
@@ -132,7 +132,7 @@ onMounted(fetchTopCars)
               <h6 class="footer-title text-high-emphasis text-h6 font-weight-bold mb-6 d-flex align-center gap-x-2">
                 <VIcon icon="tabler-device-mobile" size="20" color="primary" />
                 <span>{{ t('downloadAppTitle') }}</span>
-                <VChip color="amber" size="x-small" variant="elevated" class="font-weight-black ms-1">SOON</VChip>
+                <span class="soon-badge ms-1">SOON</span>
               </h6>
               
               <p class="text-medium-emphasis text-body-2 mb-5 leading-relaxed">
@@ -153,7 +153,7 @@ onMounted(fetchTopCars)
                       <span class="app-title">App Store</span>
                     </div>
                   </div>
-                  <VChip color="amber" size="x-small" variant="flat" class="font-weight-black me-2">SOON</VChip>
+                  <span class="soon-badge me-2">SOON</span>
                 </div>
 
                 <!-- Google Play Button -->
@@ -172,7 +172,7 @@ onMounted(fetchTopCars)
                       <span class="app-title">Google Play</span>
                     </div>
                   </div>
-                  <VChip color="amber" size="x-small" variant="flat" class="font-weight-black me-2">SOON</VChip>
+                  <span class="soon-badge me-2">SOON</span>
                 </div>
               </div>
             </div>
@@ -462,11 +462,75 @@ onMounted(fetchTopCars)
 .logo-title {
   font-size: 1.8rem;
   letter-spacing: 0.5px;
-  color: rgba(var(--v-theme-on-surface), 1);
-  
-  .text-primary-glow {
-    color: rgba(var(--v-theme-primary), 1);
-    text-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.45);
+  display: inline-flex;
+  align-items: center;
+
+  .logo-brand-text {
+    transition: color 0.3s ease;
+  }
+  .logo-accent-text {
+    color: #FF6B00 !important;
+    text-shadow: 0 0 15px rgba(255, 107, 0, 0.45);
+  }
+}
+
+.soon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.v-theme--dark {
+  .logo-title .logo-brand-text {
+    color: #FFFFFF !important;
+  }
+  .footer-top {
+    background: #0d1017 !important;
+    border-top: 3px solid #FF6B00 !important;
+    box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.6) !important;
+  }
+  .footer-line {
+    background: #080a0f !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  .registration-box {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  .soon-badge {
+    background: rgba(255, 107, 0, 0.16) !important;
+    color: #FF9F43 !important;
+    border: 1px solid rgba(255, 159, 67, 0.35) !important;
+  }
+}
+
+.v-theme--light {
+  .logo-title .logo-brand-text {
+    color: #0F172A !important;
+  }
+  .footer-top {
+    background: #F8FAFC !important;
+    border-top: 3px solid #FF6B00 !important;
+  }
+  .footer-line {
+    background: #F1F5F9 !important;
+  }
+  .registration-box {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+  }
+  .soon-badge {
+    background: #FFFFFF !important;
+    color: #FF6B00 !important;
+    border: 1px solid rgba(255, 107, 0, 0.35) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
   }
 }
 
