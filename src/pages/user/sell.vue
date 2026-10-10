@@ -232,9 +232,9 @@ const valueProps = [
 
         <template v-else>
           <!-- Guest / Not Logged In at all -->
-          <div class="d-inline-flex align-center gap-2 px-4 py-2 rounded-pill bg-amber-subtle mb-4 border" style="border-color: rgba(255, 179, 0, 0.4) !important;">
-            <VIcon icon="tabler-clock-filled" size="18" color="amber-darken-1" />
-            <span class="text-caption font-weight-black text-amber-darken-1 text-uppercase tracking-wider">
+          <div class="soon-hero-pill d-inline-flex align-center gap-2 px-5 py-2 rounded-pill mb-6">
+            <VIcon icon="tabler-clock-filled" size="20" class="soon-pill-icon" />
+            <span class="soon-pill-text text-uppercase font-weight-black">
               SOON • قريباً ستتمكن من عرض سيارتك للبيع
             </span>
           </div>
@@ -247,9 +247,9 @@ const valueProps = [
           </p>
 
           <!-- Featured SOON Announcement Box -->
-          <div class="soon-announcement-card max-w-850 mx-auto pa-5 rounded-2xl border mb-8 text-center" style="background: rgba(255, 179, 0, 0.08); border: 1px solid rgba(255, 179, 0, 0.3) !important;">
+          <div class="soon-announcement-card max-w-850 mx-auto pa-6 rounded-2xl border mb-8 text-center">
             <div class="d-flex align-center justify-center gap-2 mb-2 flex-wrap">
-              <VChip color="amber" variant="elevated" size="small" class="font-weight-black text-subtitle-2 px-3">SOON</VChip>
+              <span class="soon-chip-vibrant text-subtitle-2 px-3 py-1">SOON</span>
               <h3 class="text-h5 font-weight-black text-amber-lighten-2 mb-0">
                 {{ locale === 'ar' ? 'قريباً: ستتمكن من إضافة وعرض سيارتك للبيع مباشرة على المنصة!' : 'SOON: You will be able to list & sell your car on NegmCars!' }}
               </h3>
@@ -265,7 +265,7 @@ const valueProps = [
               <div class="text-center text-md-start">
                 <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary mb-3 text-caption font-weight-bold">
                   <VIcon icon="tabler-sparkles" size="16" /> Easy Onboarding
-                  <VChip color="warning" size="x-small" class="ms-1 font-weight-black" density="compact">SOON</VChip>
+                  <span class="soon-chip-vibrant ms-1">SOON</span>
                 </div>
                 <h2 class="text-h4 font-weight-black text-high-emphasis mb-2"><span dir="ltr">{{ t('readyToSellTitle') }}</span></h2>
                 <p class="text-subtitle-1 text-medium-emphasis mb-0">
@@ -284,7 +284,7 @@ const valueProps = [
                 >
                   <VIcon icon="tabler-building-store" size="22" class="me-2" />
                   {{ t('registerShowroom') }}
-                  <VChip color="amber" variant="flat" size="x-small" class="ms-2 font-weight-black">SOON</VChip>
+                  <span class="soon-chip-on-primary ms-2">SOON</span>
                 </VBtn>
 
                 <VBtn
@@ -297,7 +297,7 @@ const valueProps = [
                 >
                   <VIcon icon="tabler-user-plus" size="18" class="me-2" />
                   {{ t('registerIndividual') }}
-                  <VChip color="amber" variant="tonal" size="x-small" class="ms-2 font-weight-black">SOON</VChip>
+                  <span class="soon-chip-vibrant ms-2">SOON</span>
                 </VBtn>
 
                 <VBtn
@@ -327,7 +327,7 @@ const valueProps = [
         <VRow class="justify-center">
           <VCol v-for="step in steps" :key="step.step" cols="12" sm="6" lg="3">
             <div class="step-card pa-6 rounded-2xl h-100 relative">
-              <div class="step-number absolute font-weight-black text-h1 opacity-10 top-2 right-4">
+              <div class="step-number absolute font-weight-black text-h1 top-2 right-4">
                 {{ step.step }}
               </div>
 
@@ -390,10 +390,83 @@ const valueProps = [
 .sell-onboarding-page {
   min-height: 100vh;
   background: transparent;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse at top, rgba(255, 107, 0, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+/* SOON Hero Pill - Subtle Soft Banner */
+.soon-hero-pill {
+  background: rgba(255, 159, 67, 0.08) !important;
+  border: 1px solid rgba(255, 159, 67, 0.28) !important;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 159, 67, 0.12) !important;
+    border-color: rgba(255, 159, 67, 0.4) !important;
+  }
+}
+
+.soon-pill-icon {
+  color: #FF9F43 !important;
+}
+
+.soon-pill-text {
+  color: #FF9F43 !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 1px;
+}
+
+/* Custom Sleek SOON Badges */
+.soon-chip-on-primary {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #FFFFFF !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+}
+
+.soon-chip-vibrant {
+  background: rgba(255, 159, 67, 0.14) !important;
+  color: #FF9F43 !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 159, 67, 0.3) !important;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+}
+
+/* Announcement Card */
+.soon-announcement-card {
+  background: rgba(255, 159, 67, 0.05) !important;
+  border: 1px solid rgba(255, 159, 67, 0.2) !important;
+  backdrop-filter: blur(12px);
 }
 
 .text-medium-emphasis {
-  color: rgba(var(--v-theme-on-surface), 0.7) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
 }
 
 .max-w-700 {
@@ -413,7 +486,7 @@ const valueProps = [
 }
 
 .shadow-primary {
-  box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.45) !important;
+  box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.35) !important;
 }
 
 .font-arabic {
@@ -422,10 +495,10 @@ const valueProps = [
 
 /* Onboarding CTA Card */
 .cta-card {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.25), rgba(var(--v-theme-surface), 0.85)) !important;
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(var(--v-theme-primary), 0.4) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(var(--v-theme-on-surface), 0.15) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.18), rgba(20, 24, 34, 0.85)) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4) !important;
   position: relative;
 
   &::before {
@@ -435,24 +508,24 @@ const valueProps = [
     right: -20%;
     width: 350px;
     height: 350px;
-    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.35), transparent 70%);
+    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.25), transparent 70%);
     z-index: 0;
   }
 }
 
 .bg-primary-subtle {
-  background: rgba(var(--v-theme-primary), 0.15);
-  border: 1px solid rgba(var(--v-theme-primary), 0.3);
+  background: rgba(var(--v-theme-primary), 0.12);
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
 }
 
 .bg-success-subtle {
-  background: rgba(40, 199, 111, 0.15);
-  border: 1px solid rgba(40, 199, 111, 0.3);
+  background: rgba(40, 199, 111, 0.12);
+  border: 1px solid rgba(40, 199, 111, 0.25);
 }
 
 .bg-amber-subtle {
-  background: rgba(255, 159, 67, 0.15);
-  border: 1px solid rgba(255, 159, 67, 0.3);
+  background: rgba(255, 159, 67, 0.12);
+  border: 1px solid rgba(255, 159, 67, 0.25);
 }
 
 .primary-subtle-text {
@@ -461,27 +534,28 @@ const valueProps = [
 
 /* Stat Cards */
 .stat-card {
-  background: rgba(var(--v-theme-surface), 0.4) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+  background: rgba(22, 27, 38, 0.5) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   transition: all 0.3s ease;
 
   &:hover {
-    transform: translateY(-5px);
-    border-color: rgba(var(--v-theme-primary), 0.3) !important;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(-4px);
+    border-color: rgba(var(--v-theme-primary), 0.35) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
   }
 }
 
 /* Timeline Cards */
 .step-card {
-  background: rgba(var(--v-theme-on-surface), 0.03);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(22, 27, 38, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.3s ease;
   overflow: hidden;
+  backdrop-filter: blur(12px);
 
   .step-number {
-    color: rgba(var(--v-theme-on-surface), 0.9);
+    color: rgba(255, 255, 255, 0.1);
     pointer-events: none;
     line-height: 1;
     font-size: 80px;
@@ -489,24 +563,24 @@ const valueProps = [
   }
 
   &:hover {
-    transform: translateY(-8px);
-    border-color: rgba(var(--v-theme-on-surface), 0.15);
-    background: rgba(var(--v-theme-on-surface), 0.05);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+    transform: translateY(-6px);
+    border-color: rgba(var(--v-theme-primary), 0.3);
+    background: rgba(26, 32, 46, 0.6);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
   }
 }
 
 /* Value Props Cards */
 .prop-card {
-  background: rgba(var(--v-theme-surface), 0.35) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.06) !important;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(22, 27, 38, 0.4) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  transition: all 0.3s ease;
 
   &:hover {
-    transform: translateY(-8px);
-    border-color: rgba(var(--v-theme-primary), 0.4) !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 25px rgba(var(--v-theme-primary), 0.15) !important;
+    transform: translateY(-6px);
+    border-color: rgba(var(--v-theme-primary), 0.35) !important;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35) !important;
   }
 }
 </style>
