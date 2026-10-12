@@ -1,1 +1,0 @@
-import{a as r}from"./index-Di7nejDN.js";const s={getAll(e){return r.get("/user/car_features",{params:e})},getById(e){return r.get(`/user/car_features/${e}`)}},u={getAll(e){return r.get("/user/countries",{params:e})},getById(e){return r.get(`/user/countries/${e}`)}};export{u as a,s as c};

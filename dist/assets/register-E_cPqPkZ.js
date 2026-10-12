@@ -1,1 +1,0 @@
-import{T as r,c as t,i as o,o as s}from"./index-CoTaK5sy.js";const _={__name:"register",setup(a){const e=o();return r(()=>{e.replace("/login?tab=register")}),(c,n)=>(s(),t("div"))}};export{_ as default};
