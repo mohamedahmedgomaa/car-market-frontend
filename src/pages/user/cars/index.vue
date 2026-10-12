@@ -362,20 +362,38 @@ const onAdIdInput = (val) => {
   }
 }
 
-const handleAdIdSearch = () => {
+const isSearchingId = ref(false)
+const idNotFoundSnackbar = ref(false)
+const idNotFoundMessage = ref('')
+
+const handleAdIdSearch = async () => {
   const adIdValue = draft.value.adId?.trim()?.replace(/[^0-9]/g, '')
-  if (adIdValue) {
-    router.push(`/user/cars/${adIdValue}`)
-    draft.value.adId = ''
+  if (!adIdValue) return
+
+  try {
+    isSearchingId.value = true
+    const res = await carsUserApi.getById(adIdValue)
+    const data = res.data?.data ?? res.data
+    if (data && data.status === 'approved') {
+      router.push(`/user/cars/${adIdValue}`)
+      draft.value.adId = ''
+    } else {
+      idNotFoundMessage.value = t('adNotFoundMsg', { id: adIdValue })
+      idNotFoundSnackbar.value = true
+    }
+  } catch (e) {
+    idNotFoundMessage.value = t('adNotFoundMsg', { id: adIdValue })
+    idNotFoundSnackbar.value = true
+  } finally {
+    isSearchingId.value = false
   }
 }
 
 const applyFilters = async () => {
-  // If user entered an Ad ID, prioritize going directly to that car
+  // If user entered an Ad ID, validate it first without leaving the page
   const adIdValue = draft.value.adId?.trim()?.replace(/[^0-9]/g, '')
   if (adIdValue) {
-    router.push(`/user/cars/${adIdValue}`)
-    draft.value.adId = ''
+    await handleAdIdSearch()
     return
   }
 
@@ -594,11 +612,10 @@ const resetAll = () => {
 
 const isMobileFilterOpen = ref(false)
 
-const handleApplyMobile = () => {
+const handleApplyMobile = async () => {
   const adIdValue = draft.value.adId?.trim()?.replace(/[^0-9]/g, '')
   if (adIdValue) {
-    router.push(`/user/cars/${adIdValue}`)
-    draft.value.adId = ''
+    await handleAdIdSearch()
     isMobileFilterOpen.value = false
     return
   }
@@ -761,6 +778,8 @@ const activeAdvancedFiltersCount = computed(() => {
                 variant="outlined"
                 density="comfortable"
                 hide-details
+                :loading="isSearchingId"
+                :disabled="isSearchingId"
                 class="premium-input-field ad-id-deck-input"
                 @keyup.enter="handleAdIdSearch"
                 @update:model-value="onAdIdInput"
@@ -1156,6 +1175,8 @@ const activeAdvancedFiltersCount = computed(() => {
                   variant="outlined"
                   density="comfortable"
                   hide-details
+                  :loading="isSearchingId"
+                  :disabled="isSearchingId"
                   class="premium-input ad-id-mobile-input"
                   @keyup.enter="handleApplyMobile"
                   @update:model-value="onAdIdInput"
@@ -1489,6 +1510,22 @@ const activeAdvancedFiltersCount = computed(() => {
         </VCol>
       </VRow>
     </VContainer>
+
+    <!-- Ad ID Not Found Snackbar -->
+    <VSnackbar
+      v-model="idNotFoundSnackbar"
+      color="#181820"
+      location="top"
+      timeout="3500"
+      elevation="12"
+      class="rounded-xl border"
+      style="border-color: rgba(255, 107, 0, 0.45) !important;"
+    >
+      <div class="d-flex align-center gap-3 py-1">
+        <VIcon icon="tabler-alert-triangle" color="warning" size="24" />
+        <span class="font-weight-bold text-white text-body-1">{{ idNotFoundMessage }}</span>
+      </div>
+    </VSnackbar>
   </section>
 
   <!-- Mobile Floating Filter Button -->

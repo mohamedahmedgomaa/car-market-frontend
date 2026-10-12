@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n'
 import api from '@/api/index.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
+import carsUserApi from '@/api/user/carUserApi.js'
 import { customBrandFilter, sortBrands, matchBrand } from '@/utils/brandTranslations.js'
 
 const theme = useTheme()
@@ -132,6 +133,9 @@ const buildQuery = () => {
 // ✅ Text & Ad ID Search
 const smartSearch = ref('')
 const adIdSearch = ref('')
+const isSearchingId = ref(false)
+const idNotFoundSnackbar = ref(false)
+const idNotFoundMessage = ref('')
 
 const onSmartSearchInput = (val) => {
   if (!val) {
@@ -169,24 +173,35 @@ const onAdIdInput = (val) => {
   }
 }
 
-const onAdIdSearch = () => {
+const onAdIdSearch = async () => {
   if (!adIdSearch.value) return
   const numericId = String(adIdSearch.value).replace(/[^0-9]/g, '')
-  if (numericId) {
-    router.push(`/user/cars/${numericId}`)
-    adIdSearch.value = ''
+  if (!numericId) return
+
+  try {
+    isSearchingId.value = true
+    const res = await carsUserApi.getById(numericId)
+    const data = res.data?.data ?? res.data
+    if (data && data.status === 'approved') {
+      router.push(`/user/cars/${numericId}`)
+      adIdSearch.value = ''
+    } else {
+      idNotFoundMessage.value = t('adNotFoundMsg', { id: numericId })
+      idNotFoundSnackbar.value = true
+    }
+  } catch (e) {
+    idNotFoundMessage.value = t('adNotFoundMsg', { id: numericId })
+    idNotFoundSnackbar.value = true
+  } finally {
+    isSearchingId.value = false
   }
 }
 
 const onSearch = async () => {
-  // If Ad ID was provided, prioritize navigating to the specific ad
+  // If Ad ID was provided, validate it first without leaving the page if it does not exist
   if (adIdSearch.value && adIdSearch.value.trim()) {
-    const numericId = String(adIdSearch.value).replace(/[^0-9]/g, '')
-    if (numericId) {
-      router.push(`/user/cars/${numericId}`)
-      adIdSearch.value = ''
-      return
-    }
+    await onAdIdSearch()
+    return
   }
 
   if (!smartSearch.value) {
@@ -619,6 +634,8 @@ onBeforeUnmount(() => {
                 variant="outlined"
                 hide-details
                 prepend-inner-icon="tabler-hash"
+                :loading="isSearchingId"
+                :disabled="isSearchingId"
                 @keydown.enter.prevent="onAdIdSearch"
                 @update:model-value="onAdIdInput"
                 class="premium-id-input ad-id-search-input"
@@ -952,6 +969,22 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </VContainer>
+
+    <!-- Ad ID Not Found Snackbar -->
+    <VSnackbar
+      v-model="idNotFoundSnackbar"
+      color="#181820"
+      location="top"
+      timeout="3500"
+      elevation="12"
+      class="rounded-xl border"
+      style="border-color: rgba(255, 107, 0, 0.45) !important;"
+    >
+      <div class="d-flex align-center gap-3 py-1">
+        <VIcon icon="tabler-alert-triangle" color="warning" size="24" />
+        <span class="font-weight-bold text-white text-body-1">{{ idNotFoundMessage }}</span>
+      </div>
+    </VSnackbar>
   </section>
 </template>
 

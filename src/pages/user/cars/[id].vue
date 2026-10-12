@@ -812,11 +812,50 @@ watch(
       </div>
     </div>
 
-    <!-- Error -->
-    <div v-else-if="error" class="state error">{{ error }}</div>
+    <!-- Error or Not Found State -->
+    <div v-else-if="error || !car" class="car-not-found-container py-16 text-center animate-fade-in">
+      <VCard class="car-not-found-card pa-8 pa-md-12 mx-auto rounded-3xl" max-width="620" elevation="10">
+        <div class="not-found-icon-box mb-6 mx-auto">
+          <VIcon icon="tabler-car-off" size="58" color="primary" />
+        </div>
 
-    <!-- Empty -->
-    <div v-else-if="!car" class="state">Car not found.</div>
+        <h2 class="text-h4 font-weight-bold mb-3 text-high-emphasis">
+          {{ $i18n.locale === 'ar' ? 'الإعلان غير متوفر' : 'Ad Not Found or Expired' }}
+        </h2>
+
+        <p class="text-body-1 text-medium-emphasis mb-8" style="line-height: 1.8;">
+          {{ $i18n.locale === 'ar' 
+            ? `عفواً، لا توجد سيارة مطابقة لرقم الإعلان #${route.params.id}. قد يكون تم بيع المركبة أو حذف الإعلان من قبل المعلن.` 
+            : `Sorry, there is no vehicle matching Ad ID #${route.params.id}. The listing may have been sold or removed by the seller.` 
+          }}
+        </p>
+
+        <div class="d-flex flex-wrap gap-4 justify-center">
+          <VBtn
+            color="primary"
+            size="large"
+            rounded="xl"
+            prepend-icon="tabler-car"
+            to="/user/cars"
+            class="px-8 font-weight-bold"
+            elevation="4"
+          >
+            {{ $i18n.locale === 'ar' ? 'تصفح السيارات المتاحة' : 'Browse Available Cars' }}
+          </VBtn>
+
+          <VBtn
+            variant="tonal"
+            size="large"
+            rounded="xl"
+            prepend-icon="tabler-home"
+            to="/"
+            class="px-8 font-weight-bold"
+          >
+            {{ $i18n.locale === 'ar' ? 'الصفحة الرئيسية' : 'Home' }}
+          </VBtn>
+        </div>
+      </VCard>
+    </div>
 
     <!-- Content -->
     <!-- Content -->
@@ -2576,5 +2615,25 @@ watch(
     transform: translateY(-2px) scale(1.04);
     box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5);
   }
+}
+
+.car-not-found-card {
+  background: rgba(var(--v-theme-surface), 0.85) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 107, 0, 0.3) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 35px rgba(255, 107, 0, 0.12) !important;
+}
+
+.not-found-icon-box {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(255, 107, 0, 0.1);
+  border: 1px solid rgba(255, 107, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(255, 107, 0, 0.2);
 }
 </style>
