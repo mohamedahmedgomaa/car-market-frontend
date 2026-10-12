@@ -96,13 +96,13 @@ const logout = async () => {
       <div class="pa-4 d-flex flex-column h-100">
         <!-- Mobile Drawer Header -->
         <div class="d-flex align-center justify-space-between pb-4 border-b mb-4">
-          <RouterLink to="/" class="d-flex align-center gap-x-3 text-decoration-none" @click="sidebar = false">
+          <RouterLink to="/" class="brand-logo-link" @click="sidebar = false">
             <div class="navbar-logo-badge">
               <img :src="appLogo" alt="NegmCars" class="navbar-logo-img" />
             </div>
-            <h1 class="app-logo-title mb-0">
+            <span class="app-logo-title mb-0">
               <span class="logo-brand-text">Negm</span><span class="logo-accent-text">Cars</span>
-            </h1>
+            </span>
           </RouterLink>
 
           <VBtn
@@ -157,7 +157,7 @@ const logout = async () => {
 
           <RouterLink
             to="/user/sell"
-            class="mobile-drawer-link font-weight-bold highlight-sell-link"
+            class="mobile-drawer-link font-weight-bold"
             :class="route.path === '/user/sell' ? 'active-drawer-link' : ''"
             @click="sidebar = false"
           >
@@ -223,56 +223,50 @@ const logout = async () => {
 
           <!-- Mobile Settings Section Card -->
           <div class="drawer-settings-card pa-3 rounded-xl border">
-            <div class="text-caption font-weight-bold text-uppercase opacity-70 mb-2 d-flex align-center gap-1">
-              <VIcon icon="tabler-settings" size="14" />
+            <div class="text-caption font-weight-bold text-uppercase opacity-70 mb-3 d-flex align-center gap-1">
+              <VIcon icon="tabler-settings" size="15" />
               <span>{{ t('settings') }}</span>
             </div>
 
             <!-- Language Switcher in Drawer -->
             <div class="mb-3">
-              <div class="text-xs font-weight-medium opacity-80 mb-1.5">{{ t('language') }}</div>
-              <div class="d-flex gap-x-2">
-                <VBtn
+              <div class="text-xs font-weight-bold opacity-75 mb-1.5">{{ t('language') }}</div>
+              <div class="drawer-segmented-group">
+                <button
                   v-for="lang in safeLangConfig"
                   :key="lang.i18nLang"
-                  size="small"
-                  :variant="locale === lang.i18nLang ? 'elevated' : 'tonal'"
-                  color="primary"
-                  rounded="lg"
-                  class="flex-grow-1 font-weight-bold"
+                  type="button"
+                  class="drawer-segmented-btn"
+                  :class="{ 'is-active': locale === lang.i18nLang }"
                   @click="locale = lang.i18nLang"
                 >
                   {{ lang.label }}
-                </VBtn>
+                </button>
               </div>
             </div>
 
             <!-- Theme Switcher in Drawer -->
             <div>
-              <div class="text-xs font-weight-medium opacity-80 mb-1.5">{{ t('theme') }}</div>
-              <div class="d-flex gap-x-1.5">
-                <VBtn
-                  size="small"
-                  :variant="configStore.theme === 'light' ? 'elevated' : 'tonal'"
-                  color="primary"
-                  rounded="lg"
-                  class="flex-grow-1 px-1"
+              <div class="text-xs font-weight-bold opacity-75 mb-1.5">{{ t('theme') }}</div>
+              <div class="drawer-segmented-group">
+                <button
+                  type="button"
+                  class="drawer-segmented-btn"
+                  :class="{ 'is-active': configStore.theme === 'light' }"
                   @click="configStore.theme = 'light'"
                 >
-                  <VIcon icon="tabler-sun" size="14" class="me-1" />
-                  {{ t('light') }}
-                </VBtn>
-                <VBtn
-                  size="small"
-                  :variant="configStore.theme === 'dark' ? 'elevated' : 'tonal'"
-                  color="primary"
-                  rounded="lg"
-                  class="flex-grow-1 px-1"
+                  <VIcon icon="tabler-sun" size="15" class="me-1" />
+                  <span>{{ t('light') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="drawer-segmented-btn"
+                  :class="{ 'is-active': configStore.theme === 'dark' }"
                   @click="configStore.theme = 'dark'"
                 >
-                  <VIcon icon="tabler-moon" size="14" class="me-1" />
-                  {{ t('dark') }}
-                </VBtn>
+                  <VIcon icon="tabler-moon" size="15" class="me-1" />
+                  <span>{{ t('dark') }}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -304,26 +298,26 @@ const logout = async () => {
         <!-- toggle icon for mobile device -->
         <IconBtn
           id="vertical-nav-toggle-btn"
-          class="ms-n3 me-2 d-inline-block d-md-none"
+          class="ms-n3 me-1 d-inline-block d-md-none"
           @click="sidebar = !sidebar"
         >
-          <VIcon size="26" icon="tabler-menu-2" color="rgba(var(--v-theme-on-surface))" />
+          <VIcon size="24" icon="tabler-menu-2" color="rgba(var(--v-theme-on-surface))" />
         </IconBtn>
 
         <!-- Title & Brand Logo -->
-        <VAppBarTitle class="me-sm-8 me-1 logo-title-wrapper" style="flex: 0 1 auto; min-width: 0; max-width: 100%;">
+        <div class="logo-title-wrapper d-flex align-center me-sm-8 me-1">
           <RouterLink
             to="/"
-            class="d-flex align-center gap-x-2 text-decoration-none"
+            class="brand-logo-link"
           >
             <div class="navbar-logo-badge">
               <img :src="appLogo" alt="NegmCars" class="navbar-logo-img" />
             </div>
-            <h1 class="app-logo-title mb-0">
+            <span class="app-logo-title mb-0">
               <span class="logo-brand-text">Negm</span><span class="logo-accent-text">Cars</span>
-            </h1>
+            </span>
           </RouterLink>
-        </VAppBarTitle>
+        </div>
 
         <!-- ✅ Links (Desktop) -->
         <div class="text-base align-center d-none d-md-flex mx-6" style="flex: 1 1 auto; justify-content: space-evenly;">
@@ -394,7 +388,7 @@ const logout = async () => {
           <!-- Settings Dropdown (Before Login) -->
           <VMenu close-on-content-click="false" offset="12px" width="230">
             <template #activator="{ props }">
-              <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-1 d-flex" icon>
+              <VBtn v-bind="props" variant="text" class="settings-toggle-btn mx-1 d-none d-sm-inline-flex" icon>
                 <VIcon icon="tabler-dots-vertical" size="22" />
               </VBtn>
             </template>
@@ -466,8 +460,9 @@ const logout = async () => {
             class="ms-sm-1 ms-1 auth-main-btn"
             rounded="xl"
           >
-            <VIcon icon="tabler-user-circle" class="auth-btn-icon me-sm-2 me-1" size="20" />
-            {{ t('login') }}
+            <VIcon icon="tabler-user-circle" class="auth-btn-icon me-sm-2 me-1" size="18" />
+            <span class="d-none d-sm-inline">{{ t('login') }}</span>
+            <span class="d-inline d-sm-none">{{ $i18n.locale === 'ar' ? 'دخول' : 'Login' }}</span>
           </VBtn>
         </template>
 
@@ -710,6 +705,15 @@ const logout = async () => {
     0 0 15px rgba(255, 107, 0, 0.05) !important;
 }
 
+.brand-logo-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  direction: ltr !important;
+  text-decoration: none !important;
+  flex-shrink: 0 !important;
+}
+
 .navbar-logo-badge {
   width: 38px;
   height: 38px;
@@ -723,10 +727,17 @@ const logout = async () => {
   background: rgba(var(--v-theme-surface), 0.9);
   border: 1px solid rgba(var(--v-theme-primary), 0.25);
   padding: 2px;
+  flex-shrink: 0;
 
   &:hover {
     transform: scale(1.08) rotate(4deg);
     border-color: rgba(var(--v-theme-primary), 0.6);
+  }
+
+  @media (max-width: 600px) {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
   }
 }
 
@@ -744,6 +755,8 @@ const logout = async () => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
+  direction: ltr !important;
+  unicode-bidi: isolate;
 
   .logo-brand-text {
     transition: color 0.3s ease;
@@ -758,7 +771,7 @@ const logout = async () => {
   }
 
   @media (max-width: 600px) {
-    font-size: 1.3rem !important;
+    font-size: 1.15rem !important;
   }
 }
 
@@ -770,9 +783,8 @@ const logout = async () => {
   color: #0F172A !important;
 }
 
-.logo-title-wrapper .v-toolbar-title__placeholder {
-  overflow: visible !important;
-  text-overflow: clip !important;
+.logo-title-wrapper {
+  flex-shrink: 0;
 }
 
 .auth-main-btn {
@@ -932,13 +944,41 @@ const logout = async () => {
   box-shadow: 0 4px 15px rgba(255, 107, 0, 0.15);
 }
 
-.highlight-sell-link {
-  background: rgba(255, 168, 0, 0.08);
-  border: 1px dashed rgba(255, 168, 0, 0.4);
-}
-
 .drawer-settings-card {
   background: rgba(var(--v-theme-on-surface), 0.02);
   border-color: rgba(var(--v-border-color), 0.12) !important;
+}
+
+/* Segmented control for drawer settings */
+.drawer-segmented-group {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.drawer-segmented-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.is-active {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff3e1d 100%);
+    color: #ffffff !important;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(255, 107, 0, 0.35);
+  }
 }
 </style>

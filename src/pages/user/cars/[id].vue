@@ -1062,38 +1062,41 @@ watch(
               </div>
 
               <!-- Bottom Row: Price & Actions -->
-              <div class="d-flex flex-column flex-md-row justify-space-between align-md-center gap-4 pa-4 rounded-xl" style="background: rgba(var(--v-theme-surface), 0.5); border: 1px solid rgba(var(--v-border-color), 0.1);">
-                <div class="text-h2 font-weight-black text-primary mb-0">
-                  {{ formatPrice(car.price) }} EG
+              <div class="car-price-contact-card d-flex flex-column flex-md-row justify-space-between align-stretch align-md-center gap-3 gap-md-4 pa-3 pa-md-4 rounded-2xl">
+                <div class="car-details-price-wrap d-flex align-center justify-center justify-md-start">
+                  <span class="car-details-price font-weight-black text-primary">
+                    {{ formatPrice(car.price) }}
+                  </span>
+                  <span class="car-currency-badge ms-2">EG</span>
                 </div>
                 
                 <!-- Contact Actions -->
-                <div class="d-flex gap-3">
+                <div class="car-contact-actions-wrap d-flex gap-2 gap-md-3">
                   <VBtn
                     v-if="car.seller?.phone"
                     variant="elevated"
                     color="primary"
-                    class="font-weight-bold shadow-primary px-8"
-                    height="50"
+                    class="font-weight-bold shadow-primary flex-grow-1 flex-md-grow-0"
+                    height="42"
                     rounded="pill"
                     @click.stop.prevent="openCallDialog"
                   >
-                    <VIcon icon="tabler-phone" size="20" class="me-2" />
-                    {{ _t('callBtn') || 'Call' }}
+                    <VIcon icon="tabler-phone" size="18" class="me-1.5" />
+                    <span>{{ _t('callBtn') || 'Call' }}</span>
                   </VBtn>
 
                   <VBtn
                     v-if="car.seller?.phone"
                     variant="elevated"
                     color="success"
-                    class="font-weight-bold shadow-success px-8"
-                    height="50"
+                    class="font-weight-bold shadow-success flex-grow-1 flex-md-grow-0"
+                    height="42"
                     rounded="pill"
                     :href="whatsappLink"
                     target="_blank"
                   >
-                    <VIcon icon="tabler-brand-whatsapp" size="20" class="me-2" />
-                    {{ _t('whatsappBtn') || 'WhatsApp' }}
+                    <VIcon icon="tabler-brand-whatsapp" size="18" class="me-1.5" />
+                    <span>{{ _t('whatsappBtn') || 'WhatsApp' }}</span>
                   </VBtn>
                 </div>
               </div>
@@ -2916,5 +2919,51 @@ watch(
   background: rgba(0, 0, 0, 0.25);
   border: 1px dashed rgba(255, 255, 255, 0.15);
   border-radius: 16px;
+}
+
+/* Responsive Price & Contact Card */
+.car-price-contact-card {
+  background: rgba(var(--v-theme-surface), 0.6) !important;
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(var(--v-border-color), 0.14) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.car-details-price {
+  font-size: 2.1rem;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.car-currency-badge {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ff6b00;
+  background: rgba(255, 107, 0, 0.12);
+  border: 1px solid rgba(255, 107, 0, 0.25);
+  padding: 3px 8px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+
+.car-contact-actions-wrap {
+  @media (max-width: 600px) {
+    width: 100%;
+    .v-btn {
+      flex: 1 1 0 !important;
+      height: 40px !important;
+      font-size: 0.88rem !important;
+      padding-inline: 8px !important;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .car-details-price {
+    font-size: 1.6rem !important;
+  }
+  .car-price-contact-card {
+    padding: 12px 14px !important;
+  }
 }
 </style>
