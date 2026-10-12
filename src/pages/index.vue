@@ -60,8 +60,28 @@ const ALL_VEHICLES = {
   },
 }
 
+import api from '@/api/index.js'
+import { ref } from 'vue'
+
+const homeData = ref(null)
+const homeLoading = ref(true)
+
+const fetchHomeData = async () => {
+  homeLoading.value = true
+  try {
+    const res = await api.get('/user/home')
+    homeData.value = res.data?.data || null
+  } catch (err) {
+    console.error('Failed to load home data:', err)
+  } finally {
+    homeLoading.value = false
+  }
+}
+
 /* --- Scroll Reveal Logic --- */
 onMounted(() => {
+  fetchHomeData()
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -78,14 +98,22 @@ onMounted(() => {
 
 <template>
   <div :class="theme.current.value.dark ? 'index--dark' : 'index--light'">
-    <HeroSection />
+    <HeroSection
+      :controlled="true"
+      :initialBanners="homeData?.hero_banners"
+      :initialVideoUrl="homeData?.video_banner"
+      :initialBrands="homeData?.brands"
+    />
 
   <VContainer class="hero__container">
     <!-- Cars Section -->
     <div class="reveal-on-scroll">
       <CarsSection
+        :controlled="true"
         :title="t('cars')"
         :subtitle="t('browseCars')"
+        :cars="homeData?.latest_cars || null"
+        :loading="homeLoading && !homeData"
         :limit="CARS.latest.limit"
         :params="CARS.latest.params"
         :viewAllTo="CARS.latest.viewAllTo"
@@ -97,8 +125,11 @@ onMounted(() => {
     <!-- Bikes Section -->
     <div class="reveal-on-scroll">
       <CarsSection
+        :controlled="true"
         :title="t('bikes')"
         :subtitle="t('browseBikes')"
+        :cars="homeData?.latest_bikes || null"
+        :loading="homeLoading && !homeData"
         :limit="MOTOS.latest.limit"
         :params="MOTOS.latest.params"
         :viewAllTo="MOTOS.latest.viewAllTo"
@@ -110,8 +141,11 @@ onMounted(() => {
     <!-- Best Deals Section -->
     <div class="reveal-on-scroll">
       <CarsSection
+        :controlled="true"
         :title="t('bestDeals')"
         :subtitle="t('bestDealsSubtitle')"
+        :cars="homeData?.best_deals || null"
+        :loading="homeLoading && !homeData"
         :limit="ALL_VEHICLES.bestDeals.limit"
         :params="ALL_VEHICLES.bestDeals.params"
         :viewAllTo="ALL_VEHICLES.bestDeals.viewAllTo"

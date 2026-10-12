@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSellerAuth } from '@/stores/sellerAuth'
 import { useUserAuth } from '@/stores/userAuth'
@@ -12,8 +12,20 @@ const sellerAuth = useSellerAuth()
 const userAuth = useUserAuth()
 const { t, locale } = useI18n({ useScope: 'global' })
 
-const isSellerLoggedIn = computed(() => !!sellerAuth.token)
-const isUserLoggedIn = computed(() => !!userAuth.token)
+const hasUserToken = computed(() => {
+  if (typeof window === 'undefined') return false
+  return !!localStorage.getItem('user_token')
+})
+
+const isSellerLoggedIn = computed(() => {
+  if (!hasUserToken.value) return false
+  return !!localStorage.getItem('seller_token') || !!sellerAuth.token
+})
+
+const isUserLoggedIn = computed(() => {
+  return hasUserToken.value && !isSellerLoggedIn.value
+})
+
 const sellerData = computed(() => {
   if (!isSellerLoggedIn.value) return null
   try {
@@ -22,6 +34,56 @@ const sellerData = computed(() => {
   } catch {
     return sellerAuth.seller
   }
+})
+
+onMounted(() => {
+  if (typeof window !== 'undefined' && !localStorage.getItem('user_token')) {
+    if (localStorage.getItem('seller_token') || localStorage.getItem('seller_data')) {
+      localStorage.removeItem('seller_token')
+      localStorage.removeItem('seller_data')
+      sellerAuth.token = null
+      sellerAuth.user = null
+    }
+  }
+})
+
+const extractLocalizedText = (val) => {
+  if (!val) return ''
+  const isAr = (locale.value || 'ar') === 'ar'
+  if (typeof val === 'string') {
+    const trimmed = val.trim()
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (parsed && typeof parsed === 'object') {
+          return (isAr ? (parsed.ar || parsed.en) : (parsed.en || parsed.ar)) || ''
+        }
+      } catch {}
+    }
+    return val
+  }
+  if (typeof val === 'object') {
+    return (isAr ? (val.ar || val.en) : (val.en || val.ar)) || ''
+  }
+  return String(val)
+}
+
+const sellerDisplayName = computed(() => {
+  if (!sellerData.value) return ''
+  const s = sellerData.value
+  return (
+    extractLocalizedText(s.store_name) ||
+    extractLocalizedText(s.store_name_ar) ||
+    extractLocalizedText(s.store_name_en) ||
+    extractLocalizedText(s.name) ||
+    (locale.value === 'ar' ? 'عزيزي البائع' : 'Seller')
+  )
+})
+
+const userDisplayName = computed(() => {
+  const u = userAuth.user
+  if (!u) return locale.value === 'ar' ? 'عزيزي البائع' : 'User'
+  return extractLocalizedText(u.name) || (locale.value === 'ar' ? 'عزيزي البائع' : 'User')
 })
 
 // Showroom dynamic stats
@@ -159,7 +221,7 @@ const valueProps = [
 
           <h1 class="hero-title text-h3 text-sm-h2 text-md-h1 font-weight-black mb-4">
             <span class="gradient-title">
-              {{ locale === 'ar' ? `مرحباً بعودتك، ${sellerData.store_name || sellerData.name}!` : `Welcome Back, ${sellerData.store_name || sellerData.name}!` }}
+              {{ locale === 'ar' ? `مرحباً بعودتك، ${sellerDisplayName}!` : `Welcome Back, ${sellerDisplayName}!` }}
             </span>
           </h1>
           <p class="hero-subtitle text-body-1 text-sm-h6 text-medium-emphasis max-w-750 mx-auto font-weight-medium mb-10">
@@ -221,7 +283,7 @@ const valueProps = [
 
           <h1 class="hero-title text-h3 text-sm-h2 text-md-h1 font-weight-black mb-4">
             <span class="gradient-title">
-              {{ locale === 'ar' ? `مرحباً بك، ${userAuth.user?.name || 'عزيزي البائع'}!` : `Welcome, ${userAuth.user?.name || 'User'}!` }}
+              {{ locale === 'ar' ? `مرحباً بك، ${userDisplayName}!` : `Welcome, ${userDisplayName}!` }}
             </span>
           </h1>
           <p class="hero-subtitle text-body-1 text-sm-h6 text-medium-emphasis max-w-750 mx-auto font-weight-medium mb-10">

@@ -13,6 +13,13 @@ const theme = useTheme()
 const router = useRouter()
 const { t } = useI18n({ useScope: 'global' })
 
+const props = defineProps({
+  controlled: { type: Boolean, default: false },
+  initialBanners: { type: Array, default: null },
+  initialVideoUrl: { type: String, default: null },
+  initialBrands: { type: Array, default: null },
+})
+
 /* =========================
    ✅ Refs for Auto-Navigation
 ========================= */
@@ -410,6 +417,11 @@ const _t = (val) => {
 }
 
 const fetchBrands = async () => {
+  if (props.initialBrands && props.initialBrands.length) {
+    brandsList.value = sortBrands(props.initialBrands.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name, type: b.type })))
+    return
+  }
+  if (props.controlled) return
   isBrandsLoading.value = true
   try {
     const res = await brandUserApi.getAll()
@@ -419,16 +431,6 @@ const fetchBrands = async () => {
     console.error('Error fetching brands:', err)
   } finally {
     isBrandsLoading.value = false
-  }
-}
-
-const allModelsList = ref([])
-const fetchAllModels = async () => {
-  try {
-    const res = await modelUserApi.getAll({ perPage: 2000 })
-    allModelsList.value = res.data?.data || res.data || []
-  } catch (err) {
-    console.error('Error fetching all models:', err)
   }
 }
 
@@ -519,6 +521,14 @@ const openBannerLink = (link) => {
 }
 
 const fetchBanners = async () => {
+  if (props.initialBanners && props.initialBanners.length) {
+    slides.value = props.initialBanners.slice(0, 5).map((b) => ({
+      image: b.image_path,
+      link: getBannerLink(b.id, b.link || ''),
+    }))
+    return
+  }
+  if (props.controlled) return
   try {
     const res = await api.get('/user/banners', { params: { type: 'hero' } })
     if (res.data && res.data.data && res.data.data.length > 0) {
@@ -546,6 +556,11 @@ const isPlaying = ref(true)
 const videoUrl = ref('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4')
 
 const fetchVideoBanner = async () => {
+  if (props.initialVideoUrl) {
+    videoUrl.value = props.initialVideoUrl
+    return
+  }
+  if (props.controlled) return
   try {
     const res = await api.get('/user/banners', { params: { type: 'video' } })
     if (res.data && res.data.data && res.data.data.length > 0) {
@@ -575,11 +590,16 @@ const togglePlay = () => {
   }
 }
 
+watch(() => props.initialBanners, (val) => { if (val?.length) fetchBanners() }, { immediate: true })
+watch(() => props.initialVideoUrl, (val) => { if (val) fetchVideoBanner() }, { immediate: true })
+watch(() => props.initialBrands, (val) => { if (val?.length) fetchBrands() }, { immediate: true })
+
 onMounted(() => {
-  fetchBanners()
-  fetchVideoBanner()
-  fetchBrands()
-  fetchAllModels()
+  if (!props.controlled) {
+    fetchBanners()
+    fetchVideoBanner()
+    fetchBrands()
+  }
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
 

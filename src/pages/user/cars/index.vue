@@ -5,7 +5,6 @@ import { useI18n } from 'vue-i18n'
 import carsUserApi from '@/api/user/carUserApi.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
-import featureUserApi from '@/api/user/carFeatureUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 import { customBrandFilter, sortBrands, matchBrand, brandArabicMap, translateText } from '@/utils/brandTranslations.js'
 
@@ -83,7 +82,17 @@ const normalizeFavFields = (car) => {
 
 const normalizeCars = (data) => {
   if (Array.isArray(data)) return { items: data, total: data.length }
-  if (data?.data && Array.isArray(data.data)) return { items: data.data, total: data.total || data.data.length }
+
+  if (data?.data && Array.isArray(data.data)) {
+    const totalCount = data.meta?.total ?? data.total ?? data.data.length
+    return { items: data.data, total: Number(totalCount) }
+  }
+
+  if (data?.data?.data && Array.isArray(data.data.data)) {
+    const totalCount = data.data.meta?.total ?? data.data.total ?? data.meta?.total ?? data.data.data.length
+    return { items: data.data.data, total: Number(totalCount) }
+  }
+
   return { items: [], total: 0 }
 }
 
@@ -120,11 +129,20 @@ const initialized = ref(false)
 const cars = ref([])
 const total = ref(0)
 const page = ref(1)
+const currentOffset = ref(20)
 const brands = ref([])
 const draftModels = ref([])
-const allModels = ref([])
-const features = ref([])
 const isAdvancedOpen = ref(false)
+
+// Brand & Model Picker Dialog State
+const brandsLoading = ref(false)
+const modelsLoading = ref(false)
+const brandDialogOpen = ref(false)
+const modelDialogOpen = ref(false)
+const brandSearchQuery = ref('')
+const modelSearchQuery = ref('')
+const scrollTrigger = ref(null)
+let scrollObserver = null
 
 const draft = ref({
   q: '',
@@ -147,7 +165,7 @@ const draft = ref({
 })
 
 const sort = ref(String(firstQueryVal(route.query.sort) || ''))
-const perPage = ref(Number(firstQueryVal(route.query.perPage) || 50))
+const perPage = ref(Number(firstQueryVal(route.query.perPage) || 20))
 
 const displayDraftPriceFrom = computed({
   get: () => formatWithCommas(draft.value.priceFrom),
@@ -266,37 +284,13 @@ const fetchCars = async () => {
   try {
     const mainParams = buildParams(page.value)
     
-    // 1. Fetch main filtered results
+    // Fetch main filtered results (single API request)
     const res = await carsUserApi.getAll(mainParams)
     const { items, total: tt } = normalizeCars(res.data)
-    let finalItems = items.map(normalizeFavFields)
 
-    // 2. If it's the first page, fetch Global Ads to inject them at the top
-    // regardless of the current filters (but respecting vehicle type)
-    if (page.value === 1) {
-      try {
-        const globalRes = await carsUserApi.getAll({
-          perPage: 2,
-          'filter[status]': 'approved',
-          'filter[is_global_ad]': 1,
-          'filter[type]': draft.value.type || 'car',
-          sort: '-created_at'
-        })
-        const { items: globals } = normalizeCars(globalRes.data)
-        const globalItems = globals.map(normalizeFavFields)
-
-        // Prepend unique global ads to the list
-        const existingIds = new Set(finalItems.map(c => c.id))
-        const uniqueGlobals = globalItems.filter(g => !existingIds.has(g.id))
-        
-        finalItems = [...uniqueGlobals, ...finalItems]
-      } catch (globalErr) {
-        console.error('Global ads fetch error:', globalErr)
-      }
-    }
-
-    cars.value = finalItems
+    cars.value = items.map(normalizeFavFields)
     total.value = tt
+    currentOffset.value = items.length
   } catch (err) {
     console.error('Fetch error:', err)
   } finally {
@@ -489,22 +483,7 @@ const applyFilters = async () => {
       }
     }
     
-    // If we STILL don't have a model, let's search across ALL models (if loaded)
-    if (!detectedBrandId && !detectedModelId && queryText && allModels.value.length > 0) {
-      // Sort models by length so "x6 m" matches before "x6"
-      const sortedAllModels = [...allModels.value].sort((a, b) => (b.name?.en?.length || 0) - (a.name?.en?.length || 0))
-      for (const model of sortedAllModels) {
-        const mNameEn = String(model.name?.en || model.name || '').toLowerCase()
-        if (mNameEn && (queryText === mNameEn || queryText.startsWith(mNameEn + ' ') || queryText.endsWith(' ' + mNameEn) || queryText.includes(` ${mNameEn} `))) {
-          detectedModelId = model.id
-          if (model.brand_id) {
-            detectedBrandId = model.brand_id
-          }
-          queryText = queryText.replace(mNameEn, '').trim()
-          break
-        }
-      }
-    }
+
     
     // Auto-detect vehicle type (car or bike) based on text or brand
     const bikeKeywords = ['m1000rr', 's1000rr', 'gsxr', 'ninja', 'cbr', 'yzf', 'ducati', 'yamaha', 'kawasaki', 'harley', 'ktm']
@@ -675,39 +654,172 @@ const filteredBrands = computed(() => {
   return sortBrands(items.filter(b => !b.type || b.type === type))
 })
 
-const BIKE_KEYWORDS = [
-  'ducati', 'yamaha', 'kawasaki', 'suzuki bike', 'honda bike', 'cc engine', 
-  'quick shift', 'ride by wire', 'wheelie', 'slide control', 'traction control evo',
-  'dqs', 'dtc', 'dsc', 'dwc', 'dpl', 'desmosedici', '1103cc', '955cc', 'v4 engine',
-  'monoshock', 'chain drive', 'slipper clutch', 'engine cc', 'engine displacement'
-]
+const selectedBrand = computed(() => {
+  if (!draft.value.brandId) return null
+  return brands.value.find(b => b.id === draft.value.brandId) || null
+})
 
-const CAR_KEYWORDS = [
-  'airbag', 'sunroof', 'carplay', 'android auto', 'isofix', 'seat', 'climate control',
-  'tailgate', 'door', 'hepa', 'glass', 'lane keep', 'lane departure', 'blind spot',
-  'park assist', 'cruise control', 'roof', 'trunk', 'frunk', 'window', 'chassis', 'differential',
-  'nappa', 'alcantara', 'wood trim', 'carbon fiber trim', 'refrigerator', 'starlight', 'ambient lighting'
-]
+const selectedBrandName = computed(() => {
+  if (!selectedBrand.value) return ''
+  return _t(selectedBrand.value.name)
+})
 
-const filteredFeatures = computed(() => {
+const selectedModel = computed(() => {
+  if (!draft.value.modelId) return null
+  return draftModels.value.find(m => m.id === draft.value.modelId) || null
+})
+
+const selectedModelName = computed(() => {
+  if (!selectedModel.value) return ''
+  return _t(selectedModel.value.name)
+})
+
+const modalFilteredBrands = computed(() => {
   const type = draft.value.type || 'car'
-  const items = features.value || []
-  
-  return items.filter(feat => {
-    const nameEn = String(feat.name?.en || feat.name || '').toLowerCase()
-    const nameAr = String(feat.name?.ar || '').toLowerCase()
-    const name = `${nameEn} ${nameAr}`
-    
-    const isBikeFeature = BIKE_KEYWORDS.some(kw => name.includes(kw) || nameEn.includes(kw))
-    const isCarFeature = CAR_KEYWORDS.some(kw => name.includes(kw) || nameEn.includes(kw))
-    
-    if (type === 'motorcycle') {
-      return !isCarFeature || isBikeFeature
-    } else {
-      return !isBikeFeature
-    }
+  let items = (brands.value || []).filter(b => !b.type || b.type === type)
+  items = sortBrands(items)
+
+  if (!brandSearchQuery.value.trim()) return items
+
+  const q = brandSearchQuery.value.trim().toLowerCase()
+  return items.filter(b => {
+    const en = String(b.originalName?.en || b.name?.en || b.name || '').toLowerCase()
+    const ar = String(b.originalName?.ar || b.name?.ar || '').toLowerCase()
+    return en.includes(q) || ar.includes(q) || matchBrand(b, q)
   })
 })
+
+const modalFilteredModels = computed(() => {
+  const items = draftModels.value || []
+  if (!modelSearchQuery.value.trim()) return items
+  const q = modelSearchQuery.value.trim().toLowerCase()
+  return items.filter(m => {
+    const en = String(m.name?.en || m.name || '').toLowerCase()
+    const ar = String(m.name?.ar || '').toLowerCase()
+    return en.includes(q) || ar.includes(q)
+  })
+})
+
+const fetchBrands = async () => {
+  if (brands.value.length > 0) return
+  brandsLoading.value = true
+  try {
+    const res = await brandUserApi.getAll()
+    brands.value = res.data?.data || res.data || []
+  } catch (err) {
+    console.error('Failed to fetch brands:', err)
+  } finally {
+    brandsLoading.value = false
+  }
+}
+
+const openBrandDialog = () => {
+  brandDialogOpen.value = true
+  brandSearchQuery.value = ''
+  if (brands.value.length === 0) {
+    fetchBrands()
+  }
+}
+
+const selectBrand = (brand) => {
+  if (!brand) {
+    draft.value.brandId = null
+    draft.value.modelId = null
+    draftModels.value = []
+  } else {
+    draft.value.brandId = brand.id
+    draft.value.modelId = null
+  }
+  brandDialogOpen.value = false
+}
+
+const clearBrand = () => {
+  draft.value.brandId = null
+  draft.value.modelId = null
+  draftModels.value = []
+}
+
+const openModelDialog = () => {
+  if (!draft.value.brandId) {
+    openBrandDialog()
+    return
+  }
+  modelDialogOpen.value = true
+  modelSearchQuery.value = ''
+}
+
+const selectModel = (model) => {
+  if (!model) {
+    draft.value.modelId = null
+  } else {
+    draft.value.modelId = model.id
+  }
+  modelDialogOpen.value = false
+}
+
+const clearModel = () => {
+  draft.value.modelId = null
+}
+
+const loadMoreCars = async () => {
+  if (loading.value || loadingMore.value || cars.value.length >= total.value) return
+  loadingMore.value = true
+
+  try {
+    const baseParams = buildParams(1)
+    delete baseParams.page
+    delete baseParams.perPage
+    baseParams.offset = currentOffset.value
+    baseParams.limit = 10
+
+    const res = await carsUserApi.getAll(baseParams)
+    const { items, total: tt } = normalizeCars(res.data)
+    const newItems = items.map(normalizeFavFields)
+
+    const existingIds = new Set(cars.value.map(c => c.id))
+    const uniqueNew = newItems.filter(c => !existingIds.has(c.id))
+
+    cars.value.push(...uniqueNew)
+    currentOffset.value += items.length
+
+    if (items.length === 0) {
+      total.value = cars.value.length
+    } else if (tt) {
+      total.value = tt
+    }
+  } catch (err) {
+    console.error('Load more error:', err)
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+let lastScrollY = 0
+let scrollCooldown = false
+
+const handleAutoScroll = () => {
+  if (typeof window === 'undefined') return
+  if (loading.value || loadingMore.value || !hasMore.value || scrollCooldown) return
+
+  const currentY = window.scrollY
+  const isScrollingDown = currentY > lastScrollY + 15
+  lastScrollY = currentY
+
+  // Only trigger when user is actively moving downwards
+  if (!isScrollingDown) return
+
+  const scrollBottom = window.innerHeight + currentY
+  const triggerPoint = document.documentElement.scrollHeight - 450
+
+  if (scrollBottom >= triggerPoint) {
+    scrollCooldown = true
+    loadMoreCars().finally(() => {
+      setTimeout(() => {
+        scrollCooldown = false
+      }, 1200)
+    })
+  }
+}
 
 watch(() => draft.value.type, () => {
   draft.value.brandId = null
@@ -718,19 +830,26 @@ watch(() => draft.value.type, () => {
   draft.value.drivetrain = null
 })
 
-onMounted(async () => {
+onMounted(() => {
   syncDraftFromQuery()
-  fetchCars(true)
-  try {
-    const [bRes, fRes, mRes] = await Promise.all([
-      brandUserApi.getAll(),
-      featureUserApi.getAll(),
-      modelUserApi.getAll({ perPage: 2000 })
-    ])
-    brands.value = bRes.data?.data || bRes.data || []
-    features.value = fRes.data?.data || fRes.data || []
-    allModels.value = mRes.data?.data || mRes.data || []
-  } catch {}
+  fetchCars()
+
+  // Only if page opened with brand query param, fetch brands for labeling
+  if (draft.value.brandId) {
+    fetchBrands()
+  }
+
+  if (typeof window !== 'undefined') {
+    lastScrollY = window.scrollY
+    window.addEventListener('scroll', handleAutoScroll, { passive: true })
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('scroll', handleAutoScroll)
+    document.body.style.overflow = ''
+  }
 })
 
 const activeAdvancedFiltersCount = computed(() => {
@@ -809,51 +928,54 @@ const activeAdvancedFiltersCount = computed(() => {
               </div>
             </div>
 
-            <!-- 3. Brand Select -->
+            <!-- 3. Brand Picker -->
             <div class="search-col search-col-brand">
-              <VAutocomplete
-                v-model="draft.brandId"
-                :items="filteredBrands"
-                item-value="id"
-                :item-title="b => _t(b.name)"
-                :custom-filter="customBrandFilter"
-                maxlength="30"
-                :label="t('brand')"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                class="premium-input-field"
-                @update:model-value="draft.modelId = null"
+              <div
+                class="filter-trigger-btn"
+                :class="{ 'has-value': !!draft.brandId }"
+                @click="openBrandDialog"
               >
-                <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="_t(item.raw.name)" />
-                </template>
-                <template #selection="{ item }">
-                  {{ _t(item.raw.name) }}
-                </template>
-              </VAutocomplete>
+                <div class="filter-trigger-content">
+                  <VIcon icon="tabler-car" size="18" class="filter-trigger-icon" />
+                  <div class="filter-trigger-texts">
+                    <span class="filter-trigger-label">{{ t('brand') }}</span>
+                    <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
+                  </div>
+                </div>
+                <VIcon
+                  v-if="draft.brandId"
+                  icon="tabler-x"
+                  size="16"
+                  class="filter-trigger-clear"
+                  @click.stop="clearBrand"
+                />
+                <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
+              </div>
             </div>
 
-            <!-- 4. Model Select -->
+            <!-- 4. Model Picker -->
             <div class="search-col search-col-model">
-              <VSelect
-                v-model="draft.modelId"
-                :items="draftModels"
-                item-value="id"
-                :disabled="!draft.brandId"
-                :label="t('model')"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-                class="premium-input-field"
+              <div
+                class="filter-trigger-btn"
+                :class="{ 'has-value': !!draft.modelId, 'is-disabled': !draft.brandId }"
+                @click="openModelDialog"
               >
-                <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="_t(item.raw.name)" />
-                </template>
-                <template #selection="{ item }">
-                  {{ _t(item.raw.name) }}
-                </template>
-              </VSelect>
+                <div class="filter-trigger-content">
+                  <VIcon icon="tabler-steering-wheel" size="18" class="filter-trigger-icon" />
+                  <div class="filter-trigger-texts">
+                    <span class="filter-trigger-label">{{ t('model') }}</span>
+                    <span class="filter-trigger-value">{{ selectedModelName || (draft.brandId ? t('all') : (locale === 'ar' ? 'اختر الماركة أولاً' : 'Select brand')) }}</span>
+                  </div>
+                </div>
+                <VIcon
+                  v-if="draft.modelId"
+                  icon="tabler-x"
+                  size="16"
+                  class="filter-trigger-clear"
+                  @click.stop="clearModel"
+                />
+                <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
+              </div>
             </div>
 
             <!-- Action Buttons (Reset and Advanced Filter) -->
@@ -1238,46 +1360,49 @@ const activeAdvancedFiltersCount = computed(() => {
 
               <!-- Brand & Model -->
               <div class="mb-3">
-                <VAutocomplete
-                  v-model="draft.brandId"
-                  :items="filteredBrands"
-                  item-value="id"
-                  :item-title="b => _t(b.name)"
-                  :custom-filter="customBrandFilter"
-                  maxlength="30"
-                  :label="t('brand')"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  class="premium-input mb-3"
-                  @update:model-value="draft.modelId = null"
+                <div
+                  class="filter-trigger-btn filter-trigger-btn--mobile mb-3"
+                  :class="{ 'has-value': !!draft.brandId }"
+                  @click="openBrandDialog"
                 >
-                  <template #item="{ props, item }">
-                    <VListItem v-bind="props" :title="_t(item.raw.name)" />
-                  </template>
-                  <template #selection="{ item }">
-                    {{ _t(item.raw.name) }}
-                  </template>
-                </VAutocomplete>
+                  <div class="filter-trigger-content">
+                    <VIcon icon="tabler-car" size="20" class="filter-trigger-icon" />
+                    <div class="filter-trigger-texts">
+                      <span class="filter-trigger-label">{{ t('brand') }}</span>
+                      <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
+                    </div>
+                  </div>
+                  <VIcon
+                    v-if="draft.brandId"
+                    icon="tabler-x"
+                    size="18"
+                    class="filter-trigger-clear"
+                    @click.stop="clearBrand"
+                  />
+                  <VIcon v-else icon="tabler-chevron-down" size="18" class="filter-trigger-arrow" />
+                </div>
 
-                <VSelect
-                  v-model="draft.modelId"
-                  :items="draftModels"
-                  item-value="id"
-                  :disabled="!draft.brandId"
-                  :label="t('model')"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  class="premium-input"
+                <div
+                  class="filter-trigger-btn filter-trigger-btn--mobile"
+                  :class="{ 'has-value': !!draft.modelId, 'is-disabled': !draft.brandId }"
+                  @click="openModelDialog"
                 >
-                  <template #item="{ props, item }">
-                    <VListItem v-bind="props" :title="_t(item.raw.name)" />
-                  </template>
-                  <template #selection="{ item }">
-                    {{ _t(item.raw.name) }}
-                  </template>
-                </VSelect>
+                  <div class="filter-trigger-content">
+                    <VIcon icon="tabler-steering-wheel" size="20" class="filter-trigger-icon" />
+                    <div class="filter-trigger-texts">
+                      <span class="filter-trigger-label">{{ t('model') }}</span>
+                      <span class="filter-trigger-value">{{ selectedModelName || (draft.brandId ? t('all') : (locale === 'ar' ? 'اختر الماركة أولاً' : 'Select brand')) }}</span>
+                    </div>
+                  </div>
+                  <VIcon
+                    v-if="draft.modelId"
+                    icon="tabler-x"
+                    size="18"
+                    class="filter-trigger-clear"
+                    @click.stop="clearModel"
+                  />
+                  <VIcon v-else icon="tabler-chevron-down" size="18" class="filter-trigger-arrow" />
+                </div>
               </div>
 
               <!-- Price -->
@@ -1463,8 +1588,15 @@ const activeAdvancedFiltersCount = computed(() => {
           <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05)">
             <div class="d-flex align-center justify-space-between mb-8">
               <div>
-                <h1 class="text-h4 font-weight-black mb-1">{{ t('cars') }}</h1>
-                <p class="text-body-2 opacity-60 mb-0">{{ t('carsAvailable', { count: total }) }}</p>
+                <h1 class="text-h4 font-weight-black mb-1">
+                  {{ draft.type === 'motorcycle' ? t('bikes') : t('cars') }}
+                </h1>
+                <p class="text-body-2 opacity-60 mb-0">
+                  {{ draft.type === 'motorcycle'
+                    ? (locale === 'ar' ? `${total.toLocaleString()} دراجة نارية متاحة` : `${total.toLocaleString()} motorcycles available`)
+                    : t('carsAvailable', { count: total })
+                  }}
+                </p>
               </div>
               
               <VSelect
@@ -1492,19 +1624,32 @@ const activeAdvancedFiltersCount = computed(() => {
             />
 
             <div v-if="initialized && !loading && cars.length === 0" class="text-center py-16">
-              <VIcon icon="tabler-car-off" size="80" class="mb-4 opacity-10" />
-              <h3 class="text-h5 opacity-50 mb-2">{{ t('noMatchingVehiclesFound') }}</h3>
+              <VIcon :icon="draft.type === 'motorcycle' ? 'tabler-motorbike' : 'tabler-car-off'" size="80" class="mb-4 opacity-10" />
+              <h3 class="text-h5 opacity-50 mb-2">
+                {{ draft.type === 'motorcycle' ? (locale === 'ar' ? 'لم يتم العثور على دراجات نارية مطابقة' : 'No matching motorcycles found') : t('noMatchingVehiclesFound') }}
+              </h3>
               <p class="text-body-1 opacity-40 mb-6">{{ t('tryAdjustingFilters') }}</p>
               <VBtn variant="flat" color="primary" @click="resetAll">{{ t('clearAllFilters') }}</VBtn>
             </div>
 
-            <div class="d-flex justify-center mt-12" v-if="total > perPage && !loading">
-              <VPagination
-                v-model="page"
-                :length="Math.ceil(total / perPage)"
-                :total-visible="7"
-                @update:model-value="onPageChange"
-              />
+            <!-- User-initiated Load More Button (10 vehicles per click) -->
+            <div v-if="cars.length > 0 && hasMore" class="d-flex flex-column align-center justify-center my-10">
+              <VBtn
+                color="primary"
+                height="52"
+                rounded="pill"
+                class="px-10 font-weight-black text-body-1 load-more-btn"
+                :loading="loadingMore"
+                @click="loadMoreCars"
+              >
+                <VIcon icon="tabler-plus" size="20" class="me-2" />
+                <span>{{ locale === 'ar' ? (draft.type === 'motorcycle' ? 'عرض المزيد من الدراجات (+10)' : 'عرض المزيد من السيارات (+10)') : (draft.type === 'motorcycle' ? 'Load More Motorcycles (+10)' : 'Load More Vehicles (+10)') }}</span>
+                <span class="ms-3 text-caption opacity-80 font-weight-bold">({{ cars.length }} / {{ total.toLocaleString() }})</span>
+              </VBtn>
+            </div>
+
+            <div v-else-if="cars.length > 0 && !hasMore && !loading" class="text-center my-8 opacity-60 text-caption font-weight-bold">
+              {{ locale === 'ar' ? (draft.type === 'motorcycle' ? `✨ تم عرض جميع الدراجات النارية المتاحة (${total})` : `✨ تم عرض جميع السيارات المتاحة (${total})`) : `✨ All ${total} ${draft.type === 'motorcycle' ? 'motorcycles' : 'vehicles'} loaded` }}
             </div>
           </VCard>
         </VCol>
@@ -1547,6 +1692,170 @@ const activeAdvancedFiltersCount = computed(() => {
       </span>
     </VBtn>
   </div>
+
+  <!-- Brand Selection Dialog Modal -->
+  <VDialog
+    v-model="brandDialogOpen"
+    max-width="680"
+    scrollable
+    class="filter-dialog"
+  >
+    <VCard rounded="xl" class="filter-modal-card">
+      <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
+        <div class="d-flex align-center gap-2">
+          <VIcon icon="tabler-car" color="primary" size="24" />
+          <span class="font-weight-black text-h6">{{ locale === 'ar' ? 'اختر الماركة' : 'Select Brand' }}</span>
+        </div>
+        <VBtn icon="tabler-x" variant="text" density="comfortable" @click="brandDialogOpen = false" />
+      </VCardTitle>
+
+      <div class="pa-4 border-b">
+        <VTextField
+          v-model="brandSearchQuery"
+          :placeholder="locale === 'ar' ? 'ابحث عن ماركة السيارة...' : 'Search brand...'"
+          prepend-inner-icon="tabler-search"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          clearable
+          autofocus
+          class="modal-search-field"
+        />
+      </div>
+
+      <VCardText class="pa-4 modal-scroll-body" style="max-height: 460px;">
+        <!-- Loading State -->
+        <div v-if="brandsLoading" class="text-center py-12">
+          <VProgressCircular indeterminate color="primary" size="44" />
+          <p class="mt-3 text-body-2 opacity-60">{{ locale === 'ar' ? 'جاري تحميل الماركات...' : 'Loading brands...' }}</p>
+        </div>
+
+        <div v-else>
+          <!-- All Brands Option -->
+          <div
+            class="brand-tile brand-tile--all mb-3"
+            :class="{ active: draft.brandId === null }"
+            @click="selectBrand(null)"
+          >
+            <div class="d-flex align-center gap-3">
+              <div class="brand-avatar-box">
+                <VIcon icon="tabler-apps" size="20" />
+              </div>
+              <span class="brand-tile-name font-weight-bold">{{ locale === 'ar' ? 'جميع الماركات' : 'All Brands' }}</span>
+            </div>
+            <VIcon v-if="draft.brandId === null" icon="tabler-check" color="primary" size="20" />
+          </div>
+
+          <!-- Brand Grid -->
+          <div class="brand-grid">
+            <div
+              v-for="b in modalFilteredBrands"
+              :key="b.id"
+              class="brand-tile"
+              :class="{ active: draft.brandId === b.id }"
+              @click="selectBrand(b)"
+            >
+              <div class="d-flex align-center gap-3 w-100">
+                <div class="brand-avatar-box">
+                  <span class="brand-initials">{{ String(b.name?.en || b.name || '').slice(0, 2).toUpperCase() }}</span>
+                </div>
+                <div class="d-flex flex-column text-start overflow-hidden">
+                  <span class="brand-tile-name font-weight-bold text-truncate">{{ _t(b.name) }}</span>
+                  <span v-if="b.name?.en && locale === 'ar'" class="text-caption opacity-50 text-truncate">{{ b.name.en }}</span>
+                </div>
+              </div>
+              <VIcon v-if="draft.brandId === b.id" icon="tabler-check" color="primary" size="18" class="ms-auto flex-shrink-0" />
+            </div>
+          </div>
+
+          <div v-if="modalFilteredBrands.length === 0" class="text-center py-8 opacity-60">
+            <VIcon icon="tabler-search-off" size="36" class="mb-2 opacity-50" />
+            <p class="mb-0">{{ locale === 'ar' ? 'لا توجد ماركة بهذا الاسم' : 'No brands matching your search' }}</p>
+          </div>
+        </div>
+      </VCardText>
+    </VCard>
+  </VDialog>
+
+  <!-- Model Selection Dialog Modal -->
+  <VDialog
+    v-model="modelDialogOpen"
+    max-width="580"
+    scrollable
+    class="filter-dialog"
+  >
+    <VCard rounded="xl" class="filter-modal-card">
+      <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
+        <div class="d-flex align-center gap-2">
+          <VIcon icon="tabler-steering-wheel" color="primary" size="24" />
+          <span class="font-weight-black text-h6">
+            {{ locale === 'ar' ? 'اختر الموديل' : 'Select Model' }}
+            <span v-if="selectedBrandName" class="text-primary text-subtitle-2 ms-1">({{ selectedBrandName }})</span>
+          </span>
+        </div>
+        <VBtn icon="tabler-x" variant="text" density="comfortable" @click="modelDialogOpen = false" />
+      </VCardTitle>
+
+      <div class="pa-4 border-b">
+        <VTextField
+          v-model="modelSearchQuery"
+          :placeholder="locale === 'ar' ? 'ابحث عن الموديل...' : 'Search model...'"
+          prepend-inner-icon="tabler-search"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          clearable
+          autofocus
+          class="modal-search-field"
+        />
+      </div>
+
+      <VCardText class="pa-4 modal-scroll-body" style="max-height: 460px;">
+        <div v-if="modelsLoading" class="text-center py-12">
+          <VProgressCircular indeterminate color="primary" size="44" />
+          <p class="mt-3 text-body-2 opacity-60">{{ locale === 'ar' ? 'جاري تحميل الموديلات...' : 'Loading models...' }}</p>
+        </div>
+
+        <div v-else>
+          <!-- All Models Option -->
+          <div
+            class="brand-tile brand-tile--all mb-3"
+            :class="{ active: draft.modelId === null }"
+            @click="selectModel(null)"
+          >
+            <div class="d-flex align-center gap-3">
+              <div class="brand-avatar-box">
+                <VIcon icon="tabler-apps" size="20" />
+              </div>
+              <span class="brand-tile-name font-weight-bold">{{ locale === 'ar' ? 'جميع الموديلات' : 'All Models' }}</span>
+            </div>
+            <VIcon v-if="draft.modelId === null" icon="tabler-check" color="primary" size="20" />
+          </div>
+
+          <!-- Model Grid -->
+          <div class="model-grid">
+            <div
+              v-for="m in modalFilteredModels"
+              :key="m.id"
+              class="brand-tile model-tile"
+              :class="{ active: draft.modelId === m.id }"
+              @click="selectModel(m)"
+            >
+              <div class="d-flex align-center gap-2 w-100">
+                <VIcon icon="tabler-chevron-left" size="14" class="opacity-50" />
+                <span class="brand-tile-name font-weight-bold text-truncate">{{ _t(m.name) }}</span>
+              </div>
+              <VIcon v-if="draft.modelId === m.id" icon="tabler-check" color="primary" size="18" class="ms-auto flex-shrink-0" />
+            </div>
+          </div>
+
+          <div v-if="modalFilteredModels.length === 0" class="text-center py-8 opacity-60">
+            <p class="mb-0">{{ locale === 'ar' ? 'لا توجد موديلات متاحة' : 'No models available' }}</p>
+          </div>
+        </div>
+      </VCardText>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped>
@@ -2090,5 +2399,204 @@ const activeAdvancedFiltersCount = computed(() => {
 .filter-count-badge--mobile {
   background: #fff;
   color: rgb(var(--v-theme-primary)) !important;
+}
+
+/* =========================================
+   Filter Trigger Buttons (Desktop & Mobile)
+   ========================================= */
+.filter-trigger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border-radius: 12px;
+  padding: 0 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-trigger-btn:hover:not(.is-disabled) {
+  border-color: rgba(255, 109, 0, 0.5);
+  background: rgba(255, 109, 0, 0.06);
+}
+
+.filter-trigger-btn.has-value {
+  border-color: rgba(255, 109, 0, 0.6);
+  background: rgba(255, 109, 0, 0.08);
+}
+
+.filter-trigger-btn.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.filter-trigger-btn--mobile {
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.filter-trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.filter-trigger-icon {
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  flex-shrink: 0;
+}
+
+.filter-trigger-btn.has-value .filter-trigger-icon {
+  color: rgb(var(--v-theme-primary));
+}
+
+.filter-trigger-texts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  text-align: start;
+}
+
+.filter-trigger-label {
+  font-size: 10px;
+  line-height: 1.1;
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-trigger-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-trigger-clear {
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.filter-trigger-clear:hover {
+  color: #ff5252;
+  background: rgba(255, 82, 82, 0.15);
+}
+
+.filter-trigger-arrow {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+}
+
+/* =========================================
+   Brand & Model Dialog Modals
+   ========================================= */
+.filter-dialog :deep(.v-overlay__content) {
+  margin: 16px;
+}
+
+.filter-modal-card {
+  background: rgb(18, 24, 38) !important;
+  border: 1.5px solid rgba(255, 109, 0, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 109, 0, 0.15) !important;
+}
+
+.modal-search-field :deep(.v-field) {
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.brand-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.brand-tile:hover {
+  background: rgba(255, 109, 0, 0.1);
+  border-color: rgba(255, 109, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.brand-tile.active {
+  background: rgba(255, 109, 0, 0.15);
+  border-color: rgba(255, 109, 0, 0.8);
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.2);
+}
+
+.brand-tile--all {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.brand-avatar-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-initials {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.brand-tile-name {
+  font-size: 13px;
+  color: #fff;
+}
+
+.model-tile {
+  padding: 8px 12px;
+}
+
+.load-more-btn {
+  background: linear-gradient(135deg, #ff6d00 0%, #ff8f00 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 25px rgba(255, 109, 0, 0.35) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.load-more-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255, 109, 0, 0.5) !important;
 }
 </style>

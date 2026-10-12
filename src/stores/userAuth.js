@@ -30,6 +30,8 @@ export const useUserAuth = defineStore('userAuth', {
         this.user = null
         localStorage.removeItem('user_token')
         localStorage.removeItem('user_data')
+        localStorage.removeItem('seller_token')
+        localStorage.removeItem('seller_data')
 
         window.dispatchEvent(new Event('auth:changed'))
       }

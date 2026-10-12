@@ -17,7 +17,8 @@ const props = defineProps({
   approvedOnly: { type: Boolean, default: true },
   embedded: { type: Boolean, default: false },
 
-  // ✅ Controlled mode (Search page passes these)
+  // ✅ Controlled mode (Search page or Home page passes these)
+  controlled: { type: Boolean, default: false },
   cars: { type: Array, default: null }, // null => uncontrolled, array => controlled
   loading: { type: Boolean, default: null },
   error: { type: String, default: null },
@@ -203,7 +204,7 @@ const displayLoading = computed(() => (props.loading !== null ? props.loading : 
 const displayError = computed(() => (props.error !== null ? props.error : localError.value))
 
 const fetchCars = async () => {
-  if (props.cars !== null) return
+  if (props.controlled || props.cars !== null) return
 
   localLoading.value = true
   localError.value = ''
@@ -257,20 +258,39 @@ const fetchCars = async () => {
   }
 }
 
-onMounted(fetchCars)
+watch(
+  () => props.cars,
+  (val) => {
+    if (val && Array.isArray(val)) {
+      localCars.value = val
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+onMounted(() => {
+  if (props.controlled) return
+  fetchCars()
+})
 
 watch(
   () => props.params,
-  () => fetchCars(),
+  () => {
+    if (!props.controlled) fetchCars()
+  },
   { deep: true },
 )
 watch(
   () => props.limit,
-  () => fetchCars(),
+  () => {
+    if (!props.controlled) fetchCars()
+  },
 )
 watch(
   () => props.approvedOnly,
-  () => fetchCars(),
+  () => {
+    if (!props.controlled) fetchCars()
+  },
 )
 </script>
 

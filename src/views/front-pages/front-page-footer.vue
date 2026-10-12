@@ -38,32 +38,6 @@ const formatPrice = (price) => {
   return n.toLocaleString()
 }
 
-const normalizeCars = (payload) => {
-  if (payload?.data && Array.isArray(payload.data)) return payload.data
-  if (payload?.data?.data && Array.isArray(payload.data.data)) return payload.data.data
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload)) return payload
-  return []
-}
-
-const fetchTopCars = async () => {
-  topCarsLoading.value = true
-  try {
-    const res = await carsUserApi.getAll({
-      page: 1,
-      perPage: 3,
-      'filter[status]': 'approved',
-      sort: '-price', // ✅ الأفضل بدل top_expensive
-    })
-    topCars.value = normalizeCars(res.data)
-  } catch (e) {
-    console.error('Failed to load top cars', e)
-    topCars.value = []
-  } finally {
-    topCarsLoading.value = false
-  }
-}
-
 // ✅ Contact
 const contactInfo = computed(() => [
   { icon: 'tabler-phone', text: '+20 155 155 2993' },
@@ -77,8 +51,6 @@ const socialLinks = [
   { title: 'tiktok', icon: 'tabler-brand-tiktok', href: 'https://www.tiktok.com/@negmcars.com?lang=ar' },
   { title: 'youtube', icon: 'tabler-brand-youtube-filled', href: 'https://www.youtube.com/@NegmCars' },
 ]
-
-onMounted(fetchTopCars)
 </script>
 
 <template>
