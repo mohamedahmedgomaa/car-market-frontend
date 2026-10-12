@@ -903,7 +903,7 @@ onBeforeUnmount(() => {
                     <Transition name="fade" mode="out-in">
                       <div v-if="showAdPhone" class="phone-display-box mt-6">
                         <VIcon icon="tabler-phone-call" size="20" class="me-2 text-primary" />
-                        <span class="text-h6 font-weight-black">01551552993</span>
+                        <span class="text-h6 font-weight-black">01055353377</span>
                       </div>
                       <VBtn
                         v-else

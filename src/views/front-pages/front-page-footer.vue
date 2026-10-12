@@ -40,7 +40,7 @@ const formatPrice = (price) => {
 
 // ✅ Contact
 const contactInfo = computed(() => [
-  { icon: 'tabler-phone', text: '+20 155 155 2993' },
+  { icon: 'tabler-phone', text: '+20 105 535 3377' },
   { icon: 'tabler-map-pin', text: t('egyptLocation') },
 ])
 

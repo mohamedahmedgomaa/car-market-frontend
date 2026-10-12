@@ -22,7 +22,7 @@ watch(
   () => props.car,
   (newCar) => {
     if (newCar) {
-      customPhone.value = newCar.seller?.phone || newCar.phone_number || newCar.phone || '+20 155 155 2993'
+      customPhone.value = newCar.seller?.phone || newCar.phone_number || newCar.phone || '+20 105 535 3377'
     }
   },
   { immediate: true }
