@@ -55,6 +55,9 @@ const form = ref({
   whatsapp_number: '',
   is_whatsapp_same: false,
 
+  youtube_url: '',
+  instagram_url: '',
+
   is_global_ad: false,
   ad_expiry: null,
   featured_fee: '',
@@ -1166,6 +1169,9 @@ const loadCar = async () => {
   form.value.whatsapp_number = car.whatsapp_number ?? ''
   form.value.is_whatsapp_same = car.phone_number && car.phone_number === car.whatsapp_number
 
+  form.value.youtube_url = car.youtube_url ?? ''
+  form.value.instagram_url = car.instagram_url ?? ''
+
   form.value.is_best_deal = !!car.is_best_deal
   if (car.is_import === 'available_for_import' || car.is_import === 'available' || car.is_import === '2' || car.is_import === 2 || String(car.is_import) === '2') {
     form.value.is_import = '2'
@@ -1826,6 +1832,38 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-palette"
                 placeholder="e.g. #FF00FF"
                 :error-messages="fieldError('color')"
+              />
+            </VCol>
+          </VRow>
+        </section>
+
+        <!-- ================= Video Links (YouTube & Instagram) ================= -->
+        <section class="mb-10">
+          <h3 class="text-subtitle-1 font-weight-medium mb-4 d-flex align-center gap-2">
+            <VIcon icon="tabler-video" color="primary" size="20" />
+            <span>Video & Social Links (YouTube & Instagram)</span>
+          </h3>
+
+          <VRow dense>
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.youtube_url"
+                label="YouTube Video Link"
+                placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                prepend-inner-icon="tabler-brand-youtube"
+                clearable
+                :error-messages="fieldError('youtube_url')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.instagram_url"
+                label="Instagram Video / Reel Link"
+                placeholder="https://www.instagram.com/reel/... or https://www.instagram.com/p/..."
+                prepend-inner-icon="tabler-brand-instagram"
+                clearable
+                :error-messages="fieldError('instagram_url')"
               />
             </VCol>
           </VRow>

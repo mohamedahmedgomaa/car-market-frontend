@@ -53,6 +53,9 @@ const form = ref({
   whatsapp_number: '',
   is_whatsapp_same: false,
 
+  youtube_url: '',
+  instagram_url: '',
+
   is_best_deal: false,
   is_import: '0',
   is_global_ad: false,
@@ -1606,6 +1609,38 @@ const handleSubmit = async () => {
                 prepend-inner-icon="tabler-palette"
                 placeholder="e.g. #FF00FF"
                 :error-messages="fieldError('color')"
+              />
+            </VCol>
+          </VRow>
+        </section>
+
+        <!-- ================= Video Links (YouTube & Instagram) ================= -->
+        <section class="mb-10">
+          <h3 class="text-subtitle-1 font-weight-medium mb-4 d-flex align-center gap-2">
+            <VIcon icon="tabler-video" color="primary" size="20" />
+            <span>Video & Social Links (YouTube & Instagram)</span>
+          </h3>
+
+          <VRow dense>
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.youtube_url"
+                label="YouTube Video Link"
+                placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                prepend-inner-icon="tabler-brand-youtube"
+                clearable
+                :error-messages="fieldError('youtube_url')"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.instagram_url"
+                label="Instagram Video / Reel Link"
+                placeholder="https://www.instagram.com/reel/... or https://www.instagram.com/p/..."
+                prepend-inner-icon="tabler-brand-instagram"
+                clearable
+                :error-messages="fieldError('instagram_url')"
               />
             </VCol>
           </VRow>

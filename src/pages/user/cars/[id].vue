@@ -62,6 +62,43 @@ const selectImage = (url) => {
   selectedImage.value = url
 }
 
+// -------------------------
+// ✅ Video (YouTube & Instagram) Support
+// -------------------------
+const activeVideoTab = ref('youtube')
+
+watch(
+  () => [car.value?.youtube_url, car.value?.instagram_url],
+  ([yt, ig]) => {
+    if (yt) {
+      activeVideoTab.value = 'youtube'
+    } else if (ig) {
+      activeVideoTab.value = 'instagram'
+    }
+  },
+  { immediate: true },
+)
+
+const youtubeEmbedUrl = computed(() => {
+  if (!car.value?.youtube_url) return null
+  const url = String(car.value.youtube_url).trim()
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/)
+  if (match && match[1]) {
+    return `https://www.youtube.com/embed/${match[1]}?rel=0`
+  }
+  return null
+})
+
+const instagramEmbedUrl = computed(() => {
+  if (!car.value?.instagram_url) return null
+  const url = String(car.value.instagram_url).trim()
+  const match = url.match(/instagram\.com\/(?:reel|reels|p)\/([\w-]+)/)
+  if (match && match[1]) {
+    return `https://www.instagram.com/reel/${match[1]}/embed`
+  }
+  return null
+})
+
 const formatPrice = (price) => {
   const n = Number(price)
   if (Number.isNaN(n)) return price ?? '—'
@@ -1059,6 +1096,136 @@ watch(
                     {{ _t('whatsappBtn') || 'WhatsApp' }}
                   </VBtn>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= Video Review Section (YouTube & Instagram) ================= -->
+          <div
+            v-if="car.youtube_url || car.instagram_url"
+            class="car-video-section mb-8 rounded-2xl pa-5 pa-md-6"
+          >
+            <!-- Header & Tab Switcher (if both exist) -->
+            <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-5">
+              <div class="d-flex align-center gap-2">
+                <VIcon icon="tabler-player-play-filled" color="primary" size="22" />
+                <h3 class="text-h6 font-weight-bold text-white mb-0">
+                  {{ $i18n.locale === 'ar' ? 'فيديو المعاينة والتجربة' : 'Video Walkthrough & Review' }}
+                </h3>
+              </div>
+
+              <!-- Switcher Tabs when both exist -->
+              <div v-if="car.youtube_url && car.instagram_url" class="video-tabs-pill">
+                <button
+                  type="button"
+                  class="video-tab-btn"
+                  :class="{ active: activeVideoTab === 'youtube' }"
+                  @click="activeVideoTab = 'youtube'"
+                >
+                  <VIcon icon="tabler-brand-youtube" size="18" class="me-1 text-error" />
+                  <span>{{ $i18n.locale === 'ar' ? 'يوتيوب' : 'YouTube' }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="video-tab-btn"
+                  :class="{ active: activeVideoTab === 'instagram' }"
+                  @click="activeVideoTab = 'instagram'"
+                >
+                  <VIcon icon="tabler-brand-instagram" size="18" class="me-1" style="color: #E1306C;" />
+                  <span>{{ $i18n.locale === 'ar' ? 'انستغرام ريل' : 'Reel' }}</span>
+                </button>
+              </div>
+
+              <!-- Direct external link button -->
+              <div v-else>
+                <a
+                  v-if="car.youtube_url"
+                  :href="car.youtube_url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="video-ext-link"
+                >
+                  <VIcon icon="tabler-brand-youtube" size="18" class="text-error me-1" />
+                  <span>{{ $i18n.locale === 'ar' ? 'مشاهدة على YouTube' : 'Watch on YouTube' }}</span>
+                  <VIcon icon="tabler-external-link" size="14" class="ms-1 opacity-70" />
+                </a>
+                <a
+                  v-else-if="car.instagram_url"
+                  :href="car.instagram_url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="video-ext-link"
+                >
+                  <VIcon icon="tabler-brand-instagram" size="18" class="me-1" style="color: #E1306C;" />
+                  <span>{{ $i18n.locale === 'ar' ? 'مشاهدة على Instagram' : 'View on Instagram' }}</span>
+                  <VIcon icon="tabler-external-link" size="14" class="ms-1 opacity-70" />
+                </a>
+              </div>
+            </div>
+
+            <!-- YouTube Player -->
+            <div
+              v-if="(activeVideoTab === 'youtube' || !car.instagram_url) && car.youtube_url"
+              class="youtube-player-wrapper"
+            >
+              <div v-if="youtubeEmbedUrl" class="video-responsive-16-9">
+                <iframe
+                  :src="youtubeEmbedUrl"
+                  title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                  loading="lazy"
+                  class="video-iframe"
+                />
+              </div>
+              <div v-else class="video-fallback-box py-8 text-center">
+                <VIcon icon="tabler-brand-youtube" size="48" color="error" class="mb-3" />
+                <p class="text-body-1 text-white mb-4">
+                  {{ $i18n.locale === 'ar' ? 'شاهد فيديو المعاينة الكامل على يوتيوب' : 'Watch the complete video review on YouTube' }}
+                </p>
+                <VBtn
+                  color="error"
+                  variant="flat"
+                  rounded="pill"
+                  prepend-icon="tabler-external-link"
+                  :href="car.youtube_url"
+                  target="_blank"
+                >
+                  {{ $i18n.locale === 'ar' ? 'فتح في تطبيق YouTube' : 'Open in YouTube' }}
+                </VBtn>
+              </div>
+            </div>
+
+            <!-- Instagram Reel Player -->
+            <div
+              v-if="(activeVideoTab === 'instagram' || !car.youtube_url) && car.instagram_url"
+              class="instagram-player-wrapper"
+            >
+              <div v-if="instagramEmbedUrl" class="instagram-responsive-reel">
+                <iframe
+                  :src="instagramEmbedUrl"
+                  frameborder="0"
+                  scrolling="no"
+                  allowtransparency="true"
+                  class="instagram-iframe"
+                />
+              </div>
+              <div v-else class="video-fallback-box py-8 text-center">
+                <VIcon icon="tabler-brand-instagram" size="48" style="color: #E1306C;" class="mb-3" />
+                <p class="text-body-1 text-white mb-4">
+                  {{ $i18n.locale === 'ar' ? 'شاهد ريل المعاينة على انستغرام' : 'Watch the reel walkthrough on Instagram' }}
+                </p>
+                <VBtn
+                  color="primary"
+                  variant="flat"
+                  rounded="pill"
+                  prepend-icon="tabler-external-link"
+                  :href="car.instagram_url"
+                  target="_blank"
+                >
+                  {{ $i18n.locale === 'ar' ? 'فتح في تطبيق Instagram' : 'Open in Instagram' }}
+                </VBtn>
               </div>
             </div>
           </div>
@@ -2635,5 +2802,119 @@ watch(
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 30px rgba(255, 107, 0, 0.2);
+}
+
+/* Video Section */
+.car-video-section {
+  background: rgba(18, 20, 29, 0.75);
+  border: 1px solid rgba(255, 107, 0, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.3s ease;
+
+  &:hover {
+    border-color: rgba(255, 107, 0, 0.4);
+  }
+}
+
+.video-tabs-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.video-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 99px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &.active {
+    background: rgba(255, 107, 0, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 107, 0, 0.5);
+    box-shadow: 0 0 12px rgba(255, 107, 0, 0.25);
+  }
+}
+
+.video-ext-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 107, 0, 0.2);
+    border-color: #FF6B00;
+    transform: translateY(-1px);
+  }
+}
+
+.video-responsive-16-9 {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 480px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000000;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+
+  .video-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+}
+
+.instagram-responsive-reel {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  height: 540px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000000;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+
+  .instagram-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+}
+
+.video-fallback-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
 }
 </style>
