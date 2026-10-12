@@ -834,10 +834,8 @@ onMounted(() => {
   syncDraftFromQuery()
   fetchCars()
 
-  // Only if page opened with brand query param, fetch brands for labeling
-  if (draft.value.brandId) {
-    fetchBrands()
-  }
+  // Pre-fetch brands for instant picker readiness
+  fetchBrands()
 
   if (typeof window !== 'undefined') {
     lastScrollY = window.scrollY
@@ -936,7 +934,6 @@ const activeAdvancedFiltersCount = computed(() => {
                 @click="openBrandDialog"
               >
                 <div class="filter-trigger-content">
-                  <VIcon icon="tabler-car" size="18" class="filter-trigger-icon" />
                   <div class="filter-trigger-texts">
                     <span class="filter-trigger-label">{{ t('brand') }}</span>
                     <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
@@ -961,7 +958,6 @@ const activeAdvancedFiltersCount = computed(() => {
                 @click="openModelDialog"
               >
                 <div class="filter-trigger-content">
-                  <VIcon icon="tabler-steering-wheel" size="18" class="filter-trigger-icon" />
                   <div class="filter-trigger-texts">
                     <span class="filter-trigger-label">{{ t('model') }}</span>
                     <span class="filter-trigger-value">{{ selectedModelName || (draft.brandId ? t('all') : (locale === 'ar' ? 'اختر الماركة أولاً' : 'Select brand')) }}</span>
@@ -1366,7 +1362,6 @@ const activeAdvancedFiltersCount = computed(() => {
                   @click="openBrandDialog"
                 >
                   <div class="filter-trigger-content">
-                    <VIcon icon="tabler-car" size="20" class="filter-trigger-icon" />
                     <div class="filter-trigger-texts">
                       <span class="filter-trigger-label">{{ t('brand') }}</span>
                       <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
@@ -1388,7 +1383,6 @@ const activeAdvancedFiltersCount = computed(() => {
                   @click="openModelDialog"
                 >
                   <div class="filter-trigger-content">
-                    <VIcon icon="tabler-steering-wheel" size="20" class="filter-trigger-icon" />
                     <div class="filter-trigger-texts">
                       <span class="filter-trigger-label">{{ t('model') }}</span>
                       <span class="filter-trigger-value">{{ selectedModelName || (draft.brandId ? t('all') : (locale === 'ar' ? 'اختر الماركة أولاً' : 'Select brand')) }}</span>

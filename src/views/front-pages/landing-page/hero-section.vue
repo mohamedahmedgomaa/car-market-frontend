@@ -419,9 +419,9 @@ const _t = (val) => {
 const fetchBrands = async () => {
   if (props.initialBrands && props.initialBrands.length) {
     brandsList.value = sortBrands(props.initialBrands.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name, type: b.type })))
+    isBrandsLoading.value = false
     return
   }
-  if (props.controlled) return
   isBrandsLoading.value = true
   try {
     const res = await brandUserApi.getAll()
@@ -434,33 +434,130 @@ const fetchBrands = async () => {
   }
 }
 
+const brandDialogOpen = ref(false)
+const brandSearchQuery = ref('')
+const modelDialogOpen = ref(false)
+const modelSearchQuery = ref('')
+const modelsLoading = ref(false)
+
+const openBrandDialog = () => {
+  brandSearchQuery.value = ''
+  brandDialogOpen.value = true
+  if (brandsList.value.length === 0) {
+    fetchBrands()
+  }
+}
+
+const selectBrand = (b) => {
+  if (!b) {
+    filters.value.brandId = null
+    filters.value.modelId = null
+    brandDialogOpen.value = false
+    return
+  }
+  filters.value.brandId = b.id
+  filters.value.modelId = null
+  brandDialogOpen.value = false
+  fetchModels(b.id).then(() => {
+    openModelDialog()
+  })
+}
+
+const clearBrand = () => {
+  filters.value.brandId = null
+  filters.value.modelId = null
+}
+
+const selectedBrand = computed(() => {
+  if (!filters.value.brandId) return null
+  return brandsList.value.find((b) => b.id === filters.value.brandId) || null
+})
+
+const selectedBrandName = computed(() => {
+  if (!selectedBrand.value) return ''
+  return _t(selectedBrand.value.name)
+})
+
+const modalFilteredBrands = computed(() => {
+  const type = filters.value.type || 'car'
+  let items = (brandsList.value || []).filter((b) => !b.type || b.type === type)
+  items = sortBrands(items)
+
+  if (!brandSearchQuery.value.trim()) return items
+
+  const q = brandSearchQuery.value.trim().toLowerCase()
+  return items.filter((b) => {
+    const en = String(b.originalName?.en || b.name?.en || b.name || '').toLowerCase()
+    const ar = String(b.originalName?.ar || b.name?.ar || '').toLowerCase()
+    return en.includes(q) || ar.includes(q) || matchBrand(b, q)
+  })
+})
+
 const fetchModels = async (brandId) => {
   if (!brandId) {
     modelsList.value = []
     return
   }
+  modelsLoading.value = true
   try {
     const res = await modelUserApi.getAll({ 'filter[brand_id]': brandId })
     const data = res.data?.data || res.data || []
-    modelsList.value = data.map((m) => ({ id: m.id, name: _t(m.name) }))
+    modelsList.value = data.map((m) => ({ id: m.id, name: _t(m.name), originalName: m.name }))
   } catch (err) {
     console.error('Error fetching models:', err)
+  } finally {
+    modelsLoading.value = false
   }
 }
+
+const openModelDialog = () => {
+  if (!filters.value.brandId) return
+  modelSearchQuery.value = ''
+  modelDialogOpen.value = true
+}
+
+const selectModel = (m) => {
+  if (!m) {
+    filters.value.modelId = null
+  } else {
+    filters.value.modelId = m.id
+  }
+  modelDialogOpen.value = false
+}
+
+const clearModel = () => {
+  filters.value.modelId = null
+}
+
+const selectedModel = computed(() => {
+  if (!filters.value.modelId) return null
+  return modelsList.value.find((m) => m.id === filters.value.modelId) || null
+})
+
+const selectedModelName = computed(() => {
+  if (!selectedModel.value) return ''
+  return _t(selectedModel.value.name)
+})
+
+const modalFilteredModels = computed(() => {
+  const items = modelsList.value || []
+  if (!modelSearchQuery.value.trim()) return items
+  const q = modelSearchQuery.value.trim().toLowerCase()
+  return items.filter((m) => {
+    const en = String(m.name?.en || m.name || '').toLowerCase()
+    const ar = String(m.name?.ar || '').toLowerCase()
+    return en.includes(q) || ar.includes(q)
+  })
+})
 
 watch(
   () => filters.value.brandId,
   (val) => {
-    filters.value.modelId = null
     if (val) {
-      fetchModels(val).then(() => {
-        nextTick(() => {
-          if (modelSelect.value) {
-            modelSelect.value.focus()
-            isModelMenuOpen.value = true
-          }
-        })
-      })
+      fetchModels(val)
+    } else {
+      modelsList.value = []
+      filters.value.modelId = null
     }
   },
 )
@@ -599,6 +696,10 @@ onMounted(() => {
     fetchBanners()
     fetchVideoBanner()
     fetchBrands()
+  } else {
+    if (!props.initialBrands || !props.initialBrands.length) {
+      fetchBrands()
+    }
   }
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
@@ -698,46 +799,53 @@ onBeforeUnmount(() => {
                 </div>
               </div>
 
-              <!-- Brand & Model -->
+              <!-- Brand & Model Trigger Pickers (Matching Cars Page Modals) -->
               <div class="form-group">
-                <VAutocomplete
-                  v-if="!isBrandsLoading"
-                  v-model="filters.brandId"
-                  :items="safeBrandsList"
-                  item-title="name"
-                  item-value="id"
-                  maxlength="30"
-                  :label="t('selectBrand')"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="premium-input"
-                  no-data-text="No brands found"
-                />
-                <VSkeletonLoader
-                  v-else
-                  type="text"
-                  class="premium-input"
-                  height="44"
-                />
+                <div
+                  class="filter-trigger-btn"
+                  :class="{ 'has-value': !!filters.brandId }"
+                  @click="openBrandDialog"
+                >
+                  <div class="filter-trigger-content">
+                    <div class="filter-trigger-texts">
+                      <span class="filter-trigger-label">{{ t('brand') }}</span>
+                      <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
+                    </div>
+                  </div>
+                  <VIcon
+                    v-if="filters.brandId"
+                    icon="tabler-x"
+                    size="16"
+                    class="filter-trigger-clear"
+                    @click.stop="clearBrand"
+                  />
+                  <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
+                </div>
               </div>
 
               <div class="form-group">
-                <VSelect
-                  ref="modelSelect"
-                  v-model="filters.modelId"
-                  v-model:menu="isModelMenuOpen"
-                  :items="safeModelsList"
-                  item-title="name"
-                  item-value="id"
-                  :label="t('selectModel')"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  :disabled="!filters.brandId"
-                  class="premium-input"
-                  no-data-text="No models found"
-                />
+                <div
+                  class="filter-trigger-btn"
+                  :class="{ 'has-value': !!filters.modelId, 'is-disabled': !filters.brandId }"
+                  @click="openModelDialog"
+                >
+                  <div class="filter-trigger-content">
+                    <div class="filter-trigger-texts">
+                      <span class="filter-trigger-label">{{ t('model') }}</span>
+                      <span class="filter-trigger-value">
+                        {{ selectedModelName || (filters.brandId ? t('all') : (locale === 'ar' ? 'اختر الماركة أولاً' : 'Select brand')) }}
+                      </span>
+                    </div>
+                  </div>
+                  <VIcon
+                    v-if="filters.modelId"
+                    icon="tabler-x"
+                    size="16"
+                    class="filter-trigger-clear"
+                    @click.stop="clearModel"
+                  />
+                  <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
+                </div>
               </div>
 
               <!-- Price Range -->
@@ -1005,6 +1113,162 @@ onBeforeUnmount(() => {
         <span class="font-weight-bold text-white text-body-1">{{ idNotFoundMessage }}</span>
       </div>
     </VSnackbar>
+
+    <!-- Brand Selection Dialog Modal -->
+    <VDialog
+      v-model="brandDialogOpen"
+      max-width="640"
+      scrollable
+      class="filter-dialog"
+    >
+      <VCard rounded="xl" class="filter-modal-card">
+        <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
+          <span class="font-weight-black text-h6">{{ locale === 'ar' ? 'اختر الماركة' : 'Select Brand' }}</span>
+          <VBtn icon="tabler-x" variant="text" density="comfortable" @click="brandDialogOpen = false" />
+        </VCardTitle>
+
+        <div class="pa-4 border-b">
+          <VTextField
+            v-model="brandSearchQuery"
+            :placeholder="locale === 'ar' ? 'ابحث عن ماركة السيارة...' : 'Search brand...'"
+            prepend-inner-icon="tabler-search"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            clearable
+            autofocus
+            class="modal-search-field"
+          />
+        </div>
+
+        <VCardText class="pa-4 modal-scroll-body" style="max-height: 460px;">
+          <!-- Loading State -->
+          <div v-if="isBrandsLoading" class="text-center py-12">
+            <VProgressCircular indeterminate color="primary" size="44" />
+            <p class="mt-3 text-body-2 opacity-60">{{ locale === 'ar' ? 'جاري تحميل الماركات...' : 'Loading brands...' }}</p>
+          </div>
+
+          <div v-else>
+            <!-- All Brands Option -->
+            <div
+              class="brand-tile brand-tile--all mb-3"
+              :class="{ active: filters.brandId === null }"
+              @click="selectBrand(null)"
+            >
+              <div class="d-flex align-center gap-3">
+                <div class="brand-avatar-box">
+                  <VIcon icon="tabler-apps" size="20" />
+                </div>
+                <span class="brand-tile-name font-weight-bold">{{ locale === 'ar' ? 'جميع الماركات' : 'All Brands' }}</span>
+              </div>
+              <VIcon v-if="filters.brandId === null" icon="tabler-check" color="primary" size="20" />
+            </div>
+
+            <!-- Brand Grid -->
+            <div class="brand-grid">
+              <div
+                v-for="b in modalFilteredBrands"
+                :key="b.id"
+                class="brand-tile"
+                :class="{ active: filters.brandId === b.id }"
+                @click="selectBrand(b)"
+              >
+                <div class="d-flex align-center gap-3 w-100">
+                  <div class="brand-avatar-box">
+                    <span class="brand-initials">{{ String(b.name?.en || b.name || '').slice(0, 2).toUpperCase() }}</span>
+                  </div>
+                  <div class="d-flex flex-column text-start overflow-hidden">
+                    <span class="brand-tile-name font-weight-bold text-truncate">{{ _t(b.name) }}</span>
+                    <span v-if="b.name?.en && locale === 'ar'" class="text-caption opacity-50 text-truncate">{{ b.name.en }}</span>
+                  </div>
+                </div>
+                <VIcon v-if="filters.brandId === b.id" icon="tabler-check" color="primary" size="18" class="ms-auto flex-shrink-0" />
+              </div>
+            </div>
+
+            <div v-if="modalFilteredBrands.length === 0" class="text-center py-8 opacity-60">
+              <VIcon icon="tabler-search-off" size="36" class="mb-2 opacity-50" />
+              <p class="mb-0">{{ locale === 'ar' ? 'لا توجد ماركة بهذا الاسم' : 'No brands matching your search' }}</p>
+            </div>
+          </div>
+        </VCardText>
+      </VCard>
+    </VDialog>
+
+    <!-- Model Selection Dialog Modal -->
+    <VDialog
+      v-model="modelDialogOpen"
+      max-width="580"
+      scrollable
+      class="filter-dialog"
+    >
+      <VCard rounded="xl" class="filter-modal-card">
+        <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
+          <span class="font-weight-black text-h6">
+            {{ locale === 'ar' ? 'اختر الموديل' : 'Select Model' }}
+            <span v-if="selectedBrandName" class="text-primary text-subtitle-2 ms-1">({{ selectedBrandName }})</span>
+          </span>
+          <VBtn icon="tabler-x" variant="text" density="comfortable" @click="modelDialogOpen = false" />
+        </VCardTitle>
+
+        <div class="pa-4 border-b">
+          <VTextField
+            v-model="modelSearchQuery"
+            :placeholder="locale === 'ar' ? 'ابحث عن الموديل...' : 'Search model...'"
+            prepend-inner-icon="tabler-search"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            clearable
+            autofocus
+            class="modal-search-field"
+          />
+        </div>
+
+        <VCardText class="pa-4 modal-scroll-body" style="max-height: 460px;">
+          <div v-if="modelsLoading" class="text-center py-12">
+            <VProgressCircular indeterminate color="primary" size="44" />
+            <p class="mt-3 text-body-2 opacity-60">{{ locale === 'ar' ? 'جاري تحميل الموديلات...' : 'Loading models...' }}</p>
+          </div>
+
+          <div v-else>
+            <!-- All Models Option -->
+            <div
+              class="brand-tile brand-tile--all mb-3"
+              :class="{ active: filters.modelId === null }"
+              @click="selectModel(null)"
+            >
+              <div class="d-flex align-center gap-3">
+                <div class="brand-avatar-box">
+                  <VIcon icon="tabler-apps" size="20" />
+                </div>
+                <span class="brand-tile-name font-weight-bold">{{ locale === 'ar' ? 'جميع الموديلات' : 'All Models' }}</span>
+              </div>
+              <VIcon v-if="filters.modelId === null" icon="tabler-check" color="primary" size="20" />
+            </div>
+
+            <!-- Model Grid -->
+            <div class="model-grid">
+              <div
+                v-for="m in modalFilteredModels"
+                :key="m.id"
+                class="brand-tile"
+                :class="{ active: filters.modelId === m.id }"
+                @click="selectModel(m)"
+              >
+                <span class="brand-tile-name font-weight-bold text-truncate">{{ _t(m.name) }}</span>
+                <VIcon v-if="filters.modelId === m.id" icon="tabler-check" color="primary" size="18" class="ms-auto flex-shrink-0" />
+              </div>
+            </div>
+
+            <div v-if="modalFilteredModels.length === 0" class="text-center py-8 opacity-60">
+              <VIcon icon="tabler-search-off" size="36" class="mb-2 opacity-50" />
+              <p class="mb-0">{{ locale === 'ar' ? 'لا توجد موديلات متاحة' : 'No models available' }}</p>
+            </div>
+          </div>
+        </VCardText>
+      </VCard>
+    </VDialog>
   </section>
 </template>
 
@@ -1809,6 +2073,170 @@ onBeforeUnmount(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* =========================================
+   Filter Trigger Buttons (Desktop & Mobile)
+   ========================================= */
+.filter-trigger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border-radius: 12px;
+  padding: 0 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-trigger-btn:hover:not(.is-disabled) {
+  border-color: rgba(255, 109, 0, 0.5);
+  background: rgba(255, 109, 0, 0.06);
+}
+
+.filter-trigger-btn.has-value {
+  border-color: rgba(255, 109, 0, 0.6);
+  background: rgba(255, 109, 0, 0.08);
+}
+
+.filter-trigger-btn.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.filter-trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.filter-trigger-texts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  text-align: start;
+}
+
+.filter-trigger-label {
+  font-size: 10px;
+  line-height: 1.1;
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-trigger-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-trigger-clear {
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.filter-trigger-clear:hover {
+  color: #ff5252;
+  background: rgba(255, 82, 82, 0.15);
+}
+
+.filter-trigger-arrow {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+}
+
+/* =========================================
+   Brand & Model Dialog Modals
+   ========================================= */
+.filter-dialog :deep(.v-overlay__content) {
+  margin: 16px;
+}
+
+.filter-modal-card {
+  background: rgb(18, 24, 38) !important;
+  border: 1.5px solid rgba(255, 109, 0, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 109, 0, 0.15) !important;
+}
+
+.modal-search-field :deep(.v-field) {
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.brand-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.brand-tile:hover {
+  background: rgba(255, 109, 0, 0.1);
+  border-color: rgba(255, 109, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.brand-tile.active {
+  background: rgba(255, 109, 0, 0.15);
+  border-color: rgba(255, 109, 0, 0.8);
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.2);
+}
+
+.brand-tile--all {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.brand-avatar-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ff6d00;
+}
+
+.brand-initials {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.brand-tile-name {
+  font-size: 13px;
+  color: rgba(var(--v-theme-on-surface), 0.95);
 }
 </style>
 

@@ -370,7 +370,6 @@ onUnmounted(() => {
               @click="openBrandDialog"
             >
               <div class="filter-trigger-content">
-                <VIcon icon="tabler-car" size="18" class="filter-trigger-icon" />
                 <div class="filter-trigger-texts">
                   <span class="filter-trigger-label">{{ t('brand') }}</span>
                   <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
