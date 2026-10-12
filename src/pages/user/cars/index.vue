@@ -128,6 +128,7 @@ const isAdvancedOpen = ref(false)
 
 const draft = ref({
   q: '',
+  adId: '',
   type: 'car',
   condition: '',
   brandId: null,
@@ -198,6 +199,7 @@ const syncDraftFromQuery = () => {
 
   draft.value = {
     q: String(firstQueryVal(q['filter[global]']) || ''),
+    adId: '',
     type: String(firstQueryVal(q['filter[type]']) || 'car'),
     condition: String(firstQueryVal(q['filter[condition]']) || ''),
     brandId: q['filter[brand_id]'] ? Number(firstQueryVal(q['filter[brand_id]'])) : null,
@@ -324,10 +326,56 @@ const onMileageInput = (val, key) => {
   draft.value[key] = clean
 }
 
+const onTextSearchInput = (val) => {
+  if (!val) {
+    draft.value.q = ''
+    return
+  }
+  const converted = String(val)
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+  if (draft.value.q !== converted) {
+    nextTick(() => {
+      draft.value.q = converted
+    })
+  }
+}
+
+const onAdIdInput = (val) => {
+  if (!val) {
+    draft.value.adId = ''
+    return
+  }
+  let clean = String(val)
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+  clean = clean.replace(/[^0-9#]/g, '')
+  if (clean.startsWith('#')) {
+    clean = '#' + clean.slice(1).replace(/[^0-9]/g, '').slice(0, 7)
+  } else {
+    clean = clean.replace(/[^0-9]/g, '').slice(0, 7)
+  }
+  if (draft.value.adId !== clean) {
+    nextTick(() => {
+      draft.value.adId = clean
+    })
+  }
+}
+
+const handleAdIdSearch = () => {
+  const adIdValue = draft.value.adId?.trim()?.replace(/[^0-9]/g, '')
+  if (adIdValue) {
+    router.push(`/user/cars/${adIdValue}`)
+    draft.value.adId = ''
+  }
+}
+
 const applyFilters = async () => {
-  const idValue = draft.value.q?.trim()
-  if (idValue && /^\d+$/.test(idValue)) {
-    router.push(`/user/cars/${idValue}`)
+  // If user entered an Ad ID, prioritize going directly to that car
+  const adIdValue = draft.value.adId?.trim()?.replace(/[^0-9]/g, '')
+  if (adIdValue) {
+    router.push(`/user/cars/${adIdValue}`)
+    draft.value.adId = ''
     return
   }
 
@@ -339,7 +387,9 @@ const applyFilters = async () => {
   let detectedBrandId = d.brandId
   let detectedModelId = d.modelId
   let detectedYear = null
-  let queryText = idValue ? idValue.toLowerCase() : ''
+  let queryText = d.q ? d.q.trim().toLowerCase()
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)) : ''
 
   // Smart Parsing if text is provided
   if (queryText) {
@@ -469,8 +519,8 @@ const applyFilters = async () => {
     if (queryText && queryText.length > 1 && !detectedModelId) {
        query['filter[global]'] = queryText
     }
-  } else if (idValue) {
-    query['filter[global]'] = idValue
+  } else if (d.q && d.q.trim()) {
+    query['filter[global]'] = d.q.trim()
   } else {
     delete query['filter[global]']
   }
@@ -522,6 +572,7 @@ const applyFilters = async () => {
 const resetAll = () => {
   draft.value = {
     q: '',
+    adId: '',
     type: 'car',
     condition: '',
     brandId: null,
@@ -544,9 +595,10 @@ const resetAll = () => {
 const isMobileFilterOpen = ref(false)
 
 const handleApplyMobile = () => {
-  const idValue = draft.value.q?.trim()
-  if (idValue && /^\d+$/.test(idValue)) {
-    router.push(`/user/cars/${idValue}`)
+  const adIdValue = draft.value.adId?.trim()?.replace(/[^0-9]/g, '')
+  if (adIdValue) {
+    router.push(`/user/cars/${adIdValue}`)
+    draft.value.adId = ''
     isMobileFilterOpen.value = false
     return
   }
@@ -688,8 +740,8 @@ const activeAdvancedFiltersCount = computed(() => {
         <div class="premium-horizontal-search">
           <!-- Main Search Row -->
           <div class="search-main-row">
-            <!-- 1. Global Search -->
-            <div class="search-col search-col-query">
+            <!-- 1. Text Search & Ad ID -->
+            <div class="search-col search-col-query d-flex gap-2 align-center">
               <VTextField
                 v-model="draft.q"
                 :placeholder="t('searchByIdOrText')"
@@ -697,8 +749,22 @@ const activeAdvancedFiltersCount = computed(() => {
                 variant="outlined"
                 density="comfortable"
                 hide-details
-                class="premium-input-field"
+                class="premium-input-field flex-grow-1"
                 @keyup.enter="applyFilters"
+                @update:model-value="onTextSearchInput"
+                :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'"
+              />
+              <VTextField
+                v-model="draft.adId"
+                :placeholder="t('adIdPlaceholder')"
+                prepend-inner-icon="tabler-hash"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="premium-input-field ad-id-deck-input"
+                @keyup.enter="handleAdIdSearch"
+                @update:model-value="onAdIdInput"
+                dir="ltr"
               />
             </div>
 
@@ -1069,8 +1135,8 @@ const activeAdvancedFiltersCount = computed(() => {
 
             <!-- Scrollable Content on Mobile -->
             <div class="filter-scroll-content">
-              <!-- Global Text Search on Mobile -->
-              <div class="mb-4">
+              <!-- Global Text Search & Ad ID on Mobile -->
+              <div class="mb-4 d-flex gap-2 align-center">
                 <VTextField
                   v-model="draft.q"
                   :placeholder="t('searchByIdOrText')"
@@ -1078,8 +1144,22 @@ const activeAdvancedFiltersCount = computed(() => {
                   variant="outlined"
                   density="comfortable"
                   hide-details
-                  class="premium-input"
+                  class="premium-input flex-grow-1"
                   @keyup.enter="handleApplyMobile"
+                  @update:model-value="onTextSearchInput"
+                  :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'"
+                />
+                <VTextField
+                  v-model="draft.adId"
+                  :placeholder="t('adIdPlaceholder')"
+                  prepend-inner-icon="tabler-hash"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  class="premium-input ad-id-mobile-input"
+                  @keyup.enter="handleApplyMobile"
+                  @update:model-value="onAdIdInput"
+                  dir="ltr"
                 />
               </div>
 
@@ -1464,7 +1544,20 @@ const activeAdvancedFiltersCount = computed(() => {
 }
 
 .search-col-query {
-  flex: 1.3;
+  flex: 1.6;
+}
+
+.ad-id-deck-input {
+  width: 125px;
+  min-width: 105px;
+  max-width: 135px;
+  flex-shrink: 0;
+}
+
+.ad-id-mobile-input {
+  width: 115px;
+  min-width: 100px;
+  flex-shrink: 0;
 }
 
 .search-col-brand,

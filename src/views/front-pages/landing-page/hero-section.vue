@@ -129,35 +129,66 @@ const buildQuery = () => {
   return q
 }
 
-// ✅ Omni-Search (ID or Text)
+// ✅ Text & Ad ID Search
 const smartSearch = ref('')
+const adIdSearch = ref('')
 
 const onSmartSearchInput = (val) => {
   if (!val) {
     smartSearch.value = ''
     return
   }
-  
-  // Convert Arabic to English instantly
-  let cleaned = String(val).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
-  
-  // If it looks like an ID (only numbers or # + numbers), enforce 6 digits limit
-  if (/^(#?\d+)$/.test(cleaned)) {
-    const hasHash = cleaned.startsWith('#')
-    const maxLength = hasHash ? 7 : 6
-    if (cleaned.length > maxLength) {
-      cleaned = cleaned.slice(0, maxLength)
-    }
-  }
-
-  if (smartSearch.value !== cleaned) {
+  const converted = String(val)
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+  if (smartSearch.value !== converted) {
     nextTick(() => {
-      smartSearch.value = cleaned
+      smartSearch.value = converted
     })
   }
 }
 
+const onAdIdInput = (val) => {
+  if (!val) {
+    adIdSearch.value = ''
+    return
+  }
+  let cleaned = String(val)
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+  cleaned = cleaned.replace(/[^0-9#]/g, '')
+  if (cleaned.startsWith('#')) {
+    cleaned = '#' + cleaned.slice(1).replace(/[^0-9]/g, '').slice(0, 7)
+  } else {
+    cleaned = cleaned.replace(/[^0-9]/g, '').slice(0, 7)
+  }
+  if (adIdSearch.value !== cleaned) {
+    nextTick(() => {
+      adIdSearch.value = cleaned
+    })
+  }
+}
+
+const onAdIdSearch = () => {
+  if (!adIdSearch.value) return
+  const numericId = String(adIdSearch.value).replace(/[^0-9]/g, '')
+  if (numericId) {
+    router.push(`/user/cars/${numericId}`)
+    adIdSearch.value = ''
+  }
+}
+
 const onSearch = async () => {
+  // If Ad ID was provided, prioritize navigating to the specific ad
+  if (adIdSearch.value && adIdSearch.value.trim()) {
+    const numericId = String(adIdSearch.value).replace(/[^0-9]/g, '')
+    if (numericId) {
+      router.push(`/user/cars/${numericId}`)
+      adIdSearch.value = ''
+      return
+    }
+  }
+
   if (!smartSearch.value) {
     router.push({
       path: '/user/cars',
@@ -167,16 +198,11 @@ const onSearch = async () => {
   }
 
   let queryText = String(smartSearch.value).trim().toLowerCase()
-  
-  // Check if it's an ID search (only numbers, optionally starting with #)
-  const isId = /^(#?\d+)$/.test(queryText)
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
 
-  if (isId) {
-    const numericId = queryText.replace(/[^0-9]/g, '')
-    router.push(`/user/cars/${numericId}`)
-    smartSearch.value = ''
-    return
-  }
+  // ✅ Smart Parsing: extract Brand, Model, Year from queryText (e.g. BMW 320, X5, 2025)
+  // Numeric text like "320" will be treated as car/model search, NOT as an Ad ID redirect!
 
   // ✅ Smart Parsing: extract Brand, Model, Year from queryText
   let detectedBrandId = null
@@ -325,6 +351,7 @@ const onSearch = async () => {
 
 const resetFilters = () => {
   smartSearch.value = ''
+  adIdSearch.value = ''
   filters.value = {
     type: 'car',
     condition: '',
@@ -570,8 +597,8 @@ onBeforeUnmount(() => {
               />
             </div>
 
-            <!-- ✅ Search Inputs (Smart Search / Omni-Search) -->
-            <div class="mb-5 d-flex gap-3 align-center search-inputs-row w-100">
+            <!-- ✅ Search Inputs Row: Text Search + Dedicated Ad ID Field -->
+            <div class="mb-5 d-flex gap-2 align-center search-inputs-row w-100">
               <VTextField
                 v-model="smartSearch"
                 :placeholder="t('searchPlaceholder')"
@@ -581,7 +608,20 @@ onBeforeUnmount(() => {
                 prepend-inner-icon="tabler-search"
                 @keydown.enter.prevent="onSearch"
                 @update:model-value="onSmartSearchInput"
-                class="premium-id-input smart-search-input flex-grow-1 w-100"
+                class="premium-id-input smart-search-input flex-grow-1"
+                :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'"
+              />
+
+              <VTextField
+                v-model="adIdSearch"
+                :placeholder="t('adIdPlaceholder')"
+                density="compact"
+                variant="outlined"
+                hide-details
+                prepend-inner-icon="tabler-hash"
+                @keydown.enter.prevent="onAdIdSearch"
+                @update:model-value="onAdIdInput"
+                class="premium-id-input ad-id-search-input"
                 dir="ltr"
               />
             </div>
@@ -1019,6 +1059,25 @@ onBeforeUnmount(() => {
 .premium-id-input :deep(.v-field--focused .v-icon) {
   opacity: 1;
   transform: scale(1.1);
+}
+
+.ad-id-search-input {
+  width: 140px;
+  min-width: 115px;
+  max-width: 155px;
+  flex-shrink: 0;
+}
+
+.ad-id-search-input :deep(.v-field__input) {
+  font-family: inherit;
+  font-size: 0.85rem !important;
+}
+
+@media (max-width: 600px) {
+  .ad-id-search-input {
+    width: 115px !important;
+    min-width: 100px !important;
+  }
 }
 
 /* Grid Layout for Inputs */
