@@ -949,6 +949,7 @@ const setMainOld = (id) => {
 
   mainSelection.value = { type: 'old', id }
   existingImages.value.forEach(img => (img.is_main = img.id === id))
+  keepImages.value = existingImages.value.map(i => i.id)
 }
 
 const setMainNew = (index) => {
@@ -1194,12 +1195,20 @@ const loadCar = async () => {
   normalizeFeaturesSelection()
 
   // Existing images
-  existingImages.value = (car.images || []).map(img => ({
+  const loadedImages = (car.images || []).map(img => ({
     id: img.id,
     url: `${img.path}`,
     is_main: img.is_main === 1 || img.is_main === true,
   }))
 
+  // Ensure the main image is sorted FIRST at index 0
+  const mainIdx = loadedImages.findIndex(i => i.is_main)
+  if (mainIdx > 0) {
+    const [mainItem] = loadedImages.splice(mainIdx, 1)
+    loadedImages.unshift(mainItem)
+  }
+
+  existingImages.value = loadedImages
   keepImages.value = existingImages.value.map(i => i.id)
 
   // main selection from server
@@ -1295,7 +1304,8 @@ const handleSubmit = async () => {
       if (value !== null && value !== '') fd.append(key, value)
     })
 
-    // keep old images
+    // keep old images in current order
+    keepImages.value = existingImages.value.map(i => i.id)
     keepImages.value.forEach(id => fd.append('keep_images[]', id))
 
     // main selection

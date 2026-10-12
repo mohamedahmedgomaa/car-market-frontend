@@ -30,9 +30,19 @@ const openQrModal = (car) => {
 const socialCardDialog = ref(false)
 const socialSelectedCar = ref(null)
 
-const openSocialCardModal = (car) => {
+const openSocialCardModal = async (car) => {
   socialSelectedCar.value = car
   socialCardDialog.value = true
+  if (car?.id) {
+    try {
+      const res = await carSellerApi.getById(car.id)
+      if (res?.data?.data) {
+        socialSelectedCar.value = res.data.data
+      }
+    } catch (e) {
+      // Keep existing row car object on error
+    }
+  }
 }
 
 // ===== Delete =====

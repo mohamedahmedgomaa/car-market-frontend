@@ -22,7 +22,9 @@ watch(
   () => props.car,
   (newCar) => {
     if (newCar) {
-      customPhone.value = newCar.seller?.phone || newCar.phone_number || newCar.phone || '+20 105 535 3377'
+      const carContactPhone = newCar.phone_number || newCar.whatsapp_number || newCar.phone
+      const sellerPhone = newCar.seller?.phone && newCar.seller.phone !== '+20 155 155 2993' ? newCar.seller.phone : null
+      customPhone.value = carContactPhone || sellerPhone || '+20 105 535 3377'
     }
   },
   { immediate: true }
@@ -56,7 +58,10 @@ const carTitle = computed(() => {
 const carImage = computed(() => {
   if (!props.car) return 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80'
   if (props.car.main_image) return props.car.main_image
+  if (props.car.main_image_url) return props.car.main_image_url
   if (Array.isArray(props.car.images) && props.car.images.length > 0) {
+    const mainImg = props.car.images.find(img => img.is_main === 1 || img.is_main === true)
+    if (mainImg) return typeof mainImg === 'string' ? mainImg : mainImg.url || mainImg.path
     const first = props.car.images[0]
     return typeof first === 'string' ? first : first.url || first.path
   }
@@ -70,6 +75,13 @@ const formattedPrice = computed(() => {
   return p.toLocaleString()
 })
 
+const formattedMileage = computed(() => {
+  if (props.car?.mileage === null || props.car?.mileage === undefined || props.car?.mileage === '') return ''
+  const m = Number(props.car.mileage)
+  if (Number.isNaN(m)) return `${props.car.mileage} km`
+  return `${m.toLocaleString()} km`
+})
+
 const sellerName = computed(() => {
   if (!props.car?.seller) return 'NegmCars'
   const s = props.car.seller
@@ -80,8 +92,8 @@ const sellerName = computed(() => {
 })
 
 const sellerLogo = computed(() => {
-  if (!props.car?.seller) return ''
-  return props.car.seller.store_logo || props.car.seller.logo || ''
+  if (!props.car?.seller) return '/favicon.png'
+  return props.car.seller.store_logo || props.car.seller.logo || '/favicon.png'
 })
 
 const isFeatured = computed(() => Boolean(props.car?.is_featured))
@@ -208,9 +220,10 @@ const downloadCardImage = async () => {
 
     yCursor += 38
 
-    // Specs Line 2: Year | Condition
+    // Specs Line 2: Year | Condition | Mileage
     const conditionText = props.car?.condition === 'new' ? 'New' : 'Used'
-    const specLine2 = `${props.car?.year || ''}  |  ${conditionText}`
+    const specLine2Parts = [props.car?.year, conditionText, formattedMileage.value].filter(Boolean)
+    const specLine2 = specLine2Parts.join('  |  ')
     ctx.fillText(specLine2, 55, yCursor)
 
     yCursor += 65
@@ -399,7 +412,7 @@ const downloadCardImage = async () => {
               {{ brandName }} &nbsp;|&nbsp; {{ modelName }} &nbsp;|&nbsp; {{ props.car?.is_import ? 'Import' : 'Local' }}
             </div>
             <div class="card-specs-line text-caption font-weight-medium text-grey-lighten-1 mb-4">
-              {{ props.car?.year }} &nbsp;|&nbsp; {{ props.car?.condition === 'new' ? 'New' : 'Used' }}
+              {{ props.car?.year }} &nbsp;|&nbsp; {{ props.car?.condition === 'new' ? 'New' : 'Used' }}<template v-if="formattedMileage"> &nbsp;|&nbsp; {{ formattedMileage }}</template>
             </div>
 
             <!-- Price & Green Phone Number + Green Icon -->
