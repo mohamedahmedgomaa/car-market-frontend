@@ -21,9 +21,19 @@ const perPage = 10
 const qrDialog = ref(false)
 const qrSelectedCar = ref(null)
 
-const openQrModal = (car) => {
+const openQrModal = async (car) => {
   qrSelectedCar.value = car
   qrDialog.value = true
+  if (car?.id) {
+    try {
+      const res = await carSellerApi.getById(car.id)
+      if (res?.data?.data) {
+        qrSelectedCar.value = res.data.data
+      }
+    } catch (e) {
+      // Keep existing row car object on error
+    }
+  }
 }
 
 // ===== Social Card Share Dialog =====

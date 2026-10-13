@@ -50,21 +50,24 @@ const carTitleEnOnly = computed(() => {
 })
 
 const sellerName = computed(() => {
-  if (!props.car?.seller) return ''
+  if (!props.car?.seller) return 'NegmCars'
   const s = props.car.seller
   if (typeof s.store_name === 'object' && s.store_name) {
-    return s.store_name?.ar || s.store_name?.en || s.name || ''
+    return s.store_name?.en || s.name || s.store_name?.ar || 'NegmCars'
   }
-  return s.store_name || s.name || ''
+  return s.store_name || s.name || 'NegmCars'
 })
 
 const sellerLogo = computed(() => {
-  if (!props.car?.seller) return ''
-  return props.car.seller.store_logo || props.car.seller.logo || ''
+  if (props.car?.seller?.store_logo) return props.car.seller.store_logo
+  if (props.car?.seller?.logo) return props.car.seller.logo
+  return 'https://res.cloudinary.com/dtueexptj/image/upload/v1788439123/store_logos/tsxfpmer2hnchhssmlk8.png'
 })
 
 const sellerPhone = computed(() => {
-  return props.car?.seller?.phone || props.car?.phone_number || props.car?.phone || ''
+  const p = props.car?.phone_number || props.car?.whatsapp_number || props.car?.phone || props.car?.seller?.phone
+  if (p && p !== '+20 155 155 2993') return p
+  return '+20 105 535 3377'
 })
 
 const generateQrCode = async () => {

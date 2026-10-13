@@ -63,6 +63,16 @@ const getSellerName = (car) => {
   return _t(s.store_name, s) || s.name || t('unknownSeller')
 }
 
+const getSellerLogo = (car) => {
+  if (car?.seller?.store_logo) return car.seller.store_logo
+  if (car?.seller?.logo) return car.seller.logo
+  const name = getSellerName(car)
+  if (name?.toLowerCase().includes('negm') || car?.seller_id === 1 || car?.seller?.id === 1) {
+    return 'https://res.cloudinary.com/dtueexptj/image/upload/v1788439123/store_logos/tsxfpmer2hnchhssmlk8.png'
+  }
+  return ''
+}
+
 // ✅ Localized "Time Ago" formatter
 const formatDateTime = (val) => {
   if (!val) return '—'
@@ -424,7 +434,7 @@ watch(
               <div class="d-flex align-center gap-2 overflow-hidden">
                 <!-- Seller Logo Wrapper with tier-colored border -->
                 <div 
-                  v-if="car.seller?.store_logo"
+                  v-if="getSellerLogo(car)"
                   class="d-flex align-center justify-center bg-white rounded flex-shrink-0"
                   style="width: 24px; height: 24px; padding: 1px; border: 1.5px solid;"
                   :style="{
@@ -436,7 +446,7 @@ watch(
                                (car.seller?.tier?.toLowerCase() === 'gold' ? '0 0 6px rgba(218, 165, 32, 0.2)' : '0 0 6px rgba(120, 144, 156, 0.2)'))
                   }"
                 >
-                  <img :src="car.seller.store_logo" alt="logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 2px;" />
+                  <img :src="getSellerLogo(car)" alt="logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 2px;" />
                 </div>
                 <span 
                   class="text-truncate font-weight-black text-caption" 
