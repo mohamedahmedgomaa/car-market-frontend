@@ -974,8 +974,8 @@ onBeforeUnmount(() => {
         <!-- Right: Ads Column -->
         <div class="hero-ads-column">
           <!-- Top: Image Ad Area -->
-          <div class="hero-ad-area animate-fade-in-up" style="animation-delay: 0.2s">
-            <VCard class="premium-ad-card animate-float" elevation="10">
+          <div class="hero-ad-area">
+            <VCard class="premium-ad-card" elevation="10">
               <div class="ad-label">AD</div>
               <div class="ad-carousel-wrapper">
                 <Transition name="fade" mode="out-in">
@@ -1057,8 +1057,8 @@ onBeforeUnmount(() => {
           </div>
 
           <!-- Bottom: Video Ad Area -->
-          <div class="hero-video-area animate-fade-in-up" style="animation-delay: 0.3s">
-            <VCard class="premium-video-card animate-float" elevation="10">
+          <div class="hero-video-area">
+            <VCard class="premium-video-card" elevation="10">
               <div class="video-label">PROMO</div>
               <div class="video-player-wrapper">
                 <video
