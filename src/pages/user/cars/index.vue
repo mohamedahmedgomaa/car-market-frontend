@@ -837,8 +837,10 @@ onMounted(() => {
   syncDraftFromQuery()
   fetchCars()
 
-  // Pre-fetch brands for instant picker readiness
-  fetchBrands()
+  // Only fetch brands if a brand filter is already present in URL query
+  if (draft.value.brandId) {
+    fetchBrands()
+  }
 
   if (typeof window !== 'undefined') {
     lastScrollY = window.scrollY

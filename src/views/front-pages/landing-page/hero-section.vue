@@ -7,11 +7,12 @@ import api from '@/api/index.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
 import carsUserApi from '@/api/user/carUserApi.js'
-import { customBrandFilter, sortBrands, matchBrand } from '@/utils/brandTranslations.js'
+import { customBrandFilter, sortBrands, matchBrand, translateText } from '@/utils/brandTranslations.js'
 
 const theme = useTheme()
 const router = useRouter()
-const { t } = useI18n({ useScope: 'global' })
+const { t, locale } = useI18n({ useScope: 'global' })
+const isDark = computed(() => theme.current.value.dark)
 
 const props = defineProps({
   controlled: { type: Boolean, default: false },
@@ -393,7 +394,7 @@ const resetFilters = () => {
 ========================= */
 const brandsList = ref([])
 const modelsList = ref([])
-const isBrandsLoading = ref(true)
+const isBrandsLoading = ref(false)
 const yearsList = Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i)
 
 // Ensure yearsList is always a valid array for VSelect
@@ -410,23 +411,20 @@ const yearsToList = computed(() => {
     .sort((a, b) => b - a)
 })
 
-const _t = (val) => {
-  if (!val) return ''
-  if (typeof val === 'string') return val
-  return val.en || val.ar || ''
+const _t = (val, parentObj = null) => {
+  return translateText(val, locale.value || 'ar', parentObj)
 }
 
 const fetchBrands = async () => {
   if (props.initialBrands && props.initialBrands.length) {
-    brandsList.value = sortBrands(props.initialBrands.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name, type: b.type })))
+    brandsList.value = props.initialBrands
     isBrandsLoading.value = false
     return
   }
   isBrandsLoading.value = true
   try {
     const res = await brandUserApi.getAll()
-    const data = res.data?.data || res.data || []
-    brandsList.value = sortBrands(data.map((b) => ({ id: b.id, name: _t(b.name), originalName: b.name, type: b.type })))
+    brandsList.value = res.data?.data || res.data || []
   } catch (err) {
     console.error('Error fetching brands:', err)
   } finally {
@@ -445,6 +443,8 @@ const openBrandDialog = () => {
   brandDialogOpen.value = true
   if (brandsList.value.length === 0) {
     fetchBrands()
+  } else {
+    isBrandsLoading.value = false
   }
 }
 
@@ -501,8 +501,7 @@ const fetchModels = async (brandId) => {
   modelsLoading.value = true
   try {
     const res = await modelUserApi.getAll({ 'filter[brand_id]': brandId })
-    const data = res.data?.data || res.data || []
-    modelsList.value = data.map((m) => ({ id: m.id, name: _t(m.name), originalName: m.name }))
+    modelsList.value = res.data?.data || res.data || []
   } catch (err) {
     console.error('Error fetching models:', err)
   } finally {
@@ -689,17 +688,21 @@ const togglePlay = () => {
 
 watch(() => props.initialBanners, (val) => { if (val?.length) fetchBanners() }, { immediate: true })
 watch(() => props.initialVideoUrl, (val) => { if (val) fetchVideoBanner() }, { immediate: true })
-watch(() => props.initialBrands, (val) => { if (val?.length) fetchBrands() }, { immediate: true })
+watch(
+  () => props.initialBrands,
+  (val) => {
+    if (val?.length && brandsList.value.length === 0) {
+      brandsList.value = val
+      isBrandsLoading.value = false
+    }
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   if (!props.controlled) {
     fetchBanners()
     fetchVideoBanner()
-    fetchBrands()
-  } else {
-    if (!props.initialBrands || !props.initialBrands.length) {
-      fetchBrands()
-    }
   }
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
@@ -1121,7 +1124,7 @@ onBeforeUnmount(() => {
       scrollable
       class="filter-dialog"
     >
-      <VCard rounded="xl" class="filter-modal-card">
+      <VCard rounded="xl" class="filter-modal-card" :class="isDark ? 'modal--dark' : 'modal--light'">
         <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
           <span class="font-weight-black text-h6">{{ locale === 'ar' ? 'اختر الماركة' : 'Select Brand' }}</span>
           <VBtn icon="tabler-x" variant="text" density="comfortable" @click="brandDialogOpen = false" />
@@ -1202,7 +1205,7 @@ onBeforeUnmount(() => {
       scrollable
       class="filter-dialog"
     >
-      <VCard rounded="xl" class="filter-modal-card">
+      <VCard rounded="xl" class="filter-modal-card" :class="isDark ? 'modal--dark' : 'modal--light'">
         <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
           <span class="font-weight-black text-h6">
             {{ locale === 'ar' ? 'اختر الموديل' : 'Select Model' }}
@@ -2157,21 +2160,136 @@ onBeforeUnmount(() => {
 }
 
 /* =========================================
-   Brand & Model Dialog Modals
+   Brand & Model Dialog Modals (Light & Dark Theme)
    ========================================= */
 .filter-dialog :deep(.v-overlay__content) {
   margin: 16px;
 }
 
 .filter-modal-card {
-  background: rgb(18, 24, 38) !important;
   border: 1.5px solid rgba(255, 109, 0, 0.3) !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+/* Default / Dark Mode */
+.modal--dark.filter-modal-card {
+  background: rgb(18, 24, 38) !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 109, 0, 0.15) !important;
 }
 
-.modal-search-field :deep(.v-field) {
+.modal--dark .v-card-title {
+  color: #ffffff !important;
+}
+
+.modal--dark .modal-search-field :deep(.v-field) {
   border-radius: 12px !important;
   background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.modal--dark .brand-tile {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.modal--dark .brand-tile:hover {
+  background: rgba(255, 109, 0, 0.1);
+  border-color: rgba(255, 109, 0, 0.4);
+}
+
+.modal--dark .brand-tile.active {
+  background: rgba(255, 109, 0, 0.15);
+  border-color: rgba(255, 109, 0, 0.8);
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.2);
+}
+
+.modal--dark .brand-tile--all {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.modal--dark .brand-avatar-box {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.modal--dark .brand-tile-name {
+  color: #ffffff !important;
+}
+
+/* Light Mode - Matching Website Light Theme */
+.modal--light.filter-modal-card {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(255, 109, 0, 0.35) !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15), 0 0 30px rgba(255, 109, 0, 0.08) !important;
+}
+
+.modal--light .v-card-title {
+  color: #0f172a !important;
+}
+
+.modal--light .border-b {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+.modal--light .v-card-title :deep(.v-btn) {
+  color: #0f172a !important;
+}
+
+.modal--light .modal-search-field :deep(.v-field) {
+  border-radius: 12px !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.modal--light .modal-search-field :deep(input) {
+  color: #0f172a !important;
+}
+
+.modal--light .modal-search-field :deep(input::placeholder) {
+  color: #94a3b8 !important;
+}
+
+.modal--light .brand-tile {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.modal--light .brand-tile:hover {
+  background: rgba(255, 109, 0, 0.06) !important;
+  border-color: rgba(255, 109, 0, 0.4) !important;
+}
+
+.modal--light .brand-tile.active {
+  background: rgba(255, 109, 0, 0.1) !important;
+  border-color: #ff6d00 !important;
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.15) !important;
+}
+
+.modal--light .brand-tile-name {
+  color: #0f172a !important;
+}
+
+.modal--light .brand-avatar-box {
+  background: #edf2f7 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #ff6d00 !important;
+}
+
+.modal--light .brand-initials {
+  color: #ff6d00 !important;
+}
+
+.modal--light .brand-tile--all {
+  border-style: dashed !important;
+  border-color: #cbd5e1 !important;
+}
+
+.modal--light .modal-scroll-body p {
+  color: #475569 !important;
+}
+
+.modal--light .text-caption {
+  color: #64748b !important;
 }
 
 .brand-grid {
@@ -2192,35 +2310,15 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-}
-
-.brand-tile:hover {
-  background: rgba(255, 109, 0, 0.1);
-  border-color: rgba(255, 109, 0, 0.4);
-  transform: translateY(-1px);
-}
-
-.brand-tile.active {
-  background: rgba(255, 109, 0, 0.15);
-  border-color: rgba(255, 109, 0, 0.8);
-  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.2);
-}
-
-.brand-tile--all {
-  border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .brand-avatar-box {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2236,7 +2334,6 @@ onBeforeUnmount(() => {
 
 .brand-tile-name {
   font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.95);
 }
 </style>
 
