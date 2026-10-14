@@ -5,6 +5,9 @@ import carsUserApi from '@/api/user/carUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 import api from '@/api/index.js'
 import { translateText } from '@/utils/brandTranslations.js'
+import logoDark from '@images/logo/logo-dark.png'
+import logoLight from '@images/logo/logo-light.png'
+import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 
 definePage({
   meta: {
@@ -25,6 +28,7 @@ const car = ref(null)
 const API_BASE = import.meta.env.VITE_BASE_URL
 import { useI18n } from 'vue-i18n'
 const { t: _t, locale } = useI18n({ useScope: 'global' })
+const siteLogo = useGenerateImageVariant(logoLight, logoDark)
 
 const t = (val, parentObj = null) => {
   return translateText(val, locale.value || 'ar', parentObj)
@@ -39,7 +43,7 @@ const t = (val, parentObj = null) => {
  * return `${API_BASE}/storage/${cleanPath}`
  */
 const buildImg = (path) => {
-  if (!path) return 'https://via.placeholder.com/1200x675?text=Car'
+  if (!path) return siteLogo.value
   const cleanPath = String(path).replaceAll('\\', '/')
   return `${cleanPath}`
 }
@@ -52,7 +56,7 @@ const images = computed(() => {
 const mainImage = computed(() => {
   const imgs = images.value
   const main = imgs.find((i) => Number(i.is_main) === 1) || imgs[0]
-  return main?.url || 'https://via.placeholder.com/1200x675?text=Car'
+  return main?.url || siteLogo.value
 })
 
 // ✅ thumbnail selection
@@ -949,7 +953,13 @@ watch(
             </div>
 
             <Transition name="fade" mode="out-in">
-              <img :key="activeImage" :src="activeImage" :alt="t(car.title)" class="main-img" />
+              <img
+                :key="activeImage"
+                :src="activeImage"
+                :alt="t(car.title)"
+                class="main-img"
+                @error="(e) => { if (!e.target.dataset.failed) { e.target.dataset.failed = '1'; e.target.src = siteLogo } }"
+              />
             </Transition>
 
             <!-- Nav Arrows -->

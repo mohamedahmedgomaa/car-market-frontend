@@ -23,8 +23,9 @@
   </IfModule>
 </FilesMatch>
 
-# Force correct MIME types for JS and CSS
+# Force correct MIME types for JS, CSS and XML
 <IfModule mod_mime.c>
   AddType application/javascript .js
   AddType text/css .css
+  AddType application/xml .xml
 </IfModule>

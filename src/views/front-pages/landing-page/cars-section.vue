@@ -4,9 +4,13 @@ import carsUserApi from '@/api/user/carUserApi.js'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { translateText } from '@/utils/brandTranslations.js'
+import logoDark from '@images/logo/logo-dark.png'
+import logoLight from '@images/logo/logo-light.png'
+import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 
 const router = useRouter()
 const { t, locale } = useI18n({ useScope: 'global' })
+const siteLogo = useGenerateImageVariant(logoLight, logoDark)
 
 const props = defineProps({
   title: { type: String, default: 'Cars' },
@@ -48,10 +52,29 @@ const buildUrl = (path, fallback) => {
   return `${API_BASE.replace(/\/$/, '')}/${clean.replace(/^\//, '')}`
 }
 
+const brokenImages = ref(new Set())
+
+const onImgError = (carId) => {
+  if (carId) {
+    brokenImages.value.add(carId)
+  }
+}
+
+const hasValidImage = (car) => {
+  if (!car) return false
+  if (brokenImages.value.has(car.id)) return false
+  const imgs = Array.isArray(car?.images) ? car.images : []
+  const main = imgs.find((i) => Number(i.is_main) === 1) || imgs[0]
+  if (!main?.path) return false
+  const pathStr = String(main.path).trim()
+  if (!pathStr || pathStr.includes('via.placeholder.com')) return false
+  return true
+}
+
 const getMainImage = (car) => {
   const imgs = Array.isArray(car?.images) ? car.images : []
   const main = imgs.find((i) => Number(i.is_main) === 1) || imgs[0]
-  return buildUrl(main?.path, 'https://via.placeholder.com/640x420?text=Car')
+  return buildUrl(main?.path, siteLogo.value)
 }
 
 const getSellerName = (car) => {
@@ -336,7 +359,23 @@ watch(
         >
           <!-- ✅ صورة العربية اختيارية -->
           <div v-if="showImage" class="car-card__image">
-            <img :src="getMainImage(car)" :alt="_t(car.title) || `Car #${car.id}`" loading="lazy" />
+            <img
+              v-if="hasValidImage(car)"
+              :src="getMainImage(car)"
+              :alt="_t(car.title) || `Car #${car.id}`"
+              loading="lazy"
+              @error="onImgError(car.id)"
+            />
+            <div v-else class="car-card__no-image">
+              <div class="no-image-watermark">
+                <div class="no-image-badge">
+                  <img :src="siteLogo" alt="NegmCars" class="no-image-logo" />
+                </div>
+                <div class="no-image-text font-weight-black">
+                  <span class="logo-brand-text">Negm</span><span class="logo-accent-text">Cars</span>
+                </div>
+              </div>
+            </div>
 
             <!-- ✅ Badges Section -->
             <div class="car-card__badges">
@@ -713,6 +752,82 @@ watch(
 }
 .car-card:hover .car-card__image img {
   transform: scale(1.06);
+}
+
+/* Placeholder when image does not exist or fails */
+.car-card__no-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(255, 109, 0, 0.08) 0%, rgba(20, 24, 36, 0.95) 100%);
+  user-select: none;
+  overflow: hidden;
+}
+
+.no-image-watermark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.car-card:hover .no-image-watermark {
+  transform: scale(1.08);
+}
+
+.no-image-badge {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  padding: 8px;
+  background: rgba(20, 24, 34, 0.85);
+  border: 1.5px solid rgba(255, 109, 0, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(255, 109, 0, 0.18);
+  backdrop-filter: blur(8px);
+}
+
+.no-image-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.no-image-text {
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.no-image-text .logo-brand-text {
+  color: #ffffff;
+}
+
+.no-image-text .logo-accent-text {
+  color: #ff6d00;
+}
+
+/* Light mode overrides for placeholder */
+.v-theme--light .car-card__no-image {
+  background: radial-gradient(circle at center, rgba(255, 109, 0, 0.06) 0%, #f1f5f9 100%);
+}
+
+.v-theme--light .no-image-badge {
+  background: #ffffff;
+  border: 1.5px solid rgba(255, 109, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 0 16px rgba(255, 109, 0, 0.12);
+}
+
+.v-theme--light .no-image-text .logo-brand-text {
+  color: #0f172a;
 }
 
 /* لو مفيش صورة */

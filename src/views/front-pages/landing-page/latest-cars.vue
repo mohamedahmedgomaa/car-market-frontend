@@ -1,6 +1,9 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import carsUserApi from '@/api/user/carUserApi.js' // ✅ نفس مسارك
+import logoDark from '@images/logo/logo-dark.png'
+import logoLight from '@images/logo/logo-light.png'
+import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 
 const props = defineProps({
   limit: { type: Number, default: 20 },
@@ -9,6 +12,7 @@ const props = defineProps({
 const loading = ref(false)
 const error = ref('')
 const cars = ref([])
+const siteLogo = useGenerateImageVariant(logoLight, logoDark)
 
 // ✅ base url للصور
 const API_BASE = import.meta.env.VITE_BASE_URL
@@ -25,7 +29,7 @@ const getMainImage = (car) => {
   const imgs = Array.isArray(car?.images) ? car.images : []
   const main = imgs.find(i => Number(i.is_main) === 1) || imgs[0]
 
-  if (!main?.path) return 'https://via.placeholder.com/640x420?text=Car'
+  if (!main?.path) return siteLogo.value
 
   const cleanPath = String(main.path).replaceAll('\\', '/')
 
@@ -107,6 +111,7 @@ onMounted(fetchCars)
               :src="getMainImage(car)"
               :alt="t(car.title) || `Car #${car.id}`"
               loading="lazy"
+              @error="(e) => { if (!e.target.dataset.failed) { e.target.dataset.failed = '1'; e.target.src = siteLogo } }"
             >
           </div>
 

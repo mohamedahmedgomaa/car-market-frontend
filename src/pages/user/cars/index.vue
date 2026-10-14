@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useTheme } from 'vuetify'
 import carsUserApi from '@/api/user/carUserApi.js'
 import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
@@ -15,6 +16,8 @@ definePage({
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n({ useScope: 'global' })
+const vuetifyTheme = useTheme()
+const isDark = computed(() => vuetifyTheme.current.value.dark)
 
 // -------------------------
 // Helpers
@@ -871,7 +874,10 @@ const activeAdvancedFiltersCount = computed(() => {
     <VContainer>
       <!-- Premium Horizontal Search Deck (Desktop only) -->
       <div class="d-none d-md-block mb-8">
-        <div class="premium-horizontal-search">
+        <div
+          class="premium-horizontal-search"
+          :class="isDark ? 'search--dark' : 'search--light'"
+        >
           <!-- Main Search Row -->
           <div class="search-main-row">
             <!-- 1. Text Search & Ad ID -->
@@ -1236,7 +1242,7 @@ const activeAdvancedFiltersCount = computed(() => {
               </div>
 
               <!-- Centered Search Button Row -->
-              <div class="d-flex justify-center mt-6 pt-4" style="border-top: 1px solid rgba(255,255,255,0.05);">
+              <div class="d-flex justify-center mt-6 pt-4 advanced-submit-row">
                 <VBtn
                   color="primary"
                   height="46"
@@ -1263,11 +1269,17 @@ const activeAdvancedFiltersCount = computed(() => {
             @click="isMobileFilterOpen = false"
           ></div>
 
-          <div class="premium-search-box" :class="{ 'is-open': isMobileFilterOpen }">
+          <div
+            class="premium-search-box"
+            :class="[
+              { 'is-open': isMobileFilterOpen },
+              isDark ? 'search--dark' : 'search--light'
+            ]"
+          >
             <!-- Mobile Header -->
             <div class="mobile-filter-header d-md-none d-flex align-center justify-space-between mb-4">
-              <span class="text-h6 font-weight-bold text-white">{{ t('filters') }}</span>
-              <VBtn icon="tabler-x" variant="text" color="white" density="comfortable" @click="isMobileFilterOpen = false" />
+              <span class="text-h6 font-weight-bold mobile-filter-title">{{ t('filters') }}</span>
+              <VBtn icon="tabler-x" variant="text" class="mobile-filter-close" density="comfortable" @click="isMobileFilterOpen = false" />
             </div>
 
             <!-- Scrollable Content on Mobile -->
@@ -1579,7 +1591,12 @@ const activeAdvancedFiltersCount = computed(() => {
 
         <!-- Results -->
         <VCol cols="12">
-          <VCard class="pa-6" rounded="xl" elevation="0" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05)">
+          <VCard
+            class="pa-6 results-container-card"
+            :class="isDark ? 'results-card--dark' : 'results-card--light'"
+            rounded="xl"
+            elevation="0"
+          >
             <div class="d-flex align-center justify-space-between mb-8">
               <div>
                 <h1 class="text-h4 font-weight-black mb-1">
@@ -1694,7 +1711,7 @@ const activeAdvancedFiltersCount = computed(() => {
     scrollable
     class="filter-dialog"
   >
-    <VCard rounded="xl" class="filter-modal-card">
+    <VCard rounded="xl" class="filter-modal-card" :class="isDark ? 'modal--dark' : 'modal--light'">
       <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
         <div class="d-flex align-center gap-2">
           <VIcon icon="tabler-car" color="primary" size="24" />
@@ -1778,7 +1795,7 @@ const activeAdvancedFiltersCount = computed(() => {
     scrollable
     class="filter-dialog"
   >
-    <VCard rounded="xl" class="filter-modal-card">
+    <VCard rounded="xl" class="filter-modal-card" :class="isDark ? 'modal--dark' : 'modal--light'">
       <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
         <div class="d-flex align-center gap-2">
           <VIcon icon="tabler-steering-wheel" color="primary" size="24" />
@@ -2592,5 +2609,476 @@ const activeAdvancedFiltersCount = computed(() => {
 .load-more-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(255, 109, 0, 0.5) !important;
+}
+
+/* Default / Dark helpers */
+.advanced-submit-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobile-filter-title {
+  color: #ffffff !important;
+}
+
+.mobile-filter-close {
+  color: #ffffff !important;
+}
+
+.results-card--dark {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* =========================================
+   LIGHT THEME STYLING FOR SEARCH & FILTERS
+   ========================================= */
+.search--light.premium-horizontal-search,
+:deep(.v-theme--light) .premium-horizontal-search,
+.v-theme--light .premium-horizontal-search {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(255, 109, 0, 0.35) !important;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 0 20px rgba(255, 109, 0, 0.06) !important;
+}
+
+.search--light.premium-horizontal-search:hover,
+:deep(.v-theme--light) .premium-horizontal-search:hover,
+.v-theme--light .premium-horizontal-search:hover {
+  border-color: rgba(255, 109, 0, 0.75) !important;
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12), 0 0 25px rgba(255, 109, 0, 0.15) !important;
+}
+
+/* Inputs in Light Mode */
+.search--light .premium-input-field :deep(.v-field),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field),
+.v-theme--light .premium-input-field :deep(.v-field) {
+  background: #f8fafc !important;
+  box-shadow: none !important;
+}
+
+.search--light .premium-input-field :deep(.v-field__outline),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field__outline),
+.v-theme--light .premium-input-field :deep(.v-field__outline) {
+  color: #cbd5e1 !important;
+  --v-field-border-opacity: 1 !important;
+}
+
+.search--light .premium-input-field :deep(.v-field:hover .v-field__outline),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field:hover .v-field__outline),
+.v-theme--light .premium-input-field :deep(.v-field:hover .v-field__outline) {
+  color: rgba(255, 109, 0, 0.5) !important;
+}
+
+.search--light .premium-input-field :deep(.v-field--focused),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field--focused),
+.v-theme--light .premium-input-field :deep(.v-field--focused) {
+  background: #ffffff !important;
+}
+
+.search--light .premium-input-field :deep(.v-field--focused .v-field__outline),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field--focused .v-field__outline),
+.v-theme--light .premium-input-field :deep(.v-field--focused .v-field__outline) {
+  color: #ff6d00 !important;
+  box-shadow: 0 0 0 3px rgba(255, 109, 0, 0.12) !important;
+}
+
+.search--light .premium-input-field :deep(.v-field__input),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field__input),
+.v-theme--light .premium-input-field :deep(.v-field__input) {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+.search--light .premium-input-field :deep(input::placeholder),
+:deep(.v-theme--light) .premium-input-field :deep(input::placeholder),
+.v-theme--light .premium-input-field :deep(input::placeholder) {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+.search--light .premium-input-field :deep(.v-field__prepend-inner),
+.search--light .premium-input-field :deep(.v-field__append-inner),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field__prepend-inner),
+:deep(.v-theme--light) .premium-input-field :deep(.v-field__append-inner),
+.v-theme--light .premium-input-field :deep(.v-field__prepend-inner),
+.v-theme--light .premium-input-field :deep(.v-field__append-inner) {
+  color: #64748b !important;
+}
+
+.search--light .premium-input-field :deep(.v-label),
+:deep(.v-theme--light) .premium-input-field :deep(.v-label),
+.v-theme--light .premium-input-field :deep(.v-label) {
+  color: #64748b !important;
+}
+
+/* Horizontal Type Toggle in Light Mode */
+.search--light .horizontal-toggle,
+:deep(.v-theme--light) .horizontal-toggle,
+.v-theme--light .horizontal-toggle {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.search--light .horizontal-toggle-btn,
+:deep(.v-theme--light) .horizontal-toggle-btn,
+.v-theme--light .horizontal-toggle-btn {
+  color: #475569 !important;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.search--light .horizontal-toggle-btn:hover:not(.active),
+:deep(.v-theme--light) .horizontal-toggle-btn:hover:not(.active),
+.v-theme--light .horizontal-toggle-btn:hover:not(.active) {
+  color: #0f172a !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.search--light .horizontal-toggle-btn.active,
+:deep(.v-theme--light) .horizontal-toggle-btn.active,
+.v-theme--light .horizontal-toggle-btn.active {
+  background: #ff6d00 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(255, 109, 0, 0.35) !important;
+}
+
+/* Brand & Model Trigger Buttons in Light Mode */
+.search--light .filter-trigger-btn,
+:deep(.v-theme--light) .filter-trigger-btn,
+.v-theme--light .filter-trigger-btn {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.search--light .filter-trigger-label,
+:deep(.v-theme--light) .filter-trigger-label,
+.v-theme--light .filter-trigger-label {
+  color: #64748b !important;
+  opacity: 1 !important;
+  font-weight: 700;
+}
+
+.search--light .filter-trigger-value,
+:deep(.v-theme--light) .filter-trigger-value,
+.v-theme--light .filter-trigger-value {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+
+.search--light .filter-trigger-arrow,
+:deep(.v-theme--light) .filter-trigger-arrow,
+.v-theme--light .filter-trigger-arrow {
+  color: #64748b !important;
+}
+
+.search--light .filter-trigger-btn:hover:not(.is-disabled),
+:deep(.v-theme--light) .filter-trigger-btn:hover:not(.is-disabled),
+.v-theme--light .filter-trigger-btn:hover:not(.is-disabled) {
+  border-color: rgba(255, 109, 0, 0.6) !important;
+  background: rgba(255, 109, 0, 0.04) !important;
+}
+
+.search--light .filter-trigger-btn.has-value,
+:deep(.v-theme--light) .filter-trigger-btn.has-value,
+.v-theme--light .filter-trigger-btn.has-value {
+  border-color: rgba(255, 109, 0, 0.7) !important;
+  background: rgba(255, 109, 0, 0.07) !important;
+}
+
+.search--light .filter-trigger-btn.has-value .filter-trigger-value,
+:deep(.v-theme--light) .filter-trigger-btn.has-value .filter-trigger-value,
+.v-theme--light .filter-trigger-btn.has-value .filter-trigger-value {
+  color: #ff6d00 !important;
+}
+
+/* Reset and Advanced Filter Action Buttons in Light Mode */
+.search--light .horizontal-reset-btn,
+.search--light .horizontal-advanced-btn,
+:deep(.v-theme--light) .horizontal-reset-btn,
+:deep(.v-theme--light) .horizontal-advanced-btn,
+.v-theme--light .horizontal-reset-btn,
+.v-theme--light .horizontal-advanced-btn {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+.search--light .horizontal-reset-btn:hover,
+.search--light .horizontal-advanced-btn:hover,
+:deep(.v-theme--light) .horizontal-reset-btn:hover,
+:deep(.v-theme--light) .horizontal-advanced-btn:hover,
+.v-theme--light .horizontal-reset-btn:hover,
+.v-theme--light .horizontal-advanced-btn:hover {
+  background: rgba(255, 109, 0, 0.08) !important;
+  border-color: rgba(255, 109, 0, 0.6) !important;
+  color: #ff6d00 !important;
+}
+
+.search--light .horizontal-advanced-btn.active,
+:deep(.v-theme--light) .horizontal-advanced-btn.active,
+.v-theme--light .horizontal-advanced-btn.active {
+  background: rgba(255, 109, 0, 0.12) !important;
+  border-color: #ff6d00 !important;
+  color: #ff6d00 !important;
+}
+
+/* Advanced Collapsible Section in Light Mode */
+.search--light .search-advanced-panel,
+:deep(.v-theme--light) .search-advanced-panel,
+.v-theme--light .search-advanced-panel {
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+.search--light .advanced-submit-row,
+:deep(.v-theme--light) .advanced-submit-row,
+.v-theme--light .advanced-submit-row {
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+.search--light .filter-card,
+:deep(.v-theme--light) .filter-card,
+.v-theme--light .filter-card {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.search--light .filter-card:hover,
+:deep(.v-theme--light) .filter-card:hover,
+.v-theme--light .filter-card:hover {
+  background: #ffffff !important;
+  border-color: rgba(255, 109, 0, 0.35) !important;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05) !important;
+}
+
+.search--light .filter-card-header .filter-title,
+:deep(.v-theme--light) .filter-card-header .filter-title,
+.v-theme--light .filter-card-header .filter-title {
+  color: #475569 !important;
+  font-weight: 800;
+}
+
+.search--light .filter-card-header .filter-icon,
+:deep(.v-theme--light) .filter-card-header .filter-icon,
+.v-theme--light .filter-card-header .filter-icon {
+  color: #ff6d00 !important;
+}
+
+.search--light .premium-toggle,
+:deep(.v-theme--light) .premium-toggle,
+.v-theme--light .premium-toggle {
+  background: #edf2f7 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.search--light .premium-toggle__btn,
+:deep(.v-theme--light) .premium-toggle__btn,
+.v-theme--light .premium-toggle__btn {
+  color: #475569 !important;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.search--light .premium-toggle__btn.active,
+:deep(.v-theme--light) .premium-toggle__btn.active,
+.v-theme--light .premium-toggle__btn.active {
+  background: #ff6d00 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(255, 109, 0, 0.3) !important;
+}
+
+.search--light .transmission-btn,
+.search--light .fuel-type-btn,
+.search--light .drivetrain-btn,
+:deep(.v-theme--light) .transmission-btn,
+:deep(.v-theme--light) .fuel-type-btn,
+:deep(.v-theme--light) .drivetrain-btn,
+.v-theme--light .transmission-btn,
+.v-theme--light .fuel-type-btn,
+.v-theme--light .drivetrain-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+.search--light .transmission-btn:hover,
+.search--light .fuel-type-btn:hover,
+.search--light .drivetrain-btn:hover,
+:deep(.v-theme--light) .transmission-btn:hover,
+:deep(.v-theme--light) .fuel-type-btn:hover,
+:deep(.v-theme--light) .drivetrain-btn:hover,
+.v-theme--light .transmission-btn:hover,
+.v-theme--light .fuel-type-btn:hover,
+.v-theme--light .drivetrain-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: rgba(255, 109, 0, 0.4) !important;
+  color: #0f172a !important;
+}
+
+.search--light .transmission-btn.active,
+.search--light .fuel-type-btn.active,
+.search--light .drivetrain-btn.active,
+:deep(.v-theme--light) .transmission-btn.active,
+:deep(.v-theme--light) .fuel-type-btn.active,
+:deep(.v-theme--light) .drivetrain-btn.active,
+.v-theme--light .transmission-btn.active,
+.v-theme--light .fuel-type-btn.active,
+.v-theme--light .drivetrain-btn.active {
+  background: rgba(255, 109, 0, 0.1) !important;
+  border-color: #ff6d00 !important;
+  color: #ff6d00 !important;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(255, 109, 0, 0.15) !important;
+}
+
+/* Modals (Brand & Model Pickers) in Light Mode */
+.modal--light.filter-modal-card,
+:deep(.v-theme--light) .filter-modal-card,
+.v-theme--light .filter-modal-card {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(255, 109, 0, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15), 0 0 30px rgba(255, 109, 0, 0.08) !important;
+}
+
+.modal--light .v-card-title,
+:deep(.v-theme--light) .filter-modal-card .v-card-title,
+.v-theme--light .filter-modal-card .v-card-title {
+  color: #0f172a !important;
+}
+
+.modal--light .border-b,
+:deep(.v-theme--light) .filter-modal-card .border-b,
+.v-theme--light .filter-modal-card .border-b {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+.modal--light .modal-search-field :deep(.v-field),
+:deep(.v-theme--light) .modal-search-field :deep(.v-field),
+.v-theme--light .modal-search-field :deep(.v-field) {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.modal--light .modal-search-field :deep(input),
+:deep(.v-theme--light) .modal-search-field :deep(input),
+.v-theme--light .modal-search-field :deep(input) {
+  color: #0f172a !important;
+}
+
+.modal--light .modal-search-field :deep(input::placeholder),
+:deep(.v-theme--light) .modal-search-field :deep(input::placeholder),
+.v-theme--light .modal-search-field :deep(input::placeholder) {
+  color: #94a3b8 !important;
+}
+
+.modal--light .brand-tile,
+:deep(.v-theme--light) .brand-tile,
+.v-theme--light .brand-tile {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.modal--light .brand-tile:hover,
+:deep(.v-theme--light) .brand-tile:hover,
+.v-theme--light .brand-tile:hover {
+  background: rgba(255, 109, 0, 0.06) !important;
+  border-color: rgba(255, 109, 0, 0.4) !important;
+}
+
+.modal--light .brand-tile.active,
+:deep(.v-theme--light) .brand-tile.active,
+.v-theme--light .brand-tile.active {
+  background: rgba(255, 109, 0, 0.1) !important;
+  border-color: #ff6d00 !important;
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.15) !important;
+}
+
+.modal--light .brand-tile-name,
+:deep(.v-theme--light) .brand-tile-name,
+.v-theme--light .brand-tile-name {
+  color: #0f172a !important;
+}
+
+.modal--light .brand-avatar-box,
+:deep(.v-theme--light) .brand-avatar-box,
+.v-theme--light .brand-avatar-box {
+  background: #edf2f7 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.modal--light .brand-initials,
+:deep(.v-theme--light) .brand-initials,
+.v-theme--light .brand-initials {
+  color: #ff6d00 !important;
+}
+
+.modal--light .brand-tile--all,
+:deep(.v-theme--light) .brand-tile--all,
+.v-theme--light .brand-tile--all {
+  border-color: #cbd5e1 !important;
+}
+
+/* Mobile Search Drawer in Light Mode */
+.search--light.premium-search-box,
+:deep(.v-theme--light) .premium-search-box,
+.v-theme--light .premium-search-box {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.15) !important;
+}
+
+.search--light .mobile-filter-title,
+:deep(.v-theme--light) .mobile-filter-title,
+.v-theme--light .mobile-filter-title {
+  color: #0f172a !important;
+}
+
+.search--light .mobile-filter-close,
+:deep(.v-theme--light) .mobile-filter-close,
+.v-theme--light .mobile-filter-close {
+  color: #0f172a !important;
+}
+
+.search--light .filter-actions,
+:deep(.v-theme--light) .filter-actions,
+.v-theme--light .filter-actions {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+.search--light .input-label-mini,
+:deep(.v-theme--light) .input-label-mini,
+.v-theme--light .input-label-mini {
+  color: #475569 !important;
+  opacity: 1 !important;
+}
+
+.search--light .premium-input :deep(.v-field),
+:deep(.v-theme--light) .premium-input :deep(.v-field),
+.v-theme--light .premium-input :deep(.v-field) {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.search--light .premium-input :deep(input),
+:deep(.v-theme--light) .premium-input :deep(input),
+.v-theme--light .premium-input :deep(input) {
+  color: #0f172a !important;
+}
+
+.search--light .filter-trigger-btn--mobile,
+:deep(.v-theme--light) .filter-trigger-btn--mobile,
+.v-theme--light .filter-trigger-btn--mobile {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* Results Card in Light Mode */
+.results-card--light,
+:deep(.v-theme--light) .results-container-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(203, 213, 225, 0.7) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
 }
 </style>
