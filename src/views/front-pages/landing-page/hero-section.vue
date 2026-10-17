@@ -608,11 +608,14 @@ const openBannerLink = (link) => {
     showAdPhone.value = true
     return
   }
-  const url = link.trim()
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  } else {
+  let url = link.trim()
+  if (url.startsWith('/')) {
     router.push(url)
+  } else {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url
+    }
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 }
 

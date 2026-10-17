@@ -348,19 +348,20 @@ onMounted(() => fetchBanners())
         variant="elevated"
         class="rounded-xl px-6"
         height="44"
-        @click="uploadType = 'sidebar'; createDialog = true; selectedFile = null"
+        @click="uploadType = 'sidebar'; createDialog = true; selectedFile = null; videoUrlInput = ''; bannerLinkInput = ''"
       >
         <VIcon icon="tabler-plus" class="me-2" />
         إضافة إعلان جانبي
       </VBtn>
     </div>
 
-    <VCard rounded="xl" border class="overflow-hidden">
+    <VCard rounded="xl" border class="overflow-hidden mb-12">
       <VTable class="custom-table">
         <thead>
           <tr>
             <th class="text-uppercase text-xs font-bold opacity-70">ID</th>
             <th class="text-uppercase text-xs font-bold opacity-70">المعاينة</th>
+            <th class="text-uppercase text-xs font-bold opacity-70">الرابط المرفق</th>
             <th class="text-uppercase text-xs font-bold opacity-70">الحالة</th>
             <th class="text-uppercase text-xs font-bold opacity-70 text-center">العمليات</th>
           </tr>
@@ -375,6 +376,15 @@ onMounted(() => fetchBanners())
                   <VImg :src="banner.image_path" cover class="rounded-lg border shadow-sm h-100" />
                 </div>
               </div>
+            </td>
+            <td>
+              <div v-if="banner.link && banner.link !== '#'" class="text-xs text-primary font-bold flex items-center gap-1">
+                <VIcon icon="tabler-link" size="14" />
+                <a :href="banner.link" target="_blank" class="text-primary hover:underline truncate max-w-200 inline-block">
+                  {{ banner.link }}
+                </a>
+              </div>
+              <span v-else class="text-xs text-gray-500 italic">بدون رابط</span>
             </td>
             <td>
               <div class="flex items-center gap-3">
@@ -394,8 +404,19 @@ onMounted(() => fetchBanners())
               <VBtn
                 icon
                 variant="text"
+                color="primary"
+                class="rounded-lg me-1"
+                title="تعديل رابط الإعلان"
+                @click="openEditDialog(banner)"
+              >
+                <VIcon icon="tabler-pencil" />
+              </VBtn>
+              <VBtn
+                icon
+                variant="text"
                 color="error"
                 class="rounded-lg"
+                title="حذف الإعلان"
                 @click="confirmDelete(banner)"
               >
                 <VIcon icon="tabler-trash" />
@@ -403,7 +424,7 @@ onMounted(() => fetchBanners())
             </td>
           </tr>
           <tr v-if="sidebarBanners.length === 0 && !loading">
-            <td colspan="4" class="text-center py-12 text-gray-400">
+            <td colspan="5" class="text-center py-12 text-gray-400">
               <VIcon icon="tabler-photo-off" size="48" class="opacity-20 mb-4 d-block mx-auto" />
               لا توجد إعلانات جانبية حالياً
             </td>

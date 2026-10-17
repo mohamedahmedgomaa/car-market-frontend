@@ -5,6 +5,7 @@ import carsUserApi from '@/api/user/carUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 import api from '@/api/index.js'
 import { translateText } from '@/utils/brandTranslations.js'
+import { getBannerLink } from '@/utils/bannerLinkStorage.js'
 import logoDark from '@images/logo/logo-dark.png'
 import logoLight from '@images/logo/logo-light.png'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
@@ -777,11 +778,14 @@ const openSidebarAdLink = (link) => {
     alert('الإعلان لا يحتوي على رابط مخصص حالياً')
     return
   }
-  const url = link.trim()
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  } else {
+  let url = link.trim()
+  if (url.startsWith('/')) {
     router.push(url)
+  } else {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url
+    }
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 }
 
@@ -790,8 +794,9 @@ const fetchAdBanners = async () => {
     const res = await api.get('/user/banners', { params: { type: 'sidebar' } })
     if (res.data && res.data.data && res.data.data.length > 0) {
       adSlides.value = res.data.data.map((b) => ({
+        id: b.id,
         image: b.image_path,
-        link: b.link || '',
+        link: getBannerLink(b.id, b.link || ''),
       }))
     }
   } catch (err) {
