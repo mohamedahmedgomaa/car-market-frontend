@@ -657,13 +657,19 @@ const isPlaying = ref(true)
 const videoUrl = ref('')
 const videoLink = ref('')
 
+const isDeadVideoUrl = (url) => {
+  if (!url || typeof url !== 'string') return true
+  const lower = url.toLowerCase()
+  return lower.includes('commondatastorage.googleapis.com') || lower.includes('forbiggerjoyrides')
+}
+
 const getYouTubeEmbedUrl = (url) => {
   if (!url || typeof url !== 'string') return null
   const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/ ]{11})/i
   const match = url.match(regExp)
   if (match && match[1]) {
     const videoId = match[1]
-    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&playsinline=1`
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&playsinline=1`
   }
   return null
 }
@@ -674,34 +680,42 @@ const youtubeEmbedUrl = computed(() => getYouTubeEmbedUrl(videoUrl.value))
 const fetchVideoBanner = async () => {
   // 1. Check local/IndexedDB video banner storage first (always active & instant)
   const localActive = getActiveVideoBanner()
-  if (localActive) {
+  if (localActive && localActive.image_path) {
     const resolved = await resolveVideoSource(localActive.image_path)
-    if (resolved) {
+    if (resolved && !isDeadVideoUrl(resolved)) {
       videoUrl.value = resolved
       videoLink.value = localActive.link || ''
       return
     }
   }
 
-  // 2. Props from parent
-  if (props.initialVideoUrl) {
+  // 2. Props from parent (only if valid and NOT the dead Google fallback!)
+  if (props.initialVideoUrl && !isDeadVideoUrl(props.initialVideoUrl)) {
     videoUrl.value = props.initialVideoUrl
     videoLink.value = props.initialVideoLink || ''
     return
   }
 
   // 3. Fallback to API if not controlled
-  if (props.controlled) return
-  try {
-    const res = await api.get('/user/banners', { params: { type: 'video' } })
-    if (res.data && res.data.data && res.data.data.length > 0) {
-      const latest = res.data.data[0]
-      videoUrl.value = latest.image_path || ''
-      videoLink.value = latest.link || ''
+  if (!props.controlled) {
+    try {
+      const res = await api.get('/user/banners', { params: { type: 'video' } })
+      if (res.data && res.data.data && res.data.data.length > 0) {
+        const latest = res.data.data[0]
+        if (latest.image_path && !isDeadVideoUrl(latest.image_path)) {
+          videoUrl.value = latest.image_path
+          videoLink.value = latest.link || ''
+          return
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching video banner:', err)
     }
-  } catch (err) {
-    console.error('Error fetching video banner:', err)
   }
+
+  // 4. Default: No valid video configured -> reset so clean placeholder appears!
+  videoUrl.value = ''
+  videoLink.value = ''
 }
 
 const toggleMute = () => {
@@ -724,13 +738,13 @@ const togglePlay = () => {
 }
 
 watch(() => props.initialBanners, (val) => { if (val?.length) fetchBanners() }, { immediate: true })
-watch(() => props.initialVideoUrl, (val) => {
-  if (val) {
-    videoUrl.value = val
-  } else if (!props.controlled) {
+watch(
+  () => props.initialVideoUrl,
+  () => {
     fetchVideoBanner()
-  }
-}, { immediate: true })
+  },
+  { immediate: true },
+)
 watch(() => props.initialVideoLink, (val) => {
   if (val) videoLink.value = val
 }, { immediate: true })
