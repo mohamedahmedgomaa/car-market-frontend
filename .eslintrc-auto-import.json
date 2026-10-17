@@ -369,6 +369,16 @@
     "watchWithFilter": true,
     "whenever": true,
     "commonArabicTranslations": true,
-    "translateText": true
+    "translateText": true,
+    "addVideoBanner": true,
+    "deleteVideoBlob": true,
+    "getActiveVideoBanner": true,
+    "getStoredVideoBanners": true,
+    "getVideoBlob": true,
+    "removeVideoBanner": true,
+    "resolveVideoSource": true,
+    "saveStoredVideoBanners": true,
+    "saveVideoBlob": true,
+    "updateVideoBannerItem": true
   }
 }
