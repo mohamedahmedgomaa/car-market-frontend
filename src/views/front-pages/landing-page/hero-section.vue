@@ -8,6 +8,7 @@ import brandUserApi from '@/api/user/brandUserApi.js'
 import modelUserApi from '@/api/user/modelUserApi.js'
 import carsUserApi from '@/api/user/carUserApi.js'
 import { customBrandFilter, sortBrands, matchBrand, translateText } from '@/utils/brandTranslations.js'
+import { getActiveVideoBanner, resolveVideoSource } from '@/utils/videoBannerStorage.js'
 
 const theme = useTheme()
 const router = useRouter()
@@ -18,6 +19,7 @@ const props = defineProps({
   controlled: { type: Boolean, default: false },
   initialBanners: { type: Array, default: null },
   initialVideoUrl: { type: String, default: null },
+  initialVideoLink: { type: String, default: null },
   initialBrands: { type: Array, default: null },
 })
 
@@ -652,18 +654,50 @@ const nextSlide = () => {
 const adVideoRef = ref(null)
 const isMuted = ref(true)
 const isPlaying = ref(true)
-const videoUrl = ref('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4')
+const videoUrl = ref('')
+const videoLink = ref('')
+
+const getYouTubeEmbedUrl = (url) => {
+  if (!url || typeof url !== 'string') return null
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/ ]{11})/i
+  const match = url.match(regExp)
+  if (match && match[1]) {
+    const videoId = match[1]
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&playsinline=1`
+  }
+  return null
+}
+
+const isYouTube = computed(() => !!getYouTubeEmbedUrl(videoUrl.value))
+const youtubeEmbedUrl = computed(() => getYouTubeEmbedUrl(videoUrl.value))
 
 const fetchVideoBanner = async () => {
+  // 1. Check local/IndexedDB video banner storage first (always active & instant)
+  const localActive = getActiveVideoBanner()
+  if (localActive) {
+    const resolved = await resolveVideoSource(localActive.image_path)
+    if (resolved) {
+      videoUrl.value = resolved
+      videoLink.value = localActive.link || ''
+      return
+    }
+  }
+
+  // 2. Props from parent
   if (props.initialVideoUrl) {
     videoUrl.value = props.initialVideoUrl
+    videoLink.value = props.initialVideoLink || ''
     return
   }
+
+  // 3. Fallback to API if not controlled
   if (props.controlled) return
   try {
     const res = await api.get('/user/banners', { params: { type: 'video' } })
     if (res.data && res.data.data && res.data.data.length > 0) {
-      videoUrl.value = res.data.data[0].image_path
+      const latest = res.data.data[0]
+      videoUrl.value = latest.image_path || ''
+      videoLink.value = latest.link || ''
     }
   } catch (err) {
     console.error('Error fetching video banner:', err)
@@ -680,7 +714,7 @@ const toggleMute = () => {
 const togglePlay = () => {
   if (adVideoRef.value) {
     if (adVideoRef.value.paused) {
-      adVideoRef.value.play()
+      adVideoRef.value.play().catch(() => {})
       isPlaying.value = true
     } else {
       adVideoRef.value.pause()
@@ -690,7 +724,16 @@ const togglePlay = () => {
 }
 
 watch(() => props.initialBanners, (val) => { if (val?.length) fetchBanners() }, { immediate: true })
-watch(() => props.initialVideoUrl, (val) => { if (val) fetchVideoBanner() }, { immediate: true })
+watch(() => props.initialVideoUrl, (val) => {
+  if (val) {
+    videoUrl.value = val
+  } else if (!props.controlled) {
+    fetchVideoBanner()
+  }
+}, { immediate: true })
+watch(() => props.initialVideoLink, (val) => {
+  if (val) videoLink.value = val
+}, { immediate: true })
 watch(
   () => props.initialBrands,
   (val) => {
@@ -703,14 +746,16 @@ watch(
 )
 
 onMounted(() => {
+  window.addEventListener('negm_video_banner_updated', fetchVideoBanner)
   if (!props.controlled) {
     fetchBanners()
-    fetchVideoBanner()
   }
+  fetchVideoBanner()
   timer = window.setInterval(nextSlide, slideDelayMs)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('negm_video_banner_updated', fetchVideoBanner)
   if (timer) window.clearInterval(timer)
 })
 </script>
@@ -1064,18 +1109,38 @@ onBeforeUnmount(() => {
             <VCard class="premium-video-card" elevation="10">
               <div class="video-label">PROMO</div>
               <div class="video-player-wrapper">
+                <!-- 1. YouTube Video Embed -->
+                <iframe
+                  v-if="isYouTube"
+                  :src="youtubeEmbedUrl"
+                  class="ad-video-iframe"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+
+                <!-- 2. Direct HTML5 Video (MP4 / WebM / Cloudinary) -->
                 <video
+                  v-else-if="videoUrl"
                   ref="adVideoRef"
                   :src="videoUrl"
                   autoplay
                   loop
                   muted
                   playsinline
+                  preload="metadata"
                   class="ad-video"
                 ></video>
+
+                <!-- 3. Clean Placeholder if no video configured -->
+                <div v-else class="video-empty-state">
+                  <VIcon icon="tabler-player-play" size="44" class="empty-play-icon mb-2" />
+                  <span class="empty-state-title">فيديو ترويجي</span>
+                  <span class="empty-state-desc">يمكنك إضافة فيديو من لوحة التحكم</span>
+                </div>
                 
-                <!-- Video Controls Overlay -->
-                <div class="video-controls">
+                <!-- Video Controls Overlay (for HTML5 Video) -->
+                <div v-if="!isYouTube && videoUrl" class="video-controls">
                   <VBtn
                     icon
                     variant="text"
@@ -1097,6 +1162,18 @@ onBeforeUnmount(() => {
                     <VIcon :icon="isMuted ? 'tabler-volume-off' : 'tabler-volume'" />
                   </VBtn>
                 </div>
+
+                <!-- Action Button at Bottom Left of Video (if link is provided) -->
+                <button
+                  v-if="videoLink && hasValidLink(videoLink)"
+                  type="button"
+                  class="ad-link-btn video-link-btn"
+                  title="فتح الرابط المرفق"
+                  @click.stop.prevent="openBannerLink(videoLink)"
+                >
+                  <VIcon icon="tabler-external-link" size="14" />
+                  <span>فتح الإعلان</span>
+                </button>
               </div>
             </VCard>
           </div>
@@ -1627,6 +1704,53 @@ onBeforeUnmount(() => {
     opacity: 1;
     transform: scale(1.1);
   }
+}
+
+.ad-video-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 1;
+}
+
+.video-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  padding: 24px;
+  background: radial-gradient(circle at center, rgba(255, 107, 0, 0.08) 0%, rgba(15, 17, 26, 0.95) 75%);
+  text-align: center;
+}
+
+.empty-play-icon {
+  color: #FF6B00;
+  opacity: 0.7;
+}
+
+.empty-state-title {
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.empty-state-desc {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+.video-link-btn {
+  bottom: 24px !important;
+  left: 24px !important;
+  right: auto !important;
+  z-index: 10;
 }
 
 

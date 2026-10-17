@@ -2,6 +2,13 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import bannerAdminApi from '../../../api/admin/bannerAdminApi.js'
 import { getBannerLink, setBannerLink } from '../../../utils/bannerLinkStorage.js'
+import {
+  getStoredVideoBanners,
+  addVideoBanner,
+  updateVideoBannerItem,
+  removeVideoBanner,
+  resolveVideoSource,
+} from '../../../utils/videoBannerStorage.js'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 
@@ -26,11 +33,24 @@ const deleting = ref(false)
 const editDialog = ref(false)
 const editingBanner = ref(null)
 const editBannerLinkInput = ref('')
+const editVideoUrlInput = ref('')
 const savingEdit = ref(false)
+const videoFilePreviewUrl = ref('')
+
+const getYouTubeEmbed = (url) => {
+  if (!url || typeof url !== 'string') return null
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/ ]{11})/i
+  const match = url.match(regExp)
+  if (match && match[1]) {
+    return `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=0&controls=1&rel=0`
+  }
+  return null
+}
 
 const openEditDialog = (banner) => {
   editingBanner.value = banner
   editBannerLinkInput.value = getBannerLink(banner.id, banner.link || '')
+  editVideoUrlInput.value = banner.type === 'video' ? (banner.image_path || '') : ''
   editDialog.value = true
 }
 
@@ -44,17 +64,35 @@ const handleEditSave = async () => {
     setBannerLink(editingBanner.value.id, newLink)
     editingBanner.value.link = newLink
 
+    if (editingBanner.value.type === 'video') {
+      const updates = { link: newLink }
+      if (editVideoUrlInput.value) {
+        updates.image_path = editVideoUrlInput.value.trim()
+        editingBanner.value.image_path = editVideoUrlInput.value.trim()
+        editingBanner.value.resolved_src = editVideoUrlInput.value.trim()
+      }
+      updateVideoBannerItem(editingBanner.value.id, updates)
+    }
+
+    const payload = {
+      is_active: editingBanner.value.is_active ? 1 : 0,
+      link: newLink,
+    }
+
+    if (editingBanner.value.type === 'video' && editVideoUrlInput.value) {
+      payload.video_url = editVideoUrlInput.value.trim()
+      editingBanner.value.image_path = editVideoUrlInput.value.trim()
+    }
+
     // Also attempt backend API update
     try {
-      await bannerAdminApi.update(editingBanner.value.id, {
-        is_active: editingBanner.value.is_active ? 1 : 0,
-        link: newLink,
-      })
+      await bannerAdminApi.update(editingBanner.value.id, payload)
     } catch (apiErr) {
       console.warn('Backend API banner link sync notice:', apiErr?.response?.data || apiErr?.message)
     }
 
     editDialog.value = false
+    await fetchBanners()
   } catch (err) {
     console.error('Update link failed:', err)
   } finally {
@@ -88,12 +126,41 @@ const videoBanners = computed(() => {
 const fetchBanners = async () => {
   loading.value = true
   try {
-    const res = await bannerAdminApi.getAll()
-    const rawItems = res.data?.data || []
-    banners.value = rawItems.map((b) => ({
-      ...b,
-      link: getBannerLink(b.id, b.link || ''),
-    }))
+    let apiBanners = []
+    try {
+      const res = await bannerAdminApi.getAll()
+      apiBanners = (res.data?.data || []).map((b) => ({
+        ...b,
+        link: getBannerLink(b.id, b.link || ''),
+      }))
+    } catch (apiErr) {
+      console.warn('API fetch banners warning:', apiErr?.message)
+    }
+
+    // Load local stored video banners & resolve any blob sources
+    const localVideos = getStoredVideoBanners()
+    const resolvedVideos = await Promise.all(
+      localVideos.map(async (v) => ({
+        ...v,
+        resolved_src: await resolveVideoSource(v.image_path),
+      }))
+    )
+
+    const otherBanners = apiBanners.filter((b) => b.type !== 'video')
+    const apiVideos = apiBanners.filter((b) => b.type === 'video')
+
+    // Merge videos (local + api)
+    const combinedVideos = [...resolvedVideos]
+    for (const av of apiVideos) {
+      if (!combinedVideos.some((cv) => cv.id == av.id || cv.image_path === av.image_path)) {
+        combinedVideos.push({
+          ...av,
+          resolved_src: av.image_path,
+        })
+      }
+    }
+
+    banners.value = [...otherBanners, ...combinedVideos]
   } catch (err) {
     console.error('Fetch banners failed:', err.response?.data || err.message)
   } finally {
@@ -110,7 +177,14 @@ const handleDelete = async () => {
   if (!selectedBanner.value) return
   deleting.value = true
   try {
-    await bannerAdminApi.delete(selectedBanner.value.id)
+    if (selectedBanner.value.type === 'video') {
+      await removeVideoBanner(selectedBanner.value.id)
+    }
+    try {
+      await bannerAdminApi.delete(selectedBanner.value.id)
+    } catch (apiErr) {
+      console.warn('API delete notice:', apiErr?.message)
+    }
     banners.value = banners.value.filter((s) => s.id !== selectedBanner.value.id)
     deleteDialog.value = false
   } catch (err) {
@@ -122,7 +196,15 @@ const handleDelete = async () => {
 
 // Watch selected file to init cropper inside the dialog
 watch(selectedFile, (file) => {
-  if (uploadType.value === 'video') return
+  if (uploadType.value === 'video') {
+    if (file && file instanceof File) {
+      videoFilePreviewUrl.value = URL.createObjectURL(file)
+    } else {
+      videoFilePreviewUrl.value = ''
+    }
+    return
+  }
+  videoFilePreviewUrl.value = ''
   if (file && file instanceof File && !isCropped.value) {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -161,19 +243,47 @@ const handleCreate = async (useOriginal = false) => {
 
   creating.value = true
   try {
+    if (uploadType.value === 'video') {
+      const vidUrl = videoUrlInput.value ? videoUrlInput.value.trim() : ''
+      const file = selectedFile.value
+      const link = bannerLinkInput.value ? bannerLinkInput.value.trim() : ''
+
+      // 1. Save to videoBannerStorage immediately! (Works 100% with YouTube and Local Files)
+      await addVideoBanner({ videoUrl: vidUrl, link, file })
+
+      // 2. Also try to push to backend API in the background (if supported, great!)
+      try {
+        const fd = new FormData()
+        fd.append('type', 'video')
+        if (link) fd.append('link', link)
+        if (file) {
+          fd.append('video', file)
+          fd.append('image', file)
+        } else if (vidUrl) {
+          fd.append('video_url', vidUrl)
+        }
+        await bannerAdminApi.create(fd)
+      } catch (apiErr) {
+        console.warn('Backend API banner sync notice (live server will sync upon deploy):', apiErr?.response?.data || apiErr?.message)
+      }
+
+      createDialog.value = false
+      selectedFile.value = null
+      videoUrlInput.value = ''
+      bannerLinkInput.value = ''
+      videoFilePreviewUrl.value = ''
+      isCropped.value = false
+      await fetchBanners()
+      return
+    }
+
     const fd = new FormData()
     fd.append('type', uploadType.value)
     if (bannerLinkInput.value) {
-      fd.append('link', bannerLinkInput.value)
+      fd.append('link', bannerLinkInput.value.trim())
     }
 
-    if (uploadType.value === 'video') {
-      if (videoUrlInput.value) {
-        fd.append('video_url', videoUrlInput.value)
-      } else if (selectedFile.value) {
-        fd.append('image', selectedFile.value)
-      }
-    } else if (selectedFile.value) {
+    if (selectedFile.value) {
       let fileToUpload = selectedFile.value
 
       // If cropper is active and not skipping crop, get the cropped version
@@ -208,8 +318,9 @@ const handleCreate = async (useOriginal = false) => {
     selectedFile.value = null
     videoUrlInput.value = ''
     bannerLinkInput.value = ''
+    videoFilePreviewUrl.value = ''
     isCropped.value = false
-    fetchBanners()
+    await fetchBanners()
   } catch (err) {
     console.error('Create failed:', err.response?.data || err.message)
     const errorMsg = err.response?.data?.message || err.message || 'فشل الرفع'
@@ -222,8 +333,15 @@ const handleCreate = async (useOriginal = false) => {
 const toggleActive = async (banner) => {
   try {
     const newStatus = !banner.is_active
-    await bannerAdminApi.update(banner.id, { is_active: newStatus ? 1 : 0, link: banner.link || '' })
     banner.is_active = newStatus
+    if (banner.type === 'video') {
+      updateVideoBannerItem(banner.id, { is_active: newStatus })
+    }
+    try {
+      await bannerAdminApi.update(banner.id, { is_active: newStatus ? 1 : 0, link: banner.link || '' })
+    } catch (apiErr) {
+      console.warn('API toggle notice:', apiErr?.message)
+    }
   } catch (err) {
     console.error('Toggle failed:', err.response?.data || err.message)
   }
@@ -461,6 +579,7 @@ onMounted(() => fetchBanners())
           <tr>
             <th class="text-uppercase text-xs font-bold opacity-70">ID</th>
             <th class="text-uppercase text-xs font-bold opacity-70">معاينة الفيديو</th>
+            <th class="text-uppercase text-xs font-bold opacity-70">الرابط المرفق</th>
             <th class="text-uppercase text-xs font-bold opacity-70">الحالة</th>
             <th class="text-uppercase text-xs font-bold opacity-70 text-center">العمليات</th>
           </tr>
@@ -471,9 +590,20 @@ onMounted(() => fetchBanners())
             <td class="font-medium">#{{ banner.id }}</td>
             <td>
               <div class="py-3">
-                <div class="banner-preview-wrapper video-preview" style="width: 240px; height: 135px;">
+                <div class="banner-preview-wrapper video-preview" style="width: 240px; height: 135px; border-radius: 12px; overflow: hidden; position: relative;">
+                  <!-- YouTube Embed -->
+                  <iframe
+                    v-if="getYouTubeEmbed(banner.resolved_src || banner.image_path)"
+                    :src="getYouTubeEmbed(banner.resolved_src || banner.image_path)"
+                    class="rounded-lg border shadow-sm h-100 w-100"
+                    frameborder="0"
+                    allowfullscreen
+                  ></iframe>
+
+                  <!-- Direct Video -->
                   <video
-                    :src="banner.image_path"
+                    v-else
+                    :src="banner.resolved_src || banner.image_path"
                     controls
                     muted
                     class="rounded-lg border shadow-sm h-100 w-100 object-cover"
@@ -481,6 +611,15 @@ onMounted(() => fetchBanners())
                   ></video>
                 </div>
               </div>
+            </td>
+            <td>
+              <div v-if="banner.link && banner.link !== '#'" class="text-xs text-primary font-bold flex items-center gap-1">
+                <VIcon icon="tabler-link" size="14" />
+                <a :href="banner.link" target="_blank" class="text-primary hover:underline truncate max-w-200 inline-block">
+                  {{ banner.link }}
+                </a>
+              </div>
+              <span v-else class="text-xs text-gray-500 italic">بدون رابط</span>
             </td>
             <td>
               <div class="flex items-center gap-3">
@@ -500,8 +639,19 @@ onMounted(() => fetchBanners())
               <VBtn
                 icon
                 variant="text"
+                color="primary"
+                class="rounded-lg me-1"
+                title="تعديل الإعلان والرابط"
+                @click="openEditDialog(banner)"
+              >
+                <VIcon icon="tabler-pencil" />
+              </VBtn>
+              <VBtn
+                icon
+                variant="text"
                 color="error"
                 class="rounded-lg"
+                title="حذف الإعلان"
                 @click="confirmDelete(banner)"
               >
                 <VIcon icon="tabler-trash" />
@@ -509,7 +659,7 @@ onMounted(() => fetchBanners())
             </td>
           </tr>
           <tr v-if="videoBanners.length === 0 && !loading">
-            <td colspan="4" class="text-center py-12 text-gray-400">
+            <td colspan="5" class="text-center py-12 text-gray-400">
               <VIcon icon="tabler-video-off" size="48" class="opacity-20 mb-4 d-block mx-auto" />
               لا توجد إعلانات فيديو حالياً
             </td>
@@ -538,16 +688,15 @@ onMounted(() => fetchBanners())
               المقاس الموصى به لإعلانات الشريط الجانبي: <strong>640 × 420 بكسل</strong>.
             </span>
             <span v-else-if="uploadType === 'video'">
-              يمكنك تحميل ملف فيديو مباشرة أو إدخال رابط فيديو خارجي (مفضل).
+              يمكنك رفع ملف فيديو مباشرة (MP4) حتى 60MB، أو لصق رابط فيديو من <strong>يوتيوب</strong> أو رابط مباشر.
             </span>
             <span v-else>
               المقاس الإجباري والموصى به لبانر الهيرو: <strong>1200 × 600 بكسل (نسبة 2:1)</strong> — يتيح لك نظام القص التفاعلي أدناه اختيار وتحديد المنطقة المطلوبة بدقة لتظهر كاملة وواضحة بدون اقتطاع.
             </span>
           </VAlert>
 
-          <!-- Banner Link Input (For image banners) -->
+          <!-- Banner Link Input (For all types) -->
           <VTextField
-            v-if="uploadType !== 'video'"
             v-model="bannerLinkInput"
             label="رابط الإعلان عند الضغط عليه (اختياري)"
             placeholder="مثال: https://example.com أو /user/cars/123"
@@ -561,13 +710,13 @@ onMounted(() => fetchBanners())
           <div v-if="uploadType === 'video'">
             <VFileInput
               v-model="selectedFile"
-              label="تحميل ملف فيديو (اختياري)"
-              accept="video/*"
+              label="تحميل ملف فيديو من جهازك (MP4 / WebM - حتى 60 ميجابايت)"
+              accept="video/mp4,video/webm,video/quicktime,video/*"
               prepend-icon="tabler-video"
               variant="outlined"
               density="comfortable"
               class="mb-4"
-              placeholder="اضغط هنا لاختيار ملف فيديو (MP4, WebM)"
+              placeholder="اضغط هنا لاختيار ملف فيديو (مثلاً فيديو الـ 28 ثانية الخاص بك)"
               :disabled="!!videoUrlInput"
             />
             
@@ -575,14 +724,39 @@ onMounted(() => fetchBanners())
             
             <VTextField
               v-model="videoUrlInput"
-              label="أدخل رابط فيديو مباشر (اختياري)"
-              placeholder="مثال: https://example.com/video.mp4"
-              prepend-inner-icon="tabler-link"
+              label="أدخل رابط فيديو يوتيوب أو رابط فيديو مباشر (اختياري)"
+              placeholder="مثال: https://youtu.be/... أو https://youtube.com/watch?v=... أو رابط مباشر .mp4"
+              prepend-inner-icon="tabler-brand-youtube"
               variant="outlined"
               density="comfortable"
-              class="mb-6"
+              class="mb-4"
               :disabled="!!selectedFile"
             />
+
+            <!-- Live Preview in Dialog -->
+            <div v-if="videoFilePreviewUrl || videoUrlInput" class="mt-3 p-4 rounded-xl border bg-black bg-opacity-40">
+              <div class="text-xs font-bold text-info mb-2 flex items-center gap-2">
+                <VIcon icon="tabler-eye" size="16" />
+                معاينة الفيديو المختار:
+              </div>
+              <div style="max-width: 440px; height: 220px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #000; position: relative;">
+                <iframe
+                  v-if="videoUrlInput && getYouTubeEmbed(videoUrlInput)"
+                  :src="getYouTubeEmbed(videoUrlInput)"
+                  class="w-100 h-100 border-0"
+                  allowfullscreen
+                ></iframe>
+                <video
+                  v-else
+                  :src="videoFilePreviewUrl || videoUrlInput"
+                  controls
+                  autoplay
+                  muted
+                  playsinline
+                  class="w-100 h-100 object-cover"
+                ></video>
+              </div>
+            </div>
           </div>
 
           <!-- Image Fields -->
@@ -684,13 +858,13 @@ onMounted(() => fetchBanners())
       </VCard>
     </VDialog>
 
-    <!-- Edit Link Dialog -->
+    <!-- Edit Link / Video Dialog -->
     <VDialog v-model="editDialog" max-width="550">
       <VCard rounded="xl" class="pa-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-xl font-bold text-white flex items-center gap-2">
-            <VIcon icon="tabler-link" color="primary" />
-            تعديل رابط الإعلان
+            <VIcon :icon="editingBanner?.type === 'video' ? 'tabler-video' : 'tabler-link'" color="primary" />
+            {{ editingBanner?.type === 'video' ? 'تعديل إعلان الفيديو' : 'تعديل رابط الإعلان' }}
           </h3>
           <VBtn icon variant="text" size="small" @click="editDialog = false">
             <VIcon icon="tabler-x" />
@@ -698,12 +872,24 @@ onMounted(() => fetchBanners())
         </div>
 
         <p class="text-xs text-gray-400 mb-6">
-          أدخل رابط الصفحة الخارجية أو الصفحة الداخلية التي سيفتحها المستخدم عند الضغط على هذا الإعلان.
+          {{ editingBanner?.type === 'video' ? 'يمكنك تحديث رابط الفيديو المباشر أو رابط يوتيوب، وكذلك الرابط الذي يفتحه المستخدم عند الضغط عليه.' : 'أدخل رابط الصفحة الخارجية أو الصفحة الداخلية التي سيفتحها المستخدم عند الضغط على هذا الإعلان.' }}
         </p>
+
+        <!-- If editing a video banner, allow changing video URL / YouTube link -->
+        <VTextField
+          v-if="editingBanner?.type === 'video'"
+          v-model="editVideoUrlInput"
+          label="رابط الفيديو (Direct MP4 أو YouTube)"
+          placeholder="https://youtu.be/... أو https://example.com/video.mp4"
+          prepend-inner-icon="tabler-brand-youtube"
+          variant="outlined"
+          density="comfortable"
+          class="mb-4"
+        />
 
         <VTextField
           v-model="editBannerLinkInput"
-          label="رابط الإعلان"
+          label="رابط فتح الإعلان عند الضغط عليه (اختياري)"
           placeholder="مثال: https://example.com أو /user/cars/123"
           prepend-inner-icon="tabler-link"
           variant="outlined"

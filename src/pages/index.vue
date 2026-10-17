@@ -102,6 +102,7 @@ onMounted(() => {
       :controlled="true"
       :initialBanners="homeData?.hero_banners"
       :initialVideoUrl="homeData?.video_banner"
+      :initialVideoLink="homeData?.video_banner_link"
       :initialBrands="homeData?.brands"
     />
 
