@@ -249,9 +249,14 @@ const handleCreate = async (useOriginal = false) => {
       const link = bannerLinkInput.value ? bannerLinkInput.value.trim() : ''
 
       // 1. Save to videoBannerStorage immediately! (Works 100% with YouTube and Local Files)
-      await addVideoBanner({ videoUrl: vidUrl, link, file })
+      try {
+        await addVideoBanner({ videoUrl: vidUrl, link, file })
+      } catch (storageErr) {
+        console.warn('Local storage video save error:', storageErr)
+      }
 
-      // 2. Also try to push to backend API in the background (if supported, great!)
+      // 2. Also push to backend API so all visitors see it
+      let backendSynced = false
       try {
         const fd = new FormData()
         fd.append('type', 'video')
@@ -263,8 +268,9 @@ const handleCreate = async (useOriginal = false) => {
           fd.append('video_url', vidUrl)
         }
         await bannerAdminApi.create(fd)
+        backendSynced = true
       } catch (apiErr) {
-        console.warn('Backend API banner sync notice (live server will sync upon deploy):', apiErr?.response?.data || apiErr?.message)
+        console.warn('Backend API banner sync notice:', apiErr?.response?.data || apiErr?.message)
       }
 
       createDialog.value = false
@@ -274,6 +280,10 @@ const handleCreate = async (useOriginal = false) => {
       videoFilePreviewUrl.value = ''
       isCropped.value = false
       await fetchBanners()
+
+      if (file && !backendSynced) {
+        alert('تم حفظ الفيديو على متصفحك بنجاح! ⚠️ ملاحظة: خادم الاستضافة رفض استلام ملف الفيديو المباشر نظراً لكبر حجمه (Network Error). لجعل الفيديو يظهر لجميع الزوار، يُنصح بوضع رابط الفيديو من YouTube أو رابط مباشر، أو زيادة الحد الأقصى لحجم الملفات في cPanel.')
+      }
       return
     }
 

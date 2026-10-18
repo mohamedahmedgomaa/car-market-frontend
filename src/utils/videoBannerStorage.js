@@ -26,14 +26,25 @@ export const saveVideoBlob = async (id, fileOrBlob) => {
     const db = await getDB()
     if (!db) return false
     return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite')
-      const store = tx.objectStore(STORE_NAME)
-      store.put({ id, blob: fileOrBlob, timestamp: Date.now() })
-      tx.oncomplete = () => resolve(true)
-      tx.onerror = () => resolve(false)
+      try {
+        const tx = db.transaction(STORE_NAME, 'readwrite')
+        const store = tx.objectStore(STORE_NAME)
+        // Convert File to clean Blob for Safari compatibility
+        const safeBlob = (typeof File !== 'undefined' && fileOrBlob instanceof File)
+          ? new Blob([fileOrBlob], { type: fileOrBlob.type || 'video/mp4' })
+          : fileOrBlob
+        const req = store.put({ id, blob: safeBlob, timestamp: Date.now() })
+        req.onsuccess = () => resolve(true)
+        req.onerror = () => resolve(false)
+        tx.oncomplete = () => resolve(true)
+        tx.onerror = () => resolve(false)
+      } catch (innerErr) {
+        console.warn('IndexedDB store.put error:', innerErr)
+        resolve(false)
+      }
     })
   } catch (err) {
-    console.error('saveVideoBlob error:', err)
+    console.warn('saveVideoBlob error:', err)
     return false
   }
 }
