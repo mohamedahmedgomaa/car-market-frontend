@@ -29,6 +29,11 @@ const form = ref({
 })
 
 const ensureAuth = () => {
+  const isSeller = localStorage.getItem('user_type') === 'seller' || (!!localStorage.getItem('seller_token') && !localStorage.getItem('user_data')?.includes('"store_name"'))
+  if (localStorage.getItem('user_type') === 'seller') {
+    router.push('/seller/dashboard')
+    return false
+  }
   const token = localStorage.getItem('user_token')
   if (!token) {
     router.push('/login')

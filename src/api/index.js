@@ -9,21 +9,20 @@ const api = axios.create({
 // هنا هتكتب ال endpoints اللي عايزها Public (بدون توكن)
 // تقدر تزود/تعدل في أي وقت
 const AUTH_RULES = {
-  // Matchers: يا إما string prefix أو RegExp أو function(url)=>boolean
+  // Matchers: string prefix, RegExp, or function(url)=>boolean
   public: [
     "/login",
     "/register",
     "/forgot-password",
     "/reset-password",
-    "/auth", // لو عندك /auth/*
-    // "/products",
-    // "/categories",
-    // "/brands",
-    // "/home",
-    // /^\/public\/.*/,
-
-    // مثال function لو عندك logic:
-    // (url) => url.startsWith("/posts") && url.includes("featured"),
+    "/auth",
+    "/user/auth/login",
+    "/user/auth/register",
+    "/seller/auth/login",
+    "/seller/auth/register",
+    "/admin/auth/login",
+    "/admin/auth/register",
+    /\/auth\//,
   ],
 }
 
@@ -36,11 +35,20 @@ const matches = (url, rule) => {
 
 const isPublic = (url = "") => AUTH_RULES.public.some((r) => matches(url, r))
 
+const isAuthEndpoint = (url = "") => {
+  return (
+    url.includes("/auth/login") ||
+    url.includes("/auth/register") ||
+    url.includes("/login") ||
+    url.includes("/register")
+  )
+}
+
 api.interceptors.request.use((config) => {
   const url = config.url || ""
 
-  // 1) Override per request: لو عايز تجبر skip
-  if (config.skipAuth === true || isPublic(url)) {
+  // 1) Override per request: skip auth header on public or explicit skip
+  if (config.skipAuth === true || isPublic(url) || isAuthEndpoint(url)) {
     delete config.headers.Authorization
     return config
   }
@@ -51,8 +59,7 @@ api.interceptors.request.use((config) => {
   else if (url.startsWith("/seller/")) token = localStorage.getItem("seller_token")
   else token = localStorage.getItem("user_token") // default user
 
-  // 3) أهم نقطة: لو مفيش توكن، متعملش error ولا توقف الطلب
-  // بس ابعت request عادي بدون Authorization
+  // 3) إرسال التوكن إذا وُجد
   if (token) config.headers.Authorization = `Bearer ${token}`
   else delete config.headers.Authorization
 
@@ -65,8 +72,13 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      const url = error.config.url || ""
-      
+      const url = error.config?.url || ""
+
+      // If it's a login or register endpoint, do NOT redirect — let UI show the validation/credential error
+      if (isAuthEndpoint(url)) {
+        return Promise.reject(error)
+      }
+
       // Determine which auth type failed and redirect accordingly
       if (url.startsWith("/admin/")) {
         const token = localStorage.getItem("admin_token")
@@ -83,7 +95,6 @@ api.interceptors.response.use(
       } else {
         localStorage.removeItem("user_token")
         localStorage.removeItem("user_data")
-        // window.location.href = "/login" // Uncomment if user login exists
       }
     }
     return Promise.reject(error)

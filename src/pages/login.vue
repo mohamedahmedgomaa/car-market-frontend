@@ -3,8 +3,8 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useConfigStore } from '@core/stores/config'
-import userApi from '@/api/userApi.js'
-import sellerApi from '@/api/sellerApi.js'
+import { useUserAuth } from '@/stores/userAuth.js'
+import { useSellerAuth } from '@/stores/sellerAuth.js'
 import { themeConfig } from '@themeConfig'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 
@@ -19,6 +19,8 @@ const router = useRouter()
 const route = useRoute()
 const { locale } = useI18n({ useScope: 'global' })
 const configStore = useConfigStore()
+const userAuthStore = useUserAuth()
+const sellerAuthStore = useSellerAuth()
 
 const isAr = computed(() => locale.value === 'ar')
 const tr = (en, ar) => (isAr.value ? ar : en)
@@ -53,105 +55,119 @@ const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 
 const handleAuth = async () => {
+  errorMessage.value = ''
+
+  if (activeTab.value === 'login') {
+    if (!form.value.email || !form.value.password) {
+      errorMessage.value = tr('Please enter your email and password.', 'يرجى إدخال البريد الإلكتروني وكلمة المرور.')
+      return
+    }
+
+    loading.value = true
+
+    try {
+      // 1) Try logging in as User first
+      try {
+        await userAuthStore.login(form.value.email, form.value.password)
+        router.push('/')
+        return
+      } catch (userErr) {
+        // 2) If user login fails (e.g. 401 Unauthorized or email belongs to a showroom seller)
+        try {
+          await sellerAuthStore.login(form.value.email, form.value.password)
+          // Also set fallback user token/data for unified navbar
+          localStorage.setItem('user_token', sellerAuthStore.token)
+          localStorage.setItem('user_data', JSON.stringify(sellerAuthStore.seller))
+          window.dispatchEvent(new Event('auth:changed'))
+          router.push('/seller/dashboard')
+          return
+        } catch (sellerErr) {
+          console.error('Login attempt errors:', { userErr, sellerErr })
+          const status = userErr?.response?.status || sellerErr?.response?.status
+          const msg = userErr?.response?.data?.message || sellerErr?.response?.data?.message
+
+          if (status === 401 || msg === 'Unauthorized') {
+            errorMessage.value = tr(
+              'Incorrect email or password. Please try again.',
+              'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مجدداً.'
+            )
+          } else if (userErr?.response?.data?.errors || sellerErr?.response?.data?.errors) {
+            const errs = userErr?.response?.data?.errors || sellerErr?.response?.data?.errors
+            errorMessage.value = Object.values(errs).flat().join(' • ')
+          } else {
+            errorMessage.value = tr(
+              'Authentication failed. Please check your credentials.',
+              'فشل تسجيل الدخول. يرجى التأكد من صحة البيانات.'
+            )
+          }
+        }
+      }
+    } finally {
+      loading.value = false
+    }
+    return
+  }
+
+  // Register Tab
   if (activeTab.value === 'register') {
     if (!form.value.name || !form.value.email || !form.value.password || !form.value.phone) {
-      errorMessage.value = 'Please fill in all required fields.'
+      errorMessage.value = tr('Please fill in all required fields.', 'يرجى ملء جميع الحقول المطلوبة.')
       return
     }
     if (form.value.password !== form.value.password_confirmation) {
-      errorMessage.value = 'Passwords do not match.'
+      errorMessage.value = tr('Passwords do not match.', 'كلمتا المرور غير متطابقتين.')
       return
     }
     if (!form.value.agreeToTerms) {
-      errorMessage.value = 'Please agree to the terms and conditions.'
+      errorMessage.value = tr('Please agree to the terms and conditions.', 'يرجى الموافقة على الشروط والأحكام.')
       return
     }
     if (form.value.accountType === 'showroom' && !form.value.showroomName) {
-      errorMessage.value = 'Please enter your showroom name.'
+      errorMessage.value = tr('Please enter your showroom name.', 'يرجى إدخال اسم المعرض.')
       return
     }
-  }
 
-  errorMessage.value = ''
-  loading.value = true
+    loading.value = true
 
-  let userType = 'user'
-  try {
-    let response
-    if (activeTab.value === 'login') {
-      try {
-        response = await userApi.login({
-          email: form.value.email,
-          password: form.value.password,
-        })
-        userType = 'user'
-      } catch (userErr) {
-        // If user login fails, try seller login
-        try {
-          response = await sellerApi.login({
-            email: form.value.email,
-            password: form.value.password,
-          })
-          userType = 'seller'
-        } catch (sellerErr) {
-          // If both fail, throw the error
-          throw userErr
-        }
-      }
-    } else {
-      userType = form.value.accountType === 'showroom' ? 'seller' : 'user'
-      if (userType === 'seller') {
-        response = await sellerApi.register({
+    try {
+      if (form.value.accountType === 'showroom') {
+        await sellerAuthStore.register({
           name: form.value.name,
           email: form.value.email,
           phone: form.value.phone,
           password: form.value.password,
           password_confirmation: form.value.password_confirmation,
           store_name_en: form.value.showroomName,
-          store_name_ar: form.value.showroomName, // Using same for both for simplicity
+          store_name_ar: form.value.showroomName,
         })
+
+        // Also set fallback user token/data for unified frontend
+        localStorage.setItem('user_token', sellerAuthStore.token)
+        localStorage.setItem('user_data', JSON.stringify(sellerAuthStore.seller))
+        window.dispatchEvent(new Event('auth:changed'))
+        router.push('/seller/dashboard')
       } else {
-        response = await userApi.register({
+        await userAuthStore.register({
           name: form.value.name,
           email: form.value.email,
           phone: form.value.phone,
           password: form.value.password,
           password_confirmation: form.value.password_confirmation,
         })
+        router.push('/')
       }
-    }
-
-    const data = response?.data?.data
-    if (!data || !data.token) {
-      throw new Error('Invalid response from server')
-    }
-
-    const tokenKey = `${userType}_token`
-    localStorage.setItem(tokenKey, data.token)
-    localStorage.setItem('user_token', data.token) // Fallback
-    
-    // Handle both 'user' and 'seller' keys in response
-    const userData = data.user || data.seller
-    localStorage.setItem('user_data', JSON.stringify(userData))
-    localStorage.setItem('user_type', userType)
-    
-    window.dispatchEvent(new Event('auth:changed'))
-    router.push('/')
-  } catch (err) {
-    console.error('Auth error:', err)
-    if (err.response && err.response.data) {
-      // Handle Laravel validation errors
-      if (err.response.data.errors) {
-        const firstError = Object.values(err.response.data.errors)[0][0]
-        errorMessage.value = firstError
+    } catch (err) {
+      console.error('Registration error:', err)
+      if (err.response?.data?.errors) {
+        errorMessage.value = Object.values(err.response.data.errors).flat().join(' • ')
+      } else if (err.response?.data?.message) {
+        errorMessage.value = err.response.data.message
       } else {
-        errorMessage.value = err.response.data.message || err.response.data.error || 'Authentication failed'
+        errorMessage.value = tr('Registration failed. Please try again.', 'فشل إنشاء الحساب. يرجى المحاولة مجدداً.')
       }
-    } else {
-      errorMessage.value = err.message || 'Something went wrong. Please try again.'
+    } finally {
+      loading.value = false
     }
-  } finally {
-    loading.value = false
   }
 }
 </script>
@@ -264,7 +280,7 @@ const handleAuth = async () => {
         <VForm @submit.prevent="handleAuth">
           <VRow>
             <!-- Account Type Selection (Register Only) -->
-            <VCol v-if="activeTab === 'register'" cols="12" class="mb-4">
+            <VCol v-if="activeTab === 'register'" cols="12" class="mb-2">
               <label class="input-label">{{ tr('I am registering as:', 'التسجيل كـ:') }}</label>
               <div class="role-selector d-flex gap-2 p-1">
                 <VBtn
@@ -286,6 +302,27 @@ const handleAuth = async () => {
                 >
                   <VIcon icon="tabler-building-store" class="me-2" />
                   {{ tr('Showroom', 'معرض سيارات') }}
+                </VBtn>
+              </div>
+
+              <!-- Dedicated Showroom Form Callout -->
+              <div v-if="form.accountType === 'showroom'" class="mt-3 pa-3 rounded-lg border border-primary d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-2" style="background: rgba(var(--v-theme-primary), 0.08);">
+                <div class="text-caption">
+                  <span class="font-weight-bold d-block text-primary">
+                    {{ tr('Looking for full showroom setup?', 'تريد التسجيل الشامل كمعرض معتمد؟') }}
+                  </span>
+                  <span class="text-medium-emphasis">
+                    {{ tr('Add your logo, commercial record, tax card and location.', 'لإضافة الشعار، السجل التجاري، البطاقة الضريبية والموقع.') }}
+                  </span>
+                </div>
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  to="/seller/register"
+                  class="flex-shrink-0 font-weight-bold"
+                >
+                  {{ tr('Open Full Form', 'النموذج الشامل') }}
                 </VBtn>
               </div>
             </VCol>

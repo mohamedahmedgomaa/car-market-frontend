@@ -8,6 +8,7 @@ import { themeConfig } from '@themeConfig'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useUserAuth } from '@/stores/userAuth.js'
+import { useSellerAuth } from '@/stores/sellerAuth.js'
 import { useConfigStore } from '@core/stores/config'
 import { useI18n } from 'vue-i18n'
 import logoDark from '@images/logo/logo-dark.png'
@@ -69,9 +70,14 @@ onBeforeUnmount(() => {
   window.removeEventListener('auth:changed', syncAuth)
 })
 
+const isSeller = computed(() => {
+  authKey.value
+  return !!localStorage.getItem('seller_token')
+})
+
 const isLoggedIn = computed(() => {
   authKey.value // ✅ makes it reactive
-  return !!localStorage.getItem('user_token')
+  return !!(localStorage.getItem('user_token') || localStorage.getItem('seller_token'))
 })
 
 // Ensure langConfig is always a valid array for VList
@@ -79,11 +85,16 @@ const safeLangConfig = computed(() => themeConfig.app.i18n.langConfig || [])
 
 const logout = async () => {
   const userAuth = useUserAuth()
-  await userAuth.logout()
+  const sellerAuth = useSellerAuth()
+  if (isSeller.value) {
+    await sellerAuth.logout()
+  } else {
+    await userAuth.logout()
+  }
 
   sidebar.value = false
 
-  if (route.path.startsWith('/user')) {
+  if (route.path.startsWith('/user') || route.path.startsWith('/seller')) {
     await router.push('/')
   }
 }
@@ -202,6 +213,16 @@ const logout = async () => {
           </template>
 
           <template v-else>
+            <RouterLink
+              v-if="isSeller"
+              to="/seller/dashboard"
+              class="mobile-drawer-link font-weight-bold text-primary"
+              @click="sidebar = false"
+            >
+              <VIcon icon="tabler-building-store" size="18" class="me-2" />
+              <span>{{ locale === 'ar' ? 'لوحة تحكم المعرض' : 'Showroom Dashboard' }}</span>
+            </RouterLink>
+
             <RouterLink
               to="/user/profile"
               class="mobile-drawer-link font-weight-bold"
@@ -483,6 +504,22 @@ const logout = async () => {
             </template>
 
             <VList class="settings-menu-list pa-2" style="border-radius: 12px">
+              <!-- Showroom Options for Sellers -->
+              <VListItem
+                v-if="isSeller"
+                to="/seller/dashboard"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-building-store" size="20" class="me-2 text-primary" />
+                </template>
+                <VListItemTitle class="font-weight-bold text-primary">
+                  {{ locale === 'ar' ? 'لوحة تحكم المعرض' : 'Showroom Dashboard' }}
+                </VListItemTitle>
+              </VListItem>
+
               <!-- User Options -->
               <VListItem
                 to="/user/profile"

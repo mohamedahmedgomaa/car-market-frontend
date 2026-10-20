@@ -64,15 +64,23 @@ const handleLogin = async () => {
     // ✅ تخزين بيانات السيلر والتوكن بمفاتيح خاصة
     localStorage.setItem('seller_token', token)
     localStorage.setItem('seller_data', JSON.stringify(seller))
+    localStorage.setItem('user_token', token)
+    localStorage.setItem('user_data', JSON.stringify(seller))
+    localStorage.setItem('user_type', 'seller')
+
+    window.dispatchEvent(new Event('auth:changed'))
 
     router.push('/seller/dashboard')
   } catch (err) {
     console.error('Seller login error:', err)
     if (err.response && err.response.data) {
-      errorMessage.value =
-        err.response.data.message ||
-        err.response.data.error ||
-        JSON.stringify(err.response.data)
+      if (err.response.status === 401 || err.response.data.message === 'Unauthorized') {
+        errorMessage.value = 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+      } else if (err.response.data.errors) {
+        errorMessage.value = Object.values(err.response.data.errors).flat().join(' • ')
+      } else {
+        errorMessage.value = err.response.data.message || err.response.data.error || 'Login failed'
+      }
     } else {
       errorMessage.value = err.message || 'Login failed. Please check your credentials.'
     }

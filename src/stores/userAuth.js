@@ -16,8 +16,24 @@ export const useUserAuth = defineStore('userAuth', {
 
       localStorage.setItem('user_token', this.token)
       localStorage.setItem('user_data', JSON.stringify(this.user))
+      localStorage.setItem('user_type', 'user')
 
       window.dispatchEvent(new Event('auth:changed'))
+      return res
+    },
+
+    async register(payload) {
+      const res = await userApi.register(payload)
+
+      this.user = res.data.data.user
+      this.token = res.data.data.token
+
+      localStorage.setItem('user_token', this.token)
+      localStorage.setItem('user_data', JSON.stringify(this.user))
+      localStorage.setItem('user_type', 'user')
+
+      window.dispatchEvent(new Event('auth:changed'))
+      return res
     },
 
     async logout() {
@@ -30,8 +46,7 @@ export const useUserAuth = defineStore('userAuth', {
         this.user = null
         localStorage.removeItem('user_token')
         localStorage.removeItem('user_data')
-        localStorage.removeItem('seller_token')
-        localStorage.removeItem('seller_data')
+        localStorage.removeItem('user_type')
 
         window.dispatchEvent(new Event('auth:changed'))
       }

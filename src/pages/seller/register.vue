@@ -177,22 +177,26 @@ const handleRegister = async () => {
     const token = data?.token
     const seller = data?.seller ?? data?.user ?? data
 
-    if (!token) throw new Error('Invalid response from server')
-
     localStorage.setItem('seller_token', token)
     localStorage.setItem('seller_data', JSON.stringify(seller))
+    localStorage.setItem('user_token', token)
+    localStorage.setItem('user_data', JSON.stringify(seller))
+    localStorage.setItem('user_type', 'seller')
+
+    window.dispatchEvent(new Event('auth:changed'))
 
     router.push('/seller/dashboard')
   } catch (err) {
     console.error('Seller register error:', err)
 
-    if (err?.response?.data) {
-      errorMessage.value =
-        err.response.data.message ||
-        err.response.data.error ||
-        (err.response.data.errors ? Object.values(err.response.data.errors).flat().join(', ') : JSON.stringify(err.response.data))
+    if (err?.response?.data?.errors) {
+      errorMessage.value = Object.values(err.response.data.errors).flat().join(' • ')
+    } else if (err?.response?.data?.message) {
+      errorMessage.value = err.response.data.message
+    } else if (err?.response?.data?.error) {
+      errorMessage.value = err.response.data.error
     } else {
-      errorMessage.value = err?.message || 'Register failed'
+      errorMessage.value = err?.message || 'Register failed. Please check your data.'
     }
   } finally {
     loading.value = false

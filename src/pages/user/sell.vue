@@ -12,38 +12,23 @@ const sellerAuth = useSellerAuth()
 const userAuth = useUserAuth()
 const { t, locale } = useI18n({ useScope: 'global' })
 
-const hasUserToken = computed(() => {
-  if (typeof window === 'undefined') return false
-  return !!localStorage.getItem('user_token')
-})
-
 const isSellerLoggedIn = computed(() => {
-  if (!hasUserToken.value) return false
+  if (typeof window === 'undefined') return false
   return !!localStorage.getItem('seller_token') || !!sellerAuth.token
 })
 
 const isUserLoggedIn = computed(() => {
-  return hasUserToken.value && !isSellerLoggedIn.value
+  if (typeof window === 'undefined') return false
+  return (!!localStorage.getItem('user_token') || !!userAuth.token) && !isSellerLoggedIn.value
 })
 
 const sellerData = computed(() => {
   if (!isSellerLoggedIn.value) return null
   try {
     const data = localStorage.getItem('seller_data')
-    return data ? JSON.parse(data) : sellerAuth.seller
+    return data ? JSON.parse(data) : (sellerAuth.seller || sellerAuth.user)
   } catch {
-    return sellerAuth.seller
-  }
-})
-
-onMounted(() => {
-  if (typeof window !== 'undefined' && !localStorage.getItem('user_token')) {
-    if (localStorage.getItem('seller_token') || localStorage.getItem('seller_data')) {
-      localStorage.removeItem('seller_token')
-      localStorage.removeItem('seller_data')
-      sellerAuth.token = null
-      sellerAuth.user = null
-    }
+    return sellerAuth.seller || sellerAuth.user
   }
 })
 
