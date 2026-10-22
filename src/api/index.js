@@ -6,49 +6,36 @@ const api = axios.create({
   headers: { Accept: "application/json" },
 })
 
-// هنا هتكتب ال endpoints اللي عايزها Public (بدون توكن)
-// تقدر تزود/تعدل في أي وقت
-const AUTH_RULES = {
-  // Matchers: string prefix, RegExp, or function(url)=>boolean
-  public: [
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password",
-    "/auth",
-    "/user/auth/login",
-    "/user/auth/register",
-    "/seller/auth/login",
-    "/seller/auth/register",
-    "/admin/auth/login",
-    "/admin/auth/register",
-    /\/auth\//,
-  ],
+// Endpoints that should NOT send an Authorization header (login / register / password reset)
+const SKIP_AUTH_ENDPOINTS = [
+  "/user/auth/login",
+  "/user/auth/register",
+  "/seller/auth/login",
+  "/seller/auth/register",
+  "/admin/auth/login",
+  "/admin/auth/register",
+  "/forgot-password",
+  "/reset-password",
+]
+
+const shouldSkipAuth = (url = "") => {
+  return SKIP_AUTH_ENDPOINTS.some((ep) => url === ep || url.startsWith(ep + "?") || url.startsWith(ep + "/"))
 }
 
-const matches = (url, rule) => {
-  if (typeof rule === "string") return url === rule || url.startsWith(rule + "/") || url.startsWith(rule)
-  if (rule instanceof RegExp) return rule.test(url)
-  if (typeof rule === "function") return !!rule(url)
-  return false
-}
-
-const isPublic = (url = "") => AUTH_RULES.public.some((r) => matches(url, r))
-
-const isAuthEndpoint = (url = "") => {
+const isLoginOrRegister = (url = "") => {
   return (
     url.includes("/auth/login") ||
     url.includes("/auth/register") ||
-    url.includes("/login") ||
-    url.includes("/register")
+    url === "/login" ||
+    url === "/register"
   )
 }
 
 api.interceptors.request.use((config) => {
   const url = config.url || ""
 
-  // 1) Override per request: skip auth header on public or explicit skip
-  if (config.skipAuth === true || isPublic(url) || isAuthEndpoint(url)) {
+  // 1) Override per request: skip auth header on guest login/register or explicit skipAuth
+  if (config.skipAuth === true || shouldSkipAuth(url)) {
     delete config.headers.Authorization
     return config
   }
@@ -57,8 +44,9 @@ api.interceptors.request.use((config) => {
   let token = null
   if (url.startsWith("/admin/")) token = localStorage.getItem("admin_token")
   else if (url.startsWith("/seller/")) token = localStorage.getItem("seller_token")
-  else token = localStorage.getItem("user_token") // default user
+  else token = localStorage.getItem("user_token") || localStorage.getItem("seller_token") // default user / seller
 
+  // 3) إرسال التوكن إذا وُجد
   // 3) إرسال التوكن إذا وُجد
   if (token) config.headers.Authorization = `Bearer ${token}`
   else delete config.headers.Authorization
@@ -75,7 +63,7 @@ api.interceptors.response.use(
       const url = error.config?.url || ""
 
       // If it's a login or register endpoint, do NOT redirect — let UI show the validation/credential error
-      if (isAuthEndpoint(url)) {
+      if (isLoginOrRegister(url)) {
         return Promise.reject(error)
       }
 

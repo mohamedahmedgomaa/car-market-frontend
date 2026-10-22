@@ -258,11 +258,12 @@ const valueProps = [
         </template>
 
         <template v-else-if="isUserLoggedIn">
-          <!-- Logged-in Individual User State -->
-          <div class="hero-badge d-inline-flex align-center gap-2 px-4 py-2 rounded-pill mb-6">
-            <VIcon icon="tabler-user-check" size="20" color="success" />
-            <span class="badge-text font-weight-bold text-success text-uppercase tracking-wider">
-              {{ locale === 'ar' ? 'مسجل كـ مستخدم' : 'Logged in as User' }}
+          <!-- Logged-in Individual User State (SOON feature) -->
+          <div class="hero-badge d-inline-flex align-center gap-2 px-5 py-2 rounded-pill mb-6">
+            <span class="pulse-dot"></span>
+            <VIcon icon="tabler-sparkles" size="18" color="primary" />
+            <span class="badge-text font-weight-bold text-uppercase tracking-wider">
+              {{ locale === 'ar' ? 'قريباً • إطلاق ميزة البيع المباشر للأفراد' : 'SOON • Direct Vehicle Listing & Sales' }}
             </span>
           </div>
 
@@ -271,29 +272,33 @@ const valueProps = [
               {{ locale === 'ar' ? `مرحباً بك، ${userDisplayName}!` : `Welcome, ${userDisplayName}!` }}
             </span>
           </h1>
-          <p class="hero-subtitle text-body-1 text-sm-h6 text-medium-emphasis max-w-750 mx-auto font-weight-medium mb-10">
-            {{ locale === 'ar'
-              ? 'يمكنك الآن إضافة سيارتك للبيع مباشرة على نجم كارز والوصول لآلاف المشترين المهتمين في مصر.'
-              : 'You can now list and sell your car directly on NegmCars. Start adding your vehicle details immediately!' }}
-          </p>
 
+          <!-- High-Impact Announcement Banner -->
+          <div class="soon-banner max-w-850 mx-auto pa-6 rounded-2xl mb-8 text-center relative overflow-hidden">
+            <div class="d-flex align-center justify-center gap-3 mb-3 flex-wrap">
+              <span class="glow-pill px-3 py-1 font-weight-black">SOON</span>
+              <h3 class="text-h5 text-sm-h4 font-weight-black text-gradient-amber mb-0">
+                {{ locale === 'ar' ? 'ميزة إضافة وبيع السيارات للأفراد قادمة قريباً!' : 'Direct car listing for individual owners is coming soon!' }}
+              </h3>
+            </div>
+            <p class="text-body-1 text-medium-emphasis mb-0 max-w-700 mx-auto line-height-1-6">
+              {{ locale === 'ar'
+                ? 'نحن نضع اللمسات الأخيرة لإتاحة نشر سيارتك الشخصية مباشرة والتواصل الفوري مع آلاف المشترين الجادين في مصر بدون أي عمولة أو وسيط.'
+                : 'We are putting the final touches on direct vehicle listing so you can publish your car and connect with thousands of active buyers across Egypt with 0% commission.' }}
+            </p>
+          </div>
+
+          <!-- Feature Action Buttons for logged-in user -->
           <div class="d-flex align-center justify-center flex-wrap gap-4 mb-10">
             <VBtn
               color="primary"
               size="x-large"
               rounded="pill"
-              @click="() => {
-                localStorage.setItem('seller_token', userAuth.token);
-                localStorage.setItem('seller_data', JSON.stringify(userAuth.user));
-                sellerAuth.token = userAuth.token;
-                sellerAuth.seller = userAuth.user;
-                router.push('/seller/cars/create');
-              }"
-              class="px-8 py-3 font-weight-black shadow-glow text-subtitle-1"
-              elevation="8"
+              disabled
+              class="px-8 py-3 font-weight-black text-subtitle-1"
             >
-              <VIcon icon="tabler-circle-plus" size="22" class="me-2" />
-              {{ locale === 'ar' ? 'أضف سيارتك الآن' : 'Add New Listing' }}
+              <VIcon icon="tabler-clock" size="22" class="me-2" />
+              {{ locale === 'ar' ? 'قريباً • إتاحة النشر الفوري' : 'Coming Soon • Instant Listing' }}
             </VBtn>
 
             <VBtn
@@ -301,17 +306,23 @@ const valueProps = [
               color="primary"
               size="x-large"
               rounded="pill"
-              @click="() => {
-                localStorage.setItem('seller_token', userAuth.token);
-                localStorage.setItem('seller_data', JSON.stringify(userAuth.user));
-                sellerAuth.token = userAuth.token;
-                sellerAuth.seller = userAuth.user;
-                router.push('/seller/dashboard');
-              }"
+              to="/seller/register"
               class="px-8 py-3 font-weight-black text-subtitle-1 glass-btn"
             >
-              <VIcon icon="tabler-layout-grid" size="22" class="me-2" />
-              {{ locale === 'ar' ? 'إدارات إعلاناتي' : 'My Ads Dashboard' }}
+              <VIcon icon="tabler-building-store" size="22" class="me-2" />
+              {{ locale === 'ar' ? 'هل لديك معرض سيارات؟ سجّل كمعرض' : 'Own a Showroom? Register Dealer' }}
+            </VBtn>
+
+            <VBtn
+              variant="outlined"
+              color="primary"
+              size="x-large"
+              rounded="pill"
+              to="/user/cars"
+              class="px-8 py-3 font-weight-black text-subtitle-1"
+            >
+              <VIcon icon="tabler-car" size="22" class="me-2" />
+              {{ locale === 'ar' ? 'تصفح السيارات المعروضة' : 'Browse All Cars' }}
             </VBtn>
           </div>
         </template>

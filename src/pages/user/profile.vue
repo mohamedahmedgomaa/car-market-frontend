@@ -17,24 +17,33 @@ const savingProfile = ref(false)
 const profileError = ref('')
 const successMessage = ref('')
 
-const me = ref(null)
+const getCachedUser = () => {
+  try {
+    const raw = localStorage.getItem('user_data') || localStorage.getItem('seller_data')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+const cachedUser = getCachedUser()
+const me = ref(cachedUser)
 const avatarPreview = ref(null)
 const avatarFile = ref(null)
 const avatarInput = ref(null)
 
 const form = ref({
-  name: '',
-  phone: '',
-  email: '',
+  name: cachedUser?.name || '',
+  phone: cachedUser?.phone || '',
+  email: cachedUser?.email || '',
+})
+
+const isSeller = computed(() => {
+  return localStorage.getItem('user_type') === 'seller' || !!localStorage.getItem('seller_token') || !!me.value?.store_name
 })
 
 const ensureAuth = () => {
-  const isSeller = localStorage.getItem('user_type') === 'seller' || (!!localStorage.getItem('seller_token') && !localStorage.getItem('user_data')?.includes('"store_name"'))
-  if (localStorage.getItem('user_type') === 'seller') {
-    router.push('/seller/dashboard')
-    return false
-  }
-  const token = localStorage.getItem('user_token')
+  const token = localStorage.getItem('user_token') || localStorage.getItem('seller_token')
   if (!token) {
     router.push('/login')
     return false
@@ -44,34 +53,49 @@ const ensureAuth = () => {
 
 const normalizeMe = (res) => {
   const d = res?.data?.data ?? res?.data ?? {}
-  return d.user ?? d
+  return d.user ?? d.seller ?? d
 }
 
 const loadMe = async () => {
   if (!ensureAuth()) return
 
-  loadingProfile.value = true
+  if (!me.value) {
+    loadingProfile.value = true
+  }
   profileError.value = ''
 
   try {
-    const res = await userApi.me()
-    const u = normalizeMe(res)
-
-    if (!u?.id) {
-      profileError.value = locale.value === 'ar' ? 'بيانات المستخدم غير صالحة' : 'Invalid user data'
-      me.value = null
-      return
+    let u = null
+    // Try userApi.me()
+    try {
+      const res = await userApi.me()
+      u = normalizeMe(res)
+    } catch (apiErr) {
+      console.warn('userApi.me() failed, falling back to cached user', apiErr)
     }
 
-    me.value = u
-    form.value = {
-      name: u.name ?? '',
-      phone: u.phone ?? '',
-      email: u.email ?? '',
+    if (!u?.id) {
+      u = getCachedUser()
+    }
+
+    if (u) {
+      me.value = u
+      form.value = {
+        name: u.name ?? form.value.name ?? '',
+        phone: u.phone ?? form.value.phone ?? '',
+        email: u.email ?? form.value.email ?? '',
+      }
+      try {
+        localStorage.setItem('user_data', JSON.stringify(u))
+      } catch {}
+    } else {
+      profileError.value = locale.value === 'ar' ? 'تعذّر تحميل بيانات المستخدم' : 'Could not load user data'
     }
   } catch (e) {
     console.error(e)
-    profileError.value = locale.value === 'ar' ? 'فشل تحميل بيانات الملف الشخصي' : 'Failed to load profile'
+    if (!me.value) {
+      profileError.value = locale.value === 'ar' ? 'فشل تحميل بيانات الملف الشخصي' : 'Failed to load profile'
+    }
   } finally {
     loadingProfile.value = false
   }
@@ -149,22 +173,27 @@ const myCarsViewAllTo = computed(() => {
 const getInitials = (name) => {
   if (!name) return 'U'
   const parts = String(name).trim().split(' ')
-  if (parts.length >= 2) {
+  if (parts.length >= 2 && parts[0] && parts[parts.length - 1]) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   }
-  return name.slice(0, 2).toUpperCase()
+  return String(name).slice(0, 2).toUpperCase() || 'U'
 }
 
 const userAvatarUrl = computed(() => {
   if (avatarPreview.value) return avatarPreview.value
   if (me.value?.avatar_url) return me.value.avatar_url
   if (me.value?.avatar) return me.value.avatar
+  if (me.value?.store_logo) return me.value.store_logo
   return null
 })
 
 const handleLogout = () => {
   localStorage.removeItem('user_token')
   localStorage.removeItem('user_data')
+  localStorage.removeItem('seller_token')
+  localStorage.removeItem('seller_data')
+  localStorage.removeItem('user_type')
+  window.dispatchEvent(new Event('auth:changed'))
   router.push('/login')
 }
 
@@ -186,7 +215,61 @@ onMounted(refreshAll)
         </div>
       </div>
 
-      <template v-else-if="me">
+      <!-- Error / Fallback State if not loaded and no user -->
+      <div v-else-if="!me" class="py-16 text-center">
+        <VIcon icon="tabler-alert-triangle" size="64" color="warning" class="mb-4" />
+        <h2 class="text-h4 font-weight-bold mb-2 text-high-emphasis">
+          {{ locale === 'ar' ? 'تعذّر تحميل بيانات الحساب' : 'Unable to load profile' }}
+        </h2>
+        <p class="text-body-1 text-medium-emphasis mb-6">
+          {{ profileError || (locale === 'ar' ? 'يرجى تسجيل الدخول مجدداً لعرض ملفك الشخصي' : 'Please log in again to view your profile') }}
+        </p>
+        <div class="d-flex align-center justify-center gap-4">
+          <VBtn color="primary" rounded="pill" @click="loadMe" class="px-6 font-weight-bold">
+            <VIcon icon="tabler-refresh" size="18" class="me-2" />
+            {{ locale === 'ar' ? 'إعادة المحاولة' : 'Try Again' }}
+          </VBtn>
+          <VBtn variant="tonal" rounded="pill" to="/login" class="px-6 font-weight-bold">
+            <VIcon icon="tabler-login" size="18" class="me-2" />
+            {{ locale === 'ar' ? 'تسجيل الدخول' : 'Sign In' }}
+          </VBtn>
+        </div>
+      </div>
+
+      <template v-else>
+        <!-- Seller notification callout if showroom account -->
+        <VAlert
+          v-if="isSeller"
+          variant="tonal"
+          color="primary"
+          class="mb-6 rounded-2xl border"
+        >
+          <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-3">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="tabler-building-store" size="24" color="primary" />
+              <div>
+                <span class="font-weight-bold d-block text-high-emphasis">
+                  {{ locale === 'ar' ? 'أنت مسجل كمعرض سيارات معتمد' : 'You are logged in as a Showroom Partner' }}
+                </span>
+                <span class="text-caption text-medium-emphasis">
+                  {{ locale === 'ar' ? 'يمكنك الوصول لكافة أدوات إدارة المعرض والمخزون والإعلانات المتقدمة.' : 'Access your full showroom tools, inventory, and listings dashboard.' }}
+                </span>
+              </div>
+            </div>
+            <VBtn
+              size="small"
+              color="primary"
+              variant="elevated"
+              to="/seller/dashboard"
+              rounded="pill"
+              class="font-weight-bold flex-shrink-0"
+            >
+              <VIcon icon="tabler-dashboard" size="16" class="me-1" />
+              {{ locale === 'ar' ? 'لوحة تحكم المعرض' : 'Seller Dashboard' }}
+            </VBtn>
+          </div>
+        </VAlert>
+
         <!-- Profile Header / Banner Card -->
         <VCard class="profile-header-card pa-6 rounded-3xl elevation-8 mb-8 border relative overflow-hidden">
           <div class="d-flex flex-column flex-md-row align-center align-md-start gap-6 relative z-1">
