@@ -1371,12 +1371,16 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .hero {
-  padding-block: 40px;
+  padding-block: 14px 36px;
   min-height: auto;
   display: flex;
   align-items: center;
   position: relative;
   z-index: 1;
+}
+
+.hero__container {
+  padding-top: 4px !important;
 }
 
 .hero--dark {
@@ -2123,8 +2127,12 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 600px) {
+  .hero {
+    padding-block: 8px 24px;
+  }
   .hero__container {
     padding-inline: 10px;
+    padding-top: 0 !important;
   }
   .premium-search-card {
     padding: 16px !important;
