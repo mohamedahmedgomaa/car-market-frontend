@@ -649,11 +649,11 @@ const nextSlide = () => {
 }
 
 /* =========================
-   ✅ Video Playback Controls (Ad Space)
+   ✅ Video Playback Controls (Ad Space - Mobile & Desktop)
 ========================= */
 const adVideoRef = ref(null)
 const isMuted = ref(true)
-const isPlaying = ref(true)
+const isPlaying = ref(false)
 const videoUrl = ref('')
 const videoLink = ref('')
 
@@ -677,6 +677,65 @@ const getYouTubeEmbedUrl = (url) => {
 const isYouTube = computed(() => !!getYouTubeEmbedUrl(videoUrl.value))
 const youtubeEmbedUrl = computed(() => getYouTubeEmbedUrl(videoUrl.value))
 
+// Fully compatible with iOS Safari & Android Chrome autoplay restrictions
+const initVideoPlayback = () => {
+  const el = adVideoRef.value
+  if (!el) return
+
+  try {
+    el.muted = true
+    el.defaultMuted = true
+    el.playsInline = true
+    el.setAttribute('muted', '')
+    el.setAttribute('playsinline', '')
+    el.setAttribute('webkit-playsinline', 'true')
+    el.setAttribute('x5-playsinline', 'true')
+
+    const playPromise = el.play()
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          isPlaying.value = true
+        })
+        .catch((err) => {
+          console.warn('Autoplay prevented on mobile, awaiting touch:', err)
+          isPlaying.value = false
+        })
+    }
+  } catch (e) {
+    console.warn('Video init error:', e)
+  }
+}
+
+const handleVideoReady = () => {
+  initVideoPlayback()
+}
+
+// Mobile unlock: first user touch on the page or video area starts playback if blocked
+const unlockAutoplayOnUserTouch = () => {
+  if (adVideoRef.value && adVideoRef.value.paused) {
+    adVideoRef.value.muted = true
+    adVideoRef.value.defaultMuted = true
+    adVideoRef.value
+      .play()
+      .then(() => {
+        isPlaying.value = true
+        removeTouchUnlockListeners()
+      })
+      .catch(() => {})
+  }
+}
+
+const addTouchUnlockListeners = () => {
+  window.addEventListener('touchstart', unlockAutoplayOnUserTouch, { passive: true })
+  window.addEventListener('click', unlockAutoplayOnUserTouch, { passive: true })
+}
+
+const removeTouchUnlockListeners = () => {
+  window.removeEventListener('touchstart', unlockAutoplayOnUserTouch)
+  window.removeEventListener('click', unlockAutoplayOnUserTouch)
+}
+
 const fetchVideoBanner = async () => {
   // 1. Check local/IndexedDB video banner storage first (always active & instant)
   const localActive = getActiveVideoBanner()
@@ -685,6 +744,8 @@ const fetchVideoBanner = async () => {
     if (resolved && !isDeadVideoUrl(resolved)) {
       videoUrl.value = resolved
       videoLink.value = localActive.link || ''
+      await nextTick()
+      initVideoPlayback()
       return
     }
   }
@@ -693,6 +754,8 @@ const fetchVideoBanner = async () => {
   if (props.initialVideoUrl && !isDeadVideoUrl(props.initialVideoUrl)) {
     videoUrl.value = props.initialVideoUrl
     videoLink.value = props.initialVideoLink || ''
+    await nextTick()
+    initVideoPlayback()
     return
   }
 
@@ -705,6 +768,8 @@ const fetchVideoBanner = async () => {
         if (latest.image_path && !isDeadVideoUrl(latest.image_path)) {
           videoUrl.value = latest.image_path
           videoLink.value = latest.link || ''
+          await nextTick()
+          initVideoPlayback()
           return
         }
       }
@@ -716,24 +781,48 @@ const fetchVideoBanner = async () => {
   // 4. Default: No valid video configured -> reset so clean placeholder appears!
   videoUrl.value = ''
   videoLink.value = ''
+  isPlaying.value = false
 }
 
 const toggleMute = () => {
   if (adVideoRef.value) {
     adVideoRef.value.muted = !adVideoRef.value.muted
     isMuted.value = adVideoRef.value.muted
+    if (!adVideoRef.value.muted && adVideoRef.value.paused) {
+      adVideoRef.value.play().catch(() => {})
+    }
   }
 }
 
 const togglePlay = () => {
   if (adVideoRef.value) {
     if (adVideoRef.value.paused) {
-      adVideoRef.value.play().catch(() => {})
-      isPlaying.value = true
+      adVideoRef.value.muted = isMuted.value
+      adVideoRef.value
+        .play()
+        .then(() => {
+          isPlaying.value = true
+          removeTouchUnlockListeners()
+        })
+        .catch(() => {
+          // If unmuted play failed, fallback to muted play
+          adVideoRef.value.muted = true
+          isMuted.value = true
+          adVideoRef.value.play().then(() => {
+            isPlaying.value = true
+            removeTouchUnlockListeners()
+          }).catch((e) => console.warn('Play error:', e))
+        })
     } else {
       adVideoRef.value.pause()
       isPlaying.value = false
     }
+  }
+}
+
+const onWrapperClick = () => {
+  if (!isYouTube.value && videoUrl.value) {
+    togglePlay()
   }
 }
 
@@ -759,8 +848,16 @@ watch(
   { immediate: true },
 )
 
+watch(videoUrl, async (val) => {
+  if (val && !isYouTube.value) {
+    await nextTick()
+    initVideoPlayback()
+  }
+})
+
 onMounted(() => {
   window.addEventListener('negm_video_banner_updated', fetchVideoBanner)
+  addTouchUnlockListeners()
   if (!props.controlled) {
     fetchBanners()
   }
@@ -770,6 +867,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('negm_video_banner_updated', fetchVideoBanner)
+  removeTouchUnlockListeners()
   if (timer) window.clearInterval(timer)
 })
 </script>
@@ -1122,7 +1220,11 @@ onBeforeUnmount(() => {
           <div class="hero-video-area">
             <VCard class="premium-video-card" elevation="10">
               <div class="video-label">PROMO</div>
-              <div class="video-player-wrapper">
+              <div
+                class="video-player-wrapper"
+                :class="{ 'is-clickable': !isYouTube && !!videoUrl }"
+                @click="onWrapperClick"
+              >
                 <!-- 1. YouTube Video Embed -->
                 <iframe
                   v-if="isYouTube"
@@ -1141,9 +1243,18 @@ onBeforeUnmount(() => {
                   autoplay
                   loop
                   muted
+                  :muted="true"
                   playsinline
-                  preload="metadata"
+                  webkit-playsinline="true"
+                  x5-playsinline="true"
+                  preload="auto"
                   class="ad-video"
+                  @play="isPlaying = true"
+                  @pause="isPlaying = false"
+                  @playing="isPlaying = true"
+                  @loadedmetadata="handleVideoReady"
+                  @canplay="handleVideoReady"
+                  @click.stop="togglePlay"
                 ></video>
 
                 <!-- 3. Clean Placeholder if no video configured -->
@@ -1152,15 +1263,26 @@ onBeforeUnmount(() => {
                   <span class="empty-state-title">فيديو ترويجي</span>
                   <span class="empty-state-desc">يمكنك إضافة فيديو من لوحة التحكم</span>
                 </div>
+
+                <!-- Center Play / Tap-to-Play Overlay (shown when video is paused or blocked on mobile) -->
+                <div
+                  v-if="!isYouTube && videoUrl && !isPlaying"
+                  class="video-play-overlay animate-fade-in"
+                  @click.stop="togglePlay"
+                >
+                  <div class="video-play-btn-circle" title="تشغيل الفيديو">
+                    <VIcon icon="tabler-player-play-filled" size="28" color="white" />
+                  </div>
+                </div>
                 
                 <!-- Video Controls Overlay (for HTML5 Video) -->
-                <div v-if="!isYouTube && videoUrl" class="video-controls">
+                <div v-if="!isYouTube && videoUrl" class="video-controls" @click.stop>
                   <VBtn
                     icon
                     variant="text"
                     color="white"
                     size="small"
-                    @click="togglePlay"
+                    @click.stop="togglePlay"
                     class="control-btn"
                   >
                     <VIcon :icon="isPlaying ? 'tabler-pause' : 'tabler-play'" />
@@ -1170,7 +1292,7 @@ onBeforeUnmount(() => {
                     variant="text"
                     color="white"
                     size="small"
-                    @click="toggleMute"
+                    @click.stop="toggleMute"
                     class="control-btn"
                   >
                     <VIcon :icon="isMuted ? 'tabler-volume-off' : 'tabler-volume'" />
@@ -1693,12 +1815,68 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   background: #000;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+
+  &.is-clickable {
+    cursor: pointer;
+  }
 }
 
 .ad-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+.video-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 6;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.video-play-btn-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF3E1D 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(255, 107, 0, 0.6), 0 4px 15px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  transition: all 0.25s ease;
+  animation: pulsePlayBtn 2s infinite ease-in-out;
+}
+
+@keyframes pulsePlayBtn {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.7), 0 0 20px rgba(255, 107, 0, 0.5);
+  }
+  70% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 16px rgba(255, 107, 0, 0), 0 0 30px rgba(255, 107, 0, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0), 0 0 20px rgba(255, 107, 0, 0.5);
+  }
+}
+
+.video-play-overlay:hover .video-play-btn-circle {
+  transform: scale(1.1);
+  border-color: #fff;
 }
 
 .video-controls {
@@ -2120,9 +2298,29 @@ onBeforeUnmount(() => {
   .hero-ads-column {
     flex-direction: column;
     gap: 16px;
+    height: auto !important;
+  }
+  .hero-ad-area,
+  .hero-video-area {
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
   }
   .premium-ad-card, .premium-video-card {
     min-height: 220px !important;
+    height: 240px !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .premium-ad-card, .premium-video-card {
+    min-height: 200px !important;
+    height: 210px !important;
+  }
+  .video-play-btn-circle {
+    width: 50px !important;
+    height: 50px !important;
   }
 }
 

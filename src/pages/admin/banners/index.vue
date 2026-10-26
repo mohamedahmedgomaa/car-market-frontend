@@ -616,6 +616,9 @@ onMounted(() => fetchBanners())
                     :src="banner.resolved_src || banner.image_path"
                     controls
                     muted
+                    :muted="true"
+                    playsinline
+                    webkit-playsinline="true"
                     class="rounded-lg border shadow-sm h-100 w-100 object-cover"
                     style="max-height: 120px;"
                   ></video>
@@ -762,7 +765,9 @@ onMounted(() => fetchBanners())
                   controls
                   autoplay
                   muted
+                  :muted="true"
                   playsinline
+                  webkit-playsinline="true"
                   class="w-100 h-100 object-cover"
                 ></video>
               </div>
