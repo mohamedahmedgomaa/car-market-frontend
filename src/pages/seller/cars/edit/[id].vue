@@ -10,6 +10,7 @@ import countryUserApi from '../../../../api/user/countryUserApi.js'
 import governorateUserApi from '../../../../api/user/governorateUserApi.js'
 import cityUserApi from '../../../../api/user/cityUserApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
+import { processCarImages } from '@/utils/imageProcessor.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -754,7 +755,17 @@ const handleParseSpecs = async () => {
 }
 
 /* ================= Helpers ================= */
-const fieldError = field => errors.value?.[field] || []
+const fieldError = (field) => {
+  if (errors.value?.[field]) return errors.value[field]
+  if (field === 'images') {
+    const imgErrors = Object.keys(errors.value || {})
+      .filter(k => k.startsWith('images.'))
+      .map(k => errors.value[k])
+      .flat()
+    if (imgErrors.length) return imgErrors
+  }
+  return []
+}
 
 const safeItemTitle = (obj) => obj?.name?.en ?? obj?.name ?? '-'
 
@@ -890,70 +901,24 @@ const removeExistingImage = (id) => {
   }
 }
 
-const compressImage = (file) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = (event) => {
-      const img = new Image()
-      img.src = event.target.result
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let width = img.width
-        let height = img.height
-        const MAX_WIDTH = 1920
-        const MAX_HEIGHT = 1080
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width)
-            width = MAX_WIDTH
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round((width * MAX_HEIGHT) / height)
-            height = MAX_HEIGHT
-          }
-        }
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }))
-        }, 'image/jpeg', 0.85)
-      }
-    }
-  })
-}
-
 const handleImagesChange = async (files) => {
   if (!files || !files.length) {
     form.value.images = []
-    newImagePreviews.value.forEach(p => URL.revokeObjectURL(p.url))
+    newImagePreviews.value.forEach(p => p.url && URL.revokeObjectURL(p.url))
     newImagePreviews.value = []
     return
   }
 
   const remainingSlots = 20 - existingImages.value.length
-  
+
   if (files.length > remainingSlots) {
-    files = files.slice(0, remainingSlots)
     snackbarMessage.value = `Maximum 20 images allowed in total. Extra images were removed.`
     snackbarColor.value = 'warning'
     snackbar.value = true
   }
 
-  const compressedFiles = []
-  for (const file of files) {
-    if (file.size > 1024 * 1024 * 1.5) {
-      const compressed = await compressImage(file)
-      compressedFiles.push(compressed)
-    } else {
-      compressedFiles.push(file)
-    }
-  }
-
-  form.value.images = compressedFiles
+  const processedFiles = await processCarImages(files, remainingSlots)
+  form.value.images = processedFiles
 
   newImagePreviews.value.forEach(p => URL.revokeObjectURL(p.url))
   newImagePreviews.value = []
@@ -1707,7 +1672,7 @@ const handleSubmit = async () => {
           <VFileInput
             v-model="form.images"
             multiple
-            accept="image/*"
+            accept="image/*,.heic,.HEIC,.heif,.HEIF"
             label="Upload New Images"
             variant="outlined"
             @update:modelValue="handleImagesChange"

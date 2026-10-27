@@ -12,6 +12,7 @@ import governorateAdminApi from '../../../api/admin/governorateAdminApi.js'
 import cityAdminApi from '../../../api/admin/cityAdminApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
 import { customBrandFilter } from '@/utils/brandTranslations.js'
+import { processCarImages } from '@/utils/imageProcessor.js'
 
 const router = useRouter()
 
@@ -824,7 +825,17 @@ const handleParseSpecs = async () => {
 }
 
 /* ================= Helpers ================= */
-const fieldError = field => errors.value?.[field] || []
+const fieldError = (field) => {
+  if (errors.value?.[field]) return errors.value[field]
+  if (field === 'images') {
+    const imgErrors = Object.keys(errors.value || {})
+      .filter(k => k.startsWith('images.'))
+      .map(k => errors.value[k])
+      .flat()
+    if (imgErrors.length) return imgErrors
+  }
+  return []
+}
 
 /* ================= Lifecycle ================= */
 onMounted(async () => {
@@ -908,75 +919,32 @@ const loadCities = async () => {
 }
 
 /* ================= Images ================= */
-const compressImage = (file) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = (event) => {
-      const img = new Image()
-      img.src = event.target.result
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let width = img.width
-        let height = img.height
-        const MAX_WIDTH = 1920
-        const MAX_HEIGHT = 1080
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width)
-            width = MAX_WIDTH
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round((width * MAX_HEIGHT) / height)
-            height = MAX_HEIGHT
-          }
-        }
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }))
-        }, 'image/jpeg', 0.85)
-      }
-    }
-  })
-}
-
-const handleImagesChange = async files => {
+const handleImagesChange = async (files) => {
+  imagePreviews.value.forEach(p => p.url && URL.revokeObjectURL(p.url))
   imagePreviews.value = []
-  if (!files || !files.length) return
-  
+  if (!files || !files.length) {
+    form.value.images = []
+    return
+  }
+
   if (files.length > 20) {
-    files = files.slice(0, 20)
-    form.value.images = files
     snackbarMessage.value = 'Maximum 20 images allowed. Extra images were removed.'
     snackbarColor.value = 'warning'
     snackbar.value = true
   }
 
-  const compressedFiles = []
-  for (const file of files) {
-    if (file.size > 1024 * 1024 * 1.5) { // compress if > 1.5MB
-      const compressed = await compressImage(file)
-      compressedFiles.push(compressed)
-    } else {
-      compressedFiles.push(file)
-    }
-  }
-  
-  form.value.images = compressedFiles
+  const processedFiles = await processCarImages(files, 20)
+  form.value.images = processedFiles
 
-  compressedFiles.forEach((file, index) => {
+  processedFiles.forEach((file, index) => {
     imagePreviews.value.push({
       file,
       url: URL.createObjectURL(file),
-      index
+      index,
     })
   })
 
-  if (form.value.main_image === null && compressedFiles.length) {
+  if (form.value.main_image === null && processedFiles.length) {
     form.value.main_image = 0
   }
 }
@@ -1722,7 +1690,7 @@ const handleSubmit = async () => {
           <VFileInput
             v-model="form.images"
             multiple
-            accept="image/*"
+            accept="image/*,.heic,.HEIC,.heif,.HEIF"
             label="Upload Images"
             variant="outlined"
             @update:modelValue="handleImagesChange"
