@@ -4,8 +4,11 @@ export default {
   getAll(params) {
     return api.get('/admin/banners', { params })
   },
-  create(payload) {
-    return api.post('/admin/banners', payload)
+  create(payload, config = {}) {
+    return api.post('/admin/banners', payload, {
+      timeout: 600000,
+      ...config,
+    })
   },
   update(id, payload) {
     if (payload instanceof FormData) {

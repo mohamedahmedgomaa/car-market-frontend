@@ -257,13 +257,13 @@ const handleCreate = async (useOriginal = false) => {
 
       // 2. Also push to backend API so all visitors see it
       let backendSynced = false
+      let backendError = ''
       try {
         const fd = new FormData()
         fd.append('type', 'video')
         if (link) fd.append('link', link)
         if (file) {
           fd.append('video', file)
-          fd.append('image', file)
         } else if (vidUrl) {
           fd.append('video_url', vidUrl)
         }
@@ -271,6 +271,7 @@ const handleCreate = async (useOriginal = false) => {
         backendSynced = true
       } catch (apiErr) {
         console.warn('Backend API banner sync notice:', apiErr?.response?.data || apiErr?.message)
+        backendError = apiErr?.response?.data?.message || apiErr?.message || ''
       }
 
       createDialog.value = false
@@ -282,7 +283,8 @@ const handleCreate = async (useOriginal = false) => {
       await fetchBanners()
 
       if (file && !backendSynced) {
-        alert('تم حفظ الفيديو على متصفحك بنجاح! ⚠️ ملاحظة: خادم الاستضافة رفض استلام ملف الفيديو المباشر نظراً لكبر حجمه (Network Error). لجعل الفيديو يظهر لجميع الزوار، يُنصح بوضع رابط الفيديو من YouTube أو رابط مباشر، أو زيادة الحد الأقصى لحجم الملفات في cPanel.')
+        const detailMsg = backendError ? ` (${backendError})` : ''
+        alert(`تم حفظ الفيديو على متصفحك بنجاح! ⚠️ ملاحظة: لم يتم إرسال الفيديو للسيرفر${detailMsg}. إذا كان حجم الفيديو كبيراً، يرجى رفع الحد الأقصى لحجم الملفات في cPanel أو استخدام رابط YouTube.`)
       }
       return
     }
