@@ -379,6 +379,10 @@
     "resolveVideoSource": true,
     "saveStoredVideoBanners": true,
     "saveVideoBlob": true,
-    "updateVideoBannerItem": true
+    "updateVideoBannerItem": true,
+    "isHeicFile": true,
+    "processCarImage": true,
+    "processCarImages": true,
+    "sanitizeImageFileName": true
   }
 }

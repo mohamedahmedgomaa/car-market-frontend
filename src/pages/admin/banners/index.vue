@@ -103,6 +103,8 @@ const handleEditSave = async () => {
 const createDialog = ref(false)
 const creating = ref(false)
 const selectedFile = ref(null)
+const uploadProgress = ref(0)
+const uploadProgressText = ref('')
 
 // Cropper State
 const imageToCrop = ref(null)
@@ -196,9 +198,10 @@ const handleDelete = async () => {
 
 // Watch selected file to init cropper inside the dialog
 watch(selectedFile, (file) => {
+  const actual = Array.isArray(file) ? file[0] : file
   if (uploadType.value === 'video') {
-    if (file && file instanceof File) {
-      videoFilePreviewUrl.value = URL.createObjectURL(file)
+    if (actual && actual instanceof File) {
+      videoFilePreviewUrl.value = URL.createObjectURL(actual)
     } else {
       videoFilePreviewUrl.value = ''
     }
@@ -242,20 +245,20 @@ const handleCreate = async (useOriginal = false) => {
   if (!selectedFile.value && !videoUrlInput.value) return
 
   creating.value = true
+  uploadProgress.value = 0
+  uploadProgressText.value = ''
+
   try {
     if (uploadType.value === 'video') {
       const vidUrl = videoUrlInput.value ? videoUrlInput.value.trim() : ''
-      const file = selectedFile.value
+      const file = Array.isArray(selectedFile.value) ? selectedFile.value[0] : selectedFile.value
       const link = bannerLinkInput.value ? bannerLinkInput.value.trim() : ''
 
-      // 1. Save to videoBannerStorage immediately! (Works 100% with YouTube and Local Files)
-      try {
-        await addVideoBanner({ videoUrl: vidUrl, link, file })
-      } catch (storageErr) {
-        console.warn('Local storage video save error:', storageErr)
+      if (file && file.size > 120 * 1024 * 1024) {
+        alert('حجم الفيديو المختار (' + (file.size / (1024 * 1024)).toFixed(1) + ' ميجابايت) كبير نسبياً. يُفضل ضغط الفيديو لأقل من 100 ميجابايت لضمان سرعة التحميل وتجربة سلسة للزوار.')
       }
 
-      // 2. Also push to backend API so all visitors see it
+      // 1. Push directly to backend API with progress tracking
       let backendSynced = false
       let backendError = ''
       try {
@@ -264,14 +267,41 @@ const handleCreate = async (useOriginal = false) => {
         if (link) fd.append('link', link)
         if (file) {
           fd.append('video', file)
+          fd.append('image', file)
         } else if (vidUrl) {
           fd.append('video_url', vidUrl)
         }
-        await bannerAdminApi.create(fd)
+
+        uploadProgressText.value = 'جاري بدء رفع الفيديو إلى الخادم...'
+        await bannerAdminApi.create(fd, {
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              uploadProgress.value = percent
+              const loadedMB = (progressEvent.loaded / (1024 * 1024)).toFixed(1)
+              const totalMB = (progressEvent.total / (1024 * 1024)).toFixed(1)
+              uploadProgressText.value = `جاري رفع الفيديو إلى الخادم: ${percent}% (${loadedMB} / ${totalMB} ميجابايت)...`
+            }
+          },
+        })
         backendSynced = true
+        if (file) {
+          alert('تم رفع ونشر إعلان الفيديو على خادم الموقع بنجاح! سيظهر الآن لجميع الزوار.')
+        }
       } catch (apiErr) {
-        console.warn('Backend API banner sync notice:', apiErr?.response?.data || apiErr?.message)
+        console.error('Backend API banner sync error:', apiErr?.response?.data || apiErr?.message)
         backendError = apiErr?.response?.data?.message || apiErr?.message || ''
+      }
+
+      // 2. Fallback offline preview only if backend failed
+      if (!backendSynced) {
+        try {
+          await addVideoBanner({ videoUrl: vidUrl, link, file })
+        } catch (storageErr) {
+          console.warn('Local storage video save error:', storageErr)
+        }
+        const detailMsg = backendError ? ` (${backendError})` : ''
+        alert(`تعذر رفع ملف الفيديو مباشرة إلى خادم الاستضافة${detailMsg}. تم حفظ الفيديو مؤقتاً في متصفحك. يرجى التأكد من رفع الحد الأقصى للملفات في cPanel أو استخدام رابط يوتيوب.`)
       }
 
       createDialog.value = false
@@ -280,12 +310,9 @@ const handleCreate = async (useOriginal = false) => {
       bannerLinkInput.value = ''
       videoFilePreviewUrl.value = ''
       isCropped.value = false
+      uploadProgress.value = 0
+      uploadProgressText.value = ''
       await fetchBanners()
-
-      if (file && !backendSynced) {
-        const detailMsg = backendError ? ` (${backendError})` : ''
-        alert(`تم حفظ الفيديو على متصفحك بنجاح! ⚠️ ملاحظة: لم يتم إرسال الفيديو للسيرفر${detailMsg}. إذا كان حجم الفيديو كبيراً، يرجى رفع الحد الأقصى لحجم الملفات في cPanel أو استخدام رابط YouTube.`)
-      }
       return
     }
 
@@ -773,6 +800,21 @@ onMounted(() => fetchBanners())
                   class="w-100 h-100 object-cover"
                 ></video>
               </div>
+            </div>
+
+            <!-- Upload Progress Bar in Dialog -->
+            <div v-if="creating && uploadProgress > 0" class="mt-4 p-4 rounded-xl border bg-primary bg-opacity-10">
+              <div class="d-flex justify-space-between align-center mb-2">
+                <span class="text-xs font-bold text-primary">{{ uploadProgressText }}</span>
+                <span class="text-xs font-bold text-primary">{{ uploadProgress }}%</span>
+              </div>
+              <VProgressLinear
+                :model-value="uploadProgress"
+                color="primary"
+                height="10"
+                rounded
+                striped
+              />
             </div>
           </div>
 
