@@ -9,6 +9,7 @@ import modelUserApi from '@/api/user/modelUserApi.js'
 import carsUserApi from '@/api/user/carUserApi.js'
 import { customBrandFilter, sortBrands, matchBrand, translateText } from '@/utils/brandTranslations.js'
 import { getActiveVideoBanner, resolveVideoSource } from '@/utils/videoBannerStorage.js'
+import defaultPromoVideo from '@/assets/vedio/start vedio/فديو الاعلان v8.mp4'
 
 const theme = useTheme()
 const router = useRouter()
@@ -654,7 +655,7 @@ const nextSlide = () => {
 const adVideoRef = ref(null)
 const isMuted = ref(true)
 const isPlaying = ref(false)
-const videoUrl = ref('')
+const videoUrl = ref(defaultPromoVideo)
 const videoLink = ref('')
 
 const isDeadVideoUrl = (url) => {
@@ -749,6 +750,7 @@ const fetchVideoBanner = async () => {
       return
     }
   }
+  }
 
   // 2. Props from parent (only if valid and NOT the dead Google fallback!)
   if (props.initialVideoUrl && !isDeadVideoUrl(props.initialVideoUrl)) {
@@ -778,10 +780,11 @@ const fetchVideoBanner = async () => {
     }
   }
 
-  // 4. Default: No valid video configured -> reset so clean placeholder appears!
-  videoUrl.value = ''
+  // 4. Default: No valid video configured -> fallback to default promo video!
+  videoUrl.value = defaultPromoVideo
   videoLink.value = ''
-  isPlaying.value = false
+  await nextTick()
+  initVideoPlayback()
 }
 
 const toggleMute = () => {
@@ -1239,7 +1242,7 @@ onBeforeUnmount(() => {
                 <video
                   v-else-if="videoUrl"
                   ref="adVideoRef"
-                  :src="videoUrl"
+                  :src="videoUrl || defaultPromoVideo"
                   autoplay
                   loop
                   muted
@@ -1255,6 +1258,7 @@ onBeforeUnmount(() => {
                   @loadedmetadata="handleVideoReady"
                   @canplay="handleVideoReady"
                   @click.stop="togglePlay"
+                  @error="videoUrl = defaultPromoVideo"
                 ></video>
 
                 <!-- 3. Clean Placeholder if no video configured -->
