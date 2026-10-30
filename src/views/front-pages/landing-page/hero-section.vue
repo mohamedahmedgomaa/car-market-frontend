@@ -750,7 +750,6 @@ const fetchVideoBanner = async () => {
       return
     }
   }
-  }
 
   // 2. Props from parent (only if valid and NOT the dead Google fallback!)
   if (props.initialVideoUrl && !isDeadVideoUrl(props.initialVideoUrl)) {
