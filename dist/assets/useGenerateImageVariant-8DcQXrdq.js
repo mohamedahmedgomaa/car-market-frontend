@@ -1,0 +1,1 @@
+import{ab as u,aG as l,k as g}from"./index-GN_gQ6R7.js";const f="/assets/logo-dark-BFQu-mHz.png",c="/assets/logo-light-BvA_nD6u.png",m=(e,o,n,t,s=!1)=>{const a=u(),{global:r}=l();return g(()=>r.name.value==="light"?a.skin==="bordered"&&s?n:e:r.name.value==="dark"?a.skin==="bordered"&&s?t:o:e)};export{c as a,f as l,m as u};
