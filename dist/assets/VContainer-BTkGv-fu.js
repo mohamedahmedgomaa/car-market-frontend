@@ -1,1 +1,5 @@
+<<<<<<<< HEAD:dist/assets/VContainer-BTkGv-fu.js
 /* empty css              */import{s as o,H as r,b1 as i,v as l,b as m,x as c,y as u,b2 as d,z as p}from"./index-D5rQDjaN.js";const C=c({fluid:{type:Boolean,default:!1},...p(),...d(),...u()},"VContainer"),V=o()({name:"VContainer",props:C(),setup(e,s){let{slots:a}=s;const{rtlClasses:n}=r(),{dimensionStyles:t}=i(e);return l(()=>m(e.tag,{class:["v-container",{"v-container--fluid":e.fluid},n.value,e.class],style:[t.value,e.style]},a)),{}}});export{V};
+========
+/* empty css              */import{s as o,H as r,b1 as i,v as l,b as m,x as c,y as u,b2 as d,z as p}from"./index-CSv-KYs2.js";const C=c({fluid:{type:Boolean,default:!1},...p(),...d(),...u()},"VContainer"),V=o()({name:"VContainer",props:C(),setup(e,s){let{slots:a}=s;const{rtlClasses:n}=r(),{dimensionStyles:t}=i(e);return l(()=>m(e.tag,{class:["v-container",{"v-container--fluid":e.fluid},n.value,e.class],style:[t.value,e.style]},a)),{}}});export{V};
+>>>>>>>> 40ef340 (تصليح زر الواتس):dist/assets/VContainer-DlxKb2Ok.js

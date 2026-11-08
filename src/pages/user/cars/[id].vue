@@ -435,8 +435,9 @@ const normalizePhone = (phone) => {
   if (p.startsWith('00')) p = p.slice(2)
 
   // Egypt (+20)
-  if (p.startsWith('01') && p.length === 11) return '20' + p
-  if (p.startsWith('201') && p.length === 13) return p
+  if (p.startsWith('01') && p.length === 11) return '20' + p.slice(1)
+  if (p.startsWith('2001') && p.length === 13) return '20' + p.slice(3)
+  if (p.startsWith('201') && p.length === 12) return p
 
   // Saudi (+966)
   if (p.startsWith('05') && p.length === 10) return '966' + p.slice(1)

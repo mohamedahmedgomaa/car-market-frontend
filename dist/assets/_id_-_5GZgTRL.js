@@ -1,1 +1,5 @@
+<<<<<<<< HEAD:dist/assets/_id_-_5GZgTRL.js
 import{T as a,c as t,b as c,aN as o,aa as n,i,o as u}from"./index-D5rQDjaN.js";const l={class:"d-flex align-center justify-center min-vh-100 pa-6"},m={__name:"[id]",setup(p){const s=n(),r=i();return a(()=>{const e=s.params.id;e?r.replace(`/user/cars/${e}`):r.replace("/user/cars")}),(e,d)=>(u(),t("div",l,[c(o,{indeterminate:"",color:"primary",size:"48"})]))}};export{m as default};
+========
+import{T as a,c as t,b as c,aN as o,aa as n,i,o as u}from"./index-CSv-KYs2.js";const l={class:"d-flex align-center justify-center min-vh-100 pa-6"},m={__name:"[id]",setup(p){const s=n(),r=i();return a(()=>{const e=s.params.id;e?r.replace(`/user/cars/${e}`):r.replace("/user/cars")}),(e,d)=>(u(),t("div",l,[c(o,{indeterminate:"",color:"primary",size:"48"})]))}};export{m as default};
+>>>>>>>> 40ef340 (تصليح زر الواتس):dist/assets/_id_-DvPjY_bs.js

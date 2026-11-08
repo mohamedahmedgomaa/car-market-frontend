@@ -251,6 +251,41 @@ const copyPhone = () => {
   }
 }
 
+// ✅ Phone Normalization & WhatsApp Link
+const normalizePhone = (phone) => {
+  if (!phone) return ''
+  let p = String(phone).replace(/\D/g, '')
+  if (p.startsWith('00')) p = p.slice(2)
+
+  // Egypt (+20): 010..., 011..., 012..., 015...
+  if (p.startsWith('01') && p.length === 11) return '20' + p.slice(1)
+  if (p.startsWith('2001') && p.length === 13) return '20' + p.slice(3)
+  if (p.startsWith('201') && p.length === 12) return p
+
+  // Saudi (+966): 05...
+  if (p.startsWith('05') && p.length === 10) return '966' + p.slice(1)
+  if (p.startsWith('5') && p.length === 9) return '966' + p
+  if (p.startsWith('9665') && p.length === 12) return p
+
+  // UAE (+971): 05...
+  if (p.startsWith('9715') && p.length === 12) return p
+
+  return p.length >= 8 ? p : ''
+}
+
+const whatsappLink = computed(() => {
+  const rawPhone = seller.value?.whatsapp || seller.value?.whatsapp_number || seller.value?.phone
+  const phone = normalizePhone(rawPhone)
+  if (!phone) return ''
+
+  const name = _t(seller.value?.store_name) || seller.value?.name || ''
+  const msg = (locale.value || 'ar') === 'ar'
+    ? `مرحباً، أود الاستفسار بخصوص سياراتكم المعروضة في ${name}`
+    : `Hello, I'd like to inquire about your vehicle listings at ${name}`
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+})
+
 // ✅ Review Dialog State
 const showReviewDialog = ref(false)
 const reviewRating = ref(0)
@@ -404,31 +439,30 @@ onMounted(fetchSeller)
               <!-- Right Column: Premium Contact Hub Deck -->
               <div class="contact-hub-deck flex-shrink-0 d-flex flex-column justify-center align-center">
                 <!-- Action Buttons: Call & WhatsApp -->
-                <div class="d-flex flex-row flex-lg-column gap-3 w-100 mb-3">
+                <div class="action-buttons-grid w-100 mb-3">
                   <VBtn
                     v-if="seller.phone"
                     variant="flat"
-                    size="large"
                     rounded="pill"
-                    class="action-btn call-action-btn font-weight-black text-subtitle-1 w-100 text-white"
+                    class="action-btn call-action-btn font-weight-bold text-white"
                     :class="'call-btn-' + (seller.tier?.toLowerCase() || 'default')"
                     @click="openCallDialog"
                   >
-                    <VIcon icon="tabler-phone" size="19" class="me-2" />
-                    {{ t('call') || 'Call' }}
+                    <VIcon icon="tabler-phone" size="19" class="me-1.5" />
+                    <span>{{ t('callBtn') || t('call') || 'اتصال' }}</span>
                   </VBtn>
 
                   <VBtn
-                    v-if="seller.phone"
+                    v-if="seller.phone || seller.whatsapp || seller.whatsapp_number"
                     variant="flat"
-                    size="large"
                     rounded="pill"
-                    class="action-btn whatsapp-action-btn font-weight-black text-subtitle-1 w-100 text-white"
-                    :href="`https://wa.me/${String(seller.phone).replace('+', '')}`"
+                    class="action-btn whatsapp-action-btn font-weight-bold text-white"
+                    :href="whatsappLink"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <VIcon icon="tabler-brand-whatsapp" size="20" class="me-2" />
-                    {{ t('whatsapp') || 'WhatsApp' }}
+                    <VIcon icon="tabler-brand-whatsapp" size="20" class="me-1.5" />
+                    <span>{{ t('whatsappBtn') || t('whatsapp') || 'واتساب' }}</span>
                   </VBtn>
                 </div>
 
@@ -567,6 +601,23 @@ onMounted(fetchSeller)
               >
                 <VIcon icon="tabler-phone-outgoing" class="me-2" />
                 {{ t('callNow') || 'اتصال الآن' }}
+              </VBtn>
+
+              <VBtn
+                v-if="whatsappLink"
+                color="success"
+                block
+                height="48"
+                size="large"
+                rounded="pill"
+                class="font-weight-bold shadow-success text-subtitle-1"
+                :href="whatsappLink"
+                target="_blank"
+                rel="noopener noreferrer"
+                @click="closeCallDialog"
+              >
+                <VIcon icon="tabler-brand-whatsapp" class="me-2" size="20" />
+                {{ t('whatsappBtn') || t('whatsapp') || 'واتساب' }}
               </VBtn>
 
               <VBtn
@@ -899,15 +950,60 @@ onMounted(fetchSeller)
   backdrop-filter: blur(20px);
   min-width: 270px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+
+  @media (max-width: 959px) {
+    width: 100% !important;
+    max-width: 480px;
+    min-width: 0 !important;
+    padding: 16px !important;
+  }
+}
+
+.action-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+
+  @media (min-width: 960px) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .action-btn {
   height: 48px !important;
   border-radius: 9999px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  padding-inline: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.3px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   &:hover {
     transform: translateY(-2px);
   }
+
+  @media (max-width: 600px) {
+    height: 44px !important;
+    padding-inline: 10px !important;
+    font-size: 0.88rem !important;
+  }
+}
+
+.action-btn :deep(.v-btn__content) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  gap: 4px;
 }
 
 .call-btn-diamond, .call-btn-default {

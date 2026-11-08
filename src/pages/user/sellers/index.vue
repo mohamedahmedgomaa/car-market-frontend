@@ -268,9 +268,24 @@ const closeCallDialog = () => {
   selectedSellerForCall.value = null
 }
 
+const normalizePhone = (phone) => {
+  if (!phone) return ''
+  let p = String(phone).replace(/\D/g, '')
+  if (p.startsWith('00')) p = p.slice(2)
+  if (p.startsWith('01') && p.length === 11) return '20' + p.slice(1)
+  if (p.startsWith('2001') && p.length === 13) return '20' + p.slice(3)
+  if (p.startsWith('201') && p.length === 12) return p
+  if (p.startsWith('05') && p.length === 10) return '966' + p.slice(1)
+  if (p.startsWith('5') && p.length === 9) return '966' + p
+  if (p.startsWith('9665') && p.length === 12) return p
+  if (p.startsWith('9715') && p.length === 12) return p
+  return p.length >= 8 ? p : ''
+}
+
 const openWhatsApp = (phone) => {
-  if (!phone) return
-  window.open(`https://wa.me/${String(phone).replace('+', '')}`, '_blank')
+  const normalized = normalizePhone(phone)
+  if (!normalized) return
+  window.open(`https://wa.me/${normalized}`, '_blank')
 }
 
 onMounted(() => {
