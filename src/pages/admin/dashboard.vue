@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import dashboardAdminApi from '@/api/admin/dashboardAdminApi'
+import PageHeroHeader from '@/components/PageHeroHeader.vue'
 
 const stats = ref({
   cars: { total: 0, pending: 0, approved: 0, views: 0 },
@@ -46,26 +47,29 @@ const getNestedValue = (obj, path) => {
 
 <template>
   <div class="admin-dashboard">
-    <!-- Header -->
-    <div class="d-flex align-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">System Overview</h1>
-        <p class="text-subtitle-1 text-medium-emphasis">Real-time performance metrics and inventory management.</p>
-      </div>
-      <div class="d-flex gap-3">
+    <!-- Page Hero Header -->
+    <PageHeroHeader
+      title="لوحة تحكم النظام (Admin Control Center)"
+      subtitle="المؤشرات التشغيلية الحية، إدارة المخزون المركزي، وحركة المستخدمين والمعارض"
+      icon="tabler-shield-lock"
+      :breadcrumbs="[
+        { title: 'لوحة تحكم الإدارة' },
+      ]"
+      badge="نظام مركزي متصل"
+      badge-color="primary"
+    >
+      <template #actions>
         <VBtn
           color="primary"
           prepend-icon="tabler-refresh"
-          variant="elevated"
-          elevation="4"
+          class="font-weight-bold"
           :loading="loading"
           @click="fetchDashboardData"
-          class="rounded-pill px-6"
         >
-          Refresh Data
+          تحديث البيانات
         </VBtn>
-      </div>
-    </div>
+      </template>
+    </PageHeroHeader>
 
     <!-- Stats Grid -->
     <VRow class="mb-8">

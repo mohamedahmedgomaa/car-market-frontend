@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import brandSellerApi from '../../../api/seller/brandSellerApi.js'
 import { useRouter } from 'vue-router'
+import PageHeroHeader from '@/components/PageHeroHeader.vue'
+import AppTableLoader from '@/components/AppTableLoader.vue'
 
 const router = useRouter()
 const brands = ref([])
@@ -80,18 +82,28 @@ const showingText = computed(() => {
 
 <template>
   <div class="p-4">
-    <div class="flex items-center justify-between mb-6 gap-4">
-      <h2 class="text-2xl font-semibold text-gray-100">Brands List</h2>
-
-      <VBtn
-        color="primary"
-        class="rounded-lg font-medium text-white px-5 py-2 flex items-center gap-2"
-        @click="$router.push('/seller/brands/create')"
-      >
-        <VIcon icon="tabler-plus" start />
-        Add New Brand
-      </VBtn>
-    </div>
+    <PageHeroHeader
+      title="ماركات السيارات (Brands)"
+      subtitle="استعراض والتحكم في ماركات المركبات المعتمدة والمتاحة في النظام"
+      icon="tabler-building-factory"
+      :breadcrumbs="[
+        { title: 'لوحة التحكم', to: '/seller/dashboard', icon: 'tabler-smart-home' },
+        { title: 'الماركات' },
+      ]"
+      :badge="`${Number(total).toLocaleString()} ماركة`"
+      badge-color="primary"
+    >
+      <template #actions>
+        <VBtn
+          color="primary"
+          prepend-icon="tabler-circle-plus"
+          class="font-weight-bold"
+          @click="$router.push('/seller/brands/create')"
+        >
+          إضافة ماركة جديدة
+        </VBtn>
+      </template>
+    </PageHeroHeader>
 
     <div class="mb-6">
       <VTextField
@@ -137,7 +149,12 @@ const showingText = computed(() => {
 
     </VTable>
 
-    <div v-else class="text-center py-4">Loading...</div>
+    <AppTableLoader
+      v-else
+      title="جاري تحميل ماركات السيارات..."
+      subtitle="يتم جلب قائمة الماركات والشعارات المعتمدة"
+      :height="260"
+    />
 
     <!-- Confirm Delete -->
     <VDialog v-model="deleteDialog" max-width="400">

@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import carFeatureSellerApi from '../../../api/seller/carFeatureSellerApi.js'
 import { useRouter } from 'vue-router'
+import PageHeroHeader from '@/components/PageHeroHeader.vue'
+import AppTableLoader from '@/components/AppTableLoader.vue'
 
 const router = useRouter()
 const lists = ref([])
@@ -80,18 +82,28 @@ const showingText = computed(() => {
 
 <template>
   <div class="p-4">
-    <div class="flex items-center justify-between mb-6 gap-4">
-      <h2 class="text-2xl font-semibold text-gray-100">Car Features List</h2>
-
-      <VBtn
-        color="primary"
-        class="rounded-lg font-medium text-white px-5 py-2 flex items-center gap-2"
-        @click="$router.push('/seller/car_features/create')"
-      >
-        <VIcon icon="tabler-plus" start />
-        Add New Car Feature
-      </VBtn>
-    </div>
+    <PageHeroHeader
+      title="مواصفات ومميزات السيارات (Car Features)"
+      subtitle="استعراض وإدارة قائمة التجهيزات والمواصفات القياسية والإضافية للمركبات"
+      icon="tabler-sparkles"
+      :breadcrumbs="[
+        { title: 'لوحة التحكم', to: '/seller/dashboard', icon: 'tabler-smart-home' },
+        { title: 'المميزات والمواصفات' },
+      ]"
+      :badge="`${Number(total).toLocaleString()} ميزة`"
+      badge-color="primary"
+    >
+      <template #actions>
+        <VBtn
+          color="primary"
+          prepend-icon="tabler-circle-plus"
+          class="font-weight-bold"
+          @click="$router.push('/seller/car_features/create')"
+        >
+          إضافة ميزة جديدة
+        </VBtn>
+      </template>
+    </PageHeroHeader>
 
     <div class="mb-6">
       <VTextField
@@ -137,7 +149,12 @@ const showingText = computed(() => {
 
     </VTable>
 
-    <div v-else class="text-center py-4">Loading...</div>
+    <AppTableLoader
+      v-else
+      title="جاري تحميل مواصفات وكماليات السيارات..."
+      subtitle="يتم جلب بنك التجهيزات والمميزات القياسية"
+      :height="260"
+    />
 
     <!-- Confirm Delete -->
     <VDialog v-model="deleteDialog" max-width="400">

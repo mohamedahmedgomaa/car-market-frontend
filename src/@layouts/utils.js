@@ -37,7 +37,11 @@ export const resolveNavLinkRouteName = (link, router) => {
   if (typeof link.to === 'string')
     return link.to
   
-  return router.resolve(link.to).name
+  try {
+    return router.resolve(link.to)?.name || null
+  } catch (e) {
+    return null
+  }
 }
 
 /**

@@ -5,20 +5,34 @@ import { useRouter, useRoute } from 'vue-router'
 import carSellerApi from '../../../../api/seller/carSellerApi.js'
 import brandUserApi from '../../../../api/user/brandUserApi.js'
 import modelUserApi from '../../../../api/user/modelUserApi.js'
-import carFeatureUserApi from '../../../../api/user/carFeatureUserApi.js'
 import countryUserApi from '../../../../api/user/countryUserApi.js'
 import governorateUserApi from '../../../../api/user/governorateUserApi.js'
 import cityUserApi from '../../../../api/user/cityUserApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
+import PageHeroHeader from '@/components/PageHeroHeader.vue'
+import CarMotionLoader from '@/components/CarMotionLoader.vue'
+import { customBrandFilter } from '@/utils/brandTranslations.js'
 import { processCarImages } from '@/utils/imageProcessor.js'
 
 const router = useRouter()
 const route = useRoute()
 const carId = route.params.id
 
-const BASE_URL = import.meta.env.VITE_BASE_URL
+/* ================= Wizard Step State ================= */
+const currentStep = ref(1)
+const showSmartParser = ref(false)
 
-/* ================= State ================= */
+const steps = [
+  { step: 1, title: 'هوية المركبة', subtitle: 'النوع والماركة والموديل', icon: 'tabler-car' },
+  { step: 2, title: 'المواصفات الفنية', subtitle: 'المحرك، الفتيس، العداد', icon: 'tabler-engine' },
+  { step: 3, title: 'السعر والموقع', subtitle: 'السعر والتواصل والمكان', icon: 'tabler-cash' },
+  { step: 4, title: 'الصور والمميزات', subtitle: 'صور الإعلان والوصف', icon: 'tabler-photo' },
+  { step: 5, title: 'مراجعة وتحديث', subtitle: 'المعاينة النهائية والحفظ', icon: 'tabler-check' },
+]
+
+const progressPercent = computed(() => (currentStep.value / steps.length) * 100)
+
+/* ================= Form State ================= */
 const form = ref({
   seller_id: null,
   brand_id: null,
@@ -34,44 +48,35 @@ const form = ref({
   description_en: '',
 
   price: '',
+  old_price: '',
   year: '',
   mileage: '',
 
-  type: '',
-  transmission: '',
-  fuel_type: '',
-  drivetrain: '',
-  color: '#000000',
+  type: 'car',
+  transmission: 'automatic',
+  fuel_type: 'petrol',
+  drivetrain: 'FWD',
+  color: '#FFFFFF',
   condition: 'used',
-  is_import: false,
-
-  cylinders: null,
-  engine_capacity: null,
+  is_import: '0',
+  cylinders: 4,
+  engine_capacity: '1600',
   acceleration: '',
   weight: '',
 
-  features: [],
+  phone_number: '',
+  whatsapp_number: '',
 
-  // صور جديدة فقط (Files)
+  features: [],
   images: [],
 })
 
-// ✅ صور قديمة من السيرفر
 const existingImages = ref([]) // [{id, url, is_main}]
-const keepImages = ref([])     // ids اللي هنحافظ عليهم
-
-// ✅ صور جديدة للـ preview
+const keepImages = ref([])
 const newImagePreviews = ref([]) // [{file, url, index}]
-
-/**
- * main image ممكن تبقى:
- * - old: { type: 'old', id: number }
- * - new: { type: 'new', index: number }
- */
 const mainSelection = ref(null)
-const carSellerName = ref('')
 
-const sellers = ref([])
+const carDetails = ref(null)
 const brands = ref([])
 const models = ref([])
 const features = ref([])
@@ -80,696 +85,95 @@ const governorates = ref([])
 const cities = ref([])
 
 const loading = ref(false)
+const saving = ref(false)
 const errors = ref({})
 
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('success')
 
-/* ================= Refs for Auto-focus ================= */
-const refType = ref()
-const refBrand = ref()
-const refModel = ref()
-const refCountry = ref()
-const refGovernorate = ref()
-const refCity = ref()
-const refTitleAr = ref()
-const refTitleEn = ref()
-const refPrice = ref()
-const refYear = ref()
-const refMileage = ref()
-const refTransmission = ref()
-const refFuelType = ref()
-const refDrivetrain = ref()
-const refCondition = ref()
-
-const toNumOrNull = (v, limit = 9) => {
-  if (v === '' || v === undefined || v === null) return null
-  const arabicDigits = '٠١٢٣٤٥٦٧٨٩'
-  let raw = String(v).replace(/[٠-٩]/g, d => arabicDigits.indexOf(d))
-  raw = raw.replace(/\D/g, '').slice(0, limit)
-  let n = Number(raw)
-  return Number.isNaN(n) || raw === '' ? null : n
-}
-
-const focusNext = (nextRef) => {
-  if (nextRef && nextRef.focus) {
-    setTimeout(() => {
-      nextRef.focus()
-    }, 100)
-  }
-}
-
-const commonColors = [
-  { name: 'White', hex: '#FFFFFF' },
-  { name: 'Black', hex: '#000000' },
-  { name: 'Silver', hex: '#C0C0C0' },
-  { name: 'Grey', hex: '#808080' },
-  { name: 'Red', hex: '#FF0000' },
-  { name: 'Blue', hex: '#0000FF' },
-  { name: 'Brown', hex: '#A52A2A' },
-  { name: 'Beige', hex: '#F5F5DC' },
-  { name: 'Gold', hex: '#FFD700' },
-]
-
-const engineCapacityOptions = [
-  { title: '700 CC (0.7L)', value: '700' },
-  { title: '800 CC (0.8L)', value: '800' },
-  { title: '900 CC (0.9L)', value: '900' },
-  { title: '1000 CC (1.0L)', value: '1000' },
-  { title: '1100 CC (1.1L)', value: '1100' },
-  { title: '1200 CC (1.2L)', value: '1200' },
-  { title: '1300 CC (1.3L)', value: '1300' },
-  { title: '1400 CC (1.4L)', value: '1400' },
-  { title: '1500 CC (1.5L)', value: '1500' },
-  { title: '1600 CC (1.6L)', value: '1600' },
-  { title: '1700 CC (1.7L)', value: '1700' },
-  { title: '1800 CC (1.8L)', value: '1800' },
-  { title: '1900 CC (1.9L)', value: '1900' },
-  { title: '2000 CC (2.0L)', value: '2000' },
-  { title: '2200 CC (2.2L)', value: '2200' },
-  { title: '2300 CC (2.3L)', value: '2300' },
-  { title: '2400 CC (2.4L)', value: '2400' },
-  { title: '2500 CC (2.5L)', value: '2500' },
-  { title: '2700 CC (2.7L)', value: '2700' },
-  { title: '2800 CC (2.8L)', value: '2800' },
-  { title: '2900 CC (2.9L)', value: '2900' },
-  { title: '3000 CC (3.0L)', value: '3000' },
-  { title: '3200 CC (3.2L)', value: '3200' },
-  { title: '3500 CC (3.5L)', value: '3500' },
-  { title: '3600 CC (3.6L)', value: '3600' },
-  { title: '3800 CC (3.8L)', value: '3800' },
-  { title: '4000 CC (4.0L)', value: '4000' },
-  { title: '4200 CC (4.2L)', value: '4200' },
-  { title: '4400 CC (4.4L)', value: '4400' },
-  { title: '4600 CC (4.6L)', value: '4600' },
-  { title: '4800 CC (4.8L)', value: '4800' },
-  { title: '5000 CC (5.0L)', value: '5000' },
-  { title: '5200 CC (5.2L)', value: '5200' },
-  { title: '5300 CC (5.3L)', value: '5300' },
-  { title: '5400 CC (5.4L)', value: '5400' },
-  { title: '5500 CC (5.5L)', value: '5500' },
-  { title: '5600 CC (5.6L)', value: '5600' },
-  { title: '5700 CC (5.7L)', value: '5700' },
-  { title: '5800 CC (5.8L)', value: '5800' },
-  { title: '6000 CC (6.0L)', value: '6000' },
-  { title: '6200 CC (6.2L)', value: '6200' },
-  { title: '6300 CC (6.3L)', value: '6300' },
-  { title: '6500 CC (6.5L)', value: '6500' },
-  { title: '6600 CC (6.6L)', value: '6600' },
-  { title: '6700 CC (6.7L)', value: '6700' },
-  { title: '7000 CC (7.0L)', value: '7000' },
-  { title: '7200 CC (7.2L)', value: '7200' },
-  { title: '7300 CC (7.3L)', value: '7300' },
-  { title: '8000 CC (8.0L)', value: '8000' },
-  { title: '8400 CC (8.4L)', value: '8400' }
-]
-
-/* ================= Truncation Watchers ================= */
-watch(() => form.value.title_ar, (newVal) => {
-  if (newVal && newVal.length > 150) {
-    form.value.title_ar = newVal.slice(0, 150)
-  }
-})
-
-watch(() => form.value.title_en, (newVal) => {
-  if (newVal && newVal.length > 150) {
-    form.value.title_en = newVal.slice(0, 150)
-  }
-})
-
-watch(() => form.value.description_ar, (newVal) => {
-  if (newVal && newVal.length > 2000) {
-    form.value.description_ar = newVal.slice(0, 2000)
-  }
-})
-
-watch(() => form.value.description_en, (newVal) => {
-  if (newVal && newVal.length > 2000) {
-    form.value.description_en = newVal.slice(0, 2000)
-  }
-})
-
-/* ================= Smart Specs Paste Parser ================= */
+/* ================= Smart Parser State ================= */
 const pastedSpecsText = ref('')
 const specsFeedbackMessage = ref('')
 
-const handleParseSpecs = async () => {
-  if (!pastedSpecsText.value.trim()) return
+const commonColors = [
+  { name: 'أبيض / White', hex: '#FFFFFF' },
+  { name: 'أسود / Black', hex: '#000000' },
+  { name: 'فضي / Silver', hex: '#C0C0C0' },
+  { name: 'رمادي / Grey', hex: '#808080' },
+  { name: 'أحمر / Red', hex: '#E53935' },
+  { name: 'أزرق / Blue', hex: '#1E88E5' },
+  { name: 'بني / Brown', hex: '#6D4C41' },
+  { name: 'بيج / Beige', hex: '#F5F5DC' },
+  { name: 'ذهبي / Gold', hex: '#FFD700' },
+  { name: 'كحلي / Navy', hex: '#0D47A1' },
+]
 
-  const text = pastedSpecsText.value
-  let matchedCount = 0
-  const extractedDetails = []
+const engineCapacityOptions = [
+  { title: '1000 CC (1.0L)', value: '1000' },
+  { title: '1200 CC (1.2L)', value: '1200' },
+  { title: '1300 CC (1.3L)', value: '1300' },
+  { title: '1400 CC (1.4L Turbo)', value: '1400' },
+  { title: '1500 CC (1.5L Turbo)', value: '1500' },
+  { title: '1600 CC (1.6L)', value: '1600' },
+  { title: '1800 CC (1.8L)', value: '1800' },
+  { title: '2000 CC (2.0L Turbo)', value: '2000' },
+  { title: '2400 CC (2.4L)', value: '2400' },
+  { title: '2500 CC (2.5L)', value: '2500' },
+  { title: '3000 CC (3.0L V6)', value: '3000' },
+  { title: '3500 CC (3.5L V6)', value: '3500' },
+  { title: '4000 CC+ (V8)', value: '4000' },
+  { title: 'كهرباء بالكامل (Electric - 0 CC)', value: '0' },
+]
 
-  // Helper to normalize values
-  const cleanVal = (v) => v.replace(/^['"\s]+|['"\s]+$/g, '').trim()
-
-  // Defined keys and their synonyms
-  const keysList = [
-    { field: 'type', synonyms: ['type', 'النوع', 'نوع المركبة', 'نوع'] },
-    { field: 'seller_id', synonyms: ['seller', 'المعلن', 'البائع', 'اسم المعلن', 'اسم البائع', 'تاجر'] },
-    { field: 'brand_id', synonyms: ['brand', 'الماركة', 'الشركة', 'ماركة', 'شركة'] },
-    { field: 'model_id', synonyms: ['model', 'الموديل', 'موديل', 'طراز'] },
-    { field: 'country_id', synonyms: ['country', 'البلد', 'الدولة', 'بلد', 'دولة'] },
-    { field: 'governorate_id', synonyms: ['governorate', 'المحافظة', 'محافظة', 'منطقة'] },
-    { field: 'city_id', synonyms: ['city', 'المدينة', 'مدينة'] },
-    { field: 'title_ar', synonyms: ['title arabic', 'title ar', 'العنوان العربي', 'الاسم العربي', 'عنوان عربي'] },
-    { field: 'title_en', synonyms: ['title english', 'title en', 'العنوان الانجليزي', 'الاسم الانجليزي', 'عنوان انجليزي'] },
-    { field: 'description_ar', synonyms: ['description arabic', 'description ar', 'الوصف العربي', 'الوصف', 'وصف عربي'] },
-    { field: 'description_en', synonyms: ['description english', 'description en', 'الوصف الانجليزي', 'وصف انجليزي'] },
-    { field: 'price', synonyms: ['price', 'price (eg)', 'السعر', 'سعر'] },
-    { field: 'year', synonyms: ['year', 'السنة', 'سنة', 'سنة الصنع', 'عام'] },
-    { field: 'mileage', synonyms: ['mileage', 'mileage (km)', 'الممشى', 'ممشى', 'العداد', 'عداد', 'المسافة المقطوعة'] },
-    { field: 'horsepower', synonyms: ['horsepower', 'horsepower (hp)', 'hp', 'القوة الحصانية', 'قوة الحصان', 'حصان'] },
-    { field: 'torque', synonyms: ['torque', 'torque (nm)', 'العزم', 'عزم الدوران', 'نيوتن', 'العزم (نيوتن)'] },
-    { field: 'engine_capacity', synonyms: ['engine capacity', 'engine', 'سعة المحرك', 'المحرك', 'سعة'] },
-    { field: 'cylinders', synonyms: ['cylinders', 'سلندر', 'السلندرات', 'عدد السلندرات'] },
-    { field: 'transmission', synonyms: ['transmission', 'ناقل الحركة', 'الفتيس', 'ناقل'] },
-    { field: 'fuel_type', synonyms: ['fuel type', 'fuel', 'نوع الوقود', 'الوقود'] },
-    { field: 'drivetrain', synonyms: ['drivetrain', 'نظام الدفع', 'الدفع'] },
-    { field: 'condition', synonyms: ['condition', 'الحالة', 'حالة السيارة', 'الحالة العامة', 'used'] },
-    { field: 'color', synonyms: ['color', 'اللون', 'لون'] },
-    { field: 'custom_color', synonyms: ['custom color', 'custom color (hex)', 'اللون المخصص', 'لون مخصص'] },
-    { field: 'phone_number', synonyms: ['phone', 'phone number', 'phone number for calls', 'تليفون', 'الهاتف', 'رقم الهاتف', 'الجوال', 'موبايل', 'رقم الموبايل', 'رقم التليفون', 'رقم التليفون للمكالمات'] },
-    { field: 'whatsapp_number', synonyms: ['whatsapp', 'whatsapp number', 'واتساب', 'رقم الواتساب', 'رقم الواتس'] },
-    { field: 'is_best_deal', synonyms: ['featured ad', 'best deal', 'مميز', 'إعلان مميز', 'اعلان مميز'] },
-    { field: 'is_global_ad', synonyms: ['homepage promotion', 'top placement', 'global ad', 'إعلان عالمي'] },
-    { field: 'is_urgent', synonyms: ['urgent sale', 'urgent', 'بيع عاجل', 'عاجل'] }
-  ]
-
-  // Intelligent multi-line parser
-  const lines = text.split(/\r?\n/)
-  const keyValueMap = {}
-  let currentField = null
-
-  lines.forEach(line => {
-    // Check if the line matches Key: Value
-    const match = line.match(/^\s*(.+?)\s*[:=-]\s*(.*)$/)
-    if (match) {
-      const potentialKey = match[1].toLowerCase().trim()
-      const value = match[2].trim()
-
-      // Check if it matches any synonym
-      let foundField = null
-      for (const item of keysList) {
-        if (item.synonyms.includes(potentialKey)) {
-          foundField = item.field
-          break
-        }
-      }
-
-      if (foundField) {
-        currentField = foundField
-        keyValueMap[currentField] = cleanVal(value)
-        return
-      }
-    }
-
-    // If it's a continuation of a multi-line field
-    if (currentField && line.trim() !== '') {
-      if (keyValueMap[currentField] === '') {
-        keyValueMap[currentField] = cleanVal(line)
-      } else {
-        keyValueMap[currentField] += '\n' + cleanVal(line)
-      }
-    }
-  })
-
-  // 1. Type
-  if (keyValueMap['type'] && 'type' in form.value) {
-    const val = keyValueMap['type'].toLowerCase()
-    if (val.includes('car') || val.includes('سيار')) {
-      form.value.type = 'car'
-      matchedCount++
-      extractedDetails.push('Type: Car')
-    } else if (val.includes('motorcycle') || val.includes('دراج')) {
-      form.value.type = 'motorcycle'
-      matchedCount++
-      extractedDetails.push('Type: Motorcycle')
-    }
+const yearOptions = computed(() => {
+  const currentYear = new Date().getFullYear() + 1
+  const years = []
+  for (let y = currentYear; y >= 1990; y--) {
+    years.push(y)
   }
+  return years
+})
 
-  // 2. Seller
-  if (keyValueMap['seller_id'] && 'seller_id' in form.value && sellers.value?.length) {
-    const sVal = keyValueMap['seller_id'].toLowerCase().trim()
-    const foundSeller = sellers.value.find(s => {
-      const name = String(s.name ?? '').toLowerCase()
-      return name.includes(sVal) || sVal.includes(name)
-    })
-    if (foundSeller) {
-      form.value.seller_id = foundSeller.id
-      matchedCount++
-      extractedDetails.push(`Seller: ${foundSeller.name}`)
-    }
-  }
+const safeItemTitle = (obj) => obj?.name?.ar ? `${obj.name.ar} (${obj.name.en || ''})` : (obj?.name?.en ?? obj?.name ?? '-')
 
-  // 3. Brand
-  let brandValue = keyValueMap['brand_id']
-  let matchedBrand = null
-  if (brandValue && brands.value?.length) {
-    const brandLower = brandValue.toLowerCase().trim()
-    matchedBrand = brands.value.find(b => {
-      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase().trim()
-      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase().trim()
-      return nameEn === brandLower || nameAr === brandLower || nameEn.includes(brandLower) || nameAr.includes(brandLower) || brandLower.includes(nameEn) || brandLower.includes(nameAr)
-    })
+/* ================= On-Demand (Lazy) Loaders ================= */
+const loadingBrands = ref(false)
+const loadBrandsIfNeeded = async () => {
+  if (brands.value.length > 1 || loadingBrands.value) return
+  loadingBrands.value = true
+  try {
+    const res = await brandUserApi.getAll()
+    brands.value = res.data?.data || []
+  } catch (err) {
+    console.error('Failed to load brands:', err)
+  } finally {
+    loadingBrands.value = false
   }
-  if (!matchedBrand && brands.value?.length) {
-    matchedBrand = brands.value.find(b => {
-      const nameEn = String(b.name?.en ?? b.name ?? '').toLowerCase().trim()
-      const nameAr = String(b.name?.ar ?? b.name ?? '').toLowerCase().trim()
-      if (nameEn.length <= 1 && nameAr.length <= 1) return false
-      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-    })
-  }
-  if (matchedBrand) {
-    form.value.brand_id = matchedBrand.id
-    matchedCount++
-    extractedDetails.push(`Brand: ${matchedBrand.name?.en ?? matchedBrand.name}`)
-    await loadModels()
-  }
-
-  // 4. Model
-  let modelValue = keyValueMap['model_id']
-  if (form.value.brand_id && models.value?.length) {
-    let matchedModel = null
-    if (modelValue) {
-      const modelLower = modelValue.toLowerCase().trim()
-      matchedModel = models.value.find(m => {
-        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase().trim()
-        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase().trim()
-        return nameEn === modelLower || nameAr === modelLower || modelLower.includes(nameEn) || modelLower.includes(nameAr) || nameEn.includes(modelLower) || nameAr.includes(modelLower)
-      })
-    }
-    if (!matchedModel) {
-      matchedModel = models.value.find(m => {
-        const nameEn = String(m.name?.en ?? m.name ?? '').toLowerCase().trim()
-        const nameAr = String(m.name?.ar ?? m.name ?? '').toLowerCase().trim()
-        if (nameEn.length <= 1 && nameAr.length <= 1) return false
-        return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-      })
-    }
-    if (matchedModel) {
-      form.value.model_id = matchedModel.id
-      matchedCount++
-      extractedDetails.push(`Model: ${matchedModel.name?.en ?? matchedModel.name}`)
-    }
-  }
-
-  // 5. Country, Governorate & City
-  let countryValue = keyValueMap['country_id']
-  let matchedCountry = null
-  if (countryValue && countries.value?.length) {
-    const cSearch = countryValue.toLowerCase().trim()
-    matchedCountry = countries.value.find(c => {
-      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase().trim()
-      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase().trim()
-      return nameEn === cSearch || nameAr === cSearch || nameEn.includes(cSearch) || nameAr.includes(cSearch) || cSearch.includes(nameEn) || cSearch.includes(nameAr)
-    })
-  }
-  if (!matchedCountry && countries.value?.length) {
-    matchedCountry = countries.value.find(c => {
-      const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
-      const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
-      if (nameEn.length <= 1 && nameAr.length <= 1) return false
-      return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-    })
-  }
-  if (matchedCountry) {
-    form.value.country_id = matchedCountry.id
-    matchedCount++
-    extractedDetails.push(`Country: ${matchedCountry.name?.en ?? matchedCountry.name}`)
-    await loadGovernorates()
-
-    let govValue = keyValueMap['governorate_id']
-    if (governorates.value?.length) {
-      let matchedGov = null
-      if (govValue) {
-        const gSearch = govValue.toLowerCase().trim()
-        matchedGov = governorates.value.find(g => {
-          const nameEn = String(g.name?.en ?? g.name ?? '').toLowerCase().trim()
-          const nameAr = String(g.name?.ar ?? g.name ?? '').toLowerCase().trim()
-          return nameEn === gSearch || nameAr === gSearch || nameEn.includes(gSearch) || nameAr.includes(gSearch) || gSearch.includes(nameEn) || gSearch.includes(nameAr)
-        })
-      }
-      if (!matchedGov) {
-        matchedGov = governorates.value.find(g => {
-          const nameEn = String(g.name?.en ?? g.name ?? '').toLowerCase()
-          const nameAr = String(g.name?.ar ?? g.name ?? '').toLowerCase()
-          if (nameEn.length <= 1 && nameAr.length <= 1) return false
-          return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-        })
-      }
-      if (matchedGov) {
-        form.value.governorate_id = matchedGov.id
-        matchedCount++
-        extractedDetails.push(`Governorate: ${matchedGov.name?.en ?? matchedGov.name}`)
-        await loadCities()
-
-        let cityValue = keyValueMap['city_id']
-        if (cities.value?.length) {
-          let matchedCity = null
-          if (cityValue) {
-            const cSearch = cityValue.toLowerCase().trim()
-            matchedCity = cities.value.find(c => {
-              const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase().trim()
-              const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase().trim()
-              return nameEn === cSearch || nameAr === cSearch || nameEn.includes(cSearch) || nameAr.includes(cSearch) || cSearch.includes(nameEn) || cSearch.includes(nameAr)
-            })
-          }
-          if (!matchedCity) {
-            matchedCity = cities.value.find(c => {
-              const nameEn = String(c.name?.en ?? c.name ?? '').toLowerCase()
-              const nameAr = String(c.name?.ar ?? c.name ?? '').toLowerCase()
-              if (nameEn.length <= 1 && nameAr.length <= 1) return false
-              return (nameEn && text.toLowerCase().includes(nameEn)) || (nameAr && text.toLowerCase().includes(nameAr))
-            })
-          }
-          if (matchedCity) {
-            form.value.city_id = matchedCity.id
-            matchedCount++
-            extractedDetails.push(`City: ${matchedCity.name?.en ?? matchedCity.name}`)
-          }
-        }
-      }
-    }
-  }
-
-  // 6. Title Arabic & English
-  if (keyValueMap['title_ar']) {
-    form.value.title_ar = keyValueMap['title_ar'].slice(0, 150)
-    matchedCount++
-    extractedDetails.push('Title Arabic')
-  }
-  if (keyValueMap['title_en']) {
-    form.value.title_en = keyValueMap['title_en'].slice(0, 150)
-    matchedCount++
-    extractedDetails.push('Title English')
-  }
-
-  // 7. Description Arabic & English
-  if (keyValueMap['description_ar']) {
-    form.value.description_ar = keyValueMap['description_ar'].slice(0, 2000)
-    matchedCount++
-    extractedDetails.push('Description Arabic')
-  }
-  if (keyValueMap['description_en']) {
-    form.value.description_en = keyValueMap['description_en'].slice(0, 2000)
-    matchedCount++
-    extractedDetails.push('Description English')
-  }
-
-  // 8. Year
-  if (keyValueMap['year']) {
-    const yNum = parseInt(keyValueMap['year'].replace(/\D/g, ''))
-    if (yNum && yNum >= 1900 && yNum <= 2030) {
-      form.value.year = yNum
-      matchedCount++
-      extractedDetails.push(`Year: ${yNum}`)
-    }
-  } else {
-    const yearMatch = text.match(/\b(19[8-9]\d|20[0-2]\d)\b/)
-    if (yearMatch) {
-      form.value.year = Number(yearMatch[1])
-      matchedCount++
-      extractedDetails.push(`Year: ${yearMatch[1]}`)
-    }
-  }
-
-  // 9. Price
-  if (keyValueMap['price'] && keyValueMap['price'] !== '—') {
-    const val = keyValueMap['price']
-    const millionMatch = val.match(/(\d+(?:\.\d+)?)\s*مليون/)
-    if (millionMatch) {
-      form.value.price = parseFloat(millionMatch[1]) * 1000000
-      matchedCount++
-      extractedDetails.push(`Price: ${millionMatch[1]} Million`)
-    } else {
-      const thousandMatch = val.match(/(\d+(?:\.\d+)?)\s*(?:ألف|الف|k)/i)
-      if (thousandMatch) {
-        form.value.price = parseFloat(thousandMatch[1]) * 1000
-        matchedCount++
-        extractedDetails.push(`Price: ${thousandMatch[1]}k`)
-      } else {
-        const cleanPrice = Number(val.replace(/,/g, '').replace(/\D/g, ''))
-        if (cleanPrice) {
-          form.value.price = cleanPrice
-          matchedCount++
-          extractedDetails.push(`Price: ${cleanPrice.toLocaleString()}`)
-        }
-      }
-    }
-  }
-
-  // 10. Mileage
-  if (keyValueMap['mileage'] && keyValueMap['mileage'] !== '—') {
-    const val = keyValueMap['mileage']
-    const cleanMileage = Number(val.replace(/,/g, '').replace(/\D/g, ''))
-    if (cleanMileage || cleanMileage === 0) {
-      form.value.mileage = cleanMileage
-      matchedCount++
-      extractedDetails.push(`Mileage: ${cleanMileage}`)
-    }
-  } else if (!keyValueMap['mileage']) {
-    const cleanTextNoCommas = text.replace(/,/g, '')
-    const mileageMatch = cleanTextNoCommas.match(/\b(\d+)\s*(?:كم|km|كيلو|عداد)/i)
-    if (mileageMatch) {
-      form.value.mileage = Number(mileageMatch[1])
-      matchedCount++
-      extractedDetails.push(`Mileage: ${mileageMatch[1]} km`)
-    }
-  }
-
-  // 11. Engine Capacity
-  let engineValue = keyValueMap['engine_capacity']
-  if (engineValue) {
-    const literMatch = engineValue.match(/(\d+(?:\.\d+)?)\s*(?:l|لتر|liters)/i)
-    if (literMatch) {
-      const liters = parseFloat(literMatch[1])
-      form.value.engine_capacity = String(Math.round(liters * 1000))
-      matchedCount++
-      extractedDetails.push(`Engine: ${form.value.engine_capacity} CC`)
-    } else {
-      const cleanEngine = engineValue.replace(/cc|سي سي|سي/gi, '').trim()
-      form.value.engine_capacity = cleanEngine
-      matchedCount++
-      extractedDetails.push(`Engine: ${cleanEngine} CC`)
-    }
-  }
-
-  // 12. Cylinders
-  let cylindersValue = keyValueMap['cylinders']
-  if (cylindersValue) {
-    const code = cylindersValue.toUpperCase().trim()
-    const validCylinders = ['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']
-    const matchedCode = validCylinders.find(c => c === code || code.includes(c) || c.includes(code))
-    if (matchedCode) {
-      form.value.cylinders = matchedCode
-      matchedCount++
-      extractedDetails.push(`Cylinders: ${matchedCode}`)
-    } else {
-      const num = cylindersValue.replace(/\D/g, '')
-      const mapping = { '2': 'I2', '3': 'I3', '4': 'I4', '5': 'I5', '6': 'V6', '8': 'V8', '10': 'V10', '12': 'V12', '16': 'W16' }
-      form.value.cylinders = mapping[num] || null
-      if (form.value.cylinders) {
-        matchedCount++
-        extractedDetails.push(`Cylinders: ${form.value.cylinders}`)
-      }
-    }
-  }
-
-  // 13. Horsepower
-  let hpValue = keyValueMap['horsepower']
-  if (hpValue) {
-    let cleanHp = toNumOrNull(hpValue, 4)
-    if (cleanHp !== null && cleanHp > 3000) cleanHp = 3000
-    form.value.horsepower = cleanHp === null ? '' : cleanHp
-    matchedCount++
-    extractedDetails.push(`Horsepower: ${form.value.horsepower}`)
-  }
-
-  // 14. Torque
-  let torqueValue = keyValueMap['torque']
-  if (torqueValue) {
-    let cleanTorque = toNumOrNull(torqueValue, 5)
-    if (cleanTorque !== null && cleanTorque > 15000) cleanTorque = 15000
-    form.value.torque = cleanTorque === null ? '' : cleanTorque
-    matchedCount++
-    extractedDetails.push(`Torque: ${form.value.torque}`)
-  }
-
-  // 15. Transmission
-  let transValue = keyValueMap['transmission']
-  if (transValue) {
-    const tLower = transValue.toLowerCase()
-    if (tLower.includes('auto') || tLower.includes('اوتوماتيك')) {
-      form.value.transmission = 'automatic'
-      matchedCount++
-      extractedDetails.push('Transmission: Automatic')
-    } else if (tLower.includes('manual') || tLower.includes('مانيوال') || tLower.includes('يدوي')) {
-      form.value.transmission = 'manual'
-      matchedCount++
-      extractedDetails.push('Transmission: Manual')
-    }
-  }
-
-  // 16. Fuel Type
-  let fuelValue = keyValueMap['fuel_type']
-  if (fuelValue) {
-    const fLower = fuelValue.toLowerCase()
-    if (fLower.includes('petrol') || fLower.includes('بنزين') || fLower.includes('gas')) {
-      form.value.fuel_type = 'petrol'
-      matchedCount++
-      extractedDetails.push('Fuel: Petrol')
-    } else if (fLower.includes('diesel') || fLower.includes('ديزل') || fLower.includes('سولار')) {
-      form.value.fuel_type = 'diesel'
-      matchedCount++
-      extractedDetails.push('Fuel: Diesel')
-    } else if (fLower.includes('electric') || fLower.includes('كهرباء') || fLower.includes('ev')) {
-      form.value.fuel_type = 'electric'
-      matchedCount++
-      extractedDetails.push('Fuel: Electric')
-    } else if (fLower.includes('hybrid') || fLower.includes('هايبرد') || fLower.includes('هجين')) {
-      form.value.fuel_type = 'hybrid'
-      matchedCount++
-      extractedDetails.push('Fuel: Hybrid')
-    }
-  }
-
-  // 17. Condition
-  let condValue = keyValueMap['condition']
-  if (condValue) {
-    const cLower = condValue.toLowerCase()
-    if (cLower.includes('new') || cLower.includes('جديد') || cLower.includes('زيرو')) {
-      form.value.condition = 'new'
-      matchedCount++
-      extractedDetails.push('Condition: New')
-    } else if (cLower.includes('used') || cLower.includes('مستعمل') || cLower.includes('excellent') || cLower.includes('ممتاز')) {
-      form.value.condition = 'used'
-      matchedCount++
-      extractedDetails.push('Condition: Used')
-    }
-  }
-
-  // 18. Drivetrain
-  let driveValue = keyValueMap['drivetrain']
-  if (driveValue) {
-    const dLower = driveValue.toLowerCase()
-    if (dLower.includes('fwd') || dLower.includes('أمامي') || dLower.includes('امامي')) {
-      form.value.drivetrain = 'fwd'
-      matchedCount++
-      extractedDetails.push('Drivetrain: FWD')
-    } else if (dLower.includes('rwd') || dLower.includes('خلفي')) {
-      form.value.drivetrain = 'rwd'
-      matchedCount++
-      extractedDetails.push('Drivetrain: RWD')
-    } else if (dLower.includes('awd') || dLower.includes('4wd') || dLower.includes('رباعي')) {
-      form.value.drivetrain = 'awd'
-      matchedCount++
-      extractedDetails.push('Drivetrain: AWD')
-    }
-  }
-
-  // 19. Color & Custom Color
-  let colorValue = keyValueMap['color']
-  let customColorValue = keyValueMap['custom_color']
-  let finalColor = null
-  if (customColorValue && /^#[0-9A-F]{6}$/i.test(customColorValue.trim())) {
-    finalColor = customColorValue.trim()
-  } else if (colorValue) {
-    const cSearch = colorValue.toLowerCase().trim()
-    const matchedColor = commonColors.find(c => c.name.toLowerCase() === cSearch)
-    if (matchedColor) {
-      finalColor = matchedColor.hex
-    } else if (/^#[0-9A-F]{6}$/i.test(colorValue.trim())) {
-      finalColor = colorValue.trim()
-    }
-  }
-  if (finalColor) {
-    form.value.color = finalColor
-    matchedCount++
-    extractedDetails.push(`Color: ${finalColor}`)
-  }
-
-  // 20. Phone & WhatsApp
-  if (keyValueMap['phone_number']) {
-    const cleanPhone = keyValueMap['phone_number'].replace(/[^\d+]/g, '')
-    if (cleanPhone && !cleanPhone.includes('X') && !cleanPhone.includes('x')) {
-      form.value.phone_number = cleanPhone
-      matchedCount++
-      extractedDetails.push(`Phone: ${cleanPhone}`)
-    }
-  }
-  if (keyValueMap['whatsapp_number']) {
-    const cleanWa = keyValueMap['whatsapp_number'].replace(/[^\d+]/g, '')
-    if (cleanWa && !cleanWa.includes('X') && !cleanWa.includes('x')) {
-      form.value.whatsapp_number = cleanWa
-      matchedCount++
-      extractedDetails.push(`WhatsApp: ${cleanWa}`)
-    }
-  }
-
-  // 21. Promotions (Featured / Homepage)
-  if (keyValueMap['is_best_deal'] && 'is_best_deal' in form.value) {
-    const val = keyValueMap['is_best_deal'].toUpperCase()
-    form.value.is_best_deal = (val === 'ON' || val === 'YES' || val === '1' || val === 'TRUE')
-    matchedCount++
-    extractedDetails.push(`Featured Ad: ${form.value.is_best_deal}`)
-  }
-  if (keyValueMap['is_global_ad'] && 'is_global_ad' in form.value) {
-    const val = keyValueMap['is_global_ad'].toUpperCase()
-    form.value.is_global_ad = (val === 'ON' || val === 'YES' || val === '1' || val === 'TRUE')
-    matchedCount++
-    extractedDetails.push(`Homepage Promotion: ${form.value.is_global_ad}`)
-  }
-
-  // 22. Features / Options Match
-  if (features.value && features.value.length) {
-    const matchedFeatures = []
-    features.value.forEach(f => {
-      const nameEn = String(f.name?.en ?? f.name ?? '').toLowerCase().trim()
-      const nameAr = String(f.name?.ar ?? f.name ?? '').toLowerCase().trim()
-      if (nameEn.length > 2 && text.toLowerCase().includes(nameEn)) {
-        if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
-      } else if (nameAr.length > 2 && text.toLowerCase().includes(nameAr)) {
-        if (!matchedFeatures.includes(f.id)) matchedFeatures.push(f.id)
-      }
-    })
-    
-    if (matchedFeatures.length > 0) {
-      form.value.features = matchedFeatures
-      matchedCount += matchedFeatures.length
-      extractedDetails.push(`Features: ${matchedFeatures.length} matched`)
-    }
-  }
-
-  if (matchedCount > 0) {
-    specsFeedbackMessage.value = `Successfully extracted ${matchedCount} fields: ${extractedDetails.join(', ')}`
-  } else {
-    specsFeedbackMessage.value = `No matching specifications found in the pasted text. Please make sure the text contains standard car specs.`
-  }
-
-  setTimeout(() => {
-    specsFeedbackMessage.value = ''
-  }, 8000)
 }
 
-/* ================= Helpers ================= */
-const fieldError = (field) => {
-  if (errors.value?.[field]) return errors.value[field]
-  if (field === 'images') {
-    const imgErrors = Object.keys(errors.value || {})
-      .filter(k => k.startsWith('images.'))
-      .map(k => errors.value[k])
-      .flat()
-    if (imgErrors.length) return imgErrors
+const onBrandChange = async (newBrandId) => {
+  form.value.model_id = null
+  models.value = []
+  if (newBrandId) {
+    await loadModels(false)
   }
-  return []
 }
 
-const safeItemTitle = (obj) => obj?.name?.en ?? obj?.name ?? '-'
+const loadingModels = ref(false)
+const loadModelsIfNeeded = async () => {
+  if (!form.value.brand_id || models.value.length > 1 || loadingModels.value) return
+  loadingModels.value = true
+  try {
+    const res = await modelUserApi.getAll({ 'filter[brand_id]': form.value.brand_id })
+    models.value = res.data?.data || []
+  } catch (err) {
+    console.error('Failed to load models:', err)
+  } finally {
+    loadingModels.value = false
+  }
+}
 
-/* ================= Loaders ================= */
 const loadModels = async (keepCurrent = false) => {
   if (!form.value.brand_id) {
     models.value = []
@@ -778,22 +182,67 @@ const loadModels = async (keepCurrent = false) => {
   }
 
   const current = form.value.model_id
+  loadingModels.value = true
   try {
     const res = await modelUserApi.getAll({ 'filter[brand_id]': form.value.brand_id })
-    models.value = res.data.data || []
+    models.value = res.data?.data || []
   } catch (err) {
     console.error('Failed to load models:', err)
+  } finally {
+    loadingModels.value = false
   }
 
-  // ✅ لو بنحمّل للـ edit: سيب القيمة القديمة لو موجودة في الليست
   if (keepCurrent && current) {
     const exists = models.value.some(m => m.id === current)
     form.value.model_id = exists ? current : null
-  } else {
+  } else if (!keepCurrent) {
     form.value.model_id = null
-    if (models.value.length > 0) {
-      focusNext(refModel.value)
-    }
+  }
+}
+
+const loadingCountries = ref(false)
+const loadCountriesIfNeeded = async () => {
+  if (countries.value.length > 1 || loadingCountries.value) return
+  loadingCountries.value = true
+  try {
+    const res = await countryUserApi.getAll()
+    countries.value = res.data?.data || []
+  } catch (err) {
+    console.error('Failed to load countries:', err)
+  } finally {
+    loadingCountries.value = false
+  }
+}
+
+const onCountryChange = async (newCountryId) => {
+  form.value.governorate_id = null
+  form.value.city_id = null
+  governorates.value = []
+  cities.value = []
+  if (newCountryId) {
+    await loadGovernorates(false)
+  }
+}
+
+const loadingGovs = ref(false)
+const loadGovsIfNeeded = async () => {
+  if (!form.value.country_id || governorates.value.length > 1 || loadingGovs.value) return
+  loadingGovs.value = true
+  try {
+    const res = await governorateUserApi.getAll({ 'filter[country_id]': form.value.country_id })
+    governorates.value = res.data?.data || []
+  } catch (err) {
+    console.error('Failed to load governorates:', err)
+  } finally {
+    loadingGovs.value = false
+  }
+}
+
+const onGovChange = async (newGovId) => {
+  form.value.city_id = null
+  cities.value = []
+  if (newGovId) {
+    await loadCities(false)
   }
 }
 
@@ -805,21 +254,35 @@ const loadGovernorates = async (keepCurrent = false) => {
   }
 
   const current = form.value.governorate_id
+  loadingGovs.value = true
   try {
     const res = await governorateUserApi.getAll({ 'filter[country_id]': form.value.country_id })
-    governorates.value = res.data.data || []
+    governorates.value = res.data?.data || []
   } catch (err) {
     console.error('Failed to load governorates:', err)
+  } finally {
+    loadingGovs.value = false
   }
 
   if (keepCurrent && current) {
     const exists = governorates.value.some(g => g.id === current)
     form.value.governorate_id = exists ? current : null
-  } else {
+  } else if (!keepCurrent) {
     form.value.governorate_id = null
-    if (governorates.value.length > 0) {
-      focusNext(refGovernorate.value)
-    }
+  }
+}
+
+const loadingCities = ref(false)
+const loadCitiesIfNeeded = async () => {
+  if (!form.value.governorate_id || cities.value.length > 1 || loadingCities.value) return
+  loadingCities.value = true
+  try {
+    const res = await cityUserApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
+    cities.value = res.data?.data || []
+  } catch (err) {
+    console.error('Failed to load cities:', err)
+  } finally {
+    loadingCities.value = false
   }
 }
 
@@ -831,53 +294,113 @@ const loadCities = async (keepCurrent = false) => {
   }
 
   const current = form.value.city_id
+  loadingCities.value = true
   try {
     const res = await cityUserApi.getAll({ 'filter[governorate_id]': form.value.governorate_id })
-    cities.value = res.data.data || []
+    cities.value = res.data?.data || []
   } catch (err) {
     console.error('Failed to load cities:', err)
+  } finally {
+    loadingCities.value = false
   }
 
   if (keepCurrent && current) {
     const exists = cities.value.some(c => c.id === current)
     form.value.city_id = exists ? current : null
-  } else {
+  } else if (!keepCurrent) {
     form.value.city_id = null
-    if (cities.value.length > 0) {
-      focusNext(refCity.value)
-    }
   }
 }
 
-/* ================= Features Fix ================= */
-// أحيانًا car بيتحمّل قبل features list، فنخزن IDs ونظبطها لما features تجهز
-const pendingFeatureIds = ref([])
+/* ================= Load Existing Car (Primary API) ================= */
+const loadCar = async () => {
+  loading.value = true
+  try {
+    const res = await carSellerApi.getById(carId)
+    const car = res.data?.data || res.data
+    carDetails.value = car
 
-const normalizeFeaturesSelection = () => {
-  // لو features list لسه فاضية، استنى
-  if (!features.value.length) return
+    // Pre-populate dropdown options directly from the car relation in the primary API
+    // This allows instant display of brand, model, and location with ZERO extra API requests!
+    if (car.brand) {
+      brands.value = [car.brand]
+    }
+    if (car.model) {
+      models.value = [car.model]
+    }
+    if (car.country) {
+      countries.value = [car.country]
+    }
+    if (car.governorate) {
+      governorates.value = [car.governorate]
+    }
+    if (car.city) {
+      cities.value = [car.city]
+    }
 
-  // source ids: يا من car يا من form
-  const ids = pendingFeatureIds.value.length ? pendingFeatureIds.value : form.value.features
-  const validIds = ids.filter(id => features.value.some(f => f.id === id))
+    form.value.seller_id = car.seller_id
+    form.value.brand_id = car.brand_id
+    form.value.model_id = car.model_id
 
-  form.value.features = validIds
-  pendingFeatureIds.value = []
+    form.value.country_id = car.country_id
+    form.value.governorate_id = car.governorate_id
+    form.value.city_id = car.city_id
+
+    form.value.title_ar = car.title?.ar || ''
+    form.value.title_en = car.title?.en || ''
+    form.value.description_ar = car.description?.ar || ''
+    form.value.description_en = car.description?.en || ''
+
+    form.value.price = car.price ?? ''
+    form.value.old_price = car.old_price ?? ''
+    form.value.year = car.year ?? ''
+    form.value.mileage = car.mileage ?? ''
+    form.value.type = car.type ?? 'car'
+    form.value.transmission = car.transmission ?? 'automatic'
+    form.value.fuel_type = car.fuel_type ?? 'petrol'
+    form.value.drivetrain = car.drivetrain ?? 'FWD'
+    form.value.condition = car.condition ?? 'used'
+    form.value.color = car.color || '#FFFFFF'
+    form.value.is_import = String(car.is_import ?? '0')
+    form.value.cylinders = car.cylinders ?? 4
+    form.value.engine_capacity = car.engine_capacity ? String(car.engine_capacity) : '1600'
+    form.value.acceleration = car.acceleration || ''
+    form.value.weight = car.weight || ''
+
+    form.value.phone_number = car.phone_number || ''
+    form.value.whatsapp_number = car.whatsapp_number || ''
+
+    form.value.features = car.features?.map(f => f.id) || []
+
+    const loadedImages = (car.images || []).map(img => ({
+      id: img.id,
+      url: `${img.path}`,
+      is_main: img.is_main === 1 || img.is_main === true,
+    }))
+
+    existingImages.value = loadedImages
+    keepImages.value = existingImages.value.map(i => i.id)
+
+    const mainOld = existingImages.value.find(i => i.is_main)
+    if (mainOld) {
+      mainSelection.value = { type: 'old', id: mainOld.id }
+    } else if (existingImages.value.length) {
+      mainSelection.value = { type: 'old', id: existingImages.value[0].id }
+    }
+  } catch (err) {
+    console.error('Failed to load car details:', err)
+    snackbarMessage.value = 'تعذر تحميل بيانات السيارة'
+    snackbarColor.value = 'error'
+    snackbar.value = true
+  } finally {
+    loading.value = false
+  }
 }
 
-/* ================= Images ================= */
+/* ================= Images Management ================= */
 const setMainOld = (id) => {
-  const index = existingImages.value.findIndex(i => i.id === id)
-  if (index === -1) return
-
-  // Move to front of existingImages
-  const selected = existingImages.value[index]
-  existingImages.value.splice(index, 1)
-  existingImages.value.unshift(selected)
-
   mainSelection.value = { type: 'old', id }
   existingImages.value.forEach(img => (img.is_main = img.id === id))
-  keepImages.value = existingImages.value.map(i => i.id)
 }
 
 const setMainNew = (index) => {
@@ -889,7 +412,6 @@ const removeExistingImage = (id) => {
   existingImages.value = existingImages.value.filter(i => i.id !== id)
   keepImages.value = keepImages.value.filter(x => x !== id)
 
-  // لو كانت main صورة قديمة واتمسحت -> اختار أول صورة متاحة
   if (mainSelection.value?.type === 'old' && mainSelection.value.id === id) {
     if (existingImages.value.length) {
       setMainOld(existingImages.value[0].id)
@@ -902,234 +424,60 @@ const removeExistingImage = (id) => {
 }
 
 const handleImagesChange = async (files) => {
-  if (!files || !files.length) {
-    form.value.images = []
-    newImagePreviews.value.forEach(p => p.url && URL.revokeObjectURL(p.url))
-    newImagePreviews.value = []
+  if (!files || !files.length) return
+
+  const remainingSlots = 20 - existingImages.value.length
+  if (remainingSlots <= 0) {
+    snackbarMessage.value = 'الحد الأقصى المسموح به 20 صورة'
+    snackbarColor.value = 'warning'
+    snackbar.value = true
     return
   }
 
-  const remainingSlots = 20 - existingImages.value.length
-
-  if (files.length > remainingSlots) {
-    snackbarMessage.value = `Maximum 20 images allowed in total. Extra images were removed.`
-    snackbarColor.value = 'warning'
-    snackbar.value = true
-  }
-
   const processedFiles = await processCarImages(files, remainingSlots)
-  form.value.images = processedFiles
+  form.value.images = [...form.value.images, ...processedFiles]
 
-  newImagePreviews.value.forEach(p => URL.revokeObjectURL(p.url))
-  newImagePreviews.value = []
-
-  form.value.images.forEach((file, index) => {
+  processedFiles.forEach((file) => {
     newImagePreviews.value.push({
       file,
       url: URL.createObjectURL(file),
-      index,
+      index: newImagePreviews.value.length,
     })
   })
 
-  if (!mainSelection.value && newImagePreviews.value.length && !existingImages.value.length) {
+  if (!mainSelection.value && newImagePreviews.value.length) {
     setMainNew(0)
   }
 }
 
-const refCustomColorInput = ref(null)
+const removeNewImage = (idx) => {
+  URL.revokeObjectURL(newImagePreviews.value[idx].url)
+  newImagePreviews.value.splice(idx, 1)
+  form.value.images.splice(idx, 1)
 
-const isCustomColor = computed(() => {
-  if (!form.value.color) return false
-  const match = commonColors.some(c => c.hex.toLowerCase() === form.value.color.toLowerCase())
-  return !match && /^#[0-9A-F]{6}$/i.test(form.value.color)
-})
+  newImagePreviews.value.forEach((p, i) => (p.index = i))
 
-const getContrastColor = (hex) => {
-  if (!hex || hex.length < 6) return 'white'
-  const cleanHex = hex.replace('#', '')
-  const r = parseInt(cleanHex.slice(0, 2), 16)
-  const g = parseInt(cleanHex.slice(2, 4), 16)
-  const b = parseInt(cleanHex.slice(4, 6), 16)
-  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
-  return (yiq >= 128) ? 'black' : 'white'
-}
-
-const triggerCustomColorPicker = () => {
-  if (refCustomColorInput.value) {
-    refCustomColorInput.value.click()
-  }
-}
-
-const handleColorInput = (evt) => {
-  let val = evt.target.value.trim()
-  if (val && !val.startsWith('#') && /^[0-9A-F]{3,6}$/i.test(val)) {
-    form.value.color = '#' + val
-  } else {
-    form.value.color = val
-  }
-}
-
-/* ================= Load Car ================= */
-const loadCar = async () => {
-  const res = await carSellerApi.getById(carId)
-  const car = res.data.data
-  carSellerName.value = car.seller?.name || ''
-
-  // ✅ set base ids first
-  form.value.seller_id = car.seller_id
-  form.value.brand_id = car.brand_id
-  form.value.model_id = car.model_id
-
-  form.value.country_id = car.country_id
-  form.value.governorate_id = car.governorate_id
-  form.value.city_id = car.city_id
-
-  // ✅ load dependent lists WITHOUT wiping selected values
-  await Promise.all([
-    loadModels(true),
-    loadGovernorates(true),
-  ])
-  await loadCities(true)
-
-  const descText = (car.description?.en || '') + ' ' + (car.description?.ar || '') + ' ' + (typeof car.description === 'string' ? car.description : '')
-  const extractSpecTag = (text, key) => {
-    if (!text) return ''
-    const m = String(text).match(/<!--specs:(.*?)-->/)
-    if (m) {
-      try { const p = JSON.parse(m[1]); if (p[key]) return p[key] } catch (e) {}
+  if (mainSelection.value?.type === 'new' && mainSelection.value.index === idx) {
+    if (existingImages.value.length) {
+      setMainOld(existingImages.value[0].id)
+    } else if (newImagePreviews.value.length) {
+      setMainNew(0)
+    } else {
+      mainSelection.value = null
     }
-    return ''
-  }
-  const cleanSpecTag = (text) => {
-    if (!text) return ''
-    return String(text).replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
-  }
-
-  // Titles / Descriptions
-  form.value.title_ar = car.title?.ar || ''
-  form.value.title_en = car.title?.en || ''
-  form.value.description_ar = cleanSpecTag(car.description?.ar || '')
-  form.value.description_en = cleanSpecTag(car.description?.en || (typeof car.description === 'string' ? car.description : ''))
-
-  // Specs
-  form.value.price = car.price ?? ''
-  form.value.year = car.year ?? ''
-  form.value.mileage = car.mileage ?? ''
-  form.value.type = car.type ?? ''
-  form.value.transmission = car.transmission ?? ''
-  form.value.fuel_type = car.fuel_type ?? ''
-  form.value.drivetrain = car.drivetrain ?? ''
-  form.value.condition = car.condition ?? 'used'
-  if (car.is_import === 'available_for_import' || car.is_import === 'available' || car.is_import === '2' || car.is_import === 2 || String(car.is_import) === '2') {
-    form.value.is_import = '2'
-  } else if (car.is_import === true || car.is_import === '1' || car.is_import === 1 || String(car.is_import) === '1' || car.is_import === 'imported') {
-    form.value.is_import = '1'
-  } else {
-    form.value.is_import = '0'
-  }
-  form.value.cylinders = car.cylinders ?? null
-  form.value.engine_capacity = car.engine_capacity ?? null
-  form.value.acceleration = car.acceleration || extractSpecTag(descText, 'acceleration') || ''
-  form.value.weight = car.weight || extractSpecTag(descText, 'weight') || ''
-
-  // Color (عندك بيرجع string #xxxxxx)
-  form.value.color = car.color || '#000000'
-
-  // Features (خزّن ids مؤقتًا لحد ما features list تخلص)
-  pendingFeatureIds.value = car.features?.map(f => f.id) || []
-  normalizeFeaturesSelection()
-
-  // Existing images
-  const loadedImages = (car.images || []).map(img => ({
-    id: img.id,
-    url: `${img.path}`,
-    is_main: img.is_main === 1 || img.is_main === true,
-  }))
-
-  // Ensure the main image is sorted FIRST at index 0
-  const mainIdx = loadedImages.findIndex(i => i.is_main)
-  if (mainIdx > 0) {
-    const [mainItem] = loadedImages.splice(mainIdx, 1)
-    loadedImages.unshift(mainItem)
-  }
-
-  existingImages.value = loadedImages
-  keepImages.value = existingImages.value.map(i => i.id)
-
-  // main selection from server
-  const mainOld = existingImages.value.find(i => i.is_main)
-  if (mainOld) {
-    mainSelection.value = { type: 'old', id: mainOld.id }
-  } else if (existingImages.value.length) {
-    setMainOld(existingImages.value[0].id)
-  } else {
-    mainSelection.value = null
   }
 }
 
-/* ================= Lifecycle ================= */
-onMounted(async () => {
-  loading.value = true
-  try {
-    const [brandsRes, featuresRes, countriesRes] = await Promise.all([
-      brandUserApi.getAll(),
-      carFeatureUserApi.getAll(),
-      countryUserApi.getAll(),
-    ])
-
-    brands.value = brandsRes.data.data || []
-    features.value = featuresRes.data.data || []
-    countries.value = countriesRes.data.data || []
-
-    normalizeFeaturesSelection()
-
-    await loadCar()
-  } catch (err) {
-    console.error('Failed to load edit form data:', err)
-  } finally {
-    loading.value = false
-  }
-})
-
-/* ================= Submit ================= */
-const handleSubmit = async () => {
-  loading.value = true
+/* ================= Update Submit ================= */
+const handleUpdate = async () => {
+  saving.value = true
   errors.value = {}
 
   try {
     const fd = new FormData()
     fd.append('_method', 'PUT')
 
-    let descAr = (form.value.description_ar || '').replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
-    let descEn = (form.value.description_en || '').replace(/\n\n<!--specs:.*?-->/g, '').replace(/<!--specs:.*?-->/g, '').trim()
-
-    const specsData = {}
-    if (form.value.acceleration) specsData.acceleration = String(form.value.acceleration)
-    if (form.value.weight) specsData.weight = String(form.value.weight)
-
-    if (Object.keys(specsData).length > 0) {
-      const tag = `<!--specs:${JSON.stringify(specsData)}-->`
-      if (descAr) descAr += `\n\n${tag}`
-      else descAr = tag
-      if (descEn) descEn += `\n\n${tag}`
-      else descEn = tag
-    }
-
-    // basic fields
     Object.entries(form.value).forEach(([key, value]) => {
-      if (key === 'description_ar') {
-        fd.append('description_ar', descAr)
-        return
-      }
-      if (key === 'description_en') {
-        fd.append('description_en', descEn)
-        return
-      }
-      if (key === 'is_import') {
-        fd.append('is_import', String(value ?? '0'))
-        return
-      }
-
       if (key === 'features') {
         ;(value || []).forEach(v => fd.append('features[]', v))
         return
@@ -1148,11 +496,9 @@ const handleSubmit = async () => {
       if (value !== null && value !== '') fd.append(key, value)
     })
 
-    // keep old images in current order
     keepImages.value = existingImages.value.map(i => i.id)
     keepImages.value.forEach(id => fd.append('keep_images[]', id))
 
-    // main selection
     if (mainSelection.value?.type === 'old') {
       fd.append('main_image_id', mainSelection.value.id)
     } else if (mainSelection.value?.type === 'new') {
@@ -1161,564 +507,955 @@ const handleSubmit = async () => {
 
     await carSellerApi.update(carId, fd)
 
-    snackbarMessage.value = 'Car updated successfully'
+    snackbarMessage.value = 'تم تحديث بيانات السيارة بنجاح 🎉'
     snackbarColor.value = 'success'
     snackbar.value = true
 
-    setTimeout(() => router.push('/seller/cars'), 1200)
+    setTimeout(() => router.push('/seller/cars'), 1000)
   } catch (err) {
     if (err.response?.status === 422) {
       errors.value = err.response.data.errors || {}
     }
-    snackbarMessage.value = 'Failed to update car'
+    snackbarMessage.value = 'تعذر تحديث السيارة، يرجى مراجعة الحقول المطلوبة'
     snackbarColor.value = 'error'
     snackbar.value = true
   } finally {
-    loading.value = false
+    saving.value = false
   }
 }
+
+/* ================= Lifecycle ================= */
+onMounted(async () => {
+  try {
+    // ONLY the primary API is called at page start!
+    // All other lists (brands, models, locations, features) are lazy-loaded when interacting with their selectors
+    await loadCar()
+  } catch (err) {
+    console.error('Initialization failed:', err)
+  }
+})
+
+// Brand / Model names for preview
+const selectedBrandName = computed(() => {
+  const b = brands.value.find(x => x.id === form.value.brand_id)
+  return b?.name?.ar || b?.name?.en || carDetails.value?.brand?.name?.ar || carDetails.value?.brand?.name?.en || ''
+})
+
+const selectedModelName = computed(() => {
+  const m = models.value.find(x => x.id === form.value.model_id)
+  return m?.name?.ar || m?.name?.en || carDetails.value?.model?.name?.ar || carDetails.value?.model?.name?.en || ''
+})
+
+const previewMainImage = computed(() => {
+  if (mainSelection.value?.type === 'old') {
+    const img = existingImages.value.find(i => i.id === mainSelection.value.id)
+    return img?.url || ''
+  }
+  if (mainSelection.value?.type === 'new') {
+    return newImagePreviews.value[mainSelection.value.index]?.url || ''
+  }
+  if (existingImages.value.length) return existingImages.value[0].url
+  if (newImagePreviews.value.length) return newImagePreviews.value[0].url
+  return ''
+})
 </script>
 
 <template>
-  <div class="flex justify-center py-10 px-4">
-    <VCard class="w-full max-w-6xl pa-8 rounded-xl">
+  <div class="seller-edit-car-wizard py-6 px-4 max-w-6xl mx-auto">
+    <!-- ===== Page Hero Header ===== -->
+    <PageHeroHeader
+      :title="`تعديل بيانات السيارة #${carId}`"
+      subtitle="تحديث مواصفات، أسعار، صور وحالة السيارة في أسطول المعرض"
+      icon="tabler-pencil"
+      :breadcrumbs="[
+        { title: 'لوحة التحكم', to: '/seller/dashboard', icon: 'tabler-smart-home' },
+        { title: 'أسطول السيارات', to: '/seller/cars' },
+        { title: `تعديل #${carId}` },
+      ]"
+      :badge="carDetails?.status || 'قيد التعديل'"
+      :badge-color="carDetails?.status === 'approved' ? 'success' : 'warning'"
+    >
+      <template #actions>
+        <VBtn
+          variant="tonal"
+          color="secondary"
+          prepend-icon="tabler-arrow-right"
+          @click="router.push('/seller/cars')"
+        >
+          العودة للأسطول
+        </VBtn>
 
-      <!-- Title -->
-      <div class="text-center mb-10">
-        <VIcon icon="tabler-car" size="28" color="primary" />
-        <h2 class="text-h5 font-weight-medium mt-2">
-          Edit Car
-        </h2>
-      </div>
+        <VBtn
+          color="primary"
+          prepend-icon="tabler-check"
+          class="font-weight-bold"
+          :loading="saving"
+          @click="handleUpdate"
+        >
+          حفظ التعديلات
+        </VBtn>
+      </template>
+    </PageHeroHeader>
 
-      <VForm @submit.prevent="handleSubmit">
+    <!-- Loading State with Driving Car Motion -->
+    <div v-if="loading" class="pa-6">
+      <CarMotionLoader
+        mode="table"
+        title="جاري فحص وجلب بيانات السيارة..."
+        subtitle="التحقق من هوية المركبة والمواصفات من السيرفر"
+        :height="360"
+      />
+    </div>
 
-        <!-- Smart Specifications Paste Parser -->
-        <VCard variant="outlined" color="primary" class="mb-8 pa-5 rounded-xl relative overflow-hidden" style="background: rgba(var(--v-theme-primary), 0.04); border-width: 1.5px;">
-          <div class="d-flex align-center justify-space-between mb-3 flex-wrap gap-2">
-            <div class="d-flex align-center gap-2">
-              <VIcon icon="tabler-wand" color="primary" size="24" class="animate-pulse" />
-              <h3 class="text-subtitle-1 font-weight-bold text-primary mb-0">
-                Smart Auto-Fill from Text / تعبئة المواصفات ذكياً من نص خارجي
-              </h3>
-            </div>
-            <span class="text-caption opacity-80 font-weight-medium">
-              Copy specs text from any website or file, paste it here, and let the system parse & auto-fill the form!
-            </span>
-          </div>
-          
-          <VRow dense>
-            <VCol cols="12">
-              <VTextarea
-                v-model="pastedSpecsText"
-                rows="3"
-                placeholder="انسخ النص الذي يحتوي على ماركة وموديل وسنة وسعر ومواصفات المحرك والصقه هنا لتعديل الحقول فوراً وبضغطة واحدة..."
-                variant="outlined"
-                hide-details
-                append-inner-icon="tabler-clipboard-text"
-              />
-            </VCol>
-            <VCol cols="12" class="d-flex justify-end gap-2 mt-2">
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="secondary"
-                @click="pastedSpecsText = ''"
-                :disabled="!pastedSpecsText"
-              >
-                Clear / مسح
-              </VBtn>
-              <VBtn
-                size="small"
-                color="primary"
-                @click="handleParseSpecs"
-                :disabled="!pastedSpecsText"
-                prepend-icon="tabler-sparkles"
-              >
-                Auto-Fill Form / استخراج وتعديل تلقائي
-              </VBtn>
-            </VCol>
-          </VRow>
+    <div v-else>
+      <!-- Wizard Progress Track -->
+      <VCard class="mb-6 rounded-2xl elevation-2 overflow-hidden border">
+        <VProgressLinear :model-value="progressPercent" color="primary" height="6" />
 
-          <!-- Extraction Feedback -->
-          <Transition name="fade">
-            <div v-if="specsFeedbackMessage" class="mt-3 px-4 py-2.5 rounded bg-success-lighten-5 text-success text-sm d-flex align-center gap-2" style="background-color: rgba(40, 199, 111, 0.1); border: 1px solid rgba(40, 199, 111, 0.2);">
-              <VIcon icon="tabler-circle-check" size="18" />
-              <span class="font-weight-medium">{{ specsFeedbackMessage }}</span>
-            </div>
-          </Transition>
-        </VCard>
-
-        <!-- ================= Basic Info ================= -->
-        <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Basic Information</h3>
-
-          <VRow dense>
-            <VCol cols="12" md="12">
-              <VSelect
-                ref="refType"
-                v-model="form.type"
-                :items="['car','motorcycle']"
-                label="Type"
-                :error-messages="fieldError('type')"
-                @update:modelValue="focusNext(refBrand.value)"
-              />
-            </VCol>
-
-            <VCol cols="12">
-              <VTextField
-                v-model="carSellerName"
-                label="Seller"
-                prepend-inner-icon="tabler-user"
-                variant="outlined"
-                disabled
-              />
-            </VCol>
-
-            <VCol cols="12" md="6">
-              <VSelect
-                ref="refBrand"
-                v-model="form.brand_id"
-                :items="brands"
-                :item-title="b => safeItemTitle(b)"
-                item-value="id"
-                label="Brand"
-                prepend-inner-icon="tabler-building-factory"
-                variant="outlined"
-                @update:modelValue="() => loadModels(false)"
-                :error="!!fieldError('brand_id').length"
-                :error-messages="fieldError('brand_id')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="6">
-              <VSelect
-                ref="refModel"
-                v-model="form.model_id"
-                :items="models"
-                :item-title="m => safeItemTitle(m)"
-                item-value="id"
-                label="Model"
-                prepend-inner-icon="tabler-car"
-                variant="outlined"
-                :disabled="!form.brand_id || !models.length"
-                :error="!!fieldError('model_id').length"
-                :error-messages="fieldError('model_id')"
-                @update:modelValue="focusNext(refCountry.value)"
-              />
-            </VCol>
-          </VRow>
-        </section>
-
-        <!-- ================= Location ================= -->
-        <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Location</h3>
-
-          <VRow dense>
-            <VCol cols="12" md="4">
-              <VSelect
-                ref="refCountry"
-                v-model="form.country_id"
-                :items="countries"
-                :item-title="c => safeItemTitle(c)"
-                item-value="id"
-                label="Country"
-                prepend-inner-icon="tabler-world"
-                variant="outlined"
-                @update:modelValue="() => loadGovernorates(false)"
-                :error="!!fieldError('country_id').length"
-                :error-messages="fieldError('country_id')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="4">
-              <VSelect
-                ref="refGovernorate"
-                v-model="form.governorate_id"
-                :items="governorates"
-                :item-title="g => safeItemTitle(g)"
-                item-value="id"
-                label="Governorate"
-                prepend-inner-icon="tabler-map"
-                variant="outlined"
-                :disabled="!form.country_id || !governorates.length"
-                @update:modelValue="() => loadCities(false)"
-                :error="!!fieldError('governorate_id').length"
-                :error-messages="fieldError('governorate_id')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="4">
-              <VSelect
-                ref="refCity"
-                v-model="form.city_id"
-                :items="cities"
-                :item-title="c => safeItemTitle(c)"
-                item-value="id"
-                label="City"
-                prepend-inner-icon="tabler-map-pin"
-                variant="outlined"
-                :disabled="!form.governorate_id || !cities.length"
-                :error="!!fieldError('city_id').length"
-                :error-messages="fieldError('city_id')"
-                @update:modelValue="focusNext(refTitleAr.value)"
-              />
-            </VCol>
-          </VRow>
-        </section>
-
-        <!-- ================= Titles ================= -->
-        <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Titles</h3>
-
-          <VRow dense>
-            <VCol cols="12" md="6">
-              <VTextField
-                ref="refTitleAr"
-                v-model="form.title_ar"
-                label="Title Arabic"
-                variant="outlined"
-                maxlength="150"
-                counter="150"
-                :error-messages="fieldError('title_ar')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="6">
-              <VTextField
-                ref="refTitleEn"
-                v-model="form.title_en"
-                label="Title English"
-                variant="outlined"
-                maxlength="150"
-                counter="150"
-                :error-messages="fieldError('title_en')"
-              />
-            </VCol>
-          </VRow>
-        </section>
-
-        <!-- ================= Description ================= -->
-        <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Description</h3>
-
-          <VRow dense>
-            <VCol cols="12" md="6">
-              <VTextarea
-                v-model="form.description_ar"
-                label="Description Arabic"
-                rows="4"
-                variant="outlined"
-                maxlength="2000"
-                counter="2000"
-                :error-messages="fieldError('description_ar')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="6">
-              <VTextarea
-                v-model="form.description_en"
-                label="Description English"
-                rows="4"
-                variant="outlined"
-                maxlength="2000"
-                counter="2000"
-                :error-messages="fieldError('description_en')"
-              />
-            </VCol>
-          </VRow>
-        </section>
-
-        <!-- ================= Specs ================= -->
-        <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Car Specs</h3>
-
-          <VRow dense>
-            <VCol cols="12" md="4">
-              <VTextField
-                ref="refPrice"
-                v-model="form.price"
-                label="Price"
-                type="number"
-                :error-messages="fieldError('price')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="4">
-              <VTextField
-                ref="refYear"
-                v-model="form.year"
-                label="Year"
-                :error-messages="fieldError('year')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="4">
-              <VTextField
-                ref="refMileage"
-                v-model="form.mileage"
-                label="Mileage"
-                :error-messages="fieldError('mileage')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="6">
-              <VSelect
-                v-model="form.cylinders"
-                :items="['I2','I3','I4','I5','I6','V6','V8','V10','V12','W12','W16']"
-                label="Cylinders"
-                prepend-inner-icon="tabler-engine-off"
-                variant="outlined"
-                :error-messages="fieldError('cylinders')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="6">
-              <VCombobox
-                v-model="form.engine_capacity"
-                :items="engineCapacityOptions"
-                item-title="title"
-                item-value="value"
-                :return-object="false"
-                label="Engine Capacity / السعة اللترية"
-                prepend-inner-icon="tabler-piston"
-                variant="outlined"
-                :error-messages="fieldError('engine_capacity')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="4">
-              <VTextField
-                v-model="form.acceleration"
-                label="Acceleration 0-100 (sec)"
-                prepend-inner-icon="tabler-dashboard"
-                placeholder="e.g. 4.5"
-                variant="outlined"
-                :error-messages="fieldError('acceleration')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="4">
-              <VTextField
-                v-model="form.weight"
-                label="Car Weight"
-                prepend-inner-icon="tabler-weight"
-                placeholder="e.g. 1500 kg / 1.5 Ton"
-                variant="outlined"
-                :error-messages="fieldError('weight')"
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <VSelect
-                ref="refTransmission"
-                v-model="form.transmission"
-                :items="['manual','automatic']"
-                label="Transmission"
-                @update:modelValue="focusNext(refFuelType.value)"
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <VSelect
-                ref="refFuelType"
-                v-model="form.fuel_type"
-                :items="['petrol','diesel','electric','hybrid']"
-                label="Fuel Type"
-                @update:modelValue="focusNext(refDrivetrain.value)"
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <VSelect
-                ref="refDrivetrain"
-                v-model="form.drivetrain"
-                :items="['fwd','rwd','awd','4wd']"
-                label="Drivetrain"
-                @update:modelValue="focusNext(refCondition.value)"
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <VSelect
-                ref="refCondition"
-                v-model="form.condition"
-                :items="['new','used']"
-                label="Condition"
-              />
-            </VCol>
-
-            <VCol cols="12" md="3">
-              <VSelect
-                v-model="form.is_import"
-                :items="[
-                  { title: 'Local (وكيل)', value: '0' },
-                  { title: 'Imported (استيراد الخارج)', value: '1' },
-                  { title: 'For Import (متاحة للاستيراد)', value: '2' }
-                ]"
-                label="Source"
-              />
-            </VCol>
-          </VRow>
-        </section>
-
-        <!-- ================= Features ================= -->
-        <section class="mb-10">
-          <FeaturesManager
-            v-model="form.features"
-            :features-list="features"
-            :error-messages="fieldError('features')"
-            @feature-created="f => features.push(f)"
-          />
-        </section>
-
-        <!-- ================= Color ================= -->
-        <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Color / لون السيارة</h3>
-
-          <div class="d-flex flex-wrap gap-3 mb-4 align-center">
-            <!-- Predefined Colors -->
+        <div class="pa-4 bg-surface">
+          <div class="d-flex align-center justify-space-between flex-wrap gap-2">
             <div
-              v-for="c in commonColors"
-              :key="c.hex"
-              class="cursor-pointer rounded-circle border d-flex align-center justify-center transition-all"
-              :style="{ backgroundColor: c.hex, width: '40px', height: '40px', border: form.color === c.hex ? '3px solid #FF9F43' : '1px solid #ddd', transform: form.color === c.hex ? 'scale(1.1)' : 'none' }"
-              :title="c.name"
-              @click="form.color = c.hex"
-            >
-              <VIcon v-if="form.color === c.hex" icon="tabler-check" :color="c.hex === '#FFFFFF' ? 'black' : 'white'" size="20" />
-            </div>
-
-            <!-- Custom Color Circle Picker -->
-            <div
-              class="cursor-pointer rounded-circle border d-flex align-center justify-center transition-all position-relative overflow-hidden"
-              :style="{ 
-                background: isCustomColor ? form.color || '#fff' : 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)', 
-                width: '40px', 
-                height: '40px', 
-                border: isCustomColor ? '3px solid #FF9F43' : '1px solid #ddd',
-                transform: isCustomColor ? 'scale(1.1)' : 'none'
+              v-for="s in steps"
+              :key="s.step"
+              class="wizard-step-node d-flex align-center gap-2 cursor-pointer pa-2 rounded-xl"
+              :class="{
+                'active-step': currentStep === s.step,
+                'completed-step': currentStep > s.step,
               }"
-              title="Choose Custom Color / اختر لوناً مخصصاً"
+              @click="currentStep = s.step"
             >
-              <!-- Invisible native color input covering the entire circle -->
-              <input
-                type="color"
-                v-model="form.color"
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;"
-              />
-              <VIcon v-if="isCustomColor" icon="tabler-check" :color="getContrastColor(form.color)" size="20" style="position: relative; z-index: 1; pointer-events: none;" />
-              <VIcon v-else icon="tabler-color-picker" color="white" size="20" style="position: relative; z-index: 1; pointer-events: none;" />
+              <div class="step-num-bubble">
+                <VIcon v-if="currentStep > s.step" icon="tabler-check" size="14" />
+                <span v-else>{{ s.step }}</span>
+              </div>
+              <div class="step-text d-none d-sm-block">
+                <div class="step-title font-weight-bold text-caption">{{ s.title }}</div>
+                <div class="step-subtitle text-xs text-medium-emphasis">{{ s.subtitle }}</div>
+              </div>
             </div>
           </div>
+        </div>
+      </VCard>
 
-          <VRow align="center">
-            <VCol cols="12" md="4">
-              <VTextField
-                :model-value="form.color"
-                @input="handleColorInput"
-                label="Custom Color (Hex) / كود لون مخصص"
-                variant="outlined"
-                prepend-inner-icon="tabler-palette"
-                placeholder="e.g. #FF00FF"
-                :error-messages="fieldError('color')"
-              />
-            </VCol>
-          </VRow>
-        </section>
+      <!-- ===== Step 1: Vehicle Identity ===== -->
+      <VWindow v-model="currentStep">
+        <VWindowItem :value="1">
+          <VCard class="pa-6 rounded-2xl border mb-6" elevation="2">
+            <div class="d-flex align-center gap-2 mb-4">
+              <VAvatar color="primary" variant="tonal" rounded="lg">
+                <VIcon icon="tabler-car" size="24" />
+              </VAvatar>
+              <div>
+                <h3 class="text-h6 font-weight-bold mb-0">الخطوة 1: هوية المركبة وبياناتها الأساسية</h3>
+                <p class="text-caption text-medium-emphasis mb-0">حدد نوع المركبة، الماركة، الموديل، وسنة الصنع</p>
+              </div>
+            </div>
 
-        <!-- ================= Images ================= -->
-        <section class="mb-10">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">Images</h3>
-
-          <!-- Old Images -->
-          <div v-if="existingImages.length" class="mb-4">
-            <div class="text-sm opacity-80 mb-2">Existing Images</div>
-
-            <VRow>
-              <VCol v-for="img in existingImages" :key="img.id" cols="auto">
-                <VCard
-                  class="cursor-pointer"
-                  :class="{ 'border-primary border-2': mainSelection?.type === 'old' && mainSelection?.id === img.id }"
-                  @click="setMainOld(img.id)"
-                  style="width:100px;height:100px;position:relative;overflow:hidden;"
+            <!-- Vehicle Type Selection (Cards) -->
+            <div class="mb-4">
+              <div class="text-caption font-weight-bold text-medium-emphasis mb-2">نوع المركبة *</div>
+              <div class="d-flex gap-4 flex-wrap">
+                <div
+                  class="type-choice-card d-flex align-center gap-3 px-5 py-3 rounded-xl cursor-pointer border flex-1"
+                  :class="{ 'selected-choice': form.type === 'car' }"
+                  @click="form.type = 'car'"
                 >
-                  <VImg :src="img.url" cover style="width:100px;height:100px;" />
-
-                  <div
-                    v-if="mainSelection?.type === 'old' && mainSelection?.id === img.id"
-                    style="position:absolute;top:6px;right:6px;z-index:10;"
-                    class="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded"
-                  >
-                    Main
+                  <VAvatar :color="form.type === 'car' ? 'primary' : 'secondary'" variant="tonal" size="42">
+                    <VIcon icon="tabler-car" size="24" />
+                  </VAvatar>
+                  <div>
+                    <div class="font-weight-bold text-body-1">سيارة ملاكي / نقل (Car)</div>
+                    <div class="text-caption text-medium-emphasis">سيدان، SUV، هاتشباك، كروس أوفر</div>
                   </div>
-
-                  <VBtn
-                    icon
-                    color="error"
-                    size="x-small"
-                    variant="flat"
-                    style="position:absolute;bottom:6px;right:6px;z-index:10;"
-                    @click.stop="removeExistingImage(img.id)"
-                  >
-                    <VIcon icon="tabler-trash" size="16" />
-                  </VBtn>
-                </VCard>
-              </VCol>
-            </VRow>
-          </div>
-
-          <!-- Upload New -->
-          <VFileInput
-            v-model="form.images"
-            multiple
-            accept="image/*,.heic,.HEIC,.heif,.HEIF"
-            label="Upload New Images"
-            variant="outlined"
-            @update:modelValue="handleImagesChange"
-            :error-messages="fieldError('images')"
-          />
-
-          <!-- New Previews -->
-          <VRow v-if="newImagePreviews.length" class="mt-4">
-            <VCol
-              v-for="img in newImagePreviews"
-              :key="img.index"
-              cols="auto"
-            >
-              <VCard
-                class="cursor-pointer position-relative"
-                :class="{ 'border-primary border-2': mainSelection?.type === 'new' && mainSelection?.index === img.index }"
-                @click="setMainNew(img.index)"
-                style="width: 100px; height: 100px;"
-              >
-                <VImg
-                  :src="img.url"
-                  cover
-                  style="width: 100px; height: 100px;"
-                />
+                </div>
 
                 <div
-                  v-if="mainSelection?.type === 'new' && mainSelection?.index === img.index"
-                  class="absolute top-1 right-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded"
+                  class="type-choice-card d-flex align-center gap-3 px-5 py-3 rounded-xl cursor-pointer border flex-1"
+                  :class="{ 'selected-choice': form.type === 'motorcycle' }"
+                  @click="form.type = 'motorcycle'"
                 >
-                  Main
+                  <VAvatar :color="form.type === 'motorcycle' ? 'primary' : 'secondary'" variant="tonal" size="42">
+                    <VIcon icon="tabler-motorbike" size="24" />
+                  </VAvatar>
+                  <div>
+                    <div class="font-weight-bold text-body-1">دراجة نارية (Motorcycle)</div>
+                    <div class="text-caption text-medium-emphasis">سكوتر، ريس، دراجة بخارية</div>
+                  </div>
                 </div>
-              </VCard>
-            </VCol>
-          </VRow>
-        </section>
+              </div>
+            </div>
 
-        <!-- ================= Actions ================= -->
-        <div class="d-flex justify-end gap-4">
-          <VBtn variant="outlined" @click="router.back()">Cancel</VBtn>
-          <VBtn color="primary" type="submit" :loading="loading">Save Car</VBtn>
-        </div>
-      </VForm>
-    </VCard>
+            <VRow dense>
+              <!-- Brand -->
+              <VCol cols="12" md="6">
+                <VAutocomplete
+                  v-model="form.brand_id"
+                  :items="brands"
+                  :item-title="safeItemTitle"
+                  item-value="id"
+                  label="الماركة (Brand) *"
+                  placeholder="اختر الماركة..."
+                  prepend-inner-icon="tabler-building-factory"
+                  variant="outlined"
+                  density="comfortable"
+                  :loading="loadingBrands"
+                  :custom-filter="customBrandFilter"
+                  :error-messages="errors.brand_id"
+                  @update:menu="open => open && loadBrandsIfNeeded()"
+                  @click="loadBrandsIfNeeded"
+                  @update:model-value="onBrandChange"
+                />
+              </VCol>
 
-    <VSnackbar v-model="snackbar" :color="snackbarColor" location="top">
+              <!-- Model -->
+              <VCol cols="12" md="6">
+                <VAutocomplete
+                  v-model="form.model_id"
+                  :items="models"
+                  :item-title="safeItemTitle"
+                  item-value="id"
+                  label="الموديل (Model) *"
+                  placeholder="اختر الموديل..."
+                  prepend-inner-icon="tabler-tag"
+                  variant="outlined"
+                  density="comfortable"
+                  :loading="loadingModels"
+                  :disabled="!form.brand_id"
+                  :error-messages="errors.model_id"
+                  @update:menu="open => open && loadModelsIfNeeded()"
+                  @click="loadModelsIfNeeded"
+                />
+              </VCol>
+
+              <!-- Year -->
+              <VCol cols="12" md="4">
+                <VSelect
+                  v-model="form.year"
+                  :items="yearOptions"
+                  label="سنة الصنع (Year) *"
+                  prepend-inner-icon="tabler-calendar"
+                  variant="outlined"
+                  density="comfortable"
+                  :error-messages="errors.year"
+                />
+              </VCol>
+
+              <!-- Condition -->
+              <VCol cols="12" md="4">
+                <VSelect
+                  v-model="form.condition"
+                  :items="[
+                    { title: 'جديدة تماماً (Zero / New)', value: 'new' },
+                    { title: 'مستعملة بحالة ممتازة (Used)', value: 'used' },
+                  ]"
+                  label="حالة السيارة (Condition) *"
+                  prepend-inner-icon="tabler-sparkles"
+                  variant="outlined"
+                  density="comfortable"
+                  :error-messages="errors.condition"
+                />
+              </VCol>
+
+              <!-- Import Status -->
+              <VCol cols="12" md="4">
+                <VSelect
+                  v-model="form.is_import"
+                  :items="[
+                    { title: 'محلية (وكيل محلي)', value: '0' },
+                    { title: 'وارد الخارج (مستوردة)', value: '1' },
+                    { title: 'متاحة للطلب والاستيراد', value: '2' },
+                  ]"
+                  label="نوع التوريد / المنشأ"
+                  prepend-inner-icon="tabler-world"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+
+              <!-- Titles -->
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.title_ar"
+                  label="عنوان الإعلان بالعربية *"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="tabler-language"
+                  :error-messages="errors.title_ar"
+                />
+              </VCol>
+
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.title_en"
+                  label="عنوان الإعلان بالإنجليزية *"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="tabler-language"
+                  :error-messages="errors.title_en"
+                />
+              </VCol>
+            </VRow>
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-end mt-6">
+              <VBtn color="primary" append-icon="tabler-chevron-left" @click="currentStep = 2">
+                التالي: المواصفات الفنية
+              </VBtn>
+            </div>
+          </VCard>
+        </VWindowItem>
+
+        <!-- ===== Step 2: Technical Specs ===== -->
+        <VWindowItem :value="2">
+          <VCard class="pa-6 rounded-2xl border mb-6" elevation="2">
+            <div class="d-flex align-center gap-2 mb-4">
+              <VAvatar color="primary" variant="tonal" rounded="lg">
+                <VIcon icon="tabler-engine" size="24" />
+              </VAvatar>
+              <div>
+                <h3 class="text-h6 font-weight-bold mb-0">الخطوة 2: المواصفات الفنية والميكانيكية</h3>
+                <p class="text-caption text-medium-emphasis mb-0">بيانات المحرك، ناقل الحركة، العداد واللون</p>
+              </div>
+            </div>
+
+            <VRow dense>
+              <!-- Transmission -->
+              <VCol cols="12" class="mb-3">
+                <div class="text-subtitle-2 font-weight-bold mb-2">ناقل الحركة (Transmission) *</div>
+                <div class="d-flex gap-3 flex-wrap">
+                  <VCard
+                    v-for="t in [
+                      { label: 'أوتوماتيك (Automatic)', value: 'automatic', icon: 'tabler-automatic-gearbox' },
+                      { label: 'مانيوال / يدوي (Manual)', value: 'manual', icon: 'tabler-manual-gearbox' },
+                    ]"
+                    :key="t.value"
+                    variant="outlined"
+                    class="pa-3 rounded-xl cursor-pointer flex-1"
+                    :class="{ 'border-primary bg-primary-subtle': form.transmission === t.value }"
+                    @click="form.transmission = t.value"
+                  >
+                    <div class="d-flex align-center gap-2">
+                      <VIcon :icon="t.icon" size="22" :color="form.transmission === t.value ? 'primary' : 'medium-emphasis'" />
+                      <span class="font-weight-medium">{{ t.label }}</span>
+                    </div>
+                  </VCard>
+                </div>
+              </VCol>
+
+              <!-- Fuel Type -->
+              <VCol cols="12" md="4">
+                <VSelect
+                  v-model="form.fuel_type"
+                  :items="[
+                    { title: 'بنزين (Petrol)', value: 'petrol' },
+                    { title: 'ديزل (Diesel)', value: 'diesel' },
+                    { title: 'هايبرد (Hybrid)', value: 'hybrid' },
+                    { title: 'كهربائي بالكامل (Electric)', value: 'electric' },
+                    { title: 'غاز طبيعي (CNG)', value: 'natural_gas' },
+                  ]"
+                  label="نوع الوقود *"
+                  prepend-inner-icon="tabler-gas-station"
+                  variant="outlined"
+                  density="comfortable"
+                  :error-messages="errors.fuel_type"
+                />
+              </VCol>
+
+              <!-- Engine CC -->
+              <VCol cols="12" md="4">
+                <VCombobox
+                  v-model="form.engine_capacity"
+                  :items="engineCapacityOptions"
+                  item-value="value"
+                  item-title="title"
+                  :return-object="false"
+                  label="سعة المحرك (CC)"
+                  prepend-inner-icon="tabler-gauge"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+
+              <!-- Mileage -->
+              <VCol cols="12" md="4">
+                <VTextField
+                  v-model="form.mileage"
+                  type="number"
+                  label="الممشى / قراءة العداد (كم) *"
+                  prepend-inner-icon="tabler-dashboard"
+                  variant="outlined"
+                  density="comfortable"
+                  suffix="كم"
+                  :error-messages="errors.mileage"
+                />
+              </VCol>
+
+              <!-- Drivetrain -->
+              <VCol cols="12" md="6">
+                <VSelect
+                  v-model="form.drivetrain"
+                  :items="[
+                    { title: 'دفع أمامي (FWD)', value: 'FWD' },
+                    { title: 'دفع خلفي (RWD)', value: 'RWD' },
+                    { title: 'دفع رباعي مستمر (AWD)', value: 'AWD' },
+                    { title: 'دفع رباعي للعربات (4WD / 4x4)', value: '4WD' },
+                  ]"
+                  label="نظام الدفع"
+                  prepend-inner-icon="tabler-steering-wheel"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+
+              <!-- Color Palette -->
+              <VCol cols="12" md="6">
+                <div class="text-subtitle-2 font-weight-bold mb-2">لون السيارة</div>
+                <div class="d-flex align-center gap-2 flex-wrap">
+                  <div
+                    v-for="c in commonColors"
+                    :key="c.hex"
+                    class="color-circle cursor-pointer"
+                    :style="{ background: c.hex }"
+                    :class="{ active: form.color === c.hex }"
+                    :title="c.name"
+                    @click="form.color = c.hex"
+                  />
+                  <input
+                    type="color"
+                    v-model="form.color"
+                    class="custom-color-input ms-2"
+                    title="اختر لون مخصص"
+                  />
+                  <span class="text-caption font-weight-bold">{{ form.color }}</span>
+                </div>
+              </VCol>
+            </VRow>
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-space-between mt-6">
+              <VBtn variant="tonal" prepend-icon="tabler-chevron-right" @click="currentStep = 1">
+                السابق
+              </VBtn>
+              <VBtn color="primary" append-icon="tabler-chevron-left" @click="currentStep = 3">
+                التالي: السعر والموقع
+              </VBtn>
+            </div>
+          </VCard>
+        </VWindowItem>
+
+        <!-- ===== Step 3: Price & Location ===== -->
+        <VWindowItem :value="3">
+          <VCard class="pa-6 rounded-2xl border mb-6" elevation="2">
+            <div class="d-flex align-center gap-2 mb-4">
+              <VAvatar color="primary" variant="tonal" rounded="lg">
+                <VIcon icon="tabler-cash" size="24" />
+              </VAvatar>
+              <div>
+                <h3 class="text-h6 font-weight-bold mb-0">الخطوة 3: السعر وموقع المعاينة</h3>
+                <p class="text-caption text-medium-emphasis mb-0">حدد سعر البيع، السعر السابق إن وجد، والمحافظة والمدينة</p>
+              </div>
+            </div>
+
+            <VRow dense>
+              <!-- Price -->
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.price"
+                  type="number"
+                  label="سعر البيع المطلوب (EGP) *"
+                  prepend-inner-icon="tabler-currency-pound"
+                  variant="outlined"
+                  density="comfortable"
+                  suffix="EGP"
+                  :error-messages="errors.price"
+                />
+                <div v-if="form.price" class="text-xs text-primary font-weight-bold mt-1">
+                  المبلغ: {{ Number(form.price).toLocaleString() }} جنيه مصري
+                </div>
+              </VCol>
+
+              <!-- Old Price (For Discount) -->
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.old_price"
+                  type="number"
+                  label="السعر السابق قبل التخفيض (اختياري لظهور شارة تخفيض السعر)"
+                  prepend-inner-icon="tabler-tag"
+                  variant="outlined"
+                  density="comfortable"
+                  suffix="EGP"
+                />
+              </VCol>
+
+              <!-- Country -->
+              <VCol cols="12" md="4">
+                <VAutocomplete
+                  v-model="form.country_id"
+                  :items="countries"
+                  :item-title="safeItemTitle"
+                  item-value="id"
+                  label="الدولة *"
+                  variant="outlined"
+                  density="comfortable"
+                  :loading="loadingCountries"
+                  @update:menu="open => open && loadCountriesIfNeeded()"
+                  @click="loadCountriesIfNeeded"
+                  @update:model-value="onCountryChange"
+                />
+              </VCol>
+
+              <!-- Governorate -->
+              <VCol cols="12" md="4">
+                <VAutocomplete
+                  v-model="form.governorate_id"
+                  :items="governorates"
+                  :item-title="safeItemTitle"
+                  item-value="id"
+                  label="المحافظة *"
+                  variant="outlined"
+                  density="comfortable"
+                  :loading="loadingGovs"
+                  :disabled="!form.country_id"
+                  @update:menu="open => open && loadGovsIfNeeded()"
+                  @click="loadGovsIfNeeded"
+                  @update:model-value="onGovChange"
+                />
+              </VCol>
+
+              <!-- City -->
+              <VCol cols="12" md="4">
+                <VAutocomplete
+                  v-model="form.city_id"
+                  :items="cities"
+                  :item-title="safeItemTitle"
+                  item-value="id"
+                  label="المدينة / المركز *"
+                  variant="outlined"
+                  density="comfortable"
+                  :loading="loadingCities"
+                  :disabled="!form.governorate_id"
+                  @update:menu="open => open && loadCitiesIfNeeded()"
+                  @click="loadCitiesIfNeeded"
+                />
+              </VCol>
+
+              <!-- Optional Contact Overrides -->
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.phone_number"
+                  label="رقم الهاتف للتواصل (اتركه فارغاً لاستخدام رقم المعرض)"
+                  prepend-inner-icon="tabler-phone"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.whatsapp_number"
+                  label="رقم الواتساب (اتركه فارغاً لاستخدام رقم المعرض)"
+                  prepend-inner-icon="tabler-brand-whatsapp"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+            </VRow>
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-space-between mt-6">
+              <VBtn variant="tonal" prepend-icon="tabler-chevron-right" @click="currentStep = 2">
+                السابق
+              </VBtn>
+              <VBtn color="primary" append-icon="tabler-chevron-left" @click="currentStep = 4">
+                التالي: الصور والمميزات
+              </VBtn>
+            </div>
+          </VCard>
+        </VWindowItem>
+
+        <!-- ===== Step 4: Media & Features ===== -->
+        <VWindowItem :value="4">
+          <VCard class="pa-6 rounded-2xl border mb-6" elevation="2">
+            <div class="d-flex align-center gap-2 mb-4">
+              <VAvatar color="primary" variant="tonal" rounded="lg">
+                <VIcon icon="tabler-photo" size="24" />
+              </VAvatar>
+              <div>
+                <h3 class="text-h6 font-weight-bold mb-0">الخطوة 4: صور السيارة والمواصفات والوصف</h3>
+                <p class="text-caption text-medium-emphasis mb-0">إدارة الصور الحالية، رفع صور إضافية، وتحديد التجهيزات</p>
+              </div>
+            </div>
+
+            <!-- Photos Management -->
+            <div class="mb-6">
+              <div class="d-flex align-center justify-space-between mb-2">
+                <div class="font-weight-bold text-subtitle-2">صور السيارة (الحد الأقصى 20 صورة)</div>
+                <div class="text-xs text-medium-emphasis">
+                  {{ existingImages.length + newImagePreviews.length }} / 20 صورة
+                </div>
+              </div>
+
+              <!-- Upload Zone -->
+              <div class="upload-dropzone pa-6 rounded-2xl text-center mb-4 cursor-pointer">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  class="d-none"
+                  ref="fileInputRef"
+                  @change="handleImagesChange($event.target.files)"
+                />
+                <VIcon icon="tabler-cloud-upload" size="40" color="primary" class="mb-2" />
+                <div class="font-weight-bold">اسحب الصور وأفلتها هنا أو انقر للاختيار</div>
+                <div class="text-xs text-medium-emphasis mt-1">PNG, JPG, WEBP حتى 10MB لكل صورة</div>
+                <VBtn
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  class="mt-3 font-weight-bold"
+                  @click="$refs.fileInputRef.click()"
+                >
+                  اختيار صور إضافية من جهازك
+                </VBtn>
+              </div>
+
+              <!-- Images Previews Grid -->
+              <div v-if="existingImages.length || newImagePreviews.length" class="images-preview-grid">
+                <!-- Existing Images -->
+                <div
+                  v-for="img in existingImages"
+                  :key="'old-' + img.id"
+                  class="preview-image-card rounded-xl overflow-hidden position-relative"
+                  :class="{ 'is-main': mainSelection?.type === 'old' && mainSelection?.id === img.id }"
+                >
+                  <img :src="img.url" class="preview-img" />
+                  <div class="preview-overlay d-flex align-center justify-space-between pa-2">
+                    <VBtn
+                      size="x-small"
+                      :color="mainSelection?.type === 'old' && mainSelection?.id === img.id ? 'success' : 'default'"
+                      variant="flat"
+                      @click="setMainOld(img.id)"
+                    >
+                      {{ mainSelection?.type === 'old' && mainSelection?.id === img.id ? 'الصورة الرئيسية ⭐' : 'تعيين رئيسية' }}
+                    </VBtn>
+                    <VBtn
+                      icon="tabler-trash"
+                      size="x-small"
+                      color="error"
+                      variant="flat"
+                      @click="removeExistingImage(img.id)"
+                    />
+                  </div>
+                </div>
+
+                <!-- New Uploaded Images -->
+                <div
+                  v-for="p in newImagePreviews"
+                  :key="'new-' + p.index"
+                  class="preview-image-card rounded-xl overflow-hidden position-relative"
+                  :class="{ 'is-main': mainSelection?.type === 'new' && mainSelection?.index === p.index }"
+                >
+                  <img :src="p.url" class="preview-img" />
+                  <div class="preview-overlay d-flex align-center justify-space-between pa-2">
+                    <VBtn
+                      size="x-small"
+                      :color="mainSelection?.type === 'new' && mainSelection?.index === p.index ? 'success' : 'default'"
+                      variant="flat"
+                      @click="setMainNew(p.index)"
+                    >
+                      {{ mainSelection?.type === 'new' && mainSelection?.index === p.index ? 'الصورة الرئيسية ⭐' : 'تعيين رئيسية' }}
+                    </VBtn>
+                    <VBtn
+                      icon="tabler-trash"
+                      size="x-small"
+                      color="error"
+                      variant="flat"
+                      @click="removeNewImage(p.index)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Features Manager (Modal Popup Component) -->
+            <div class="mb-6">
+              <FeaturesManager
+                v-model="form.features"
+                :error-messages="errors.features"
+              />
+            </div>
+
+            <!-- Description Textareas -->
+            <VRow dense>
+              <VCol cols="12" md="6">
+                <VTextarea
+                  v-model="form.description_ar"
+                  label="الوصف التفصيلي للسيارة (بالعربية)"
+                  rows="4"
+                  variant="outlined"
+                  placeholder="اكتب مواصفات السيارة، حالة الفحص، الصيانة، وإمكانية المعاينة..."
+                />
+              </VCol>
+
+              <VCol cols="12" md="6">
+                <VTextarea
+                  v-model="form.description_en"
+                  label="الوصف التفصيلي (بالإنجليزية)"
+                  rows="4"
+                  variant="outlined"
+                  placeholder="Detailed car condition, inspection details, service history..."
+                />
+              </VCol>
+            </VRow>
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-space-between mt-6">
+              <VBtn variant="tonal" prepend-icon="tabler-chevron-right" @click="currentStep = 3">
+                السابق
+              </VBtn>
+              <VBtn color="primary" append-icon="tabler-chevron-left" @click="currentStep = 5">
+                التالي: المراجعة والتحديث
+              </VBtn>
+            </div>
+          </VCard>
+        </VWindowItem>
+
+        <!-- ===== Step 5: Live Review & Publish ===== -->
+        <VWindowItem :value="5">
+          <VCard class="pa-6 rounded-2xl border mb-6" elevation="2">
+            <div class="d-flex align-center gap-2 mb-4">
+              <VAvatar color="success" variant="tonal" rounded="lg">
+                <VIcon icon="tabler-check" size="24" />
+              </VAvatar>
+              <div>
+                <h3 class="text-h6 font-weight-bold mb-0">الخطوة 5: المعاينة النهائية والتحديث</h3>
+                <p class="text-caption text-medium-emphasis mb-0">راجع شكل بطاقة السيارة ومواصفاتها قبل حفظ التعديلات</p>
+              </div>
+            </div>
+
+            <VRow>
+              <!-- Live Buyer Preview Card -->
+              <VCol cols="12" md="5">
+                <div class="text-subtitle-2 font-weight-bold mb-2">معاينة بطاقة الإعلان للمشترين:</div>
+                <VCard class="rounded-2xl border overflow-hidden buyer-preview-card" elevation="4">
+                  <!-- Main Image -->
+                  <div class="preview-hero-img position-relative">
+                    <img
+                      :src="previewMainImage || '/placeholder-car.png'"
+                      class="w-100 h-100 object-cover"
+                    />
+                    <VChip size="small" color="primary" class="position-absolute top-2 right-2 font-weight-bold">
+                      {{ form.condition === 'new' ? 'زيرو / جديدة' : 'مستعملة' }}
+                    </VChip>
+                  </div>
+
+                  <div class="pa-4">
+                    <div class="text-xs text-medium-emphasis">
+                      {{ selectedBrandName }} • {{ selectedModelName }} • {{ form.year }}
+                    </div>
+                    <div class="text-h6 font-weight-bold mt-1 mb-2 text-truncate">
+                      {{ form.title_ar || 'عنوان السيارة بالعربية' }}
+                    </div>
+
+                    <div class="d-flex align-center justify-space-between border-t pt-3 mt-2">
+                      <div>
+                        <div class="text-caption text-medium-emphasis">السعر</div>
+                        <div class="text-h5 font-weight-black text-primary">
+                          {{ Number(form.price || 0).toLocaleString() }} <span class="text-caption">EGP</span>
+                        </div>
+                      </div>
+                      <div class="text-end text-caption text-medium-emphasis">
+                        <div>{{ Number(form.mileage || 0).toLocaleString() }} كم</div>
+                        <div>{{ form.transmission === 'automatic' ? 'أوتوماتيك' : 'مانيوال' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </VCard>
+              </VCol>
+
+              <!-- Specs Summary & Save Button -->
+              <VCol cols="12" md="7">
+                <div class="text-subtitle-2 font-weight-bold mb-2">ملخص بيانات التعديل:</div>
+                <VList density="compact" class="rounded-xl border pa-2 mb-4">
+                  <VListItem>
+                    <template #prepend><VIcon icon="tabler-car" color="primary" class="me-2" /></template>
+                    <VListItemTitle>المركبة</VListItemTitle>
+                    <template #append><b>{{ selectedBrandName }} {{ selectedModelName }} ({{ form.year }})</b></template>
+                  </VListItem>
+
+                  <VListItem>
+                    <template #prepend><VIcon icon="tabler-currency-pound" color="success" class="me-2" /></template>
+                    <VListItemTitle>السعر</VListItemTitle>
+                    <template #append><b class="text-primary">{{ Number(form.price || 0).toLocaleString() }} EGP</b></template>
+                  </VListItem>
+
+                  <VListItem>
+                    <template #prepend><VIcon icon="tabler-sparkles" color="warning" class="me-2" /></template>
+                    <VListItemTitle>المميزات المحددة</VListItemTitle>
+                    <template #append><b>{{ form.features.length }} مواصفة</b></template>
+                  </VListItem>
+
+                  <VListItem>
+                    <template #prepend><VIcon icon="tabler-photo" color="info" class="me-2" /></template>
+                    <VListItemTitle>إجمالي الصور</VListItemTitle>
+                    <template #append><b>{{ existingImages.length + newImagePreviews.length }} صورة</b></template>
+                  </VListItem>
+                </VList>
+
+                <!-- Save Action Button -->
+                <VBtn
+                  color="primary"
+                  size="x-large"
+                  block
+                  prepend-icon="tabler-device-floppy"
+                  class="save-car-hero-btn text-white font-weight-bold elevation-4 py-4"
+                  :loading="saving"
+                  @click="handleUpdate"
+                >
+                  حفظ وتحديث بيانات السيارة الآن 💾
+                </VBtn>
+              </VCol>
+            </VRow>
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-start mt-6">
+              <VBtn variant="tonal" prepend-icon="tabler-chevron-right" @click="currentStep = 4">
+                السابق
+              </VBtn>
+            </div>
+          </VCard>
+        </VWindowItem>
+      </VWindow>
+    </div>
+
+    <!-- Snackbar Notification -->
+    <VSnackbar v-model="snackbar" :color="snackbarColor" location="top center">
       {{ snackbarMessage }}
     </VSnackbar>
   </div>
 </template>
+
+<style scoped>
+.wizard-step-node {
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.wizard-step-node:hover {
+  background: rgba(var(--v-theme-primary), 0.08);
+}
+
+.step-num-bubble {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(var(--v-theme-on-surface), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.active-step .step-num-bubble {
+  background: rgb(var(--v-theme-primary));
+  color: white;
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+}
+
+.completed-step .step-num-bubble {
+  background: #28c76f;
+  color: white;
+}
+
+.upload-dropzone {
+  border: 2px dashed rgba(var(--v-theme-primary), 0.3);
+  background: rgba(var(--v-theme-primary), 0.02);
+  transition: all 0.2s;
+}
+
+.upload-dropzone:hover {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.05);
+}
+
+.images-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.preview-image-card {
+  height: 120px;
+  border: 2px solid transparent;
+}
+
+.preview-image-card.is-main {
+  border-color: #28c76f;
+  box-shadow: 0 0 10px rgba(40, 199, 111, 0.4);
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+}
+
+.color-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.2);
+  transition: transform 0.15s;
+}
+
+.color-circle.active {
+  transform: scale(1.2);
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 8px rgba(255, 107, 0, 0.5);
+}
+
+.custom-color-input {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.buyer-preview-card .preview-hero-img {
+  height: 200px;
+  background: #111;
+}
+
+.type-choice-card {
+  border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgba(var(--v-theme-surface), 0.7);
+  transition: all 0.2s ease;
+}
+
+.type-choice-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+  background: rgba(var(--v-theme-primary), 0.05);
+}
+
+.selected-choice {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background: rgba(var(--v-theme-primary), 0.1) !important;
+}
+
+.save-car-hero-btn {
+  background: linear-gradient(135deg, #ff7a00 0%, #ff4b00 100%) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4) !important;
+}
+</style>

@@ -1,4 +1,5 @@
 import axios from "axios"
+import { trackApiStart, trackApiEnd } from "../composables/useApiProgress.js"
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.negmcars.com/api',
@@ -32,6 +33,7 @@ const isLoginOrRegister = (url = "") => {
 }
 
 api.interceptors.request.use((config) => {
+  trackApiStart()
   const url = config.url || ""
 
   // 1) Override per request: skip auth header on guest login/register or explicit skipAuth
@@ -56,9 +58,11 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
+    trackApiEnd()
     return response
   },
   (error) => {
+    trackApiEnd()
     if (error.response && error.response.status === 401) {
       const url = error.config?.url || ""
 
@@ -68,18 +72,28 @@ api.interceptors.response.use(
       }
 
       // Determine which auth type failed and redirect accordingly
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : ""
+
       if (url.startsWith("/admin/")) {
-        const token = localStorage.getItem("admin_token")
-        if (token && token.startsWith("mock_")) {
-          return Promise.reject(error)
+        // Only redirect to /admin/login if the user is actually inside the admin section
+        if (currentPath.startsWith("/admin")) {
+          const token = localStorage.getItem("admin_token")
+          if (token && token.startsWith("mock_")) {
+            return Promise.reject(error)
+          }
+          localStorage.removeItem("admin_token")
+          localStorage.removeItem("admin_data")
+          window.location.href = "/admin/login"
         }
-        localStorage.removeItem("admin_token")
-        localStorage.removeItem("admin_data")
-        window.location.href = "/admin/login"
+        return Promise.reject(error)
       } else if (url.startsWith("/seller/")) {
-        localStorage.removeItem("seller_token")
-        localStorage.removeItem("seller_data")
-        window.location.href = "/seller/login"
+        // Only redirect to /seller/login if the user is actually inside the seller section
+        if (currentPath.startsWith("/seller")) {
+          localStorage.removeItem("seller_token")
+          localStorage.removeItem("seller_data")
+          window.location.href = "/seller/login"
+        }
+        return Promise.reject(error)
       } else {
         localStorage.removeItem("user_token")
         localStorage.removeItem("user_data")

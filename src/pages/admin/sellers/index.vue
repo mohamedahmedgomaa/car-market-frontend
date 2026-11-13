@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import sellerAdminApi from '../../../api/admin/sellerAdminApi.js'
 import { useRouter } from 'vue-router'
+import PageHeroHeader from '@/components/PageHeroHeader.vue'
+import AppTableLoader from '@/components/AppTableLoader.vue'
 
 const router = useRouter()
 const sellers = ref([])
@@ -163,28 +165,30 @@ const stats = computed(() => [
 
 <template>
   <div class="sellers-dashboard pa-4 pa-md-8">
-    <!-- Header Section -->
-    <div class="d-flex flex-column flex-md-row align-center justify-space-between mb-8 gap-4">
-      <div class="text-center text-md-left">
-        <h1 class="text-h3 font-weight-black mb-2 premium-gradient-text">
-          Sellers Network
-        </h1>
-        <p class="text-subtitle-1 text-medium-emphasis mb-0">
-          Manage and monitor all your automotive partners globally.
-        </p>
-      </div>
-      <VBtn
-        color="warning"
-        prepend-icon="tabler-plus"
-        size="x-large"
-        class="premium-btn text-none px-8"
-        elevation="4"
-        rounded="pill"
-        @click="$router.push('/admin/sellers/create')"
-      >
-        <span class="font-weight-bold">Register Seller</span>
-      </VBtn>
-    </div>
+    <!-- Page Hero Header -->
+    <PageHeroHeader
+      title="شبكة المعارض والوكلاء (Sellers Network)"
+      subtitle="إدارة ومتابعة معارض وتجار السيارات، فئات العضوية، وحسابات الوكلاء"
+      icon="tabler-building-store"
+      :breadcrumbs="[
+        { title: 'لوحة التحكم', to: '/admin/dashboard', icon: 'tabler-smart-home' },
+        { title: 'المعارض' },
+      ]"
+      :badge="`${Number(total).toLocaleString()} معرض`"
+      badge-color="primary"
+    >
+      <template #actions>
+        <VBtn
+          color="primary"
+          prepend-icon="tabler-circle-plus"
+          size="large"
+          class="font-weight-bold px-6 elevation-4"
+          @click="$router.push('/admin/sellers/create')"
+        >
+          تسجيل معرض جديد
+        </VBtn>
+      </template>
+    </PageHeroHeader>
 
     <!-- Quick Stats -->
     <div class="d-flex flex-wrap gap-4 mb-8">
@@ -283,9 +287,13 @@ const stats = computed(() => [
         <tbody>
           <!-- Loading State -->
           <template v-if="loading">
-            <tr v-for="i in 5" :key="`skel-${i}`" class="skel-row">
-              <td colspan="6" class="pa-0">
-                <VSkeletonLoader type="table-row" class="bg-transparent" />
+            <tr>
+              <td colspan="6" class="pa-4">
+                <AppTableLoader
+                  title="جاري فحص وتحميل بيانات المعارض والوكلاء..."
+                  subtitle="التحقق من باقات الاشتراك والتوثيق والسيارات المعروضة"
+                  :height="260"
+                />
               </td>
             </tr>
           </template>

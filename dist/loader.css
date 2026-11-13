@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 html {
@@ -13,67 +14,99 @@ html {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--initial-loader-bg, #fff);
+  background: var(--initial-loader-bg, #0b0d14);
   block-size: 100%;
-  gap: 1rem 0;
   inline-size: 100%;
+  z-index: 999999;
 }
 
-.loading {
+.initial-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.initial-logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.initial-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 4px 25px rgba(255, 107, 0, 0.45);
+  border: 1.5px solid rgba(255, 107, 0, 0.35);
+  animation: logo-bounce 2s infinite ease-in-out alternate;
+}
+
+@keyframes logo-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+.initial-car-scene {
+  width: 240px;
   position: relative;
-  box-sizing: border-box;
-  border: 3px solid transparent;
-  border-radius: 50%;
-  block-size: 55px;
-  inline-size: 55px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.loading .effect-1,
-.loading .effect-2,
-.loading .effect-3 {
-  position: absolute;
-  box-sizing: border-box;
-  border: 3px solid transparent;
-  border-radius: 50%;
-  block-size: 100%;
-  border-inline-start: 3px solid var(--initial-loader-color, #eee);
-  inline-size: 100%;
+.initial-car-svg {
+  width: 230px;
+  height: 82px;
+  animation: init-suspension 0.55s infinite ease-in-out alternate;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45));
 }
 
-.loading .effect-1 {
-  animation: rotate 1s ease infinite;
+@keyframes init-suspension {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-2px); }
 }
 
-.loading .effect-2 {
-  animation: rotate-opacity 1s ease infinite 0.1s;
+.init-spokes {
+  animation: init-spin 0.35s infinite linear;
+  transform-origin: 0 0;
 }
 
-.loading .effect-3 {
-  animation: rotate-opacity 1s ease infinite 0.2s;
+@keyframes init-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.loading .effects {
-  transition: all 0.3s ease;
+.initial-road {
+  width: 210px;
+  height: 3px;
+  margin-top: -6px;
+  background: repeating-linear-gradient(
+    90deg,
+    #ff6b00 0px,
+    #ff6b00 16px,
+    transparent 16px,
+    transparent 32px
+  );
+  animation: init-road-move 0.4s infinite linear;
 }
 
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(1turn);
-  }
+@keyframes init-road-move {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-32px); }
 }
 
-@keyframes rotate-opacity {
-  0% {
-    opacity: 0.1;
-    transform: rotate(0deg);
-  }
+.initial-title {
+  color: #ff6b00;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
 
-  100% {
-    opacity: 1;
-    transform: rotate(1turn);
-  }
+.initial-caption {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  font-weight: 600;
 }

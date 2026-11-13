@@ -20,6 +20,9 @@ export default {
   delete(id) {
     return api.delete(`/seller/cars/${id}`)
   },
+  updateSellerStatus(id, payload) {
+    return api.patch(`/seller/cars/${id}/seller-status`, payload)
+  },
   updateStatus(id, payload) {
     return api.patch(`/seller/cars/${id}/status`, payload)
   }

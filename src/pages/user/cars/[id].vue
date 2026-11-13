@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import carsUserApi from '@/api/user/carUserApi.js'
 import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
@@ -9,6 +9,15 @@ import { getBannerLink } from '@/utils/bannerLinkStorage.js'
 import logoDark from '@images/logo/logo-dark.png'
 import logoLight from '@images/logo/logo-light.png'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
+
+// ✅ 3D Car Inspection Dialog (Lazy Loaded On-Demand)
+const Car3DInspectionDialog = defineAsyncComponent(() =>
+  import('@/components/dialogs/Car3DInspectionDialog.vue'),
+)
+const show3DDialog = ref(false)
+const open3DViewer = () => {
+  show3DDialog.value = true
+}
 
 definePage({
   meta: {
@@ -634,7 +643,19 @@ const closeLightbox = () => {
 
 // ✅ Call Dialog
 const showCallDialog = ref(false)
+const trackInteraction = (eventType) => {
+  if (!car.value?.id) return
+  try {
+    api.post('/user/track-event', {
+      event_type: eventType,
+      car_id: car.value.id,
+      seller_id: car.value.seller?.id || car.value.seller_id,
+    }).catch(() => {})
+  } catch (e) {}
+}
+
 const openCallDialog = () => {
+  trackInteraction('phone_click')
   showCallDialog.value = true
 }
 const closeCallDialog = () => {
@@ -981,6 +1002,17 @@ watch(
               <span>Click to enlarge</span>
             </div>
 
+            <!-- ✅ 3D Interactive Inspection Button -->
+            <button
+              class="view-3d-floating-btn"
+              type="button"
+              aria-label="3D View & Inspection"
+              @click.prevent.stop="open3DViewer"
+            >
+              <VIcon icon="tabler-cube-3d-sphere" size="20" class="me-1 animate-spin-slow" />
+              <span>{{ $i18n.locale === 'ar' ? 'فحص ومعاينة 3D' : '3D Inspection' }}</span>
+            </button>
+
             <button class="fav-float" type="button" aria-label="Favorite" @click.prevent.stop="toggleFavorite">
               <VIcon :icon="isFav ? 'tabler-heart-filled' : 'tabler-heart'" size="22" :color="isFav ? 'error' : undefined" />
             </button>
@@ -1041,7 +1073,7 @@ watch(
                   class="lightbox-btn lightbox-btn--whatsapp"
                   :href="whatsappLink"
                   target="_blank"
-                  @click.stop
+                  @click.stop="trackInteraction('whatsapp_click')"
                 >
                   <VIcon icon="tabler-brand-whatsapp" size="18" />
                   <span>{{ _t('whatsappBtn') || 'WhatsApp' }}</span>
@@ -1110,6 +1142,7 @@ watch(
                     rounded="pill"
                     :href="whatsappLink"
                     target="_blank"
+                    @click="trackInteraction('whatsapp_click')"
                   >
                     <VIcon icon="tabler-brand-whatsapp" size="18" class="me-1.5" />
                     <span>{{ _t('whatsappBtn') || 'WhatsApp' }}</span>
@@ -1807,6 +1840,13 @@ watch(
         />
       </div>
     </div>
+
+    <!-- ✅ 3D Car Inspection Dialog (On-Demand / Lazy Loaded) -->
+    <Car3DInspectionDialog
+      v-if="show3DDialog"
+      v-model:is-dialog-visible="show3DDialog"
+      :car="car"
+    />
   </VContainer>
 </template>
 
@@ -2047,6 +2087,49 @@ watch(
   transform: scale(1.1);
   background: rgba(255, 77, 77, 0.25);
   border-color: #ff4d4d;
+}
+
+/* ✅ 3D Floating Action Button */
+.view-3d-floating-btn {
+  position: absolute;
+  bottom: 16px;
+  inset-inline-start: 16px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.88) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(var(--v-theme-primary), 0.6);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 12px rgba(var(--v-theme-primary), 0.25);
+}
+
+.view-3d-floating-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-color: #fff;
+  box-shadow: 0 10px 25px rgba(var(--v-theme-primary), 0.4);
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Lightbox Styles */

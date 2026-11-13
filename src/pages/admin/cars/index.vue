@@ -2,8 +2,10 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import carAdminApi from '../../../api/admin/carAdminApi.js'
+import PageHeroHeader from '@/components/PageHeroHeader.vue'
 import CarQrDialog from '../../../components/dialogs/CarQrDialog.vue'
 import CarSocialCardDialog from '../../../components/dialogs/CarSocialCardDialog.vue'
+import AppTableLoader from '@/components/AppTableLoader.vue'
 
 const router = useRouter()
 const BASE_URL = import.meta.env.VITE_BASE_URL
@@ -566,41 +568,41 @@ const stats = computed(() => {
 
 <template>
   <div class="admin-cars-page">
-    <!-- Header Section -->
-    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-8">
-      <div>
-        <h1 class="text-h3 font-weight-black mb-1 d-flex align-center gap-2">
-          <span class="text-gradient">Vehicle Database</span>
-          <VChip color="primary" variant="elevated" size="small" class="font-weight-black tracking-wider px-3 text-white" style="color: #fff !important; -webkit-text-fill-color: #fff !important;">{{ total }} Listings</VChip>
-        </h1>
-        <p class="text-subtitle-1 text-medium-emphasis mb-0">Manage complete inventory, apply promotions, and monitor category metrics</p>
-      </div>
-
-      <div class="d-flex align-center gap-3">
+    <!-- Page Hero Header -->
+    <PageHeroHeader
+      title="قاعدة بيانات السيارات (Vehicle Database)"
+      subtitle="إدارة كافة مركبات النظام، تطبيق الترقيات والترويج، ومتابعة الفئات والاعتمادات"
+      icon="tabler-database"
+      :breadcrumbs="[
+        { title: 'لوحة التحكم', to: '/admin/dashboard', icon: 'tabler-smart-home' },
+        { title: 'السيارات' },
+      ]"
+      :badge="`${Number(total).toLocaleString()} سيارة`"
+      badge-color="primary"
+    >
+      <template #actions>
         <VBtn
           v-if="activeFilter !== 'all'"
           color="warning"
           variant="tonal"
           prepend-icon="tabler-filter-off"
           class="font-weight-bold px-4"
-          rounded="pill"
           @click="selectFilter('all')"
         >
-          Clear Filter
+          إلغاء الفلتر
         </VBtn>
 
         <VBtn
           color="primary"
-          prepend-icon="tabler-plus"
+          prepend-icon="tabler-circle-plus"
           size="large"
-          rounded="pill"
-          class="elevation-6 font-weight-black px-6 shadow-primary"
+          class="elevation-4 font-weight-bold px-6"
           @click="$router.push('/admin/cars/create')"
         >
-          Post New Vehicle
+          إضافة سيارة جديدة
         </VBtn>
-      </div>
-    </div>
+      </template>
+    </PageHeroHeader>
 
     <!-- 📊 Interactive Stats / Filters Grid -->
     <div class="mb-8">
@@ -709,8 +711,14 @@ const stats = computed(() => {
         </thead>
 
         <tbody>
-          <tr v-if="loading" v-for="i in 8" :key="i">
-            <td colspan="6" class="py-4"><VSkeletonLoader type="table-row" /></td>
+          <tr v-if="loading">
+            <td colspan="6" class="py-4">
+              <AppTableLoader
+                title="جاري فحص وتحميل إعلانات السيارات..."
+                subtitle="التحقق من الرخص والتسعير وحالات الاعتماد"
+                :height="280"
+              />
+            </td>
           </tr>
           
           <tr v-else-if="filteredLists.length === 0">

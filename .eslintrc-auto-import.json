@@ -383,6 +383,11 @@
     "isHeicFile": true,
     "processCarImage": true,
     "processCarImages": true,
-    "sanitizeImageFileName": true
+    "sanitizeImageFileName": true,
+    "useGlobalLoader": true,
+    "activeApiRequests": true,
+    "isApiLoading": true,
+    "trackApiEnd": true,
+    "trackApiStart": true
   }
 }

@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import userAdminApi from '../../../api/admin/userAdminApi.js'
 import { useRouter } from 'vue-router'
+import PageHeroHeader from '@/components/PageHeroHeader.vue'
+import AppTableLoader from '@/components/AppTableLoader.vue'
 
 const router = useRouter()
 const lists = ref([])
@@ -79,22 +81,30 @@ const stats = computed(() => [
 
 <template>
   <div class="admin-users-page pa-6">
-    <!-- Header -->
-    <div class="d-flex align-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">User Management</h1>
-        <p class="text-subtitle-1 text-medium-emphasis">View and manage all registered platform users</p>
-      </div>
-      <VBtn
-        color="primary"
-        prepend-icon="tabler-plus"
-        size="large"
-        class="elevation-4"
-        @click="$router.push('/admin/users/create')"
-      >
-        Add New User
-      </VBtn>
-    </div>
+    <!-- Page Hero Header -->
+    <PageHeroHeader
+      title="إدارة المستخدمين (User Management)"
+      subtitle="استعراض وإدارة حسابات المستخدمين، حالة التفعيل، والصلاحيات"
+      icon="tabler-users"
+      :breadcrumbs="[
+        { title: 'لوحة التحكم', to: '/admin/dashboard', icon: 'tabler-smart-home' },
+        { title: 'المستخدمين' },
+      ]"
+      :badge="`${Number(total).toLocaleString()} مستخدم`"
+      badge-color="primary"
+    >
+      <template #actions>
+        <VBtn
+          color="primary"
+          prepend-icon="tabler-circle-plus"
+          size="large"
+          class="font-weight-bold px-6 elevation-4"
+          @click="$router.push('/admin/users/create')"
+        >
+          إضافة مستخدم جديد
+        </VBtn>
+      </template>
+    </PageHeroHeader>
 
     <!-- Quick Stats -->
     <VRow class="mb-8">
@@ -150,8 +160,14 @@ const stats = computed(() => [
           </tr>
         </thead>
         <tbody>
-          <tr v-if="loading" v-for="i in 5" :key="i">
-            <td colspan="4"><VSkeletonLoader type="table-row" /></td>
+          <tr v-if="loading">
+            <td colspan="4" class="pa-4">
+              <AppTableLoader
+                title="جاري فحص وتحميل حسابات المستخدمين..."
+                subtitle="التحقق من بيانات الأعضاء وحالات الحسابات"
+                :height="260"
+              />
+            </td>
           </tr>
           <tr v-else v-for="user in lists" :key="user.id" class="table-row-hover">
             <td>

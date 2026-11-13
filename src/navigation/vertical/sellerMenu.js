@@ -2,32 +2,33 @@ export default [
   {
     title: 'Dashboard',
     to: { name: 'seller-dashboard' },
-    icon: { icon: 'tabler-dashboard' }
+    icon: { icon: 'tabler-dashboard', size: 24 },
   },
   {
     title: 'Cars Management',
-    to: { name: 'seller-cars' },
-    icon: { icon: 'tabler-car', size: 26 }
-  },
-  {
-    title: 'Settings',
-    icon: { icon: 'tabler-settings', size: 26 },
+    icon: { icon: 'tabler-car', size: 24 },
     children: [
       {
-        title: 'Car Features',
-        to: { name: 'seller-car-features' },
-        icon: { icon: 'tabler-adjustments', size: 24 }
+        title: 'All Cars',
+        to: { name: 'seller-cars' },
+        icon: { icon: 'tabler-list', size: 22 },
       },
       {
-        title: 'Brands',
-        to: { name: 'seller-brands' },
-        icon: { icon: 'tabler-box', size: 24 }
+        title: 'Add New Car',
+        to: { name: 'seller-cars-create' },
+        icon: { icon: 'tabler-circle-plus', size: 22 },
       },
-      {
-        title: 'Models',
-        to: { name: 'seller-models' },
-        icon: { icon: 'tabler-car-garage', size: 24 }
-      }
-    ]
-  }
+    ],
+  },
+  {
+    title: 'Notifications',
+    to: { name: 'seller-notifications' },
+    icon: { icon: 'tabler-bell', size: 24 },
+  },
+  {
+    title: 'Showroom Profile',
+    to: { name: 'seller-profile' },
+    icon: { icon: 'tabler-building-store', size: 24 },
+  },
 ]
+

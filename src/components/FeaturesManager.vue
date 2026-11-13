@@ -2,9 +2,23 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import carFeatureAdminApi from '../api/admin/carFeatureAdminApi.js'
+import carFeatureSellerApi from '../api/seller/carFeatureSellerApi.js'
+import carFeatureUserApi from '../api/user/carFeatureUserApi.js'
 import { predefinedFeatures } from '../utils/predefinedFeatures.js'
 
 const { locale } = useI18n({ useScope: 'global' })
+
+const isAdmin = computed(() => {
+  if (typeof window === 'undefined') return false
+  return window.location.pathname.startsWith('/admin') && !!localStorage.getItem('admin_token')
+})
+
+const getFeatureApi = () => {
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/seller')) {
+    return carFeatureSellerApi
+  }
+  return carFeatureAdminApi
+}
 
 const props = defineProps({
   modelValue: {
@@ -30,12 +44,35 @@ const selectedIds = computed({
 })
 
 // UI state
+const dialog = ref(false)
+const loadingFeatures = ref(false)
+const internalFeaturesList = ref([])
 const pasteText = ref('')
 const bulkDialog = ref(false)
-const missingFeatures = ref([]) // Features pasted but not in the database
+const missingFeatures = ref([])
 const isCreatingFeatures = ref(false)
 const filterQuery = ref('')
-const isCollapsed = ref(true)
+
+const activeFeaturesList = computed(() => {
+  if (props.featuresList && props.featuresList.length > 0) {
+    return props.featuresList
+  }
+  return internalFeaturesList.value
+})
+
+const openDialog = async () => {
+  dialog.value = true
+  loadingFeatures.value = true
+  try {
+    const res = await carFeatureUserApi.getAll()
+    internalFeaturesList.value = res.data?.data || []
+    await resolveHighlights()
+  } catch (e) {
+    console.error('Failed to load features:', e)
+  } finally {
+    loadingFeatures.value = false
+  }
+}
 
 // ================= Highlights Configuration =================
 const HIGHLIGHT_DEFINITIONS = [
@@ -70,9 +107,11 @@ const resolvedHighlights = ref([])
 
 const resolveHighlights = async () => {
   const list = []
+  const source = activeFeaturesList.value
+  if (!source || !source.length) return
+
   for (const def of HIGHLIGHT_DEFINITIONS) {
-    // Strict match logic to prevent incorrect matches
-    let dbFeature = props.featuresList.find(f => {
+    let dbFeature = source.find(f => {
       const en = (f.name?.en || f.name || '').toLowerCase().trim()
       const ar = (f.name?.ar || f.name || '').toLowerCase().trim()
       return def.match.some(m => {
@@ -82,14 +121,14 @@ const resolveHighlights = async () => {
       })
     })
 
-    if (!dbFeature) {
+    if (!dbFeature && isAdmin.value) {
       try {
         const formData = new FormData()
         formData.append('name_en', def.en)
         formData.append('name_ar', def.ar)
         formData.append('is_verified', '1')
         
-        const res = await carFeatureAdminApi.create(formData)
+        const res = await getFeatureApi().create(formData)
         dbFeature = res.data?.data ?? res.data
         if (dbFeature) {
           emit('feature-created', dbFeature)
@@ -109,19 +148,16 @@ const resolveHighlights = async () => {
   resolvedHighlights.value = list
 }
 
-watch(() => props.featuresList, (newList) => {
-  if (newList) {
-    resolveHighlights()
-  }
+watch(activeFeaturesList, () => {
+  resolveHighlights()
 }, { immediate: true })
 
 const highlightIds = computed(() => resolvedHighlights.value.map(h => h.feature.id))
 
 const standardFeaturesList = computed(() => {
-  return props.featuresList.filter(f => !highlightIds.value.includes(f.id))
+  return activeFeaturesList.value.filter(f => !highlightIds.value.includes(f.id))
 })
 
-// Computed properties for features
 const filteredFeatures = computed(() => {
   if (!filterQuery.value) return standardFeaturesList.value
   const query = filterQuery.value.toLowerCase()
@@ -132,7 +168,6 @@ const filteredFeatures = computed(() => {
   })
 })
 
-// Toggle a single feature selection
 const toggleFeature = (id) => {
   const current = [...selectedIds.value]
   const idx = current.indexOf(id)
@@ -144,20 +179,20 @@ const toggleFeature = (id) => {
   selectedIds.value = current
 }
 
-// Select All / Deselect All
 const selectAll = () => {
-  selectedIds.value = props.featuresList.map(f => f.id)
+  const allIds = activeFeaturesList.value.map(f => f.id)
+  const combined = Array.from(new Set([...selectedIds.value, ...allIds]))
+  selectedIds.value = combined
 }
 
 const deselectAll = () => {
   selectedIds.value = []
 }
 
-// Parse pasted text (comma, newline, or tab separated)
+// Bulk paste support
 const handleBulkPaste = () => {
   if (!pasteText.value.trim()) return
 
-  // Split by comma, semicolon, newline, or tab
   const items = pasteText.value
     .split(/[,;\n\t]+/)
     .map(item => item.trim())
@@ -167,8 +202,7 @@ const handleBulkPaste = () => {
   const tempMissing = []
 
   items.forEach(item => {
-    // 1. Search case-insensitively in existing loaded features list
-    const found = props.featuresList.find(f => {
+    const found = activeFeaturesList.value.find(f => {
       const en = (f.name?.en || f.name || '').toLowerCase()
       const ar = (f.name?.ar || f.name || '').toLowerCase()
       const target = item.toLowerCase()
@@ -182,7 +216,6 @@ const handleBulkPaste = () => {
       return
     }
 
-    // 2. Search in predefinedFeatures dictionary
     const target = item.toLowerCase().replace(/[—\-–•*]/g, '').trim()
     const dictFound = predefinedFeatures.find(df => {
       return df.aliases.some(alias => target === alias || target.includes(alias) || alias.includes(target)) ||
@@ -191,7 +224,7 @@ const handleBulkPaste = () => {
     })
 
     if (dictFound) {
-      const alreadyInDb = props.featuresList.find(f => {
+      const alreadyInDb = activeFeaturesList.value.find(f => {
         const en = (f.name?.en || f.name || '').toLowerCase()
         const ar = (f.name?.ar || f.name || '').toLowerCase()
         return en === dictFound.en.toLowerCase() || ar === dictFound.ar.toLowerCase()
@@ -203,8 +236,7 @@ const handleBulkPaste = () => {
         }
       } else {
         const isAlreadyMissing = tempMissing.some(m => m.name_en === dictFound.en)
-        const isAlreadyInDbMissing = missingFeatures.value.some(m => m.name_en === dictFound.en)
-        if (!isAlreadyMissing && !isAlreadyInDbMissing) {
+        if (!isAlreadyMissing) {
           tempMissing.push({
             name: `${dictFound.en} — ${dictFound.ar}`,
             name_en: dictFound.en,
@@ -213,108 +245,15 @@ const handleBulkPaste = () => {
           })
         }
       }
-    } else {
-      // 3. Fallback: completely new unknown feature
-      const isAlreadyMissing = tempMissing.some(m => m.name.toLowerCase() === item.toLowerCase())
-      const isAlreadyInDbMissing = missingFeatures.value.some(m => m.name.toLowerCase() === item.toLowerCase())
-      if (!isAlreadyMissing && !isAlreadyInDbMissing) {
-        const isArabic = /[\u0600-\u06FF]/.test(item)
-        tempMissing.push({
-          name: item,
-          name_en: isArabic ? '' : item,
-          name_ar: isArabic ? item : '',
-          error: ''
-        })
-      }
     }
   })
 
   selectedIds.value = newlySelected
   missingFeatures.value = [...missingFeatures.value, ...tempMissing]
   pasteText.value = ''
+  bulkDialog.value = false
 }
 
-// Create a single missing feature in DB and auto-select it
-const createMissingFeature = async (index) => {
-  const item = missingFeatures.value[index]
-  
-  const en = (item.name_en || item.name || '').trim()
-  const ar = (item.name_ar || item.name || '').trim()
-
-  if (!en && !ar) {
-    item.error = 'Name is required'
-    return
-  }
-
-  try {
-    item.error = ''
-    const formData = new FormData()
-    formData.append('name_en', en)
-    formData.append('name_ar', ar)
-    formData.append('is_verified', '1')
-
-    const res = await carFeatureAdminApi.create(formData)
-    const newFeature = res.data?.data ?? res.data
-
-    if (newFeature && newFeature.id) {
-      emit('feature-created', newFeature)
-      
-      if (!selectedIds.value.includes(newFeature.id)) {
-        selectedIds.value = [...selectedIds.value, newFeature.id]
-      }
-
-      missingFeatures.value.splice(index, 1)
-    }
-  } catch (err) {
-    console.error(err)
-    item.error = err.response?.data?.message || 'Failed to create feature'
-  }
-}
-
-// Create all missing features bulk
-const createAllMissingFeatures = async () => {
-  if (missingFeatures.value.length === 0) return
-  isCreatingFeatures.value = true
-
-  const items = [...missingFeatures.value]
-  for (let i = items.length - 1; i >= 0; i--) {
-    const item = items[i]
-    const en = (item.name_en || item.name || '').trim()
-    const ar = (item.name_ar || item.name || '').trim()
-    if (!en && !ar) continue
-
-    try {
-      const formData = new FormData()
-      formData.append('name_en', en)
-      formData.append('name_ar', ar)
-      formData.append('is_verified', '1')
-
-      const res = await carFeatureAdminApi.create(formData)
-      const newFeature = res.data?.data ?? res.data
-
-      if (newFeature && newFeature.id) {
-        emit('feature-created', newFeature)
-        if (!selectedIds.value.includes(newFeature.id)) {
-          selectedIds.value.push(newFeature.id)
-        }
-        missingFeatures.value.splice(i, 1)
-      }
-    } catch (err) {
-      console.error(`Failed to create feature: ${item.name}`, err)
-      item.error = 'Failed to create'
-    }
-  }
-
-  selectedIds.value = [...selectedIds.value]
-  isCreatingFeatures.value = false
-}
-
-// Remove from missing list
-const removeMissing = (index) => {
-  missingFeatures.value.splice(index, 1)
-}
-
-// Helper to translate names
 const getFeatureName = (f) => {
   if (!f) return ''
   const currentLocale = locale.value || 'ar'
@@ -328,413 +267,372 @@ const getFeatureName = (f) => {
   }
   return f.name?.[currentLocale] || f.name?.ar || f.name?.en || f.name || ''
 }
+
+// Preview list for the trigger card
+const previewSelectedFeatures = computed(() => {
+  if (!selectedIds.value.length) return []
+  return selectedIds.value.map(id => {
+    const f = activeFeaturesList.value.find(item => item.id === id)
+    return {
+      id,
+      name: f ? getFeatureName(f) : `ميزة #${id}`
+    }
+  })
+})
 </script>
 
 <template>
-  <div class="features-manager-card">
-    <VCard variant="outlined" class="pa-4 rounded-lg border-opacity-25 bg-surface">
-      
-      <!-- ================= Section 1: Additional Specs (Equipment) ================= -->
-      <div class="mb-6">
-        <div class="d-flex align-center gap-2 mb-3">
-          <VIcon icon="tabler-square-check" color="primary" size="20" />
-          <span class="text-subtitle-1 font-weight-bold">Additional Specs (Equipment)</span>
-        </div>
-        
-        <div class="highlights-checkbox-grid">
-          <div
-            v-for="h in resolvedHighlights"
-            :key="h.feature.id"
-            class="highlight-checkbox-card"
-            :class="{ 'active': selectedIds.includes(h.feature.id) }"
-            @click="toggleFeature(h.feature.id)"
-          >
-            <!-- Custom Premium Checkbox - Smaller size -->
-            <div class="checkbox-box">
-              <VIcon v-if="selectedIds.includes(h.feature.id)" icon="tabler-check" size="11" color="white" />
-            </div>
-            <span class="highlight-label">{{ getFeatureName(h.feature) }}</span>
+  <div class="features-manager-widget">
+    <!-- ===== Normal Standard Card on Page (Not Circular) ===== -->
+    <div class="features-summary-card pa-5 rounded-lg border">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+        <!-- Title & Status -->
+        <div class="d-flex align-center gap-3">
+          <div class="features-icon-badge d-flex align-center justify-center">
+            <VIcon icon="tabler-sparkles" size="26" color="primary" />
           </div>
-        </div>
-      </div>
-
-      <VDivider class="my-4" opacity="0.1" />
-
-      <!-- ================= Section 2: Standard Features & Equipment ================= -->
-      <div>
-        <!-- Header -->
-        <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-3">
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="tabler-list-check" color="primary" size="18" />
-            <span class="text-caption font-weight-bold">Standard Features</span>
-          </div>
-          <div class="d-flex align-center gap-2 flex-wrap">
-            <VBtn variant="text" size="x-small" color="primary" @click="selectAll">
-              Select All
-            </VBtn>
-            <VBtn variant="text" size="x-small" color="secondary" @click="deselectAll">
-              Clear
-            </VBtn>
-            <VBtn variant="flat" size="x-small" color="primary" prepend-inner-icon="tabler-plus" @click="bulkDialog = true">
-              Bulk Paste
-            </VBtn>
-          </div>
-        </div>
-
-        <!-- Live Search & Tags Info -->
-        <VRow dense class="mb-3" align="center">
-          <VCol cols="12" md="6" class="d-flex gap-2 align-center">
-            <VTextField
-              v-model="filterQuery"
-              density="compact"
-              :placeholder="isCollapsed ? 'Click arrow on right to show list' : 'Search existing options...'"
-              prepend-inner-icon="tabler-search"
-              variant="outlined"
-              hide-details
-              clearable
-              class="flex-grow-1 text-caption"
-              @click="isCollapsed = false"
-            />
-            <VBtn
-              variant="tonal"
-              color="primary"
-              icon
-              size="x-small"
-              @click="isCollapsed = !isCollapsed"
-              :title="isCollapsed ? 'Expand' : 'Collapse'"
-              :class="{ 'animate-pulse': isCollapsed }"
-            >
-              <VIcon :icon="isCollapsed ? 'tabler-chevron-down' : 'tabler-chevron-up'" size="16" />
-            </VBtn>
-          </VCol>
-          <VCol cols="12" md="6" class="d-flex align-center justify-end">
-            <div class="text-caption font-weight-medium d-flex align-center gap-2">
-              <div>
-                Selected: <VChip color="primary" size="x-small" class="px-2">{{ selectedIds.filter(id => !highlightIds.includes(id)).length }}</VChip> of {{ standardFeaturesList.length }} options
-              </div>
-              <div v-if="isCollapsed" class="text-caption text-warning font-weight-bold animate-pulse-text">
-                (Click arrow to expand list ↗)
-              </div>
-            </div>
-          </VCol>
-        </VRow>
-
-        <!-- Selection Grid -->
-        <VExpandTransition>
-          <div v-show="!isCollapsed" class="features-grid-container mb-3">
-            <TransitionGroup name="list" tag="div" class="features-chips-grid">
-              <div
-                v-for="f in filteredFeatures"
-                :key="f.id"
-                class="feature-toggle-chip"
-                :class="{ 'active': selectedIds.includes(f.id) }"
-                @click="toggleFeature(f.id)"
-              >
-                <VIcon
-                  :icon="selectedIds.includes(f.id) ? 'tabler-circle-check-filled' : 'tabler-circle'"
-                  size="16"
-                  class="me-2 chip-icon"
-                />
-                <span class="chip-text">{{ getFeatureName(f) }}</span>
-              </div>
-            </TransitionGroup>
-            
-            <div v-if="filteredFeatures.length === 0" class="text-center py-4 text-muted opacity-70 text-caption">
-              No matching features found.
-            </div>
-          </div>
-        </VExpandTransition>
-
-        <!-- YouTube Style Tag Input / Fast Paste Area -->
-        <div class="quick-paste-row mt-3 pa-3 rounded bg-surface-variant-opacity border">
-          <div class="text-caption font-weight-bold mb-1 d-flex align-center gap-2">
-            <VIcon icon="tabler-tags" size="16" color="primary" />
-            <span>YouTube Tag Style Paste</span>
-          </div>
-          <p class="text-caption text-muted mb-2">
-            Paste options separated by commas (e.g. <code>Sunroof, Leather Seats, Bluetooth</code>) or write your own. If they exist, they will be selected automatically.
-          </p>
-          
-          <VRow dense align="center">
-            <VCol cols="12" sm="10">
-              <VTextField
-                v-model="pasteText"
-                density="compact"
-                placeholder="Paste comma-separated options here... (e.g. ABS, Airbags, GPS)"
-                variant="outlined"
-                hide-details
-                class="text-caption"
-                @keydown.enter.prevent="handleBulkPaste"
-              />
-            </VCol>
-            <VCol cols="12" sm="2">
-              <VBtn block color="primary" height="38" size="small" @click="handleBulkPaste">
-                Add
-              </VBtn>
-            </VCol>
-          </VRow>
-        </div>
-
-        <!-- Missing / Pending Creation Features -->
-        <div v-if="missingFeatures.length > 0" class="missing-features-section mt-3 pa-3 rounded border-warning border border-opacity-50 bg-warning-opacity">
-          <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
-            <div class="d-flex align-center gap-2">
-              <VIcon icon="tabler-alert-triangle" color="warning" size="18" />
-              <span class="text-caption font-weight-bold warning-text">
-                New Options Found ({{ missingFeatures.length }})
+          <div>
+            <div class="d-flex align-center gap-2 flex-wrap mb-1">
+              <span class="text-h6 font-weight-bold text-high-emphasis">
+                المواصفات والكماليات (Car Features & Specs)
               </span>
+              <VChip
+                :color="selectedIds.length ? 'success' : 'warning'"
+                size="small"
+                variant="flat"
+                class="font-weight-bold px-2.5"
+              >
+                {{ selectedIds.length ? `✓ تم تحديد ${selectedIds.length} ميزة` : '⚠️ لم يتم التحديد بعد' }}
+              </VChip>
             </div>
-            <VBtn
-              size="x-small"
-              color="warning"
-              :loading="isCreatingFeatures"
-              @click="createAllMissingFeatures"
-            >
-              Create All & Select
-            </VBtn>
-          </div>
-
-          <div class="missing-grid">
-            <div
-              v-for="(item, idx) in missingFeatures"
-              :key="idx"
-              class="missing-item-card border pa-2 rounded mb-1 bg-surface"
-            >
-              <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-1">
-                <span class="font-weight-bold text-caption text-primary">Tag: "{{ item.name }}"</span>
-                <div class="d-flex align-center gap-1">
-                  <VBtn size="x-small" color="primary" variant="tonal" @click="createMissingFeature(idx)">
-                    Create & Select
-                  </VBtn>
-                  <VBtn size="x-small" icon="tabler-x" variant="text" color="error" @click="removeMissing(idx)" />
-                </div>
-              </div>
-              
-              <VRow dense>
-                <VCol cols="12">
-                  <VTextField
-                    v-model="item.name"
-                    label="Feature Name"
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    class="text-caption"
-                  />
-                </VCol>
-              </VRow>
-              
-              <div v-if="item.error" class="text-caption text-error mt-1">{{ item.error }}</div>
-            </div>
+            <p class="text-sm text-medium-emphasis mb-0">
+              حدد أنظمة الأمان والراحة والكماليات المتاحة في هذه السيارة لجذب المشترين وتسهيل ظهور الإعلان في نتائج البحث.
+            </p>
           </div>
         </div>
+
+        <!-- Action Button -->
+        <VBtn
+          color="primary"
+          size="large"
+          prepend-icon="tabler-adjustments-horizontal"
+          class="features-open-btn font-weight-bold px-6 elevation-2"
+          @click="openDialog"
+        >
+          {{ selectedIds.length ? `تعديل المميزات (${selectedIds.length} ميزة)` : '+ اختيار مواصفات وتجهيزات السيارة' }}
+        </VBtn>
       </div>
 
-      <!-- Validation Error Messages -->
-      <div v-if="errorMessages && errorMessages.length" class="text-error text-caption mt-2 px-1 font-weight-medium">
-        {{ Array.isArray(errorMessages) ? errorMessages[0] : errorMessages }}
-      </div>
-    </VCard>
-
-    <!-- Full Bulk Dialog for large pastes -->
-    <VDialog v-model="bulkDialog" max-width="600">
-      <VCard class="pa-5 rounded-xl">
-        <h3 class="text-subtitle-1 font-weight-bold mb-2 d-flex align-center gap-2">
-          <VIcon icon="tabler-clipboard-text" color="primary" />
-          Bulk Paste Features
-        </h3>
-        <p class="text-caption text-muted mb-3">
-          Paste a raw block of text (from Excel, another website, or specifications). We will automatically scan and parse all comma, newline, tab, or semicolon separated words into individual tags.
-        </p>
-
-        <VTextarea
-          v-model="pasteText"
-          rows="6"
-          variant="outlined"
-          placeholder="Paste features here... e.g.&#10;Power Windows, Sunroof, ABS, Bluetooth, Adaptive Cruise Control"
-          class="mb-3 text-caption"
-        />
-
-        <div class="d-flex justify-end gap-3">
-          <VBtn variant="outlined" color="secondary" size="small" @click="bulkDialog = false">Cancel</VBtn>
-          <VBtn color="primary" size="small" @click="() => { handleBulkPaste(); bulkDialog = false; }">
-            Analyze & Import
+      <!-- Selected Chips Strip -->
+      <div v-if="selectedIds.length > 0" class="mt-4 pt-3 border-t">
+        <div class="d-flex align-center justify-space-between mb-2">
+          <div class="text-xs font-weight-bold text-high-emphasis">
+            المواصفات المختارة حالياً: <span class="text-primary font-weight-black">({{ selectedIds.length }} مواصفة)</span>
+          </div>
+          <VBtn variant="text" size="x-small" color="secondary" @click="deselectAll">
+            مسح الكل
           </VBtn>
         </div>
+
+        <div v-if="activeFeaturesList.length > 0" class="d-flex flex-wrap gap-1.5 align-center">
+          <VChip
+            v-for="item in previewSelectedFeatures.slice(0, 12)"
+            :key="item.id"
+            size="small"
+            color="primary"
+            variant="tonal"
+            closable
+            class="font-weight-medium"
+            @click:close="toggleFeature(item.id)"
+          >
+            {{ item.name }}
+          </VChip>
+
+          <VChip
+            v-if="selectedIds.length > 12"
+            size="small"
+            color="secondary"
+            variant="flat"
+            class="cursor-pointer font-weight-bold"
+            @click="openDialog"
+          >
+            + {{ selectedIds.length - 12 }} ميزة أخرى (عرض الكل)...
+          </VChip>
+        </div>
+
+        <!-- Fallback count display before modal has been opened -->
+        <div v-else class="d-flex align-center gap-2 text-xs text-medium-emphasis">
+          <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
+            {{ selectedIds.length }} مواصفة محفوظة
+          </VChip>
+          <span>(انقر على الزر أعلاه لتحميل أسمائها وقائمتها الكاملة)</span>
+        </div>
+      </div>
+
+      <!-- Empty State Clear Instructions -->
+      <div v-else class="mt-3 pt-3 border-t d-flex align-center gap-2 text-xs text-medium-emphasis">
+        <VIcon icon="tabler-info-circle" size="18" color="warning" />
+        <span>انقر على زر <b>«اختيار مواصفات وتجهيزات السيارة»</b> لفتح النافذة المنبثقة الشاملة وتحديد التجهيزات بضغطة زر.</span>
+      </div>
+    </div>
+
+    <!-- ===== Full Features Selection Dialog (Modal) ===== -->
+    <VDialog v-model="dialog" max-width="950" scrollable>
+      <VCard class="rounded-2xl overflow-hidden features-dialog-card">
+        <!-- Dialog Header -->
+        <VCardTitle class="d-flex align-center justify-space-between pa-4 bg-surface border-b">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="tabler-sparkles" color="primary" size="22" />
+            <span class="font-weight-black text-h6">تحديد مواصفات ومميزات السيارة</span>
+            <VChip color="primary" size="small" variant="flat" class="font-weight-bold ms-2">
+              {{ selectedIds.length }} محددة
+            </VChip>
+          </div>
+          <VBtn icon="tabler-x" variant="text" size="small" @click="dialog = false" />
+        </VCardTitle>
+
+        <!-- Dialog Body -->
+        <VCardText class="pa-5" style="max-height: 70vh;">
+          <!-- Loading State -->
+          <div v-if="loadingFeatures" class="text-center py-10">
+            <VProgressCircular indeterminate color="primary" size="48" />
+            <div class="mt-3 text-sm text-medium-emphasis">جاري تحميل قائمة المواصفات والمميزات...</div>
+          </div>
+
+          <div v-else>
+            <!-- Toolbar: Search & Action buttons -->
+            <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
+              <VTextField
+                v-model="filterQuery"
+                density="compact"
+                placeholder="ابحث في المواصفات والمميزات (Search features)..."
+                prepend-inner-icon="tabler-search"
+                variant="outlined"
+                hide-details
+                clearable
+                style="min-width: 260px; max-width: 380px;"
+              />
+
+              <div class="d-flex align-center gap-2 flex-wrap">
+                <VBtn variant="tonal" size="small" color="primary" prepend-icon="tabler-check-all" @click="selectAll">
+                  تحديد الكل
+                </VBtn>
+                <VBtn variant="tonal" size="small" color="secondary" prepend-icon="tabler-x" @click="deselectAll">
+                  إلغاء التحديد
+                </VBtn>
+                <VBtn variant="flat" size="small" color="primary" prepend-icon="tabler-clipboard-text" @click="bulkDialog = true">
+                  لصق نصوص (Bulk)
+                </VBtn>
+              </div>
+            </div>
+
+            <!-- Section 1: Additional Equipment & Highlights -->
+            <div v-if="resolvedHighlights.length" class="mb-5">
+              <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-2 d-flex align-center gap-1.5">
+                <VIcon icon="tabler-star" color="warning" size="18" />
+                <span>المواصفات والتجهيزات البارزة (Equipment Highlights)</span>
+              </div>
+
+              <div class="highlights-grid">
+                <div
+                  v-for="h in resolvedHighlights"
+                  :key="h.feature.id"
+                  class="highlight-card"
+                  :class="{ 'active': selectedIds.includes(h.feature.id) }"
+                  @click="toggleFeature(h.feature.id)"
+                >
+                  <div class="highlight-check">
+                    <VIcon v-if="selectedIds.includes(h.feature.id)" icon="tabler-check" size="13" color="white" />
+                  </div>
+                  <span class="highlight-title">{{ getFeatureName(h.feature) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <VDivider class="my-4" />
+
+            <!-- Section 2: Standard Features -->
+            <div>
+              <div class="d-flex align-center justify-space-between mb-2">
+                <div class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1.5">
+                  <VIcon icon="tabler-list-check" color="primary" size="18" />
+                  <span>كافة المميزات والمواصفات القياسية (Standard Features)</span>
+                </div>
+                <div class="text-xs text-medium-emphasis">
+                  {{ filteredFeatures.length }} ميزة متاحة
+                </div>
+              </div>
+
+              <div class="standard-features-grid">
+                <div
+                  v-for="f in filteredFeatures"
+                  :key="f.id"
+                  class="feature-chip-card"
+                  :class="{ 'active': selectedIds.includes(f.id) }"
+                  @click="toggleFeature(f.id)"
+                >
+                  <VIcon
+                    :icon="selectedIds.includes(f.id) ? 'tabler-circle-check-filled' : 'tabler-circle'"
+                    size="16"
+                    :color="selectedIds.includes(f.id) ? 'primary' : 'medium-emphasis'"
+                    class="me-1.5"
+                  />
+                  <span>{{ getFeatureName(f) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </VCardText>
+
+        <!-- Dialog Footer -->
+        <VCardActions class="pa-4 bg-surface border-t d-flex align-center justify-space-between flex-wrap gap-2">
+          <div class="text-sm font-weight-medium">
+            تم تحديد <b class="text-primary">{{ selectedIds.length }}</b> ميزة من أصل {{ activeFeaturesList.length }}
+          </div>
+          <div class="d-flex align-center gap-2">
+            <VBtn variant="tonal" color="secondary" @click="dialog = false">إلغاء</VBtn>
+            <VBtn color="primary" class="font-weight-bold px-6" prepend-icon="tabler-check" @click="dialog = false">
+              تأكيد وحفظ
+            </VBtn>
+          </div>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Bulk Paste Modal -->
+    <VDialog v-model="bulkDialog" max-width="500">
+      <VCard class="pa-4 rounded-xl">
+        <VCardTitle class="text-h6 font-weight-bold">لصق قائمة مميزات سريعة</VCardTitle>
+        <VCardText>
+          <p class="text-caption text-medium-emphasis mb-2">
+            انسخ المميزات من أي موقع أو ملف والصقها هنا مفصولة بفواصل أو أسطر جديدة:
+          </p>
+          <VTextarea
+            v-model="pasteText"
+            placeholder="فتحة سقف، حساسات خلفية، كاميرا 360، مقاعد جلد، شاشة ملاحة..."
+            rows="5"
+            variant="outlined"
+          />
+        </VCardText>
+        <VCardActions class="justify-end gap-2">
+          <VBtn variant="tonal" @click="bulkDialog = false">إلغاء</VBtn>
+          <VBtn color="primary" @click="handleBulkPaste">استخراج وتحديد</VBtn>
+        </VCardActions>
       </VCard>
     </VDialog>
   </div>
 </template>
 
 <style scoped>
-/* ================= Section 1: Highlights CSS (Ultra Compact & Clean) ================= */
-.highlights-checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-  padding: 12px;
-  background: rgba(var(--v-theme-primary), 0.015);
-  border: 1px solid rgba(var(--v-theme-primary), 0.06);
-  border-radius: 12px;
+.features-summary-card {
+  background: rgba(var(--v-theme-surface), 0.7);
+  border: 1px solid rgba(255, 107, 0, 0.25) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: border-color 0.2s ease;
 }
 
-.highlight-checkbox-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(var(--v-theme-surface), 0.3);
-  border: 1.5px solid rgba(128, 128, 128, 0.1);
-  border-radius: 8px;
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+.features-summary-card:hover {
+  border-color: rgba(255, 107, 0, 0.45) !important;
 }
 
-.highlight-checkbox-card:hover {
-  border-color: rgba(var(--v-theme-primary), 0.35);
-  background: rgba(var(--v-theme-primary), 0.02);
-  transform: translateY(-1px);
-}
-
-.highlight-checkbox-card.active {
-  border-color: rgb(var(--v-theme-primary)) !important;
-  background: rgba(var(--v-theme-primary), 0.06) !important;
-  box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.08);
-}
-
-.checkbox-box {
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid rgba(128, 128, 128, 0.3);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  background: transparent;
+.features-icon-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: rgba(255, 107, 0, 0.14);
+  border: 1px solid rgba(255, 107, 0, 0.25);
   flex-shrink: 0;
 }
 
-.highlight-checkbox-card.active .checkbox-box {
-  border-color: rgb(var(--v-theme-primary));
-  background-color: rgb(var(--v-theme-primary));
+.features-open-btn {
+  background: linear-gradient(135deg, #ff7a00 0%, #ff5200 100%) !important;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35) !important;
+  letter-spacing: normal;
+  border-radius: 8px !important;
 }
 
-.highlight-label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: rgba(var(--v-theme-on-surface), 0.95);
-  line-height: 1.2;
+.features-open-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5) !important;
 }
 
-/* ================= Section 2: Standard Features CSS ================= */
-.features-chips-grid {
-  display: flex;
-  flex-wrap: wrap;
+.highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 5px;
-  border-radius: 8px;
-  border: 1px solid rgba(128, 128, 128, 0.12);
-  background-color: rgba(128, 128, 128, 0.02);
 }
 
-.feature-toggle-chip {
-  display: inline-flex;
+.highlight-card {
+  display: flex;
   align-items: center;
-  padding: 6px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(128, 128, 128, 0.15);
-  background-color: rgba(var(--v-theme-surface));
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: rgba(var(--v-theme-surface), 0.5);
   cursor: pointer;
+  transition: all 0.2s ease;
   user-select: none;
-  font-size: 0.78rem;
-  font-weight: 500;
-  transition: all 0.15s ease;
 }
 
-.feature-toggle-chip:hover {
-  background-color: rgba(var(--v-theme-primary), 0.04);
-  border-color: rgba(var(--v-theme-primary), 0.3);
+.highlight-card:hover {
+  border-color: rgba(255, 107, 0, 0.4);
+  background: rgba(255, 107, 0, 0.05);
 }
 
-.feature-toggle-chip.active {
-  background-color: rgba(var(--v-theme-primary), 0.08) !important;
-  border-color: rgb(var(--v-theme-primary)) !important;
-  color: rgb(var(--v-theme-primary)) !important;
+.highlight-card.active {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(255, 107, 0, 0.12);
+}
+
+.highlight-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(var(--v-theme-on-surface), 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.highlight-card.active .highlight-check {
+  background: rgb(var(--v-theme-primary));
+  border-color: rgb(var(--v-theme-primary));
+}
+
+.highlight-title {
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
-.chip-icon {
-  transition: transform 0.15s ease;
-}
-.feature-toggle-chip.active .chip-icon {
-  transform: scale(1.05);
-}
-
-.bg-surface-variant-opacity {
-  background-color: rgba(128, 128, 128, 0.03);
-}
-
-.bg-warning-opacity {
-  background-color: rgba(255, 159, 67, 0.05);
-}
-.warning-text {
-  color: #ff9f43;
-}
-
-.missing-grid {
-  max-height: 200px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+.standard-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 6px;
 }
 
-.missing-item-card {
-  transition: all 0.15s;
+.feature-chip-card {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
 }
 
-/* Animations */
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.25s ease;
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(6px);
+.feature-chip-card:hover {
+  background: rgba(var(--v-theme-on-surface), 0.05);
 }
 
-/* Custom Pulse Animations */
-.animate-pulse {
-  animation: pulse-border 2s infinite;
-}
-
-.animate-pulse-text {
-  animation: pulse-opacity 2s infinite;
-}
-
-@keyframes pulse-border {
-  0% {
-    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.3);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(var(--v-theme-primary), 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0);
-  }
-}
-
-@keyframes pulse-opacity {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
+.feature-chip-card.active {
+  background: rgba(255, 107, 0, 0.1);
+  border-color: rgba(255, 107, 0, 0.35);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
 }
 </style>
