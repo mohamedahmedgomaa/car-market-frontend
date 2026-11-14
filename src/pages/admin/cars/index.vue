@@ -537,6 +537,27 @@ const handleDelete = async () => {
 }
 
 const handleEdit = (id) => router.push(`/admin/cars/edit/${id}`)
+const handleViewDetails = (id) => router.push(`/admin/cars/${id}`)
+
+const getLocalizedName = (val) => {
+  if (!val) return ''
+  if (typeof val === 'string') {
+    const trimmed = val.trim()
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        return parsed.ar || parsed.en || Object.values(parsed)[0] || val
+      } catch (e) {
+        return val
+      }
+    }
+    return val
+  }
+  if (typeof val === 'object') {
+    return val.ar || val.en || Object.values(val)[0] || ''
+  }
+  return String(val)
+}
 
 watch([search, dateRangeFilter], () => fetchLists(1))
 
@@ -750,15 +771,25 @@ const stats = computed(() => {
             <!-- Vehicle Info -->
             <td>
               <div class="d-flex align-center py-3">
-                <VAvatar size="64" rounded="xl" class="me-4 elevation-3 border overflow-hidden flex-shrink-0">
+                <VAvatar
+                  size="64"
+                  rounded="xl"
+                  class="me-4 elevation-3 border overflow-hidden flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                  @click="handleViewDetails(car.id)"
+                  v-tooltip="'فتح صفحة تفاصيل السيارة بالكامل'"
+                >
                   <VImg :src="getMainImageUrl(car)" cover />
                 </VAvatar>
                 <div class="overflow-hidden">
-                  <div class="text-body-1 font-weight-black text-no-wrap overflow-hidden text-truncate mb-1" style="max-width: 280px;">
-                    {{ car.title?.en || car.title || 'Untitled' }}
+                  <div
+                    class="text-body-1 font-weight-black text-no-wrap overflow-hidden text-truncate mb-1 cursor-pointer hover:text-primary"
+                    style="max-width: 280px;"
+                    @click="handleViewDetails(car.id)"
+                  >
+                    {{ getLocalizedName(car.title) || 'Untitled' }}
                   </div>
                   <div class="text-caption text-medium-emphasis font-weight-bold">
-                    {{ car.brand?.name?.en || car.brand?.name || '-' }} • {{ car.model?.name?.en || car.model?.name || '-' }} • {{ car.year }}
+                    {{ getLocalizedName(car.brand?.name || car.brand) || '-' }} • {{ getLocalizedName(car.model?.name || car.model) || '-' }} • {{ car.year }}
                   </div>
                 </div>
               </div>
@@ -817,6 +848,9 @@ const stats = computed(() => {
             <!-- Actions -->
             <td class="text-end px-6">
               <div class="d-flex justify-end gap-2">
+                <VBtn icon variant="tonal" color="primary" size="small" class="rounded-lg shadow-hover" title="عرض كافة تفاصيل السيارة" @click="handleViewDetails(car.id)">
+                  <VIcon icon="tabler-eye" />
+                </VBtn>
                 <VBtn icon variant="tonal" color="teal" size="small" class="rounded-lg shadow-hover" title="تجديد وتحديث تاريخ النشر فوراً إلى الآن (Renew Publish Date)" :loading="car.renewing" @click="promptRenewCarDate(car)">
                   <VIcon icon="tabler-rotate-clockwise" />
                 </VBtn>

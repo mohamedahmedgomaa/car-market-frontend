@@ -287,20 +287,81 @@ const handleBulkReject = async () => {
   }
 }
 
-// Preview Dialog
-const openPreview = (car) => {
-  currentCar.value = car
-  previewDialog.value = true
+// Quick Rejection Reasons
+const quickRejectReasons = [
+  'الصور غير واضحة أو مخالفة لمعايير العرض',
+  'السعر غير منطقي أو مبالغ فيه',
+  'نقص في تفاصيل ومواصفات السيارة',
+  'إعلان مكرر لنفس السيارة',
+  'بيانات التواصل أو موقع السيارة غير صحيحة',
+]
+
+const addQuickReason = (reason) => {
+  if (!rejectionReason.value) {
+    rejectionReason.value = reason
+  } else if (!rejectionReason.value.includes(reason)) {
+    rejectionReason.value += ' - ' + reason
+  }
 }
 
-// ================= Formatting Helpers =================
+// Navigate to standalone Car Details Page
+const goToCarDetails = (carId) => {
+  if (carId) {
+    router.push(`/admin/cars/${carId}`)
+  }
+}
+
+// Preview Dialog
+const openPreview = (car) => {
+  goToCarDetails(car.id)
+}
+
+// ================= Formatting & Localization Helpers =================
+const getLocalizedName = (val) => {
+  if (!val) return ''
+  if (typeof val === 'string') {
+    const trimmed = val.trim()
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        return parsed.ar || parsed.en || Object.values(parsed)[0] || val
+      } catch (e) {
+        return val
+      }
+    }
+    return val
+  }
+  if (typeof val === 'object') {
+    return val.ar || val.en || Object.values(val)[0] || ''
+  }
+  return String(val)
+}
+
+const getBrandName = (car) => {
+  if (!car) return ''
+  return getLocalizedName(car.brand?.name || car.brand)
+}
+
+const getModelName = (car) => {
+  if (!car) return ''
+  return getLocalizedName(car.model?.name || car.model)
+}
+
+const getLocationName = (car) => {
+  if (!car) return ''
+  const gov = getLocalizedName(car.governorate?.name || car.governorate)
+  const city = getLocalizedName(car.city?.name || car.city)
+  if (gov && city) return `${gov}، ${city}`
+  return gov || city || 'مصر'
+}
+
 const getTitle = (car) => {
   if (!car) return ''
   const currentLang = 'ar'
   if (car.title && typeof car.title === 'object') {
     return car.title[currentLang] || car.title.ar || car.title.en || 'بدون عنوان'
   }
-  return car.title_ar || car.title_en || car.title || 'بدون عنوان'
+  return getLocalizedName(car.title || car.title_ar || car.title_en || 'بدون عنوان')
 }
 
 const getStoreName = (seller) => {
@@ -308,7 +369,7 @@ const getStoreName = (seller) => {
   if (seller.store_name && typeof seller.store_name === 'object') {
     return seller.store_name.ar || seller.store_name.en || seller.name || 'معرض سيارات'
   }
-  return seller.store_name || seller.name || 'معرض سيارات'
+  return getLocalizedName(seller.store_name) || seller.name || 'معرض سيارات'
 }
 
 const getMainImage = (car) => {
@@ -673,24 +734,27 @@ onMounted(() => {
                 <VAvatar
                   size="64"
                   rounded="lg"
-                  class="cursor-pointer border elevation-1 flex-shrink-0"
-                  @click="openPreview(car)"
+                  class="cursor-pointer border elevation-1 flex-shrink-0 hover:scale-105 transition-transform"
+                  @click="goToCarDetails(car.id)"
+                  v-tooltip="'فتح صفحة تفاصيل السيارة'"
                 >
                   <VImg :src="getMainImage(car)" cover />
                 </VAvatar>
                 <div>
-                  <div class="d-flex align-center gap-2 mb-1">
-                    <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
+                  <div class="d-flex align-center gap-2 mb-1 cursor-pointer" @click="goToCarDetails(car.id)">
+                    <span class="text-subtitle-2 font-weight-bold text-high-emphasis hover:text-primary">
                       {{ getTitle(car) }}
                     </span>
                     <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
                       #{{ car.id }}
                     </VChip>
                   </div>
-                  <div class="text-caption text-medium-emphasis d-flex align-center gap-2">
+                  <div class="text-caption text-medium-emphasis d-flex flex-wrap align-center gap-2">
                     <span>{{ car.year }}</span>
                     <span>•</span>
-                    <span>{{ car.brand?.name || '' }} {{ car.model?.name || '' }}</span>
+                    <span class="font-weight-medium text-high-emphasis">{{ getBrandName(car) }} {{ getModelName(car) }}</span>
+                    <span>•</span>
+                    <span>{{ getLocationName(car) }}</span>
                     <span v-if="car.condition">• {{ car.condition === 'new' ? 'جديدة' : 'مستعملة' }}</span>
                   </div>
                 </div>
@@ -790,16 +854,16 @@ onMounted(() => {
                   <VIcon icon="tabler-x" size="18" />
                 </VBtn>
 
-                <!-- Preview Car Details -->
+                <!-- View Standalone Car Details Page -->
                 <VBtn
-                  color="secondary"
+                  color="info"
                   variant="tonal"
                   size="small"
                   icon
-                  @click="openPreview(car)"
-                  v-tooltip="'معاينة تفاصيل السيارة'"
+                  @click="goToCarDetails(car.id)"
+                  v-tooltip="'فتح صفحة تفاصيل السيارة الكاملة'"
                 >
-                  <VIcon icon="tabler-eye" size="18" />
+                  <VIcon icon="tabler-external-link" size="18" />
                 </VBtn>
 
                 <!-- Edit Car -->
@@ -834,132 +898,262 @@ onMounted(() => {
     <!-- ================= DIALOGS ================= -->
 
     <!-- Single Approve Confirm Dialog -->
-    <VDialog v-model="approveConfirmDialog" max-width="500">
-      <VCard class="rounded-xl pa-4">
-        <VCardTitle class="d-flex align-center gap-2">
-          <VIcon icon="tabler-circle-check-filled" color="success" size="28" />
-          <span>الموافقة على الإعلان والسماح بالظهور</span>
-        </VCardTitle>
-        <VCardText class="pt-2">
-          <p class="text-body-1 mb-2">
-            هل أنت متأكد من رغبتك في الموافقة على السيارة
-            <strong class="text-primary">{{ getTitle(currentCar) }}</strong> (كود #{{ currentCar?.id }})؟
+    <VDialog v-model="approveConfirmDialog" max-width="560">
+      <VCard class="rounded-2xl overflow-hidden border-t-4 border-success pa-0">
+        <div class="pa-6 text-center bg-gradient-to-b from-success/10 to-transparent">
+          <div class="d-inline-flex pa-4 rounded-circle bg-success/20 mb-3 text-success">
+            <VIcon icon="tabler-circle-check" size="48" />
+          </div>
+          <h2 class="text-h5 font-weight-black text-high-emphasis mb-1">
+            الموافقة على نشر السيارة في الموقع
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            سيتم تغيير حالة الإعلان فوراً إلى <strong>معتمد (Approved)</strong>
           </p>
-          <VAlert type="success" variant="tonal" density="compact" class="rounded-lg">
-            سيتم نشر السيارة فوراً وتصبح ظاهرة لجميع الزوار على الموقع وفي نتائج البحث.
+        </div>
+
+        <VCardText class="px-6 py-2">
+          <!-- Car Preview Box -->
+          <div v-if="currentCar" class="d-flex align-center gap-3 pa-3 rounded-xl bg-surface border mb-4">
+            <VAvatar size="64" rounded="lg" class="border flex-shrink-0">
+              <VImg :src="getMainImage(currentCar)" cover />
+            </VAvatar>
+            <div class="flex-grow-1 min-w-0">
+              <div class="d-flex align-center justify-space-between gap-2 mb-1">
+                <span class="text-subtitle-2 font-weight-bold text-truncate">{{ getTitle(currentCar) }}</span>
+                <VChip size="x-small" color="primary" variant="tonal">#{{ currentCar?.id }}</VChip>
+              </div>
+              <div class="text-caption text-medium-emphasis d-flex align-center gap-2">
+                <span>{{ getBrandName(currentCar) }} {{ getModelName(currentCar) }}</span>
+                <span>•</span>
+                <span class="text-primary font-weight-bold">{{ formatPrice(currentCar?.price, currentCar?.currency) }}</span>
+              </div>
+              <div class="text-xs text-medium-emphasis mt-1">
+                البائع: <strong>{{ getStoreName(currentCar?.seller) }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <VAlert type="success" variant="tonal" density="compact" class="rounded-xl mb-2">
+            <template #text>
+              <div class="text-body-2">
+                ✅ بمجرد التأكيد، ستظهر السيارة لجميع زوار المنصة في نتائج البحث والصفحة الرئيسية، وسيتم إشعار البائع بنجاح اعتماد سيارته.
+              </div>
+            </template>
           </VAlert>
         </VCardText>
-        <VCardActions class="d-flex justify-end gap-2">
-          <VBtn variant="text" @click="approveConfirmDialog = false">إلغاء</VBtn>
+
+        <VCardActions class="px-6 pb-6 pt-2 d-flex justify-end gap-3">
+          <VBtn variant="tonal" color="secondary" rounded="pill" class="px-5" @click="approveConfirmDialog = false">
+            تراجع
+          </VBtn>
           <VBtn
             color="success"
             variant="elevated"
             rounded="pill"
+            class="px-6 font-weight-bold"
+            prepend-icon="tabler-check"
             :loading="actionLoading"
             @click="handleApproveSingle"
           >
-            نعم، موافقة وسماح بالظهور
+            نعم، اعتمد السيارة الآن
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Bulk Approve Dialog -->
-    <VDialog v-model="bulkApproveDialog" max-width="520">
-      <VCard class="rounded-xl pa-4">
-        <VCardTitle class="d-flex align-center gap-2">
-          <VIcon icon="tabler-checklist" color="success" size="30" />
-          <span>موافقة جماعية على السيارات المحددة</span>
-        </VCardTitle>
-        <VCardText class="pt-2">
-          <p class="text-body-1 mb-3">
-            أنت على وشك الموافقة على
-            <strong class="text-success text-h6">{{ selectedCarIds.length }}</strong> سيارة محددة دفعة واحدة.
+    <VDialog v-model="bulkApproveDialog" max-width="560">
+      <VCard class="rounded-2xl overflow-hidden border-t-4 border-success pa-0">
+        <div class="pa-6 text-center bg-gradient-to-b from-success/10 to-transparent">
+          <div class="d-inline-flex pa-4 rounded-circle bg-success/20 mb-3 text-success">
+            <VIcon icon="tabler-checklist" size="48" />
+          </div>
+          <h2 class="text-h5 font-weight-black text-high-emphasis mb-1">
+            موافقة جماعية على السيارات المحددة
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            أنت على وشك الموافقة على <strong class="text-success text-h6">{{ selectedCarIds.length }}</strong> سيارة محددة دفعة واحدة
           </p>
-          <VAlert type="info" variant="tonal" density="compact" class="rounded-lg mb-2">
-            سيتم تغيير حالة جميع السيارات المحددة إلى <strong>موافق عليها (Approved)</strong> وستظهر فوراً في صفحات الموقع وقوائم البحث، كما سيتم إرسال إشعارات للبائعين بنجاح الاعتماد.
+        </div>
+
+        <VCardText class="px-6 py-2">
+          <VAlert type="info" variant="tonal" density="compact" class="rounded-xl mb-3">
+            <template #text>
+              <div class="text-body-2">
+                سيتم تغيير حالة جميع السيارات المحددة إلى <strong>موافق عليها (Approved)</strong> وستظهر فوراً في صفحات الموقع وقوائم البحث، مع إرسال إشعارات لجميع البائعين.
+              </div>
+            </template>
           </VAlert>
         </VCardText>
-        <VCardActions class="d-flex justify-end gap-2">
-          <VBtn variant="text" @click="bulkApproveDialog = false">تراجع</VBtn>
+
+        <VCardActions class="px-6 pb-6 pt-2 d-flex justify-end gap-3">
+          <VBtn variant="tonal" color="secondary" rounded="pill" class="px-5" @click="bulkApproveDialog = false">
+            تراجع
+          </VBtn>
           <VBtn
             color="success"
             variant="elevated"
             rounded="pill"
-            class="px-5 font-weight-bold"
+            class="px-6 font-weight-bold"
+            prepend-icon="tabler-check"
             :loading="actionLoading"
             @click="handleBulkApprove"
           >
-            تأكيد الموافقة والسماح بالظهور
+            تأكيد الموافقة على ({{ selectedCarIds.length }}) سيارة
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Single Reject Dialog -->
-    <VDialog v-model="rejectDialog" max-width="500">
-      <VCard class="rounded-xl pa-4">
-        <VCardTitle class="d-flex align-center gap-2">
-          <VIcon icon="tabler-alert-triangle-filled" color="error" size="28" />
-          <span>رفض إعلان السيارة</span>
-        </VCardTitle>
-        <VCardText class="pt-2">
-          <p class="text-body-2 mb-3">
-            سيتم حجب السيارة وعدم إظهارها في الموقع. يمكنك كتابة سبب الرفض ليصل للبائع لتعديل الإعلان:
+    <VDialog v-model="rejectDialog" max-width="580">
+      <VCard class="rounded-2xl overflow-hidden border-t-4 border-error pa-0">
+        <div class="pa-6 text-center bg-gradient-to-b from-error/10 to-transparent">
+          <div class="d-inline-flex pa-4 rounded-circle bg-error/20 mb-3 text-error">
+            <VIcon icon="tabler-alert-triangle" size="48" />
+          </div>
+          <h2 class="text-h5 font-weight-black text-high-emphasis mb-1">
+            رفض إعلان السيارة وإخطار البائع
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            سيتم حجب السيارة من الظهور في الموقع وإرسال سبب الرفض إلى البائع
           </p>
+        </div>
+
+        <VCardText class="px-6 py-2">
+          <!-- Car Preview Box -->
+          <div v-if="currentCar" class="d-flex align-center gap-3 pa-3 rounded-xl bg-surface border mb-4">
+            <VAvatar size="54" rounded="lg" class="border flex-shrink-0">
+              <VImg :src="getMainImage(currentCar)" cover />
+            </VAvatar>
+            <div class="flex-grow-1 min-w-0">
+              <div class="text-subtitle-2 font-weight-bold text-truncate">{{ getTitle(currentCar) }}</div>
+              <div class="text-caption text-medium-emphasis">
+                كود #{{ currentCar?.id }} • المعرض: {{ getStoreName(currentCar?.seller) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Select Reasons -->
+          <div class="mb-3">
+            <label class="text-caption font-weight-bold text-medium-emphasis mb-2 d-block">
+              اختر سبباً سريعاً (أو اكتب سبباً خاصاً بالأسفل):
+            </label>
+            <div class="d-flex flex-wrap gap-1">
+              <VChip
+                v-for="r in quickRejectReasons"
+                :key="r"
+                size="small"
+                variant="outlined"
+                color="secondary"
+                class="cursor-pointer hover:bg-error/10"
+                @click="addQuickReason(r)"
+              >
+                + {{ r }}
+              </VChip>
+            </div>
+          </div>
+
+          <!-- Reason Textarea -->
           <VTextarea
             v-model="rejectionReason"
-            label="سبب الرفض (اختياري)"
-            placeholder="مثال: يرجى رفع صور أوضح للسيارة، أو تصحيح السعر..."
+            label="تفاصيل سبب الرفض (سيصل للبائع في الإشعار)"
+            placeholder="مثال: يرجى رفع صور واضحة من جميع الزوايا للسيارة مع تعديل السعر..."
             variant="outlined"
             rows="3"
             counter="500"
+            class="mb-2"
           />
+
+          <VAlert type="warning" variant="tonal" density="compact" class="rounded-xl">
+            <template #text>
+              <div class="text-caption">
+                ⚠️ سيتمكن البائع من قراءة هذا السبب في حسابه، وتعديل السيارة ثم إعادة إرسالها للمراجعة مرة أخرى.
+              </div>
+            </template>
+          </VAlert>
         </VCardText>
-        <VCardActions class="d-flex justify-end gap-2">
-          <VBtn variant="text" @click="rejectDialog = false">إلغاء</VBtn>
+
+        <VCardActions class="px-6 pb-6 pt-2 d-flex justify-end gap-3">
+          <VBtn variant="tonal" color="secondary" rounded="pill" class="px-5" @click="rejectDialog = false">
+            إلغاء
+          </VBtn>
           <VBtn
             color="error"
             variant="elevated"
             rounded="pill"
+            class="px-6 font-weight-bold"
+            prepend-icon="tabler-circle-x"
             :loading="actionLoading"
             @click="handleRejectSingle"
           >
-            تأكيد الرفض
+            تأكيد الرفض وإشعار البائع
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Bulk Reject Dialog -->
-    <VDialog v-model="bulkRejectDialog" max-width="520">
-      <VCard class="rounded-xl pa-4">
-        <VCardTitle class="d-flex align-center gap-2">
-          <VIcon icon="tabler-circle-x" color="error" size="30" />
-          <span>رفض السيارات المحددة</span>
-        </VCardTitle>
-        <VCardText class="pt-2">
-          <p class="text-body-1 mb-3">
-            سيتم رفض عدد <strong class="text-error text-h6">{{ selectedCarIds.length }}</strong> سيارة محددة وإخفاؤها من الموقع.
+    <VDialog v-model="bulkRejectDialog" max-width="580">
+      <VCard class="rounded-2xl overflow-hidden border-t-4 border-error pa-0">
+        <div class="pa-6 text-center bg-gradient-to-b from-error/10 to-transparent">
+          <div class="d-inline-flex pa-4 rounded-circle bg-error/20 mb-3 text-error">
+            <VIcon icon="tabler-circle-x" size="48" />
+          </div>
+          <h2 class="text-h5 font-weight-black text-high-emphasis mb-1">
+            رفض جماعي للسيارات المحددة
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            سيتم رفض عدد <strong class="text-error text-h6">{{ selectedCarIds.length }}</strong> سيارة محددة وإخفاؤها من الموقع
           </p>
+        </div>
+
+        <VCardText class="px-6 py-2">
+          <!-- Quick Select Reasons -->
+          <div class="mb-3">
+            <label class="text-caption font-weight-bold text-medium-emphasis mb-2 d-block">
+              اختر سبباً سريعاً موحداً:
+            </label>
+            <div class="d-flex flex-wrap gap-1">
+              <VChip
+                v-for="r in quickRejectReasons"
+                :key="r"
+                size="small"
+                variant="outlined"
+                color="secondary"
+                class="cursor-pointer hover:bg-error/10"
+                @click="addQuickReason(r)"
+              >
+                + {{ r }}
+              </VChip>
+            </div>
+          </div>
+
           <VTextarea
             v-model="rejectionReason"
-            label="سبب الرفض الموحد (اختياري)"
+            label="سبب الرفض الموحد (سيصل للبائعين في الإشعار)"
             placeholder="اكتب سبب الرفض ليتم إرساله للبائعين..."
             variant="outlined"
             rows="3"
+            class="mb-2"
           />
         </VCardText>
-        <VCardActions class="d-flex justify-end gap-2">
-          <VBtn variant="text" @click="bulkRejectDialog = false">تراجع</VBtn>
+
+        <VCardActions class="px-6 pb-6 pt-2 d-flex justify-end gap-3">
+          <VBtn variant="tonal" color="secondary" rounded="pill" class="px-5" @click="bulkRejectDialog = false">
+            تراجع
+          </VBtn>
           <VBtn
             color="error"
             variant="elevated"
             rounded="pill"
+            class="px-6 font-weight-bold"
+            prepend-icon="tabler-circle-x"
             :loading="actionLoading"
             @click="handleBulkReject"
           >
-            تأكيد الرفض الجماعي
+            تأكيد رفض ({{ selectedCarIds.length }}) سيارة
           </VBtn>
         </VCardActions>
       </VCard>
