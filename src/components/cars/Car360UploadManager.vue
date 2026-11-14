@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   initialInteriorUrl: {
@@ -15,6 +15,10 @@ const props = defineProps({
     default: '',
   },
 })
+
+// DOM Refs
+const exteriorInputRef = ref(null)
+const interiorInputRef = ref(null)
 
 // Interior 360 State
 const interiorFile = ref(null)
@@ -80,6 +84,11 @@ const clearInterior = () => {
   removeExistingInterior.value = true
 }
 
+const undoClearInterior = () => {
+  interiorPreview.value = props.initialInteriorUrl || ''
+  removeExistingInterior.value = false
+}
+
 // Exterior Files Handler
 const onSelectExteriorFiles = (filesList) => {
   if (!filesList || filesList.length === 0) return
@@ -116,6 +125,12 @@ const clearExterior = () => {
   removeExistingExterior.value = true
 }
 
+const undoClearExterior = () => {
+  existingExteriorImages.value = [...(props.initialExteriorImages || [])]
+  removeExistingExterior.value = false
+  previewIndex.value = 0
+}
+
 // 3D Model Handlers
 const onSelect3dFile = (file) => {
   if (!file) return
@@ -132,7 +147,7 @@ const clear3dModel = () => {
 // Total frames count
 const totalExteriorFramesCount = computed(() => {
   if (exteriorZipFile.value) return 'ملف ZIP مضغوط'
-  if (exteriorFiles.value.length > 0) return `${exteriorFiles.value.length} إطار`
+  if (exteriorFiles.value.length > 0) return `${exteriorFiles.value.length} إطار جديد`
   if (existingExteriorImages.value.length > 0) return `${existingExteriorImages.value.length} إطار حالي`
   return null
 })
@@ -190,6 +205,24 @@ defineExpose({
 
 <template>
   <div class="car-360-upload-card border rounded-2xl pa-5 mb-6">
+    <!-- Hidden persistent file inputs -->
+    <input
+      ref="exteriorInputRef"
+      type="file"
+      multiple
+      accept="image/*,.zip"
+      class="d-none"
+      @change="e => onSelectExteriorFiles(e.target.files)"
+    />
+
+    <input
+      ref="interiorInputRef"
+      type="file"
+      accept="image/*"
+      class="d-none"
+      @change="e => onSelectInterior(e.target.files[0])"
+    />
+
     <!-- Header -->
     <div class="d-flex align-center justify-space-between mb-4 border-b pb-3">
       <div class="d-flex align-center gap-2">
@@ -230,7 +263,7 @@ defineExpose({
               ارفع 16 إلى 36 صورة متتابعة تدور حول السيارة، أو ارفع ملف <strong>ZIP</strong> مضغوط يحتوي عليها.
             </p>
 
-            <!-- Dropzone -->
+            <!-- 1. Dropzone (shown when no frames & no zip) -->
             <div
               v-if="!activePreviewFrameUrl && !exteriorZipFile"
               class="mini-dropzone pa-5 text-center rounded-lg border-dashed cursor-pointer transition"
@@ -238,17 +271,9 @@ defineExpose({
               @dragover.prevent="isDraggingExterior = true"
               @dragleave.prevent="isDraggingExterior = false"
               @drop.prevent="e => { isDraggingExterior = false; onSelectExteriorFiles(e.dataTransfer.files) }"
-              @click="$refs.exteriorInputRef.click()"
+              @click="exteriorInputRef?.click()"
             >
-              <input
-                ref="exteriorInputRef"
-                type="file"
-                multiple
-                accept="image/*,.zip"
-                class="d-none"
-                @change="e => onSelectExteriorFiles(e.target.files)"
-              />
-              <VIcon icon="tabler-cloud-upload" size="30" color="primary" class="mb-2" />
+              <VIcon icon="tabler-cloud-upload" size="32" color="primary" class="mb-2" />
               <div class="text-caption font-weight-bold mb-1">
                 اضغط لاختيار الصور أو ملف ZIP
               </div>
@@ -257,33 +282,57 @@ defineExpose({
               </div>
             </div>
 
-            <!-- ZIP Preview -->
-            <div v-else-if="exteriorZipFile" class="zip-preview-card pa-4 rounded-lg border bg-surface d-flex align-center justify-space-between">
-              <div class="d-flex align-center gap-3">
-                <VAvatar color="warning" variant="tonal" size="36">
-                  <VIcon icon="tabler-file-zip" size="22" />
-                </VAvatar>
-                <div>
-                  <div class="font-weight-bold text-caption">{{ exteriorZipFile.name }}</div>
-                  <div class="text-xs text-medium-emphasis">
-                    {{ (exteriorZipFile.size / 1024 / 1024).toFixed(2) }} MB • سيتم فك ضغط الإطارات تلقائياً
+            <!-- 2. ZIP Preview Card -->
+            <div v-else-if="exteriorZipFile" class="zip-preview-box">
+              <div class="zip-preview-card pa-4 rounded-lg border bg-surface d-flex align-center justify-space-between">
+                <div class="d-flex align-center gap-3">
+                  <VAvatar color="warning" variant="tonal" size="36">
+                    <VIcon icon="tabler-file-zip" size="22" />
+                  </VAvatar>
+                  <div>
+                    <div class="font-weight-bold text-caption">{{ exteriorZipFile.name }}</div>
+                    <div class="text-xs text-medium-emphasis">
+                      {{ (exteriorZipFile.size / 1024 / 1024).toFixed(2) }} MB • سيتم فك ضغط الإطارات تلقائياً
+                    </div>
                   </div>
                 </div>
+                <VBtn icon="tabler-x" size="x-small" color="error" variant="text" @click="clearExterior" />
               </div>
-              <VBtn icon="tabler-trash" size="x-small" color="error" variant="text" @click="clearExterior" />
+
+              <!-- ZIP Action Buttons -->
+              <div class="d-flex align-center justify-space-between mt-3 gap-2">
+                <VBtn
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-upload"
+                  @click="exteriorInputRef?.click()"
+                >
+                  اختيار ملف ZIP أو صور أخرى
+                </VBtn>
+                <VBtn
+                  color="error"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-trash"
+                  @click="clearExterior"
+                >
+                  إلغاء الملف
+                </VBtn>
+              </div>
             </div>
 
-            <!-- Active Frames Interactive Scrubber Preview -->
+            <!-- 3. Active Frames Interactive Scrubber Preview -->
             <div v-else-if="activePreviewFrameUrl" class="frames-scrubber-preview">
               <div class="relative rounded-lg overflow-hidden border bg-black text-center mb-2">
                 <img :src="activePreviewFrameUrl" alt="spin frame" class="spin-preview-img" />
-                <button type="button" class="clear-preview-btn" title="حذف الصور" @click="clearExterior">
+                <button type="button" class="clear-preview-btn" title="حذف صور الدوران" @click="clearExterior">
                   <VIcon icon="tabler-x" size="14" />
                 </button>
               </div>
 
               <!-- Interactive Angle Slider -->
-              <div class="d-flex align-center gap-2 px-1">
+              <div class="d-flex align-center gap-2 px-1 mb-3">
                 <span class="text-xs text-medium-emphasis">اسحب للتجربة:</span>
                 <input
                   v-model.number="previewIndex"
@@ -296,7 +345,52 @@ defineExpose({
                   {{ previewIndex + 1 }} / {{ exteriorPreviews.length || existingExteriorImages.length }}
                 </span>
               </div>
+
+              <!-- Explicit Action Buttons: Replace or Clear -->
+              <div class="d-flex align-center justify-space-between flex-wrap gap-2 pt-1 border-t">
+                <VBtn
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-upload"
+                  @click="exteriorInputRef?.click()"
+                >
+                  استبدال / رفع صور جديدة أو ZIP
+                </VBtn>
+
+                <VBtn
+                  color="error"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-trash"
+                  @click="clearExterior"
+                >
+                  حذف صور الدوران
+                </VBtn>
+              </div>
             </div>
+
+            <!-- Alert when existing exterior images are scheduled for deletion -->
+            <VAlert
+              v-if="removeExistingExterior"
+              density="compact"
+              type="warning"
+              variant="tonal"
+              class="mt-3 text-xs"
+            >
+              <div class="d-flex align-center justify-space-between">
+                <span>سيتم حذف صور الدوران الخارجي عند حفظ التعديلات.</span>
+                <VBtn
+                  v-if="props.initialExteriorImages?.length"
+                  size="x-small"
+                  variant="text"
+                  color="warning"
+                  @click="undoClearExterior"
+                >
+                  تراجع
+                </VBtn>
+              </div>
+            </VAlert>
           </div>
         </div>
       </VCol>
@@ -320,7 +414,7 @@ defineExpose({
               ارفع <strong>صورة واحدة فقط</strong> بانورامية 360° (Equirectangular 2:1) ملتقطة من داخل السيارة.
             </p>
 
-            <!-- Dropzone -->
+            <!-- 1. Dropzone (shown when no interior preview) -->
             <div
               v-if="!interiorPreview"
               class="mini-dropzone pa-5 text-center rounded-lg border-dashed cursor-pointer transition"
@@ -328,16 +422,9 @@ defineExpose({
               @dragover.prevent="isDraggingInterior = true"
               @dragleave.prevent="isDraggingInterior = false"
               @drop.prevent="e => { isDraggingInterior = false; onSelectInterior(e.dataTransfer.files[0]) }"
-              @click="$refs.interiorInputRef.click()"
+              @click="interiorInputRef?.click()"
             >
-              <input
-                ref="interiorInputRef"
-                type="file"
-                accept="image/*"
-                class="d-none"
-                @change="e => onSelectInterior(e.target.files[0])"
-              />
-              <VIcon icon="tabler-photo-sphere" size="30" color="primary" class="mb-2" />
+              <VIcon icon="tabler-photo-sphere" size="32" color="primary" class="mb-2" />
               <div class="text-caption font-weight-bold mb-1">
                 اضغط لاختيار صورة البانوراما 360°
               </div>
@@ -346,16 +433,63 @@ defineExpose({
               </div>
             </div>
 
-            <!-- Panoramic Preview Card -->
-            <div v-else class="panoramic-preview-card relative rounded-lg overflow-hidden border">
-              <img :src="interiorPreview" alt="interior panorama" class="pano-img" />
-              <div class="pano-badge-overlay">
-                <VIcon icon="tabler-view-360" size="14" class="me-1" /> بانوراما 360°
+            <!-- 2. Panoramic Preview Card -->
+            <div v-else class="interior-preview-wrapper">
+              <div class="panoramic-preview-card relative rounded-lg overflow-hidden border">
+                <img :src="interiorPreview" alt="interior panorama" class="pano-img" />
+                <div class="pano-badge-overlay">
+                  <VIcon icon="tabler-view-360" size="14" class="me-1" /> بانوراما 360°
+                </div>
+                <button type="button" class="clear-preview-btn" title="حذف البانوراما" @click="clearInterior">
+                  <VIcon icon="tabler-x" size="14" />
+                </button>
               </div>
-              <button type="button" class="clear-preview-btn" title="حذف البانوراما" @click="clearInterior">
-                <VIcon icon="tabler-x" size="14" />
-              </button>
+
+              <!-- Explicit Action Buttons: Replace or Clear -->
+              <div class="d-flex align-center justify-space-between flex-wrap gap-2 mt-3 pt-1 border-t">
+                <VBtn
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-upload"
+                  @click="interiorInputRef?.click()"
+                >
+                  استبدال بصورة بانوراما جديدة
+                </VBtn>
+
+                <VBtn
+                  color="error"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-trash"
+                  @click="clearInterior"
+                >
+                  حذف صورة المقصورة
+                </VBtn>
+              </div>
             </div>
+
+            <!-- Alert when existing interior is scheduled for deletion -->
+            <VAlert
+              v-if="removeExistingInterior"
+              density="compact"
+              type="warning"
+              variant="tonal"
+              class="mt-3 text-xs"
+            >
+              <div class="d-flex align-center justify-space-between">
+                <span>سيتم حذف بانوراما المقصورة عند حفظ التعديلات.</span>
+                <VBtn
+                  v-if="props.initialInteriorUrl"
+                  size="x-small"
+                  variant="text"
+                  color="warning"
+                  @click="undoClearInterior"
+                >
+                  تراجع
+                </VBtn>
+              </div>
+            </VAlert>
           </div>
         </div>
       </VCol>
