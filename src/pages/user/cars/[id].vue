@@ -23,7 +23,7 @@ const has360Or3D = computed(() => {
   if (!car.value) return false
   const hasExt = Array.isArray(car.value.exterior_360_images) && car.value.exterior_360_images.length > 0
   const hasInt = !!car.value.interior_360_url
-  const has3D = !!(car.value.model_3d_url || car.value.model?.model_3d_url)
+  const has3D = !!(car.value.model_3d_url && String(car.value.model_3d_url).trim() !== '')
   return hasExt || hasInt || has3D
 })
 

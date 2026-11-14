@@ -29,9 +29,9 @@ const hasInterior360 = computed(() => {
   return !!props.car?.interior_360_url
 })
 
-// ✅ Explicit 3D model only: Never force or fallback to generic GLB unless specifically provided
+// ✅ Explicit 3D model only: Strictly per-car, never inherit generic model archetype
 const has3DModel = computed(() => {
-  return !!(props.car?.model_3d_url || props.car?.model?.model_3d_url)
+  return !!(props.car?.model_3d_url && String(props.car.model_3d_url).trim() !== '')
 })
 
 const activeMode = ref('360_exterior') // '360_exterior' | '360_interior' | '3d_model'
@@ -394,6 +394,7 @@ const cleanupInterior = () => {
 const model3DContainerRef = ref(null)
 const is3DLoading = ref(true)
 const loadProgress3D = ref(0)
+const has3DLoadError = ref(false)
 const is3DAutoRotating = ref(true)
 let scene3D = null
 let camera3D = null
@@ -418,6 +419,7 @@ const init3DViewer = () => {
   if (!container || !has3DModel.value) return
 
   is3DLoading.value = true
+  has3DLoadError.value = false
   loadProgress3D.value = 0
   cleanup3D()
 
@@ -471,7 +473,7 @@ const init3DViewer = () => {
   const gltfLoader = new GLTFLoader()
   gltfLoader.setDRACOLoader(dracoLoader)
 
-  const modelUrl = resolveAssetUrl(props.car.model_3d_url || props.car.model?.model_3d_url)
+  const modelUrl = resolveAssetUrl(props.car?.model_3d_url)
 
   gltfLoader.load(
     modelUrl,
@@ -513,6 +515,7 @@ const init3DViewer = () => {
     (err) => {
       console.warn('Error loading 3D Car model:', err)
       is3DLoading.value = false
+      has3DLoadError.value = true
     },
   )
 
@@ -852,6 +855,13 @@ const closeDialog = () => {
           <div v-if="is3DLoading" class="stage-loading-overlay">
             <div class="loading-spinner" />
             <div class="loading-label">جاري تحميل المجسم ثلاثي الأبعاد... ({{ loadProgress3D }}%)</div>
+          </div>
+
+          <!-- Error Overlay -->
+          <div v-if="has3DLoadError" class="stage-loading-overlay">
+            <VIcon icon="tabler-alert-triangle" size="44" color="warning" class="mb-3" />
+            <div class="loading-label text-subtitle-1 font-weight-bold">عذراً، لم يتم العثور على ملف المجسم ثلاثي الأبعاد لهذه السيارة.</div>
+            <div class="text-xs text-medium-emphasis mt-1">يجب على البائع أو الآدمن رفع ملف GLB خاص بالسيارة.</div>
           </div>
 
           <!-- 3D Controls -->
