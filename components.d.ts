@@ -15,6 +15,7 @@ declare module 'vue' {
     AppStepper: typeof import('./src/@core/components/AppStepper.vue')['default']
     AppTableLoader: typeof import('./src/components/AppTableLoader.vue')['default']
     AppTextField: typeof import('./src/@core/components/app-form-elements/AppTextField.vue')['default']
+    Car360UploadManager: typeof import('./src/components/cars/Car360UploadManager.vue')['default']
     Car3DInspectionDialog: typeof import('./src/components/dialogs/Car3DInspectionDialog.vue')['default']
     CarMotionLoader: typeof import('./src/components/CarMotionLoader.vue')['default']
     CarQrDialog: typeof import('./src/components/dialogs/CarQrDialog.vue')['default']

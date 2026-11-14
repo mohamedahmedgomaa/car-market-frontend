@@ -11,10 +11,12 @@ import countryAdminApi from '../../../api/admin/countryAdminApi.js'
 import governorateAdminApi from '../../../api/admin/governorateAdminApi.js'
 import cityAdminApi from '../../../api/admin/cityAdminApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
+import Car360UploadManager from '@/components/cars/Car360UploadManager.vue'
 import { customBrandFilter } from '@/utils/brandTranslations.js'
 import { processCarImages } from '@/utils/imageProcessor.js'
 
 const router = useRouter()
+const upload360Ref = ref(null)
 
 /* ================= State ================= */
 const form = ref({
@@ -1053,6 +1055,8 @@ const handleSubmit = async () => {
       }
     })
 
+    upload360Ref.value?.appendFormData(formData)
+
     await carAdminApi.create(formData)
 
     snackbarMessage.value = 'Car created successfully'
@@ -1721,6 +1725,11 @@ const handleSubmit = async () => {
               </VCard>
             </VCol>
           </VRow>
+        </section>
+
+        <!-- ================= 360° Interactive Experience ================= -->
+        <section class="mb-10">
+          <Car360UploadManager ref="upload360Ref" />
         </section>
 
         <!-- ================= Actions ================= -->

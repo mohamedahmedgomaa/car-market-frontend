@@ -9,11 +9,13 @@ import countryUserApi from '../../../api/user/countryUserApi.js'
 import governorateUserApi from '../../../api/user/governorateUserApi.js'
 import cityUserApi from '../../../api/user/cityUserApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
+import Car360UploadManager from '@/components/cars/Car360UploadManager.vue'
 import PageHeroHeader from '@/components/PageHeroHeader.vue'
 import { customBrandFilter } from '@/utils/brandTranslations.js'
 import { processCarImages } from '@/utils/imageProcessor.js'
 
 const router = useRouter()
+const upload360Ref = ref(null)
 
 /* ================= Wizard Step State ================= */
 const currentStep = ref(1)
@@ -455,6 +457,8 @@ const handleSubmit = async () => {
         formData.append(key, value)
       }
     })
+
+    upload360Ref.value?.appendFormData(formData)
 
     await carSellerApi.create(formData)
 
@@ -1164,6 +1168,9 @@ onMounted(async () => {
               </div>
             </div>
           </div>
+
+          <!-- 🌟 360° Interactive Experience Upload Manager -->
+          <Car360UploadManager ref="upload360Ref" />
 
           <!-- Features Manager Component -->
           <div class="mb-6">

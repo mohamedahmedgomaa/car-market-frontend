@@ -11,11 +11,17 @@ import countryAdminApi from '../../../../api/admin/countryAdminApi.js'
 import governorateAdminApi from '../../../../api/admin/governorateAdminApi.js'
 import cityAdminApi from '../../../../api/admin/cityAdminApi.js'
 import FeaturesManager from '@/components/FeaturesManager.vue'
+import Car360UploadManager from '@/components/cars/Car360UploadManager.vue'
 import { processCarImages } from '@/utils/imageProcessor.js'
 
 const router = useRouter()
 const route = useRoute()
 const carId = route.params.id
+
+const upload360Ref = ref(null)
+const existingInteriorUrl = ref('')
+const existingExteriorImages = ref([])
+const existingModel3dUrl = ref('')
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 
@@ -1138,6 +1144,10 @@ const loadCar = async () => {
   form.value.youtube_url = car.youtube_url ?? ''
   form.value.instagram_url = car.instagram_url ?? ''
 
+  existingInteriorUrl.value = car.interior_360_url || ''
+  existingExteriorImages.value = Array.isArray(car.exterior_360_images) ? car.exterior_360_images : []
+  existingModel3dUrl.value = car.model_3d_url || ''
+
   form.value.is_best_deal = !!car.is_best_deal
   if (car.is_import === 'available_for_import' || car.is_import === 'available' || car.is_import === '2' || car.is_import === 2 || String(car.is_import) === '2') {
     form.value.is_import = '2'
@@ -1279,6 +1289,8 @@ const handleSubmit = async () => {
     } else if (mainSelection.value?.type === 'new') {
       fd.append('main_image_new_index', mainSelection.value.index)
     }
+
+    upload360Ref.value?.appendFormData(fd)
 
     await carAdminApi.update(carId, fd)
 
@@ -1991,6 +2003,16 @@ const handleSubmit = async () => {
               </VCard>
             </VCol>
           </VRow>
+        </section>
+
+        <!-- ================= 360° Interactive Experience ================= -->
+        <section class="mb-10">
+          <Car360UploadManager
+            ref="upload360Ref"
+            :initial-interior-url="existingInteriorUrl"
+            :initial-exterior-images="existingExteriorImages"
+            :initial-model-3d-url="existingModel3dUrl"
+          />
         </section>
 
         <!-- ================= Actions ================= -->
