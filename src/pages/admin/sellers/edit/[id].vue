@@ -237,35 +237,25 @@ const handleSubmit = async () => {
     }
 
     // Append both parameter variants for all social links
-    const fb = seller.value.facebook
-    if (fb) {
-      formData.append('facebook', fb)
-      formData.append('facebook_url', fb)
-    }
+    const fb = (seller.value.facebook || '').trim()
+    formData.append('facebook', fb)
+    formData.append('facebook_url', fb)
 
-    const ig = seller.value.instagram
-    if (ig) {
-      formData.append('instagram', ig)
-      formData.append('instagram_url', ig)
-    }
+    const ig = (seller.value.instagram || '').trim()
+    formData.append('instagram', ig)
+    formData.append('instagram_url', ig)
 
-    const tt = seller.value.tiktok
-    if (tt) {
-      formData.append('tiktok', tt)
-      formData.append('tiktok_url', tt)
-    }
+    const tt = (seller.value.tiktok || '').trim()
+    formData.append('tiktok', tt)
+    formData.append('tiktok_url', tt)
 
-    const yt = seller.value.youtube
-    if (yt) {
-      formData.append('youtube', yt)
-      formData.append('youtube_url', yt)
-    }
+    const yt = (seller.value.youtube || '').trim()
+    formData.append('youtube', yt)
+    formData.append('youtube_url', yt)
 
-    const web = seller.value.website
-    if (web) {
-      formData.append('website', web)
-      formData.append('website_url', web)
-    }
+    const web = (seller.value.website || '').trim()
+    formData.append('website', web)
+    formData.append('website_url', web)
 
     await sellerAdminApi.update(route.params.id, formData)
 

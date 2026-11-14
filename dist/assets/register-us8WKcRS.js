@@ -1,1 +1,0 @@
-import{U as r,c as t,j as o,o as s}from"./index-7uaWWx6p.js";const _={__name:"register",setup(a){const e=o();return r(()=>{e.replace("/login?tab=register")}),(c,n)=>(s(),t("div"))}};export{_ as default};

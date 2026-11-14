@@ -128,6 +128,42 @@ const openSocial = (platform) => {
   window.open(url, '_blank')
 }
 
+// ✅ Showroom Video Showcase Support (YouTube & Instagram)
+const activeVideoTab = ref('youtube')
+
+const showroomYoutubeUrl = computed(() => getSocialUrl('youtube'))
+const showroomInstagramUrl = computed(() => getSocialUrl('instagram'))
+
+watch(
+  [showroomYoutubeUrl, showroomInstagramUrl],
+  ([yt, ig]) => {
+    if (yt && !ig) activeVideoTab.value = 'youtube'
+    else if (!yt && ig) activeVideoTab.value = 'instagram'
+    else if (yt) activeVideoTab.value = 'youtube'
+  },
+  { immediate: true }
+)
+
+const youtubeEmbedUrl = computed(() => {
+  if (!showroomYoutubeUrl.value) return null
+  const url = String(showroomYoutubeUrl.value).trim()
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/)
+  if (match && match[1]) {
+    return `https://www.youtube.com/embed/${match[1]}?rel=0`
+  }
+  return null
+})
+
+const instagramEmbedUrl = computed(() => {
+  if (!showroomInstagramUrl.value) return null
+  const url = String(showroomInstagramUrl.value).trim()
+  const match = url.match(/instagram\.com\/(?:reel|reels|p)\/([\w-]+)/)
+  if (match && match[1]) {
+    return `https://www.instagram.com/reel/${match[1]}/embed`
+  }
+  return null
+})
+
 const verifiedBadgeColor = computed(() => {
   const t = seller.value?.tier?.toLowerCase()
   if (t === 'diamond') return '#00d2ff' // Diamond
@@ -520,7 +556,127 @@ onMounted(fetchSeller)
           </div>
         </VCard>
 
+        <!-- Showroom Video Showcase (YouTube & Instagram) -->
+        <VCard
+          v-if="showroomYoutubeUrl || showroomInstagramUrl"
+          class="showroom-video-card mb-8 rounded-xl border elevation-3 overflow-hidden animate-fade-in-up"
+          style="background: #0f172a; border-color: rgba(255, 255, 255, 0.12) !important;"
+        >
+          <div class="video-card-header pa-4 d-flex align-center justify-space-between flex-wrap gap-3 border-b border-opacity-10">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="tabler-player-play-filled" color="error" size="24" />
+              <h3 class="text-h6 font-weight-bold text-white mb-0">
+                {{ $i18n.locale === 'ar' ? 'فيديوهات وجولة المعرض' : 'Showroom Video & Walkthrough' }}
+              </h3>
+            </div>
 
+            <!-- Tabs if both YouTube and Instagram exist -->
+            <div v-if="showroomYoutubeUrl && showroomInstagramUrl" class="d-inline-flex bg-slate-800 rounded-pill p-1 border border-white-10">
+              <VBtn
+                size="small"
+                variant="text"
+                rounded="pill"
+                :class="{ 'bg-error text-white font-weight-bold': activeVideoTab === 'youtube', 'text-white-70': activeVideoTab !== 'youtube' }"
+                @click="activeVideoTab = 'youtube'"
+              >
+                <VIcon icon="tabler-brand-youtube" size="18" class="me-1" />
+                <span>{{ $i18n.locale === 'ar' ? 'يوتيوب' : 'YouTube' }}</span>
+              </VBtn>
+              <VBtn
+                size="small"
+                variant="text"
+                rounded="pill"
+                :class="{ 'bg-primary text-white font-weight-bold': activeVideoTab === 'instagram', 'text-white-70': activeVideoTab !== 'instagram' }"
+                @click="activeVideoTab = 'instagram'"
+              >
+                <VIcon icon="tabler-brand-instagram" size="18" class="me-1" />
+                <span>{{ $i18n.locale === 'ar' ? 'انستغرام' : 'Instagram' }}</span>
+              </VBtn>
+            </div>
+
+            <!-- Direct external link -->
+            <div>
+              <VBtn
+                v-if="activeVideoTab === 'youtube' && showroomYoutubeUrl"
+                size="small"
+                variant="tonal"
+                color="error"
+                rounded="pill"
+                prepend-icon="tabler-external-link"
+                :href="showroomYoutubeUrl"
+                target="_blank"
+              >
+                {{ $i18n.locale === 'ar' ? 'فتح على YouTube' : 'Open in YouTube' }}
+              </VBtn>
+              <VBtn
+                v-else-if="activeVideoTab === 'instagram' && showroomInstagramUrl"
+                size="small"
+                variant="tonal"
+                color="pink"
+                rounded="pill"
+                prepend-icon="tabler-external-link"
+                :href="showroomInstagramUrl"
+                target="_blank"
+              >
+                {{ $i18n.locale === 'ar' ? 'فتح على Instagram' : 'Open in Instagram' }}
+              </VBtn>
+            </div>
+          </div>
+
+          <VCardText class="pa-4 pa-md-6">
+            <!-- YouTube Player -->
+            <div
+              v-if="(activeVideoTab === 'youtube' || !showroomInstagramUrl) && showroomYoutubeUrl"
+              class="youtube-player-container text-center"
+            >
+              <div v-if="youtubeEmbedUrl" class="video-responsive-16-9 mx-auto rounded-xl overflow-hidden shadow-2xl" style="max-width: 900px;">
+                <iframe
+                  :src="youtubeEmbedUrl"
+                  title="Showroom YouTube Video"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                  loading="lazy"
+                  class="w-100 h-100"
+                  style="aspect-ratio: 16/9; min-height: 380px; border: 0;"
+                />
+              </div>
+              <div v-else class="py-8 px-4 bg-slate-900 rounded-xl border border-white-10 text-center mx-auto" style="max-width: 650px;">
+                <VIcon icon="tabler-brand-youtube" size="56" color="error" class="mb-3" />
+                <h4 class="text-h6 text-white mb-2">{{ $i18n.locale === 'ar' ? 'قناة وفيديوهات المعرض على يوتيوب' : 'Showroom YouTube Channel & Videos' }}</h4>
+                <p class="text-body-2 text-white-70 mb-4">{{ $i18n.locale === 'ar' ? 'شاهد أحدث عروض وفيديوهات المعرض وسياراته الحصرية مباشرة عبر قناتهم على يوتيوب.' : 'Watch the latest car walkarounds, deals and reviews on their official YouTube channel.' }}</p>
+                <VBtn color="error" size="large" rounded="pill" prepend-icon="tabler-external-link" :href="showroomYoutubeUrl" target="_blank">
+                  {{ $i18n.locale === 'ar' ? 'زيارة قناة يوتيوب الآن' : 'Visit YouTube Channel' }}
+                </VBtn>
+              </div>
+            </div>
+
+            <!-- Instagram Reel / Profile Player -->
+            <div
+              v-if="(activeVideoTab === 'instagram' || !showroomYoutubeUrl) && showroomInstagramUrl"
+              class="instagram-player-container text-center"
+            >
+              <div v-if="instagramEmbedUrl" class="mx-auto rounded-xl overflow-hidden shadow-2xl" style="max-width: 500px;">
+                <iframe
+                  :src="instagramEmbedUrl"
+                  frameborder="0"
+                  scrolling="no"
+                  allowtransparency="true"
+                  class="w-100 rounded-xl"
+                  style="min-height: 520px; border: 0;"
+                />
+              </div>
+              <div v-else class="py-8 px-4 bg-slate-900 rounded-xl border border-white-10 text-center mx-auto" style="max-width: 650px;">
+                <VIcon icon="tabler-brand-instagram" size="56" style="color: #E1306C;" class="mb-3" />
+                <h4 class="text-h6 text-white mb-2">{{ $i18n.locale === 'ar' ? 'ريلز وفيديوهات المعرض على انستغرام' : 'Showroom Instagram Reels & Videos' }}</h4>
+                <p class="text-body-2 text-white-70 mb-4">{{ $i18n.locale === 'ar' ? 'شاهد أحدث الريلز والتغطيات المصورة للمعرض مباشرة عبر حسابهم الرسمي على انستغرام.' : 'Watch official reels, walkarounds and updates directly on their Instagram profile.' }}</p>
+                <VBtn color="pink" size="large" rounded="pill" prepend-icon="tabler-external-link" :href="showroomInstagramUrl" target="_blank">
+                  {{ $i18n.locale === 'ar' ? 'مشاهدة على Instagram الآن' : 'View on Instagram' }}
+                </VBtn>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
 
         <!-- Showroom Cars Section -->
         <div class="inventory-section animate-fade-in-up" style="animation-delay: 0.3s">

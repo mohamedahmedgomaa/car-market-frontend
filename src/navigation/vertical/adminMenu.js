@@ -7,8 +7,19 @@ export default [
 
   {
     title: 'Cars Management',
-    to: { name: 'admin-cars' },
     icon: { icon: 'tabler-car', size: 26 },
+    children: [
+      {
+        title: 'All Cars',
+        to: { name: 'admin-cars' },
+        icon: { icon: 'tabler-car', size: 24 }
+      },
+      {
+        title: 'Car Approvals',
+        to: { name: 'admin-cars-approvals' },
+        icon: { icon: 'tabler-circle-check', size: 24 }
+      }
+    ]
   },
 
   {

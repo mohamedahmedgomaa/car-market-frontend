@@ -856,7 +856,15 @@ const fieldError = (field) => {
   return []
 }
 
-const safeItemTitle = (obj) => obj?.name?.en ?? obj?.name ?? '-'
+const safeItemTitle = (obj) => {
+  if (!obj || typeof obj !== 'object') return ''
+  const name = obj.name ?? obj.title
+  if (name && typeof name === 'object') {
+    if (name.ar && name.en) return `${name.ar} (${name.en})`
+    return name.ar || name.en || Object.values(name)[0] || ''
+  }
+  return String(name ?? '')
+}
 
 /* ================= Loaders ================= */
 const loadModels = async (keepCurrent = false) => {
@@ -902,9 +910,9 @@ const loadGovernorates = async (keepCurrent = false) => {
   }
 
   if (keepCurrent && current) {
-    const exists = governorates.value.some(g => g.id === current)
-    form.value.governorate_id = exists ? current : null
-  } else {
+    const exists = governorates.value.some(g => String(g.id) === String(current))
+    form.value.governorate_id = exists ? (Number(current) || current) : current
+  } else if (!keepCurrent) {
     form.value.governorate_id = null
     if (governorates.value.length > 0) {
       focusNext(refGovernorate.value)
@@ -928,9 +936,9 @@ const loadCities = async (keepCurrent = false) => {
   }
 
   if (keepCurrent && current) {
-    const exists = cities.value.some(c => c.id === current)
-    form.value.city_id = exists ? current : null
-  } else {
+    const exists = cities.value.some(c => String(c.id) === String(current))
+    form.value.city_id = exists ? (Number(current) || current) : current
+  } else if (!keepCurrent) {
     form.value.city_id = null
     if (cities.value.length > 0) {
       focusNext(refCity.value)
@@ -1089,16 +1097,32 @@ const loadCar = async () => {
   form.value.brand_id = car.brand_id
   form.value.model_id = car.model_id
 
-  form.value.country_id = car.country_id
-  form.value.governorate_id = car.governorate_id
-  form.value.city_id = car.city_id
+  form.value.country_id = car.country_id || car.country?.id || car.city?.country_id || 1
+  form.value.governorate_id = car.governorate_id || car.governorate?.id || car.city?.governorate_id || null
+  form.value.city_id = car.city_id || car.city?.id || null
 
   // ✅ load dependent lists WITHOUT wiping selected values
   await Promise.all([
     loadModels(true),
     loadGovernorates(true),
   ])
+
+  // If governorate was missing on car but city has it, make sure governorate is set and list loaded
+  if (!form.value.governorate_id && car.city?.governorate_id) {
+    form.value.governorate_id = car.city.governorate_id
+    await loadGovernorates(true)
+  }
+
+  // Pre-seed governorate/city objects into lists if returned by car API to ensure they are available
+  if (car.governorate && !governorates.value.some(g => String(g.id) === String(car.governorate.id))) {
+    governorates.value.unshift(car.governorate)
+  }
+
   await loadCities(true)
+
+  if (car.city && !cities.value.some(c => String(c.id) === String(car.city.id))) {
+    cities.value.unshift(car.city)
+  }
 
   const descText = (car.description?.en || '') + ' ' + (car.description?.ar || '') + ' ' + (typeof car.description === 'string' ? car.description : '')
   const extractSpecTag = (text, key) => {
@@ -1271,6 +1295,10 @@ const handleSubmit = async () => {
         return
       }
 
+      if (key === 'youtube_url' || key === 'instagram_url') {
+        return
+      }
+
       if (typeof value === 'boolean') {
         fd.append(key, value ? '1' : '0')
         return
@@ -1278,6 +1306,10 @@ const handleSubmit = async () => {
 
       if (value !== null && value !== '') fd.append(key, value)
     })
+
+    // Explicitly send video & social links (allows updating or clearing)
+    fd.append('youtube_url', form.value.youtube_url ? String(form.value.youtube_url).trim() : '')
+    fd.append('instagram_url', form.value.instagram_url ? String(form.value.instagram_url).trim() : '')
 
     // keep old images in current order
     keepImages.value = existingImages.value.map(i => i.id)
@@ -1455,7 +1487,7 @@ const handleSubmit = async () => {
 
           <VRow dense>
             <VCol cols="12" md="4">
-              <VSelect
+              <VAutocomplete
                 ref="refCountry"
                 v-model="form.country_id"
                 :items="countries"
@@ -1471,7 +1503,7 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12" md="4">
-              <VSelect
+              <VAutocomplete
                 ref="refGovernorate"
                 v-model="form.governorate_id"
                 :items="governorates"
@@ -1488,7 +1520,7 @@ const handleSubmit = async () => {
             </VCol>
 
             <VCol cols="12" md="4">
-              <VSelect
+              <VAutocomplete
                 ref="refCity"
                 v-model="form.city_id"
                 :items="cities"

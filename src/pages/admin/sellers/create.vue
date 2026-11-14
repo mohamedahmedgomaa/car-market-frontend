@@ -157,25 +157,30 @@ const handleSubmit = async () => {
       formData.append('map_url', finalMapUrl)
     }
 
-    const fb = form.value.facebook_url || form.value.facebook
+    const fb = (form.value.facebook_url || form.value.facebook || '').trim()
     if (fb) {
       formData.append('facebook', fb)
       formData.append('facebook_url', fb)
     }
-    const ig = form.value.instagram_url || form.value.instagram
+    const ig = (form.value.instagram_url || form.value.instagram || '').trim()
     if (ig) {
       formData.append('instagram', ig)
       formData.append('instagram_url', ig)
     }
-    const tt = form.value.tiktok_url || form.value.tiktok
+    const tt = (form.value.tiktok_url || form.value.tiktok || '').trim()
     if (tt) {
       formData.append('tiktok', tt)
       formData.append('tiktok_url', tt)
     }
-    const yt = form.value.youtube_url || form.value.youtube
+    const yt = (form.value.youtube_url || form.value.youtube || '').trim()
     if (yt) {
       formData.append('youtube', yt)
       formData.append('youtube_url', yt)
+    }
+    const web = (form.value.website_url || form.value.website || '').trim()
+    if (web) {
+      formData.append('website', web)
+      formData.append('website_url', web)
     }
 
     await sellerAdminApi.create(formData)

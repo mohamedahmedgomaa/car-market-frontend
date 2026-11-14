@@ -22,5 +22,8 @@ export default {
   },
   updateStatus(id, payload) {
     return api.patch(`/admin/cars/${id}/status`, payload)
+  },
+  bulkUpdateStatus(payload) {
+    return api.post('/admin/cars/bulk-status', payload)
   }
 }

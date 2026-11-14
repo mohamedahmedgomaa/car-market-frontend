@@ -593,6 +593,17 @@ const stats = computed(() => {
         </VBtn>
 
         <VBtn
+          color="warning"
+          variant="tonal"
+          prepend-icon="tabler-shield-check"
+          size="large"
+          class="font-weight-bold px-5 me-2"
+          @click="$router.push('/admin/cars/approvals')"
+        >
+          موافقة واعتماد سيارات البائعين
+        </VBtn>
+
+        <VBtn
           color="primary"
           prepend-icon="tabler-circle-plus"
           size="large"

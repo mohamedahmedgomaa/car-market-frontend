@@ -869,7 +869,15 @@ onMounted(async () => {
 })
 
 /* ================= Loaders ================= */
-const safeItemTitle = (obj) => obj?.name?.en ?? obj?.name ?? '-'
+const safeItemTitle = (obj) => {
+  if (!obj || typeof obj !== 'object') return ''
+  const name = obj.name ?? obj.title
+  if (name && typeof name === 'object') {
+    if (name.ar && name.en) return `${name.ar} (${name.en})`
+    return name.ar || name.en || Object.values(name)[0] || ''
+  }
+  return String(name ?? '')
+}
 
 const loadModels = async () => {
   form.value.model_id = null
@@ -1042,7 +1050,9 @@ const handleSubmit = async () => {
         formData.append('description_en', descEn)
         return
       }
-      if (key === 'is_import') {
+      if (key === 'youtube_url' || key === 'instagram_url') {
+        return
+      } else if (key === 'is_import') {
         formData.append('is_import', String(value ?? '0'))
       } else if (key === 'images' && Array.isArray(value)) {
         value.forEach(file => formData.append('images[]', file))
@@ -1054,6 +1064,10 @@ const handleSubmit = async () => {
         formData.append(key, value)
       }
     })
+
+    // Explicitly send video links
+    if (form.value.youtube_url) formData.append('youtube_url', String(form.value.youtube_url).trim())
+    if (form.value.instagram_url) formData.append('instagram_url', String(form.value.instagram_url).trim())
 
     upload360Ref.value?.appendFormData(formData)
 
