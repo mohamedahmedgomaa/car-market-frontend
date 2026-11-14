@@ -10,7 +10,7 @@ import logoDark from '@images/logo/logo-dark.png'
 import logoLight from '@images/logo/logo-light.png'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 
-// ✅ 3D Car Inspection Dialog (Lazy Loaded On-Demand)
+// ✅ 3D / 360 Car Inspection Dialog (Lazy Loaded On-Demand)
 const Car3DInspectionDialog = defineAsyncComponent(() =>
   import('@/components/dialogs/Car3DInspectionDialog.vue'),
 )
@@ -18,6 +18,14 @@ const show3DDialog = ref(false)
 const open3DViewer = () => {
   show3DDialog.value = true
 }
+
+const has360Or3D = computed(() => {
+  if (!car.value) return false
+  const hasExt = Array.isArray(car.value.exterior_360_images) && car.value.exterior_360_images.length > 0
+  const hasInt = !!car.value.interior_360_url
+  const has3D = !!(car.value.model_3d_url || car.value.model?.model_3d_url)
+  return hasExt || hasInt || has3D
+})
 
 definePage({
   meta: {
@@ -1002,15 +1010,16 @@ watch(
               <span>Click to enlarge</span>
             </div>
 
-            <!-- ✅ 3D Interactive Inspection Button -->
+            <!-- ✅ 360° & 3D Interactive Inspection Button -->
             <button
+              v-if="has360Or3D"
               class="view-3d-floating-btn"
               type="button"
-              aria-label="3D View & Inspection"
+              aria-label="360 View & Inspection"
               @click.prevent.stop="open3DViewer"
             >
-              <VIcon icon="tabler-cube-3d-sphere" size="20" class="me-1 animate-spin-slow" />
-              <span>{{ $i18n.locale === 'ar' ? 'فحص ومعاينة 3D' : '3D Inspection' }}</span>
+              <VIcon icon="tabler-view-360" size="20" class="me-1 animate-spin-slow" />
+              <span>{{ $i18n.locale === 'ar' ? 'معاينة وفحص 360°' : '360° Inspection' }}</span>
             </button>
 
             <button class="fav-float" type="button" aria-label="Favorite" @click.prevent.stop="toggleFavorite">
