@@ -42,16 +42,22 @@ api.interceptors.request.use((config) => {
     return config
   }
 
-  // 2) تحديد التوكن حسب المسار
+  // 2) تحديد التوكن حسب المسار المعزول لكل دور (Admin / Seller / User)
   let token = null
-  if (url.startsWith("/admin/")) token = localStorage.getItem("admin_token")
-  else if (url.startsWith("/seller/")) token = localStorage.getItem("seller_token")
-  else token = localStorage.getItem("user_token") || localStorage.getItem("seller_token") // default user / seller
+  if (url.startsWith("/admin/")) {
+    token = localStorage.getItem("admin_token")
+  } else if (url.startsWith("/seller/")) {
+    token = localStorage.getItem("seller_token")
+  } else {
+    token = localStorage.getItem("user_token") || localStorage.getItem("seller_token")
+  }
 
-  // 3) إرسال التوكن إذا وُجد
-  // 3) إرسال التوكن إذا وُجد
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  else delete config.headers.Authorization
+  // 3) إرسال التوكن إذا وُجد وتجاهل أي توكن وهمي mock
+  if (token && !token.startsWith("mock_")) {
+    config.headers.Authorization = `Bearer ${token}`
+  } else {
+    delete config.headers.Authorization
+  }
 
   return config
 })
@@ -71,32 +77,30 @@ api.interceptors.response.use(
         return Promise.reject(error)
       }
 
-      // Determine which auth type failed and redirect accordingly
+      // Determine which auth type failed and clean ONLY its own state
       const currentPath = typeof window !== "undefined" ? window.location.pathname : ""
 
       if (url.startsWith("/admin/")) {
-        // Only redirect to /admin/login if the user is actually inside the admin section
-        if (currentPath.startsWith("/admin")) {
-          const token = localStorage.getItem("admin_token")
-          if (token && token.startsWith("mock_")) {
-            return Promise.reject(error)
-          }
-          localStorage.removeItem("admin_token")
-          localStorage.removeItem("admin_data")
+        localStorage.removeItem("admin_token")
+        localStorage.removeItem("admin_data")
+        if (currentPath.startsWith("/admin") && currentPath !== "/admin/login") {
           window.location.href = "/admin/login"
         }
         return Promise.reject(error)
       } else if (url.startsWith("/seller/")) {
-        // Only redirect to /seller/login if the user is actually inside the seller section
-        if (currentPath.startsWith("/seller")) {
-          localStorage.removeItem("seller_token")
-          localStorage.removeItem("seller_data")
+        localStorage.removeItem("seller_token")
+        localStorage.removeItem("seller_data")
+        if (currentPath.startsWith("/seller") && currentPath !== "/seller/login") {
           window.location.href = "/seller/login"
         }
         return Promise.reject(error)
       } else {
         localStorage.removeItem("user_token")
         localStorage.removeItem("user_data")
+        if (currentPath.startsWith("/user") && currentPath !== "/login") {
+          window.location.href = "/login"
+        }
+        return Promise.reject(error)
       }
     }
     return Promise.reject(error)

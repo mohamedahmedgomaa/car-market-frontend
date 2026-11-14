@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useUserAuth } from '@/stores/userAuth'
 import { useSellerAuth } from '@/stores/sellerAuth'
 import { useAdminAuth } from '@/stores/adminAuth'
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 
 const router = useRouter()
 const adminAuth = useAdminAuth()
@@ -22,6 +22,18 @@ const userData = computed(() => {
   if (currentRole.value === 'admin') return adminAuth.admin
   if (currentRole.value === 'seller') return sellerAuth.seller
   return userAuth.user
+})
+
+onMounted(async () => {
+  try {
+    if (currentRole.value === 'admin' && adminAuth.token) {
+      await adminAuth.fetchMe()
+    } else if (currentRole.value === 'seller' && sellerAuth.token) {
+      await sellerAuth.fetchMe()
+    }
+  } catch (e) {
+    // handled gracefully
+  }
 })
 
 const handleLogout = async () => {
@@ -72,10 +84,10 @@ const handleLogout = async () => {
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              {{ userData?.name || 'User' }}
+              {{ userData?.name || (currentRole === 'admin' ? 'Admin Negm' : currentRole === 'seller' ? 'Seller Negm' : 'User') }}
             </VListItemTitle>
-            <VListItemSubtitle class="text-uppercase text-caption">
-              {{ currentRole }}
+            <VListItemSubtitle class="text-caption font-weight-bold">
+              {{ currentRole === 'admin' ? 'مدير النظام (Admin)' : currentRole === 'seller' ? 'بائع معتمد (Seller)' : 'مستخدم (User)' }}
             </VListItemSubtitle>
           </VListItem>
 
@@ -86,7 +98,13 @@ const handleLogout = async () => {
               <template #prepend>
                 <VIcon class="me-2" icon="tabler-dashboard" size="22" />
               </template>
-              <VListItemTitle>Dashboard</VListItemTitle>
+              <VListItemTitle>لوحة التحكم</VListItemTitle>
+            </VListItem>
+            <VListItem to="/admin/cars" link>
+              <template #prepend>
+                <VIcon class="me-2" icon="tabler-car" size="22" />
+              </template>
+              <VListItemTitle>إدارة السيارات</VListItemTitle>
             </VListItem>
           </template>
 
@@ -95,7 +113,13 @@ const handleLogout = async () => {
               <template #prepend>
                 <VIcon class="me-2" icon="tabler-dashboard" size="22" />
               </template>
-              <VListItemTitle>Dashboard</VListItemTitle>
+              <VListItemTitle>لوحة التحكم</VListItemTitle>
+            </VListItem>
+            <VListItem to="/seller/cars" link>
+              <template #prepend>
+                <VIcon class="me-2" icon="tabler-car" size="22" />
+              </template>
+              <VListItemTitle>سياراتي</VListItemTitle>
             </VListItem>
           </template>
 
@@ -104,24 +128,17 @@ const handleLogout = async () => {
               <template #prepend>
                 <VIcon class="me-2" icon="tabler-user" size="22" />
               </template>
-              <VListItemTitle>Profile</VListItemTitle>
+              <VListItemTitle>الملف الشخصي</VListItemTitle>
             </VListItem>
           </template>
-
-          <VListItem link>
-            <template #prepend>
-              <VIcon class="me-2" icon="tabler-settings" size="22" />
-            </template>
-            <VListItemTitle>Settings</VListItemTitle>
-          </VListItem>
 
           <VDivider class="my-2" />
 
           <VListItem @click.stop.prevent="handleLogout">
             <template #prepend>
-              <VIcon class="me-2" icon="tabler-logout" size="22" />
+              <VIcon class="me-2" icon="tabler-logout" size="22" color="error" />
             </template>
-            <VListItemTitle>Logout</VListItemTitle>
+            <VListItemTitle class="text-error">تسجيل الخروج</VListItemTitle>
           </VListItem>
         </VList>
       </VMenu>

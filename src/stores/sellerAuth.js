@@ -39,6 +39,26 @@ export const useSellerAuth = defineStore('sellerAuth', {
       return res
     },
 
+    async fetchMe() {
+      if (!this.token) {
+        await this.logout()
+        return null
+      }
+
+      try {
+        const res = await sellerApi.me()
+        this.seller = res.data.data
+        this.user = this.seller
+        localStorage.setItem('seller_data', JSON.stringify(this.seller))
+        return this.seller
+      } catch (err) {
+        if (err.response?.status === 401) {
+          await this.logout()
+        }
+        return null
+      }
+    },
+
     async logout() {
       try {
         await sellerApi.logout()
