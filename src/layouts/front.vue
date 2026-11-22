@@ -11,7 +11,7 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
     <div class="bg-glow"></div>
     <Navbar :active-id="activeSectionId" />
 
-    <main style="margin-top: 90px">
+    <main style="margin-top: 76px">
       <RouterView v-slot="{ Component }">
         <!-- نخلي الصفحة تبعت للـ Layout الـ activeSectionId -->
         <Component :is="Component" v-if="Component" v-model:activeSectionId="activeSectionId" />
@@ -24,9 +24,9 @@ const activeSectionId = ref() // هنمرره للـ Navbar لو محتاج
 
 <style lang="scss">
 main {
-  margin-top: 90px;
+  margin-top: 76px;
   @media (max-width: 600px) {
-    margin-top: 68px !important;
+    margin-top: 64px !important;
   }
 }
 
@@ -34,7 +34,7 @@ main {
   background: linear-gradient(180deg, #F1F3F7 0%, #E8ECF2 100%) !important;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 .v-theme--light .bg-glow {
   opacity: 0.18 !important;
@@ -48,7 +48,7 @@ main {
   background: #0b0d14 !important;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 .v-theme--dark .bg-glow {
   opacity: 0.2 !important;
@@ -60,7 +60,7 @@ main {
 .landing-page-wrapper {
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
 
   .v-container {
     max-width: 1340px !important;

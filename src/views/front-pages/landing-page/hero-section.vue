@@ -393,6 +393,23 @@ const resetFilters = () => {
 }
 
 /* =========================
+   ✅ Hero UI state
+========================= */
+const showAdvanced = ref(false)
+
+const activeAdvancedCount = computed(() => {
+  const f = filters.value
+  return [f.brandId, f.modelId, f.priceFrom, f.priceTo, f.yearFrom, f.yearTo, f.kmMin, f.kmMax]
+    .filter(v => v !== null && v !== undefined && String(v).trim() !== '').length
+})
+
+const trustItems = computed(() => [
+  { icon: 'tabler-circle-check-filled', text: t('trustVerifiedSellers') },
+  { icon: 'tabler-circle-check-filled', text: t('trustReviewedAds') },
+  { icon: 'tabler-circle-check-filled', text: t('trustFreeBrowsing') },
+])
+
+/* =========================
    ✅ Data Fetching
 ========================= */
 const brandsList = ref([])
@@ -875,262 +892,301 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section id="home" class="hero" :class="theme.current.value.dark ? 'hero--dark' : 'hero--light'">
+  <section id="home" class="hero" :class="isDark ? 'hero--dark' : 'hero--light'">
+    <!-- Decorative background -->
+    <div class="hero__bg" aria-hidden="true">
+      <span class="hero__glow hero__glow--1" />
+      <span class="hero__glow hero__glow--2" />
+      <span class="hero__grid" />
+    </div>
+
     <VContainer class="hero__container">
-      <!-- Main Content Grid -->
       <div class="hero-main-grid">
-        <!-- Left: Search Card -->
+        <!-- Start: Headline + Search -->
         <div class="hero-search-area animate-fade-in-up">
-          <VCard class="premium-search-card" elevation="10" style="animation-delay: 0.1s">
-            <!-- Top Chip & Reset -->
-            <div class="d-flex align-center justify-space-between mb-4">
-              <VChip label color="primary" class="font-weight-bold" size="x-small" variant="flat">
-                {{ t('welcomeToNegmCars') }}
-              </VChip>
+          <span class="hero-eyebrow">
+            <VIcon icon="tabler-rosette-discount-check" size="16" />
+            {{ t('heroEyebrow') }}
+          </span>
+
+          <h1 class="hero-title">
+            {{ t('heroTitle1') }}
+            <span class="hero-title__accent">{{ t('heroTitleAccent') }}</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            {{ t('heroSubtitle') }}
+          </p>
+
+          <!-- Search Panel -->
+          <div class="search-panel">
+            <!-- Type + Condition + Reset -->
+            <div class="search-panel__top">
+              <div class="premium-toggle-group">
+                <button
+                  v-for="t_type in ['car', 'motorcycle']"
+                  :key="t_type"
+                  type="button"
+                  class="toggle-btn"
+                  :class="{ active: filters.type === t_type }"
+                  @click="filters.type = t_type"
+                >
+                  <VIcon :icon="t_type === 'car' ? 'tabler-car' : 'tabler-motorbike'" size="16" />
+                  {{ t_type === 'car' ? t('cars') : t('bikes') }}
+                </button>
+              </div>
+
+              <div class="premium-toggle-group premium-toggle-group--soft">
+                <button
+                  v-for="c in ['', 'used', 'new']"
+                  :key="c"
+                  type="button"
+                  class="toggle-btn toggle-btn--small"
+                  :class="{ active: filters.condition === c }"
+                  @click="filters.condition = c"
+                >
+                  {{ c === '' ? t('allCondition') : (c === 'used' ? t('usedCondition') : t('newCondition')) }}
+                </button>
+              </div>
 
               <VBtn
-                variant="tonal"
-                color="primary"
+                variant="text"
                 size="small"
-                class="reset-btn-v2"
-                @click="resetFilters"
+                class="reset-btn-v2 ms-auto"
                 icon="tabler-rotate"
+                :title="t('resetAll')"
+                @click="resetFilters"
               />
             </div>
 
-            <!-- ✅ Search Inputs Row: Text Search + Dedicated Ad ID Field -->
-            <div class="mb-5 d-flex gap-2 align-center search-inputs-row w-100">
+            <!-- Main search bar -->
+            <div class="search-bar">
               <VTextField
                 v-model="smartSearch"
                 :placeholder="t('searchPlaceholder')"
+                variant="plain"
                 density="compact"
-                variant="outlined"
                 hide-details
                 prepend-inner-icon="tabler-search"
+                class="search-bar__input search-bar__input--main"
+                :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'"
                 @keydown.enter.prevent="onSearch"
                 @update:model-value="onSmartSearchInput"
-                class="premium-id-input smart-search-input flex-grow-1"
-                :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'"
               />
-
+              <span class="search-bar__divider" />
               <VTextField
                 v-model="adIdSearch"
                 :placeholder="t('adIdPlaceholder')"
+                variant="plain"
                 density="compact"
-                variant="outlined"
                 hide-details
                 prepend-inner-icon="tabler-hash"
                 :loading="isSearchingId"
                 :disabled="isSearchingId"
+                class="search-bar__input search-bar__input--id"
+                dir="ltr"
                 @keydown.enter.prevent="onAdIdSearch"
                 @update:model-value="onAdIdInput"
-                class="premium-id-input ad-id-search-input"
-                dir="ltr"
               />
-            </div>
-
-            <!-- Header Row with Title and Reset -->
-
-            <div class="search-form-grid">
-              <!-- Type Toggle -->
-              <div class="form-group">
-                <label class="group-label">{{ t('vehicleType') }}</label>
-                <div class="premium-toggle-group">
-                  <button
-                    v-for="t_type in ['car', 'motorcycle']"
-                    :key="t_type"
-                    class="toggle-btn"
-                    :class="{ active: filters.type === t_type }"
-                    @click="filters.type = t_type"
-                  >
-                    {{ t_type === 'car' ? t('cars') : t('bikes') }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Condition Toggle -->
-              <div class="form-group">
-                <label class="group-label">{{ t('condition') }}</label>
-                <div class="premium-toggle-group">
-                  <button
-                    v-for="c in ['', 'used', 'new']"
-                    :key="c"
-                    class="toggle-btn toggle-btn--small"
-                    :class="{ active: filters.condition === c }"
-                    @click="filters.condition = c"
-                  >
-                    {{ c === '' ? t('allCondition') : (c === 'used' ? t('usedCondition') : t('newCondition')) }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Brand & Model Trigger Pickers (Matching Cars Page Modals) -->
-              <div class="form-group">
-                <div
-                  class="filter-trigger-btn"
-                  :class="{ 'has-value': !!filters.brandId }"
-                  @click="openBrandDialog"
-                >
-                  <div class="filter-trigger-content">
-                    <div class="filter-trigger-texts">
-                      <span class="filter-trigger-label">{{ t('brand') }}</span>
-                      <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
-                    </div>
-                  </div>
-                  <VIcon
-                    v-if="filters.brandId"
-                    icon="tabler-x"
-                    size="16"
-                    class="filter-trigger-clear"
-                    @click.stop="clearBrand"
-                  />
-                  <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <div
-                  class="filter-trigger-btn"
-                  :class="{ 'has-value': !!filters.modelId, 'is-disabled': !filters.brandId }"
-                  @click="openModelDialog"
-                >
-                  <div class="filter-trigger-content">
-                    <div class="filter-trigger-texts">
-                      <span class="filter-trigger-label">{{ t('model') }}</span>
-                      <span class="filter-trigger-value">
-                        {{ selectedModelName || (filters.brandId ? t('all') : (locale === 'ar' ? 'اختر الماركة أولاً' : 'Select brand')) }}
-                      </span>
-                    </div>
-                  </div>
-                  <VIcon
-                    v-if="filters.modelId"
-                    icon="tabler-x"
-                    size="16"
-                    class="filter-trigger-clear"
-                    @click.stop="clearModel"
-                  />
-                  <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
-                </div>
-              </div>
-
-              <!-- Price Range -->
-              <div class="form-group">
-                <VTextField
-                  v-model="displayPriceFrom"
-                  :label="t('minPrice')"
-                  prefix="EG"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="premium-input no-spin"
-                  inputmode="numeric"
-                  @keypress="isNumberKey"
-                  @keyup.enter="focusNext(priceToInput)"
-                  maxlength="11"
-                />
-              </div>
-
-              <div class="form-group">
-                <VTextField
-                  ref="priceToInput"
-                  v-model="displayPriceTo"
-                  :label="t('maxPrice')"
-                  prefix="EG"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="premium-input no-spin"
-                  inputmode="numeric"
-                  @keypress="isNumberKey"
-                  maxlength="11"
-                />
-              </div>
-
-              <!-- Year Range -->
-              <div class="form-group">
-                <VSelect
-                  v-model="filters.yearFrom"
-                  :items="safeYearsList"
-                  :label="t('fromYear')"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="premium-input"
-                />
-              </div>
-
-              <div class="form-group">
-                <VSelect
-                  ref="yearToSelect"
-                  v-model="filters.yearTo"
-                  v-model:menu="isYearToMenuOpen"
-                  :items="yearsToList"
-                  :label="t('toYear')"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="premium-input"
-                />
-              </div>
-
-              <!-- Kilometers Range -->
-              <div class="form-group">
-                <VTextField
-                  ref="kmMinInput"
-                  v-model="displayKmMin"
-                  :label="t('minKM')"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="premium-input no-spin"
-                  inputmode="numeric"
-                  @keypress="isNumberKey"
-                  @keyup.enter="focusNext(kmMaxInput)"
-                  maxlength="7"
-                />
-              </div>
-              <div class="form-group">
-                <VTextField
-                  ref="kmMaxInput"
-                  v-model="displayKmMax"
-                  :label="t('maxKM')"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="premium-input no-spin"
-                  inputmode="numeric"
-                  @keypress="isNumberKey"
-                  @keyup.enter="onSearch"
-                  maxlength="7"
-                />
-              </div>
-            </div>
-
-            <!-- Action Buttons Row -->
-            <div class="search-actions-row mt-6 d-flex gap-3">
               <VBtn
                 color="primary"
                 height="48"
-                class="search-main-btn flex-grow-1"
-                @click="onSearch"
+                class="search-main-btn"
                 prepend-icon="tabler-search"
-                elevation="4"
+                @click="onSearch"
               >
                 {{ t('searchBtn') }}
               </VBtn>
-              <VBtn
-                variant="tonal"
-                color="warning"
-                class="sell-side-btn"
-                width="100"
-                height="48"
-                to="/user/sell"
-                prepend-icon="tabler-circle-plus"
-              >
-                {{ t('sellBtn') }}
-              </VBtn>
             </div>
-          </VCard>
+
+            <!-- Advanced filters toggle -->
+            <button
+              type="button"
+              class="advanced-toggle"
+              :aria-expanded="showAdvanced"
+              @click="showAdvanced = !showAdvanced"
+            >
+              <VIcon icon="tabler-adjustments-horizontal" size="16" />
+              <span>{{ showAdvanced ? t('lessFilters') : t('moreFilters') }}</span>
+              <span v-if="activeAdvancedCount" class="advanced-toggle__count">{{ activeAdvancedCount }}</span>
+              <VIcon
+                icon="tabler-chevron-down"
+                size="16"
+                class="advanced-toggle__chevron"
+                :class="{ 'is-open': showAdvanced }"
+              />
+            </button>
+
+            <VExpandTransition>
+              <div v-show="showAdvanced" class="search-form-grid">
+                <!-- Brand -->
+                <div class="form-group">
+                  <div
+                    class="filter-trigger-btn"
+                    :class="{ 'has-value': !!filters.brandId }"
+                    @click="openBrandDialog"
+                  >
+                    <div class="filter-trigger-content">
+                      <div class="filter-trigger-texts">
+                        <span class="filter-trigger-label">{{ t('brand') }}</span>
+                        <span class="filter-trigger-value">{{ selectedBrandName || t('all') }}</span>
+                      </div>
+                    </div>
+                    <VIcon
+                      v-if="filters.brandId"
+                      icon="tabler-x"
+                      size="16"
+                      class="filter-trigger-clear"
+                      @click.stop="clearBrand"
+                    />
+                    <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
+                  </div>
+                </div>
+
+                <!-- Model -->
+                <div class="form-group">
+                  <div
+                    class="filter-trigger-btn"
+                    :class="{ 'has-value': !!filters.modelId, 'is-disabled': !filters.brandId }"
+                    @click="openModelDialog"
+                  >
+                    <div class="filter-trigger-content">
+                      <div class="filter-trigger-texts">
+                        <span class="filter-trigger-label">{{ t('model') }}</span>
+                        <span class="filter-trigger-value">
+                          {{ selectedModelName || (filters.brandId ? t('all') : (locale === 'ar' ? 'اختر الماركة أولاً' : 'Select brand')) }}
+                        </span>
+                      </div>
+                    </div>
+                    <VIcon
+                      v-if="filters.modelId"
+                      icon="tabler-x"
+                      size="16"
+                      class="filter-trigger-clear"
+                      @click.stop="clearModel"
+                    />
+                    <VIcon v-else icon="tabler-chevron-down" size="16" class="filter-trigger-arrow" />
+                  </div>
+                </div>
+
+                <!-- Price -->
+                <div class="form-group">
+                  <VTextField
+                    v-model="displayPriceFrom"
+                    :label="t('minPrice')"
+                    prefix="EG"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input no-spin"
+                    inputmode="numeric"
+                    maxlength="11"
+                    @keypress="isNumberKey"
+                    @keyup.enter="focusNext(priceToInput)"
+                  />
+                </div>
+                <div class="form-group">
+                  <VTextField
+                    ref="priceToInput"
+                    v-model="displayPriceTo"
+                    :label="t('maxPrice')"
+                    prefix="EG"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input no-spin"
+                    inputmode="numeric"
+                    maxlength="11"
+                    @keypress="isNumberKey"
+                  />
+                </div>
+
+                <!-- Year -->
+                <div class="form-group">
+                  <VSelect
+                    v-model="filters.yearFrom"
+                    :items="safeYearsList"
+                    :label="t('fromYear')"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input"
+                  />
+                </div>
+                <div class="form-group">
+                  <VSelect
+                    ref="yearToSelect"
+                    v-model="filters.yearTo"
+                    v-model:menu="isYearToMenuOpen"
+                    :items="yearsToList"
+                    :label="t('toYear')"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input"
+                  />
+                </div>
+
+                <!-- KM -->
+                <div class="form-group">
+                  <VTextField
+                    ref="kmMinInput"
+                    v-model="displayKmMin"
+                    :label="t('minKM')"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input no-spin"
+                    inputmode="numeric"
+                    maxlength="7"
+                    @keypress="isNumberKey"
+                    @keyup.enter="focusNext(kmMaxInput)"
+                  />
+                </div>
+                <div class="form-group">
+                  <VTextField
+                    ref="kmMaxInput"
+                    v-model="displayKmMax"
+                    :label="t('maxKM')"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    class="premium-input no-spin"
+                    inputmode="numeric"
+                    maxlength="7"
+                    @keypress="isNumberKey"
+                    @keyup.enter="onSearch"
+                  />
+                </div>
+              </div>
+            </VExpandTransition>
+          </div>
+
+          <!-- Trust row + sell link -->
+          <div class="hero-trust">
+            <div
+              v-for="item in trustItems"
+              :key="item.text"
+              class="hero-trust__item"
+            >
+              <VIcon :icon="item.icon" size="18" />
+              <span>{{ item.text }}</span>
+            </div>
+          </div>
+
+          <RouterLink
+            to="/user/sell"
+            class="hero-sell-link"
+            :class="{ 'hero-sell-link--ltr': locale !== 'ar' }"
+          >
+            <VIcon icon="tabler-circle-plus" size="18" />
+            <span>{{ t('heroSellLink') }}</span>
+            <VIcon
+              :icon="locale === 'ar' ? 'tabler-arrow-narrow-left' : 'tabler-arrow-narrow-right'"
+              size="18"
+              class="hero-sell-link__arrow"
+            />
+          </RouterLink>
         </div>
 
         <!-- Right: Ads Column -->
@@ -1495,41 +1551,92 @@ onBeforeUnmount(() => {
 </template>
 
 <style lang="scss" scoped>
+/* =========================================
+   HERO — Layout & background
+   ========================================= */
 .hero {
-  padding-block: 14px 36px;
-  min-height: auto;
-  display: flex;
-  align-items: center;
+  --hero-accent: #ff6b00;
+  --hero-accent-2: #ff3e1d;
+  --hero-text: rgba(var(--v-theme-on-surface), 0.95);
+  --hero-muted: rgba(var(--v-theme-on-surface), 0.62);
+  --hero-line: rgba(var(--v-theme-on-surface), 0.1);
+  --hero-surface: rgba(var(--v-theme-on-surface), 0.035);
+
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  padding-block: 28px 48px;
 }
 
 .hero__container {
-  padding-top: 4px !important;
+  position: relative;
+  z-index: 2;
+  max-width: 1340px !important;
+  padding-top: 8px !important;
 }
 
-.hero--dark {
-  background: transparent;
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
 }
 
-/* Main Grid */
+.hero__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+}
+
+.hero__glow--1 {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.35), transparent 70%);
+  inset-block-start: -220px;
+  inset-inline-start: -120px;
+}
+
+.hero__glow--2 {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(255, 62, 29, 0.18), transparent 70%);
+  inset-block-end: -200px;
+  inset-inline-end: 10%;
+}
+
+.hero__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(var(--v-theme-on-surface), 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 60% at 30% 30%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 30% 30%, #000 30%, transparent 75%);
+}
+
 .hero-main-grid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 32px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 40px;
   align-items: stretch;
   width: 100%;
 }
 
 .hero-search-area {
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
 .hero-ads-column {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   height: 100%;
+  min-width: 0;
 }
 
 .hero-ad-area,
@@ -1538,236 +1645,348 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-/* Search Card */
-.premium-search-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  border-radius: 32px !important;
-  padding: 28px !important;
-  height: 100%;
+/* =========================================
+   HERO — Headline
+   ========================================= */
+.hero-eyebrow {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--hero-accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-block-end: 18px;
+}
+
+.hero-title {
+  margin: 0 0 14px;
+  color: var(--hero-text);
+  font-size: clamp(1.9rem, 1.2rem + 2.4vw, 3.1rem);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.hero-title__accent {
+  background: linear-gradient(135deg, var(--hero-accent) 0%, #ffb547 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  max-width: 560px;
+  margin: 0 0 26px;
+  color: var(--hero-muted);
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+/* =========================================
+   HERO — Search panel
+   ========================================= */
+.search-panel {
+  padding: 18px;
+  border: 1px solid var(--hero-line);
+  border-radius: 24px;
+  background: rgba(var(--v-theme-surface), 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.search-panel__top {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-block-end: 14px;
+}
+
+/* Segmented toggles */
+.premium-toggle-group {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--hero-line);
+  border-radius: 14px;
+  background: var(--hero-surface);
+}
+
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--hero-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+
+  &.active {
+    background: linear-gradient(135deg, var(--hero-accent) 0%, var(--hero-accent-2) 100%);
+    box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+    color: #fff;
+  }
+
+  &:hover:not(.active) {
+    background: rgba(var(--v-theme-on-surface), 0.06);
+    color: var(--hero-text);
+  }
+}
+
+.premium-toggle-group--soft .toggle-btn.active {
+  background: rgba(255, 107, 0, 0.14);
+  box-shadow: none;
+  color: var(--hero-accent);
+}
+
+.toggle-btn--small {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 0.8rem;
+}
+
+.reset-btn-v2 {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  border: 1px solid var(--hero-line) !important;
+  border-radius: 12px !important;
+  color: var(--hero-muted) !important;
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(var(--v-theme-primary), 0.3) !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 107, 0, 0.4) !important;
+    color: var(--hero-accent) !important;
+    transform: rotate(-180deg);
   }
 }
 
-/* Welcome Chip */
-:deep(.v-chip.v-chip--variant-flat) {
-  background: rgba(255, 107, 0, 0.12) !important;
-  color: #FF6B00 !important;
-  border: 1px solid rgba(255, 107, 0, 0.25) !important;
-  font-size: 11px !important;
-  letter-spacing: 0.5px;
-  border-radius: 8px !important;
+/* Main search bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  padding-inline-start: 8px;
+  border: 1.5px solid var(--hero-line);
+  border-radius: 18px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:focus-within {
+    border-color: rgba(255, 107, 0, 0.6);
+    box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.12);
+  }
 }
 
-/* Search by ID Input */
-.premium-id-input :deep(.v-field) {
-  border-radius: 16px !important;
-  background: rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  height: 44px !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.search-bar__input {
+  min-width: 0;
+
+  :deep(.v-field) {
+    align-items: center !important;
+    --v-field-padding-top: 0px !important;
+    --v-field-padding-bottom: 0px !important;
+  }
+
+  :deep(.v-field__input) {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 44px !important;
+    padding-block: 0 !important;
+    color: var(--hero-text) !important;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  :deep(.v-field__prepend-inner) {
+    display: flex !important;
+    align-self: center !important;
+    align-items: center !important;
+    padding-block: 0 !important;
+    padding-inline-end: 8px !important;
+  }
+
+  :deep(.v-field__prepend-inner .v-icon) {
+    color: var(--hero-accent) !important;
+    opacity: 0.95;
+  }
 }
 
-.premium-id-input :deep(.v-field__input) {
-  font-size: 0.9rem !important;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #fff !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  min-height: 44px !important;
+.search-bar__input--main {
+  flex: 1 1 auto;
 }
 
-.premium-id-input :deep(.v-field--focused) {
-  background: rgba(0, 0, 0, 0.35) !important;
-  border-color: #FF6B00 !important;
-  box-shadow: 0 0 15px rgba(255, 107, 0, 0.25) !important;
+.search-bar__input--id {
+  flex: 0 0 150px;
 }
 
-.premium-id-input :deep(.v-icon) {
-  color: #FF6B00;
-  opacity: 0.8;
-  transition: all 0.2s;
-}
-
-.premium-id-input :deep(.v-field--focused .v-icon) {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-.ad-id-search-input {
-  width: 140px;
-  min-width: 115px;
-  max-width: 155px;
+.search-bar__divider {
+  width: 1px;
+  height: 28px;
   flex-shrink: 0;
+  background: var(--hero-line);
 }
 
-.ad-id-search-input :deep(.v-field__input) {
-  font-family: inherit;
-  font-size: 0.85rem !important;
-}
+.search-main-btn {
+  flex-shrink: 0;
+  padding-inline: 28px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, var(--hero-accent) 0%, var(--hero-accent-2) 100%) !important;
+  box-shadow: 0 8px 22px rgba(255, 107, 0, 0.35) !important;
+  color: #fff !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
 
-@media (max-width: 600px) {
-  .ad-id-search-input {
-    width: 115px !important;
-    min-width: 100px !important;
+  &:hover {
+    box-shadow: 0 12px 28px rgba(255, 107, 0, 0.5) !important;
+    transform: translateY(-1px);
   }
 }
 
-/* Grid Layout for Inputs */
+/* Advanced toggle */
+.advanced-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 12px;
+  padding: 6px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--hero-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--hero-accent);
+  }
+}
+
+.advanced-toggle__count {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--hero-accent);
+  color: #fff;
+  font-size: 0.7rem;
+  place-items: center;
+}
+
+.advanced-toggle__chevron {
+  transition: transform 0.25s ease;
+
+  &.is-open {
+    transform: rotate(180deg);
+  }
+}
+
+/* Advanced grid */
 .search-form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding-block-start: 12px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  min-width: 0;
 }
 
-.group-label {
-  font-size: 10px;
-  font-weight: 850;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-left: 2px;
-  color: rgba(255, 255, 255, 0.45);
+.form-group--full {
+  grid-column: 1 / -1;
 }
 
-/* Toggle Pill Buttons */
-.premium-toggle-group {
-  display: flex;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 14px;
-  padding: 4px;
-  gap: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.toggle-btn {
-  flex: 1;
-  border: 0;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  font-weight: 800;
-  border-radius: 10px;
-  height: 34px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.active {
-    background: linear-gradient(135deg, #FF6B00 0%, #FF3E1D 100%) !important;
-    color: #fff !important;
-    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35) !important;
-    opacity: 1;
-  }
-
-  &:hover:not(.active) {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.03);
-  }
-}
-
-.toggle-btn--small {
-  height: 30px;
-  font-size: 11px;
-}
-
-/* Vuetify Input Fields */
 .premium-input :deep(.v-field) {
-  border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  height: 44px !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-
-  &:hover {
-    border-color: rgba(255, 107, 0, 0.3) !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-  }
+  height: 46px !important;
+  border-radius: 12px !important;
+  background: rgba(var(--v-theme-on-surface), 0.03) !important;
 }
 
 .premium-input :deep(.v-field__input) {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  min-height: 44px !important;
-  font-size: 0.9rem !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+  min-height: 46px !important;
+  padding-block: 0 !important;
+  font-size: 0.88rem !important;
 }
 
-.premium-input :deep(.v-field--focused) {
-  border-color: #FF6B00 !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  box-shadow: 0 0 15px rgba(255, 107, 0, 0.2) !important;
+.premium-input :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.12;
+}
+
+.premium-input :deep(.v-field--focused .v-field__outline) {
+  color: var(--hero-accent);
+  --v-field-border-opacity: 1;
 }
 
 .premium-input :deep(.v-label) {
-  font-size: 0.85rem !important;
-  color: rgba(255, 255, 255, 0.45) !important;
+  font-size: 0.82rem !important;
 }
 
-/* Buttons */
-.search-main-btn {
-  border-radius: 18px !important;
-  font-weight: 850 !important;
-  text-transform: none !important;
-  font-size: 16px !important;
-  letter-spacing: 0.5px;
-  background: linear-gradient(135deg, #FF6B00 0%, #FF3E1D 100%) !important;
-  color: white !important;
-  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.3) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+/* Trust row */
+.hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-block-start: 22px;
+}
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 0, 0.5) !important;
+.hero-trust__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--hero-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  .v-icon {
+    color: #22c55e;
   }
 }
 
-.sell-side-btn {
-  border-radius: 18px !important;
-  font-weight: 800 !important;
-  text-transform: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  color: white !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+.hero-sell-link {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 16px;
+  color: var(--hero-accent);
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-decoration: none;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    transform: translateY(-2px);
+  .hero-sell-link__arrow {
+    transition: transform 0.25s ease;
+  }
+
+  &:hover .hero-sell-link__arrow {
+    transform: translateX(var(--arrow-shift, -4px));
   }
 }
 
-.reset-btn-v2 {
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  border-radius: 12px !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: rgba(255, 255, 255, 0.7) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    background: rgba(255, 107, 0, 0.15) !important;
-    border-color: rgba(255, 107, 0, 0.35) !important;
-    color: #FF6B00 !important;
-    transform: rotate(180deg);
-  }
+.hero-sell-link--ltr {
+  --arrow-shift: 4px;
 }
 
 /* Ad Area */
@@ -2186,114 +2405,51 @@ onBeforeUnmount(() => {
    ✅ LIGHT THEME OVERRIDES
    ========================================= */
 .hero--light {
-  .premium-search-card {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 20px 50px rgba(0, 0, 0, 0.08) !important;
+  .search-panel {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+  }
+
+  .hero__glow {
+    opacity: 0.35;
   }
 
   .premium-ad-card,
   .premium-video-card {
-    background: rgba(255, 255, 255, 0.85) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  }
-
-  .group-label {
-    color: rgba(0, 0, 0, 0.7);
-  }
-
-  .premium-toggle-group {
-    background: rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-  }
-
-  .toggle-btn {
-    color: rgba(0, 0, 0, 0.75);
-    &:hover:not(.active) {
-      color: #000;
-      background: rgba(0, 0, 0, 0.05);
-    }
-  }
-
-  .premium-id-input :deep(.v-field) {
-    background: rgba(0, 0, 0, 0.02) !important;
-    border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  }
-  .premium-id-input :deep(.v-field__input) {
-    color: #000 !important;
-  }
-  .premium-id-input :deep(.v-field--focused) {
-    background: rgba(0, 0, 0, 0.04) !important;
-  }
-
-  .premium-input :deep(.v-field) {
-    background: rgba(0, 0, 0, 0.02) !important;
-    border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  }
-  .premium-input :deep(.v-field:hover) {
-    border-color: rgba(255, 107, 0, 0.4) !important;
-    background: rgba(0, 0, 0, 0.04) !important;
-  }
-  .premium-input :deep(.v-field__input) {
-    color: rgba(0, 0, 0, 0.95) !important;
-  }
-  .premium-input :deep(.v-label) {
-    color: rgba(0, 0, 0, 0.6) !important;
-  }
-  .premium-input :deep(.v-field--focused) {
-    background: rgba(0, 0, 0, 0.02) !important;
-    box-shadow: 0 0 15px rgba(255, 107, 0, 0.1) !important;
-  }
-
-  .sell-side-btn {
-    border: 1px solid rgba(0, 0, 0, 0.15) !important;
-    background: rgba(0, 0, 0, 0.04) !important;
-    color: rgba(0, 0, 0, 0.85) !important;
-    &:hover {
-      background: rgba(0, 0, 0, 0.08) !important;
-      border-color: rgba(0, 0, 0, 0.3) !important;
-    }
-  }
-
-  .reset-btn-v2 {
-    background: rgba(0, 0, 0, 0.04) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-    color: rgba(0, 0, 0, 0.75) !important;
-    &:hover {
-      background: rgba(255, 107, 0, 0.1) !important;
-      color: #FF6B00 !important;
-    }
   }
 
   .placeholder-ad {
     background: radial-gradient(circle at 50% 50%, rgba(255, 107, 0, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
+
     h4, p {
       color: #000 !important;
     }
   }
 }
 
-@media (min-width: 1201px) and (max-width: 1450px) {
-  .hero-main-grid {
-    grid-template-columns: 1.25fr 1fr;
-    gap: 24px;
+/* =========================================
+   ✅ RESPONSIVE
+   ========================================= */
+@media (max-width: 1280px) {
+  .search-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1200px) {
-  .hero__container {
-    padding-inline: 16px;
-  }
   .hero-main-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 28px;
   }
+
   .hero-ads-column {
     flex-direction: row;
-    gap: 24px;
   }
-  .premium-ad-card, .premium-video-card {
-    min-height: 320px !important;
+
+  .premium-ad-card,
+  .premium-video-card {
+    min-height: 300px !important;
   }
 }
 
@@ -2303,92 +2459,201 @@ onBeforeUnmount(() => {
     gap: 16px;
     height: auto !important;
   }
+
   .hero-ad-area,
   .hero-video-area {
     flex: none !important;
     width: 100% !important;
     height: auto !important;
   }
-  .premium-ad-card, .premium-video-card {
-    min-height: 220px !important;
-    height: 240px !important;
-    width: 100% !important;
-  }
-}
 
-@media (max-width: 480px) {
-  .premium-ad-card, .premium-video-card {
-    min-height: 200px !important;
-    height: 210px !important;
-  }
-  .video-play-btn-circle {
-    width: 50px !important;
-    height: 50px !important;
+  .premium-ad-card,
+  .premium-video-card {
+    width: 100% !important;
+    height: 240px !important;
+    min-height: 220px !important;
   }
 }
 
 @media (max-width: 600px) {
   .hero {
-    padding-block: 8px 24px;
+    padding-block: 12px 28px;
   }
+
   .hero__container {
-    padding-inline: 10px;
-    padding-top: 0 !important;
+    padding-inline: 12px;
   }
-  .premium-search-card {
-    padding: 16px !important;
-    border-radius: 20px !important;
+
+  .hero-eyebrow {
+    margin-block-end: 12px;
+    font-size: 0.72rem;
   }
-  .search-form-grid {
-    grid-template-columns: 1fr;
-    gap: 10px !important;
+
+  .hero-subtitle {
+    margin-block-end: 18px;
+    font-size: 0.92rem;
   }
-  .group-label {
-    font-size: 9.5px !important;
-    letter-spacing: 0.8px !important;
+
+  .search-panel {
+    padding: 12px;
+    border-radius: 18px;
   }
+
+  .search-panel__top {
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-block-end: 10px;
+  }
+
+  .premium-toggle-group {
+    flex: 1 1 auto;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 11px;
+    min-width: 0;
+  }
+
   .toggle-btn {
+    flex: 1 1 auto;
+    height: 30px;
+    padding: 0 7px;
+    border-radius: 8px;
+    font-size: 0.74rem;
+    gap: 4px;
+    white-space: nowrap;
+
+    :deep(.v-icon) {
+      font-size: 14px !important;
+      width: 14px !important;
+      height: 14px !important;
+    }
+  }
+
+  .toggle-btn--small {
+    height: 30px;
+    padding: 0 6px;
+    font-size: 0.72rem;
+  }
+
+  .reset-btn-v2 {
+    flex-shrink: 0;
+    width: 32px !important;
     height: 32px !important;
-    font-size: 11.5px !important;
-    padding: 0 8px !important;
+    min-width: 32px !important;
+    border-radius: 10px !important;
+    margin-inline-start: 0 !important;
+
+    :deep(.v-icon) {
+      font-size: 16px !important;
+    }
   }
-  .premium-input :deep(.v-field) {
-    height: 42px !important;
-    border-radius: 14px !important;
+
+  .search-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 14px;
   }
-  .premium-input :deep(.v-field__input) {
-    min-height: 42px !important;
-    font-size: 13px !important;
+
+  .search-bar__input {
+    :deep(.v-field__input) {
+      min-height: 38px !important;
+      font-size: 0.82rem !important;
+    }
+
+    :deep(.v-field__prepend-inner) {
+      padding-inline-end: 6px !important;
+    }
+
+    :deep(.v-field__prepend-inner .v-icon) {
+      font-size: 18px !important;
+    }
   }
-  .premium-id-input :deep(.v-field) {
-    height: 42px !important;
-    border-radius: 14px !important;
+
+  .search-bar__input--main {
+    flex: 1 1 100%;
+    padding-inline: 6px;
+    padding-block-end: 4px;
+    border-block-end: 1px solid var(--hero-line);
   }
-  .premium-id-input :deep(.v-field__input) {
-    min-height: 42px !important;
+
+  .search-bar__divider {
+    display: none;
+  }
+
+  .search-bar__input--id {
+    flex: 1 1 0;
+    padding-inline-start: 6px;
+    background: rgba(var(--v-theme-on-surface), 0.035);
+    border: 1px solid var(--hero-line);
+    border-radius: 10px;
+  }
+
+  .search-main-btn {
+    height: 38px !important;
+    padding-inline: 16px !important;
+    border-radius: 10px !important;
     font-size: 0.85rem !important;
   }
-  .search-actions-row {
-    gap: 8px !important;
-    margin-top: 14px !important;
+
+  .advanced-toggle {
+    margin-block-start: 8px;
+    padding: 4px 2px;
+    font-size: 0.78rem;
   }
-  .search-main-btn {
-    height: 46px !important;
-    font-size: 15px !important;
-    border-radius: 14px !important;
+
+  .search-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding-block-start: 8px;
   }
-  .sell-side-btn {
-    height: 46px !important;
-    font-size: 14px !important;
-    border-radius: 14px !important;
-    padding-inline: 12px !important;
+
+  .filter-trigger-btn {
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
   }
-  .ad-label, .video-label {
+
+  .filter-trigger-label {
+    font-size: 9px;
+  }
+
+  .filter-trigger-value {
+    font-size: 11.5px;
+  }
+
+  .premium-input :deep(.v-field) {
+    height: 38px !important;
+    border-radius: 10px !important;
+  }
+
+  .premium-input :deep(.v-field__input) {
+    min-height: 38px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .premium-input :deep(.v-label) {
+    font-size: 0.75rem !important;
+  }
+
+  .hero-trust {
+    gap: 8px 16px;
+  }
+
+  .hero-trust__item {
+    font-size: 0.8rem;
+  }
+
+  .ad-label,
+  .video-label {
     top: 12px !important;
     right: 12px !important;
     padding: 4px 10px !important;
     font-size: 9px !important;
   }
+
   .video-controls {
     bottom: 12px !important;
     right: 12px !important;
@@ -2396,26 +2661,28 @@ onBeforeUnmount(() => {
   }
 }
 
-.search-inputs-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
+@media (max-width: 480px) {
+  .premium-ad-card,
+  .premium-video-card {
+    height: 210px !important;
+    min-height: 200px !important;
+  }
+
+  .video-play-btn-circle {
+    width: 50px !important;
+    height: 50px !important;
+  }
 }
 
-@media (max-width: 600px) {
-  .search-inputs-row {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    margin-bottom: 12px !important;
+@media (max-width: 380px) {
+  .search-panel__top {
+    gap: 4px;
   }
-  .smart-search-input {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  .search-id-input {
-    max-width: 100% !important;
+
+  .toggle-btn,
+  .toggle-btn--small {
+    padding: 0 4px;
+    font-size: 0.68rem;
   }
 }
 

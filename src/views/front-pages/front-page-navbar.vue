@@ -57,6 +57,31 @@ const goSearch = async () => {
   sidebar.value = false
 }
 
+// ✅ Smart Hide-on-Scroll-Down / Show-on-Scroll-Up Navbar
+const isNavHidden = ref(false)
+let lastScrollY = 0
+
+watch(y, currentY => {
+  if (currentY <= 50) {
+    isNavHidden.value = false
+    lastScrollY = currentY
+    return
+  }
+
+  const delta = currentY - lastScrollY
+
+  // Hide when scrolling down smoothly
+  if (delta > 6 && currentY > 90 && !sidebar.value) {
+    isNavHidden.value = true
+    lastScrollY = currentY
+  }
+  // Show immediately upon scrolling up anywhere on the page
+  else if (delta < -5) {
+    isNavHidden.value = false
+    lastScrollY = currentY
+  }
+})
+
 // ✅ force reactive re-check for localStorage changes (login/logout)
 const authKey = ref(0)
 const syncAuth = () => {
@@ -297,9 +322,10 @@ const logout = async () => {
   </VNavigationDrawer>
 
   <!-- 👉 Navbar for desktop devices -->
-  <div class="front-page-navbar">
+  <div class="front-page-navbar" :class="{ 'navbar-is-hidden': isNavHidden }">
     <div class="front-page-navbar">
       <VAppBar
+        height="58"
         :color="
           $vuetify.theme.current.dark
             ? 'rgba(var(--v-theme-surface), 0.38)'
@@ -312,6 +338,7 @@ const logout = async () => {
               ? 'app-bar-dark'
               : 'app-bar-light',
           $vuetify.theme.current.dark ? 'is-dark-theme' : 'is-light-theme',
+          { 'app-bar-hidden': isNavHidden },
           'elevation-0',
         ]"
         class="navbar-blur"
@@ -319,14 +346,14 @@ const logout = async () => {
         <!-- toggle icon for mobile device -->
         <IconBtn
           id="vertical-nav-toggle-btn"
-          class="ms-n3 me-1 d-inline-block d-md-none"
+          class="ms-n2 me-1 d-inline-block d-md-none"
           @click="sidebar = !sidebar"
         >
-          <VIcon size="24" icon="tabler-menu-2" color="rgba(var(--v-theme-on-surface))" />
+          <VIcon size="22" icon="tabler-menu-2" color="rgba(var(--v-theme-on-surface))" />
         </IconBtn>
 
         <!-- Title & Brand Logo -->
-        <div class="logo-title-wrapper d-flex align-center me-sm-8 me-1">
+        <div class="logo-title-wrapper d-flex align-center me-sm-4 me-1">
           <RouterLink
             to="/"
             class="brand-logo-link"
@@ -341,7 +368,7 @@ const logout = async () => {
         </div>
 
         <!-- ✅ Links (Desktop) -->
-        <div class="text-base align-center d-none d-md-flex mx-6" style="flex: 1 1 auto; justify-content: space-evenly;">
+        <div class="nav-links-pill align-center d-none d-md-flex mx-auto">
           <RouterLink
             to="/user/cars"
             class="nav-link font-weight-bold"
@@ -611,19 +638,25 @@ const logout = async () => {
 </template>
 
 <style lang="scss" scoped>
+.nav-links-pill {
+  gap: 6px;
+  padding: 4px;
+  border-radius: 99px;
+}
+
 .nav-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 750;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  padding: 8px 18px;
+  padding: 6px 15px;
   border-radius: 99px;
   border: 1px solid transparent;
   white-space: nowrap;
-  height: 42px;
+  height: 36px;
 }
 
 .active-link {
@@ -752,12 +785,12 @@ const logout = async () => {
 }
 
 .navbar-logo-badge {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 11px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -772,8 +805,8 @@ const logout = async () => {
   }
 
   @media (max-width: 600px) {
-    width: 30px !important;
-    height: 30px !important;
+    width: 28px !important;
+    height: 28px !important;
     border-radius: 8px !important;
   }
 }
@@ -782,11 +815,11 @@ const logout = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 7px;
 }
 
 .app-logo-title {
-  font-size: 1.65rem;
+  font-size: 1.4rem;
   font-weight: 900;
   letter-spacing: -0.5px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -873,20 +906,28 @@ const logout = async () => {
   position: fixed;
   z-index: 2;
   backdrop-filter: saturate(100%) blur(6px);
-  block-size: 5rem;
+  block-size: 4.25rem;
   content: '';
   inline-size: 100%;
   pointer-events: none;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+}
+
+.front-page-navbar.navbar-is-hidden::after {
+  transform: translateY(-100%);
+  opacity: 0;
 }
 </style>
 
 <style lang="scss">
 .front-page-navbar {
   .v-toolbar__content {
-    padding-inline: 30px !important; /* ✅ نفس الأصل */
+    padding-inline: 20px !important;
+    height: 58px !important;
 
     @media (max-width: 600px) {
-      padding-inline: 8px !important; /* ✅ Less padding on mobile to prevent clipping */
+      padding-inline: 10px !important;
+      height: 52px !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
@@ -896,53 +937,30 @@ const logout = async () => {
 
   .v-toolbar {
     inset-inline: 0 !important;
-    margin-block-start: 1rem !important;
+    margin-block-start: 0.75rem !important;
     margin-inline: auto !important;
+    width: min(1040px, calc(100% - 48px)) !important;
+    max-inline-size: 1040px !important;
+    transition:
+      transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.28s ease,
+      background-color 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease !important;
+
+    &.app-bar-hidden {
+      transform: translateY(-140%) !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    @media (max-width: 960px) {
+      width: calc(100% - 28px) !important;
+      max-inline-size: calc(100% - 28px) !important;
+    }
 
     @media (max-width: 600px) {
       margin-block-start: 0.5rem !important;
-      max-inline-size: calc(100% - 16px) !important;
-      width: calc(100% - 16px) !important;
-    }
-  }
-}
-
-/* ✅ Responsive max-width rules (Wider width) */
-@media (min-width: 1920px) {
-  .front-page-navbar {
-    .v-toolbar {
-      max-inline-size: calc(100% - 96px);
-    }
-  }
-}
-
-@media (min-width: 1280px) and (max-width: 1919px) {
-  .front-page-navbar {
-    .v-toolbar {
-      max-inline-size: calc(100% - 64px);
-    }
-  }
-}
-
-@media (min-width: 960px) and (max-width: 1279px) {
-  .front-page-navbar {
-    .v-toolbar {
-      max-inline-size: calc(100% - 48px);
-    }
-  }
-}
-
-@media (min-width: 600px) and (max-width: 959px) {
-  .front-page-navbar {
-    .v-toolbar {
-      max-inline-size: calc(100% - 48px);
-    }
-  }
-}
-
-@media (max-width: 600px) {
-  .front-page-navbar {
-    .v-toolbar {
       max-inline-size: calc(100% - 16px) !important;
       width: calc(100% - 16px) !important;
     }

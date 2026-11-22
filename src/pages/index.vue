@@ -4,14 +4,13 @@ import HeroSection from '@/views/front-pages/landing-page/hero-section.vue'
 import FeaturesSection from '@/views/front-pages/landing-page/features.vue'
 import { useTheme } from 'vuetify'
 import { useI18n } from 'vue-i18n'
+import { computed, onMounted, ref } from 'vue'
+import api from '@/api/index.js'
 
 const theme = useTheme()
 const { t } = useI18n({ useScope: 'global' })
 
 definePage({ meta: { layout: 'front', public: true } })
-
-const props = defineProps(['activeSectionId'])
-const emit = defineEmits(['update:activeSectionId'])
 
 const buildSection = (type, sort) => ({
   limit: 8,
@@ -29,13 +28,8 @@ const buildSection = (type, sort) => ({
   },
 })
 
-const CARS = {
-  latest: buildSection('car', '-created_at'),
-}
-
-const MOTOS = {
-  latest: buildSection('motorcycle', '-created_at'),
-}
+const CARS = { latest: buildSection('car', '-created_at') }
+const MOTOS = { latest: buildSection('motorcycle', '-created_at') }
 
 const ALL_VEHICLES = {
   bestDeals: {
@@ -44,24 +38,9 @@ const ALL_VEHICLES = {
       'filter[is_best_deal]': 1,
       sort: 'price',
     },
-    viewAllTo: {
-      path: '/user/best-deals',
-    },
-  },
-  importCars: {
-    limit: 8,
-    params: {
-      'filter[is_import]': 1,
-      sort: '-created_at',
-    },
-    viewAllTo: {
-      path: '/user/negm-sooq',
-    },
+    viewAllTo: { path: '/user/best-deals' },
   },
 }
-
-import api from '@/api/index.js'
-import { ref } from 'vue'
 
 const homeData = ref(null)
 const homeLoading = ref(true)
@@ -71,352 +50,503 @@ const fetchHomeData = async () => {
   try {
     const res = await api.get('/user/home')
     homeData.value = res.data?.data || null
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Failed to load home data:', err)
-  } finally {
+  }
+  finally {
     homeLoading.value = false
   }
 }
+
+const isLoadingSections = computed(() => homeLoading.value && !homeData.value)
+
+// Hide a listing section entirely when it has nothing to show (instead of "No cars found")
+const hasBikes = computed(() => isLoadingSections.value || (homeData.value?.latest_bikes?.length ?? 0) > 0)
+const hasBestDeals = computed(() => isLoadingSections.value || (homeData.value?.best_deals?.length ?? 0) > 0)
+
+/* --- Disclaimer --- */
+const showFullDisclaimer = ref(false)
 
 /* --- Scroll Reveal Logic --- */
 onMounted(() => {
   fetchHomeData()
 
-  const observer = new IntersectionObserver((entries) => {
+  const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('is-visible')
+        observer.unobserve(entry.target)
       }
     })
-  }, { threshold: 0.1 })
+  }, { threshold: 0.05 })
 
-  document.querySelectorAll('.reveal-on-scroll').forEach(el => {
-    observer.observe(el)
-  })
+  document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el))
 })
 </script>
 
 <template>
-  <div :class="theme.current.value.dark ? 'index--dark' : 'index--light'">
+  <div
+    class="home"
+    :class="theme.current.value.dark ? 'index--dark' : 'index--light'"
+  >
     <HeroSection
       :controlled="true"
-      :initialBanners="homeData?.hero_banners"
-      :initialVideoUrl="homeData?.video_banner"
-      :initialVideoLink="homeData?.video_banner_link"
-      :initialBrands="homeData?.brands"
+      :initial-banners="homeData?.hero_banners"
+      :initial-video-url="homeData?.video_banner"
+      :initial-video-link="homeData?.video_banner_link"
+      :initial-brands="homeData?.brands"
     />
 
-  <VContainer class="hero__container">
-    <!-- Cars Section -->
-    <div class="reveal-on-scroll">
-      <CarsSection
-        :controlled="true"
-        :title="t('cars')"
-        :subtitle="t('browseCars')"
-        :cars="homeData?.latest_cars || null"
-        :loading="homeLoading && !homeData"
-        :limit="CARS.latest.limit"
-        :params="CARS.latest.params"
-        :viewAllTo="CARS.latest.viewAllTo"
-      />
+    <!-- Listings -->
+    <div class="listings">
+      <div class="reveal-on-scroll">
+        <CarsSection
+          :controlled="true"
+          :title="t('cars')"
+          :subtitle="t('browseCars')"
+          :cars="homeData?.latest_cars || null"
+          :loading="isLoadingSections"
+          :limit="CARS.latest.limit"
+          :params="CARS.latest.params"
+          :view-all-to="CARS.latest.viewAllTo"
+        />
+      </div>
+
+      <div class="reveal-on-scroll">
+        <CarsSection
+          v-if="hasBestDeals"
+          :controlled="true"
+          :title="t('bestDeals')"
+          :subtitle="t('bestDealsSubtitle')"
+          :cars="homeData?.best_deals || null"
+          :loading="isLoadingSections"
+          :limit="ALL_VEHICLES.bestDeals.limit"
+          :params="ALL_VEHICLES.bestDeals.params"
+          :view-all-to="ALL_VEHICLES.bestDeals.viewAllTo"
+        />
+      </div>
+
+      <div class="reveal-on-scroll">
+        <CarsSection
+          v-if="hasBikes"
+          :controlled="true"
+          :title="t('bikes')"
+          :subtitle="t('browseBikes')"
+          :cars="homeData?.latest_bikes || null"
+          :loading="isLoadingSections"
+          :limit="MOTOS.latest.limit"
+          :params="MOTOS.latest.params"
+          :view-all-to="MOTOS.latest.viewAllTo"
+        />
+      </div>
     </div>
 
-    <div class="group-spacer"></div>
-
-    <!-- Bikes Section -->
+    <!-- How it works + Why us -->
     <div class="reveal-on-scroll">
-      <CarsSection
-        :controlled="true"
-        :title="t('bikes')"
-        :subtitle="t('browseBikes')"
-        :cars="homeData?.latest_bikes || null"
-        :loading="homeLoading && !homeData"
-        :limit="MOTOS.latest.limit"
-        :params="MOTOS.latest.params"
-        :viewAllTo="MOTOS.latest.viewAllTo"
-      />
+      <FeaturesSection />
     </div>
 
-    <div class="group-spacer"></div>
+    <!-- Sell CTA -->
+    <section class="cta-section reveal-on-scroll">
+      <VContainer class="home-container">
+        <div class="cta-card">
+          <div
+            class="cta-card__pattern"
+            aria-hidden="true"
+          />
+          <div class="cta-card__content">
+            <h2 class="cta-card__title">
+              {{ t('readyToSell') }}
+            </h2>
+            <p class="cta-card__text">
+              {{ t('sellCTA') }}
+            </p>
+            <ul class="cta-card__points">
+              <li
+                v-for="p in ['ctaPoint1', 'ctaPoint2', 'ctaPoint3']"
+                :key="p"
+              >
+                <VIcon
+                  icon="tabler-circle-check-filled"
+                  size="18"
+                />
+                {{ t(p) }}
+              </li>
+            </ul>
+          </div>
 
-    <!-- Best Deals Section -->
-    <div class="reveal-on-scroll">
-      <CarsSection
-        :controlled="true"
-        :title="t('bestDeals')"
-        :subtitle="t('bestDealsSubtitle')"
-        :cars="homeData?.best_deals || null"
-        :loading="homeLoading && !homeData"
-        :limit="ALL_VEHICLES.bestDeals.limit"
-        :params="ALL_VEHICLES.bestDeals.params"
-        :viewAllTo="ALL_VEHICLES.bestDeals.viewAllTo"
-      >
-        <template #header-extra>
-          <VChip size="small" color="error" variant="flat" class="best-deal-badge"> {{ t('bestDealBadge') }} </VChip>
-        </template>
-      </CarsSection>
-    </div>
-  </VContainer>
-
-  <!-- Features Section -->
-  <div class="reveal-on-scroll">
-    <FeaturesSection />
-  </div>
-
-  <!-- CTA Section -->
-  <section class="cta-section py-16 reveal-on-scroll">
-    <VContainer>
-      <VCard class="cta-card pa-12 text-center overflow-hidden" elevation="0">
-        <div class="cta-glow"></div>
-        <div class="cta-content relative-z">
-          <h2 class="text-h3 font-weight-black mb-4">
-            {{ t('readyToSell') }}
-          </h2>
-          <p class="text-h6 opacity-70 mb-10 max-w-700 mx-auto">
-            {{ t('sellCTA') }}
-          </p>
-          <div class="d-flex flex-wrap justify-center gap-6">
+          <div class="cta-card__actions">
             <VBtn
-              color="primary"
-              size="large"
-              height="60"
-              class="px-10 font-weight-bold premium-btn"
+              size="x-large"
+              variant="flat"
+              color="white"
+              class="cta-btn cta-btn--primary"
               to="/user/sell"
               prepend-icon="tabler-circle-plus"
-              elevation="8"
             >
               {{ t('addAdNow') }}
             </VBtn>
             <VBtn
+              size="x-large"
               variant="outlined"
-              :color="theme.current.value.dark ? 'white' : 'black'"
-              size="large"
-              height="60"
-              class="px-10 font-weight-bold premium-btn-outline"
+              color="white"
+              class="cta-btn cta-btn--ghost"
               to="/user/cars"
+              append-icon="tabler-arrow-up-right"
             >
               {{ t('browseCarsBtn') }}
             </VBtn>
           </div>
         </div>
-      </VCard>
-    </VContainer>
-  </section>
+      </VContainer>
+    </section>
 
-  <!-- Disclaimer Footer -->
-  <section class="disclaimer-section py-8 reveal-on-scroll">
-    <VContainer>
-      <VAlert
-        type="info"
-        variant="tonal"
-        color="warning"
-        border="start"
-        class="disclaimer-alert pa-6 glass-panel"
-      >
-        <div class="text-h6 font-weight-bold mb-2">{{ t('disclaimerTitle') }}</div>
-        <div class="text-body-2 opacity-80">
-          {{ t('disclaimerText') }}
+    <!-- Disclaimer (compact) -->
+    <section class="disclaimer-section reveal-on-scroll">
+      <VContainer class="home-container">
+        <div class="disclaimer-box">
+          <VIcon
+            icon="tabler-info-circle"
+            size="20"
+            class="disclaimer-box__icon"
+          />
+          <div class="disclaimer-box__body">
+            <strong class="disclaimer-box__title">{{ t('disclaimerTitle') }}</strong>
+            <p class="disclaimer-box__text">
+              {{ showFullDisclaimer ? t('disclaimerText') : t('disclaimerShort') }}
+              <button
+                type="button"
+                class="disclaimer-box__toggle"
+                @click="showFullDisclaimer = !showFullDisclaimer"
+              >
+                {{ showFullDisclaimer ? t('showLess') : t('readMore') }}
+              </button>
+            </p>
+          </div>
         </div>
-      </VAlert>
-    </VContainer>
-  </section>
+      </VContainer>
+    </section>
   </div>
 </template>
 
-<style scoped>
-.hero__container {
-  padding-top: 0;
-  padding-bottom: 32px;
+<style lang="scss" scoped>
+.home {
+  --home-accent: #ff6b00;
+  --home-line: rgba(var(--v-theme-on-surface), 0.08);
+  --home-muted: rgba(var(--v-theme-on-surface), 0.6);
 }
 
-.group-spacer {
-  height: 40px;
+.home-container {
+  max-width: 1340px !important;
 }
 
-.best-deal-badge,
-.import-badge {
+.home-section-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.home-section-sub {
+  margin: 4px 0 0;
+  color: var(--home-muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Brands strip ---------- */
+.brands-strip {
+  padding-block: 8px 8px;
+}
+
+.brands-strip__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brands-strip__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px 7px 7px;
+  padding-inline: 7px 16px;
+  border: 1px solid var(--home-line);
+  border-radius: 999px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  color: rgba(var(--v-theme-on-surface), 0.9);
+  font-size: 0.88rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba(255, 107, 0, 0.5);
+    background: rgba(255, 107, 0, 0.08);
+    color: var(--home-accent);
+    transform: translateY(-2px);
+  }
 }
 
+.brand-pill__badge {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(var(--v-theme-on-surface), 0.07);
+  color: var(--home-accent);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  place-items: center;
+}
+
+.brand-pill--all {
+  border-style: dashed;
+}
+
+/* ---------- Listings ---------- */
+.listings {
+  padding-block: 8px 24px;
+}
+
+/* ---------- CTA ---------- */
 .cta-section {
-  background: radial-gradient(
-    circle at center,
-    rgba(var(--v-theme-primary), 0.05),
-    transparent 70%
-  );
+  padding-block: 72px 32px;
 }
 
 .cta-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 48px !important;
   position: relative;
+  display: grid;
+  overflow: hidden;
+  align-items: center;
+  padding: 48px 56px;
+  border-radius: 32px;
+  background: linear-gradient(120deg, #ff6b00 0%, #ff3e1d 100%);
+  box-shadow: 0 30px 70px rgba(255, 80, 0, 0.28);
+  color: #fff;
+  gap: 32px;
+  grid-template-columns: minmax(0, 1.4fr) auto;
 }
 
-.cta-glow {
+.cta-card__pattern {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle at center,
-    rgba(var(--v-theme-primary), 0.15) 0%,
-    transparent 50%
-  );
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.22), transparent 40%),
+    radial-gradient(circle at 10% 110%, rgba(0, 0, 0, 0.2), transparent 45%);
   pointer-events: none;
 }
 
-.relative-z {
+.cta-card__content,
+.cta-card__actions {
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 
-.text-primary-gradient {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1), #64ffda);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.cta-card__title {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem);
+  font-weight: 900;
+  line-height: 1.25;
 }
 
-.premium-btn {
-  border-radius: 18px !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  &:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 30px rgba(var(--v-theme-primary), 0.4) !important;
+.cta-card__text {
+  max-width: 560px;
+  margin: 0 0 18px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.cta-card__points {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  gap: 10px 22px;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
   }
 }
 
-.premium-btn-outline {
-  border-radius: 18px !important;
-  border-width: 2px !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  &:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    transform: translateY(-4px);
+.cta-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 240px;
+}
+
+.cta-btn {
+  border-radius: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, border-color 0.25s ease !important;
+
+  :deep(.v-btn__overlay) {
+    display: none !important;
   }
 }
 
-.max-w-700 {
-  max-width: 700px;
+.cta-btn--primary {
+  background-color: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
+  color: #e85400 !important;
+
+  &:hover,
+  &:focus-visible,
+  &:active {
+    background-color: #0f172a !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+  }
 }
 
+.cta-btn--ghost {
+  border: 2px solid rgba(255, 255, 255, 0.78) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+
+  &:hover,
+  &:focus-visible,
+  &:active {
+    border-color: #ffffff !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22) !important;
+    color: #e85400 !important;
+    transform: translateY(-2px);
+  }
+}
+
+/* ---------- Disclaimer ---------- */
 .disclaimer-section {
-  background: transparent;
+  padding-block: 8px 40px;
 }
 
-.disclaimer-alert {
-  border-radius: 20px !important;
+.disclaimer-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 20px;
+  border: 1px solid var(--home-line);
+  border-radius: 16px;
+  background: rgba(var(--v-theme-on-surface), 0.025);
 }
 
-.v-theme--dark .disclaimer-alert {
-  background: rgba(15, 18, 26, 0.85) !important;
-  border: 1px solid rgba(255, 107, 0, 0.3) !important;
-  border-inline-start: 4px solid #FF6B00 !important;
+.disclaimer-box__icon {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+  color: #f59e0b;
 }
 
-/* =========================================
-   ✅ LIGHT THEME OVERRIDES
-   ========================================= */
+.disclaimer-box__title {
+  display: block;
+  margin-block-end: 2px;
+  font-size: 0.88rem;
+}
+
+.disclaimer-box__text {
+  margin: 0;
+  color: var(--home-muted);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.disclaimer-box__toggle {
+  padding: 0;
+  border: 0;
+  margin-inline-start: 4px;
+  background: none;
+  color: var(--home-accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+/* ---------- Light theme ---------- */
 .index--light {
+  .brand-pill {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  }
+
+  .disclaimer-box {
+    background: #fff;
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
   .cta-card {
-    background: #ffffff !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+    padding: 36px 28px;
+    grid-template-columns: 1fr;
+    text-align: center;
   }
 
-  .cta-glow {
-    background: radial-gradient(
-      circle at center,
-      rgba(var(--v-theme-primary), 0.08) 0%,
-      transparent 50%
-    );
+  .cta-card__text {
+    margin-inline: auto;
   }
 
-  .cta-content p, .cta-content h2 {
-    color: #000 !important;
+  .cta-card__points {
+    justify-content: center;
   }
 
-  .premium-btn-outline {
-    border-color: rgba(0, 0, 0, 0.8) !important;
-    color: rgba(0, 0, 0, 0.8) !important;
-    &:hover {
-      background: rgba(0, 0, 0, 0.04) !important;
-      border-color: #000 !important;
-      color: #000 !important;
+  .cta-card__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .brands-strip__list {
+    flex-wrap: nowrap;
+    margin-inline: -12px;
+    overflow-x: auto;
+    padding-block-end: 6px;
+    padding-inline: 12px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
     }
   }
 
-  .disclaimer-alert {
-    background: rgba(255, 255, 255, 0.9) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  }
-  
-  .disclaimer-alert .text-body-2, .disclaimer-alert .text-h6 {
-    color: #000 !important;
-  }
-}
-
-/* =========================================
-   ✅ MOBILE RESPONSIVE OVERRIDES
-   ========================================= */
-@media (max-width: 600px) {
-  .hero__container {
-    padding-bottom: 16px;
-  }
-
-  .group-spacer {
-    height: 20px;
+  .brand-pill {
+    flex-shrink: 0;
   }
 
   .cta-section {
-    padding-top: 32px !important;
-    padding-bottom: 32px !important;
+    padding-block: 40px 16px;
   }
 
   .cta-card {
-    padding: 24px 16px !important;
-    border-radius: 24px !important;
+    padding: 28px 18px;
+    border-radius: 24px;
   }
 
-  .cta-content h2 {
-    font-size: 1.5rem !important;
-    line-height: 1.35 !important;
-    margin-bottom: 10px !important;
+  .cta-card__actions {
+    flex-direction: column;
+    min-width: 0;
   }
 
-  .cta-content p {
-    font-size: 0.95rem !important;
-    margin-bottom: 24px !important;
-  }
-
-  .premium-btn,
-  .premium-btn-outline {
-    height: 48px !important;
-    font-size: 15px !important;
-    width: 100% !important;
-    padding-inline: 16px !important;
-    border-radius: 14px !important;
-  }
-
-  .disclaimer-section {
-    padding-top: 16px !important;
-    padding-bottom: 16px !important;
-  }
-
-  .disclaimer-alert {
-    padding: 16px !important;
-    border-radius: 16px !important;
-
-    .text-h6 {
-      font-size: 1rem !important;
-    }
-    .text-body-2 {
-      font-size: 0.85rem !important;
-    }
+  .cta-btn {
+    width: 100%;
   }
 }
 </style>

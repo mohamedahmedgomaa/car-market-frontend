@@ -211,7 +211,14 @@ export const translateText = (val, localeStr = 'ar', parentObj = null) => {
   if (!val) return ''
 
   if (typeof val === 'object') {
-    return isAr ? (val.ar || val.en || '') : (val.en || val.ar || '')
+    if (isAr) {
+      if (val.ar && val.ar !== val.en) return val.ar
+      const enLower = String(val.en || '').trim().toLowerCase()
+      if (brandArabicMap[enLower] && brandArabicMap[enLower][0]) return brandArabicMap[enLower][0]
+      if (commonArabicTranslations[enLower]) return commonArabicTranslations[enLower]
+      return val.ar || val.en || ''
+    }
+    return val.en || val.ar || ''
   }
 
   if (typeof val === 'string') {

@@ -329,7 +329,7 @@ watch(
 
 <template>
   <section class="cars-section" :class="{ 'cars-section--embedded': embedded }">
-    <component :is="embedded ? 'div' : 'VContainer'" class="cars-section__container">
+    <div class="cars-section__container" :class="{ 'v-container': !embedded }">
       <div class="cars-section__header">
         <div>
           <h2 v-if="title" class="cars-section__title">{{ title }}</h2>
@@ -341,9 +341,9 @@ watch(
         </RouterLink>
       </div>
 
-      <div v-if="displayLoading" class="cars-section__state"><span dir="ltr">{{ t('loadingCars') }}</span></div>
-      <div v-else-if="displayError" class="cars-section__state error"><span dir="ltr">{{ t('failedToLoadCars') }}</span></div>
-      <div v-else-if="displayCars.length === 0" class="cars-section__state"><span dir="ltr">{{ t('noCarsFound') }}</span></div>
+      <div v-if="displayLoading" class="cars-section__state"><VProgressCircular indeterminate size="18" width="2" color="primary" class="me-2" /><span>{{ t('loadingCars') }}</span></div>
+      <div v-else-if="displayError" class="cars-section__state error"><span>{{ t('failedToLoadCars') }}</span></div>
+      <div v-else-if="displayCars.length === 0" class="cars-section__state"><span>{{ t('noCarsFound') }}</span></div>
 
       <div v-else class="cars-grid">
         <RouterLink
@@ -461,9 +461,9 @@ watch(
               </div>
 
               <!-- Location shown next to price (or wrapped below if no space) -->
-              <div class="car-card__location d-flex align-center gap-1 opacity-90 text-subtitle-2 font-weight-bold">
-                <VIcon icon="tabler-map-pin" size="16" class="me-0.5 text-white" style="color: #ffffff !important;" />
-                <span class="text-truncate">{{ _t(car.city?.name, car.city) || 'القاهرة' }}</span>
+              <div v-if="_t(car.city?.name, car.city)" class="car-card__location d-flex align-center gap-1 opacity-90 text-subtitle-2 font-weight-bold">
+                <VIcon icon="tabler-map-pin" size="16" class="car-card__location-icon" />
+                <span class="text-truncate">{{ _t(car.city?.name, car.city) }}</span>
               </div>
             </div>
 
@@ -520,7 +520,7 @@ watch(
           </div>
         </RouterLink>
       </div>
-    </component>
+    </div>
   </section>
 </template>
 
@@ -537,6 +537,21 @@ watch(
 .cars-section__container {
   width: 100%;
   max-width: 1340px !important;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+.cars-section:not(.cars-section--embedded) .cars-section__container {
+  padding-inline: 16px;
+}
+@media (max-width: 960px) and (min-width: 600px) {
+  .cars-section:not(.cars-section--embedded) .cars-section__container {
+    padding-inline: 2rem;
+  }
+}
+@media (max-width: 600px) {
+  .cars-section:not(.cars-section--embedded) .cars-section__container {
+    padding-inline: 12px;
+  }
 }
 
 .cars-section__header {
@@ -573,8 +588,13 @@ watch(
   }
 }
 .cars-section__state {
+  display: flex;
+  align-items: center;
   padding: 18px 0;
   opacity: 0.8;
+}
+.car-card__location-icon {
+  color: #ff6b00;
 }
 .cars-section__state.error {
   opacity: 1;
@@ -691,6 +711,20 @@ watch(
   backdrop-filter: blur(10px);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  color: rgb(var(--v-theme-on-surface));
+}
+.car-card__title {
+  color: rgb(var(--v-theme-on-surface));
+}
+.car-card__meta {
+  color: rgba(var(--v-theme-on-surface), 0.78);
+}
+.car-card__info {
+  color: rgba(var(--v-theme-on-surface), 0.65);
+}
+.car-card__location,
+.car-card__date {
+  color: rgba(var(--v-theme-on-surface), 0.85);
 }
 .car-card:hover {
   transform: translateY(-6px);
