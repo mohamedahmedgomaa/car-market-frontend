@@ -1,1 +1,0 @@
-import{a as e}from"./index-B0wXNI-c.js";const s={getAll(r){return e.get("/user/cars",{params:r})},getById(r){return e.get(`/user/cars/${r}`)},compare(r){const a=Array.isArray(r)?r.join(","):r;return e.get("/user/cars/compare",{params:{ids:a}})},toggleFavorite(r){return e.post(`/user/cars/${r}/favorite`)}};export{s as c};
