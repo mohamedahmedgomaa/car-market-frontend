@@ -947,7 +947,6 @@ onBeforeUnmount(() => {
                   :class="{ active: filters.type === t_type }"
                   @click="filters.type = t_type"
                 >
-                  <VIcon :icon="t_type === 'car' ? 'tabler-car' : 'tabler-motorbike'" size="16" />
                   {{ t_type === 'car' ? t('cars') : t('bikes') }}
                 </button>
               </div>
