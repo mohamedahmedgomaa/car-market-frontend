@@ -1,1 +1,0 @@
-import{a as e}from"./index-DYDmRsgj.js";const l={login(r){return e.post("/seller/auth/login",r)},register(r){return e.post("/seller/auth/register",r)},me(){return e.get("/seller/auth/me")},logout(){return e.post("/seller/auth/logout")}};export{l as s};
