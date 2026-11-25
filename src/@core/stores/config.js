@@ -49,9 +49,17 @@ export const initConfigStore = () => {
   const configStore = useConfigStore()
 
   const applyTheme = () => {
-    const resolved = configStore.theme === 'system'
-      ? (userPreferredColorScheme.value === 'dark' ? 'dark' : 'light')
+    let resolved = configStore.theme === 'system'
+      ? (userPreferredColorScheme.value === 'dark' ? 'emberDark' : 'amberLight')
       : configStore.theme
+
+    if (resolved === 'light') {
+      resolved = 'amberLight'
+      configStore.theme = 'amberLight'
+    } else if (resolved === 'dark') {
+      resolved = 'emberDark'
+      configStore.theme = 'emberDark'
+    }
 
     vuetifyTheme.global.name.value = resolved
 

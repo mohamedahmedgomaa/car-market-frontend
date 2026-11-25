@@ -29,7 +29,7 @@ watch(() => configStore.theme, () => {
       open-delay="1000"
       scroll-strategy="close"
     >
-      <span class="text-capitalize">{{ configStore.theme }}</span>
+      <span class="text-capitalize">{{ safeThemes.find(t => t.name === configStore.theme)?.label || configStore.theme }}</span>
     </VTooltip>
 
     <VMenu
@@ -43,7 +43,7 @@ watch(() => configStore.theme, () => {
         mandatory
       >
         <VListItem
-          v-for="{ name, icon } in safeThemes"
+          v-for="{ name, label, icon } in safeThemes"
           :key="name"
           :value="name"
           :prepend-icon="icon"
@@ -51,7 +51,7 @@ watch(() => configStore.theme, () => {
           @click="() => { configStore.theme = name }"
         >
           <VListItemTitle class="text-capitalize">
-            {{ name }}
+            {{ label || name }}
           </VListItemTitle>
         </VListItem>
       </VList>

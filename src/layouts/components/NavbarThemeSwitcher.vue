@@ -1,23 +1,18 @@
 <script setup>
 const themes = [
   {
-    name: 'light',
-    icon: 'tabler-sun-high',
-  },
-  {
     name: 'amberLight',
+    label: 'Light',
     icon: 'tabler-sunrise',
   },
   {
-    name: 'dark',
-    icon: 'tabler-moon-stars',
-  },
-  {
     name: 'emberDark',
+    label: 'Dark',
     icon: 'tabler-flame',
   },
   {
     name: 'system',
+    label: 'System',
     icon: 'tabler-device-desktop-analytics',
   },
 ]

@@ -47,7 +47,7 @@ const car = ref(null)
 const API_BASE = import.meta.env.VITE_BASE_URL
 import { useI18n } from 'vue-i18n'
 const { t: _t, locale } = useI18n({ useScope: 'global' })
-const siteLogo = useGenerateImageVariant(logoLight, logoDark)
+const siteLogo = useGenerateImageVariant(logoDark, logoLight)
 const compareStore = useCompareStore()
 
 const isInCompare = computed(() => (car.value?.id ? compareStore.hasCar(car.value.id) : false))

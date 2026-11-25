@@ -11,7 +11,7 @@ import { useGenerateImageVariant } from '@core/composable/useGenerateImageVarian
 
 const router = useRouter()
 const { t, locale } = useI18n({ useScope: 'global' })
-const siteLogo = useGenerateImageVariant(logoLight, logoDark)
+const siteLogo = useGenerateImageVariant(logoDark, logoLight)
 const compareStore = useCompareStore()
 const isAr = computed(() => (locale.value || 'ar') === 'ar')
 

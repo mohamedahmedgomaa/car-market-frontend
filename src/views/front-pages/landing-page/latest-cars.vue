@@ -12,7 +12,7 @@ const props = defineProps({
 const loading = ref(false)
 const error = ref('')
 const cars = ref([])
-const siteLogo = useGenerateImageVariant(logoLight, logoDark)
+const siteLogo = useGenerateImageVariant(logoDark, logoLight)
 
 // ✅ base url للصور
 const API_BASE = import.meta.env.VITE_BASE_URL

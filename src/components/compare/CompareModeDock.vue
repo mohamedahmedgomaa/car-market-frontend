@@ -12,7 +12,7 @@ const route = useRoute()
 const router = useRouter()
 const { locale } = useI18n({ useScope: 'global' })
 const compareStore = useCompareStore()
-const siteLogo = useGenerateImageVariant(logoLight, logoDark)
+const siteLogo = useGenerateImageVariant(logoDark, logoLight)
 const API_BASE = import.meta.env.VITE_BASE_URL
 
 const isComparePage = computed(() => route.path === '/user/compare')

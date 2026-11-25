@@ -21,7 +21,7 @@ const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n({ useScope: 'global' })
 const compareStore = useCompareStore()
-const siteLogo = useGenerateImageVariant(logoLight, logoDark)
+const siteLogo = useGenerateImageVariant(logoDark, logoLight)
 const API_BASE = import.meta.env.VITE_BASE_URL
 
 const isAr = computed(() => (locale.value || 'ar') === 'ar')
@@ -39,27 +39,11 @@ const vehiclesPanelRef = ref(null)
 const scrollContainerRef = ref(null)
 const stickyScrollRef = ref(null)
 const showStickyBar = ref(false)
-const isNavLikelyHidden = ref(false)
-let lastY = 0
 
-watch(y, (currY) => {
-  if (currY <= 50) {
-    isNavLikelyHidden.value = false
-    lastY = currY
-  } else {
-    const delta = currY - lastY
-    if (delta > 6 && currY > 90) {
-      isNavLikelyHidden.value = true
-      lastY = currY
-    } else if (delta < -5) {
-      isNavLikelyHidden.value = false
-      lastY = currY
-    }
-  }
-
+watch(y, () => {
   if (vehiclesPanelRef.value && cars.value.length >= 2) {
     const rect = vehiclesPanelRef.value.getBoundingClientRect()
-    showStickyBar.value = rect.bottom < 85
+    showStickyBar.value = rect.bottom < 95
   } else {
     showStickyBar.value = false
   }
@@ -747,7 +731,6 @@ const gridColumnsStyle = computed(() => {
           <div
             v-if="showStickyBar"
             class="compare-sticky-bar-wrap"
-            :style="{ top: isNavLikelyHidden ? '10px' : '74px' }"
           >
             <VContainer class="py-0">
               <div ref="stickyScrollRef" class="compare-sticky-scroller">
@@ -1349,11 +1332,15 @@ const gridColumnsStyle = computed(() => {
 
 .compare-sticky-bar-wrap {
   position: fixed;
+  top: 84px;
   left: 0;
   right: 0;
   z-index: 1002;
-  transition: top 0.25s ease;
   pointer-events: none;
+
+  @media (max-width: 600px) {
+    top: 68px;
+  }
 }
 
 .compare-sticky-scroller {

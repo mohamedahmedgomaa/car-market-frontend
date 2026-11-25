@@ -13,7 +13,7 @@ import carsUserApi from '@/api/user/carUserApi.js'
 const router = useRouter()
 const { t } = useI18n({ useScope: 'global' })
 const footerBg = useGenerateImageVariant(footerLightBg, footerDarkBg)
-const appLogo = useGenerateImageVariant(logoLight, logoDark)
+const appLogo = useGenerateImageVariant(logoDark, logoLight)
 
 // -------------------------
 // Top 5 most expensive cars

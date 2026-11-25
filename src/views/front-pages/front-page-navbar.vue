@@ -25,7 +25,7 @@ const router = useRouter()
 const { locale, t } = useI18n({ useScope: 'global' })
 const configStore = useConfigStore()
 const compareStore = useCompareStore()
-const appLogo = useGenerateImageVariant(logoLight, logoDark)
+const appLogo = useGenerateImageVariant(logoDark, logoLight)
 
 const sidebar = ref(false)
 
@@ -59,30 +59,8 @@ const goSearch = async () => {
   sidebar.value = false
 }
 
-// ✅ Smart Hide-on-Scroll-Down / Show-on-Scroll-Up Navbar
+// ✅ Keep Navbar Always Fixed & Visible
 const isNavHidden = ref(false)
-let lastScrollY = 0
-
-watch(y, currentY => {
-  if (currentY <= 50) {
-    isNavHidden.value = false
-    lastScrollY = currentY
-    return
-  }
-
-  const delta = currentY - lastScrollY
-
-  // Hide when scrolling down smoothly
-  if (delta > 6 && currentY > 90 && !sidebar.value) {
-    isNavHidden.value = true
-    lastScrollY = currentY
-  }
-  // Show immediately upon scrolling up anywhere on the page
-  else if (delta < -5) {
-    isNavHidden.value = false
-    lastScrollY = currentY
-  }
-})
 
 // ✅ force reactive re-check for localStorage changes (login/logout)
 const authKey = ref(0)
@@ -300,29 +278,11 @@ const logout = async () => {
                 <button
                   type="button"
                   class="drawer-segmented-btn"
-                  :class="{ 'is-active': configStore.theme === 'light' }"
-                  @click="configStore.theme = 'light'"
-                >
-                  <VIcon icon="tabler-sun" size="15" class="me-1" />
-                  <span>{{ t('light') }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="drawer-segmented-btn"
                   :class="{ 'is-active': configStore.theme === 'amberLight' }"
                   @click="configStore.theme = 'amberLight'"
                 >
                   <span class="theme-swatch theme-swatch--amber me-1" />
                   <span>{{ t('amberLight') }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="drawer-segmented-btn"
-                  :class="{ 'is-active': configStore.theme === 'dark' }"
-                  @click="configStore.theme = 'dark'"
-                >
-                  <VIcon icon="tabler-moon" size="15" class="me-1" />
-                  <span>{{ t('dark') }}</span>
                 </button>
                 <button
                   type="button"
@@ -502,19 +462,6 @@ const logout = async () => {
               </div>
 
               <VListItem
-                :active="configStore.theme === 'light'"
-                color="primary"
-                rounded="lg"
-                class="mb-1"
-                @click="configStore.theme = 'light'"
-              >
-                <template #prepend>
-                  <VIcon icon="tabler-sun" size="18" class="me-2" />
-                </template>
-                <VListItemTitle>{{ t('light') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem
                 :active="configStore.theme === 'amberLight'"
                 color="primary"
                 rounded="lg"
@@ -525,19 +472,6 @@ const logout = async () => {
                   <span class="theme-swatch theme-swatch--amber me-2" />
                 </template>
                 <VListItemTitle>{{ t('amberLight') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem
-                :active="configStore.theme === 'dark'"
-                color="primary"
-                rounded="lg"
-                class="mb-1"
-                @click="configStore.theme = 'dark'"
-              >
-                <template #prepend>
-                  <VIcon icon="tabler-moon" size="18" class="me-2" />
-                </template>
-                <VListItemTitle>{{ t('dark') }}</VListItemTitle>
               </VListItem>
 
               <VListItem
@@ -660,19 +594,6 @@ const logout = async () => {
               </div>
 
               <VListItem
-                :active="configStore.theme === 'light'"
-                color="primary"
-                rounded="lg"
-                class="mb-1"
-                @click="configStore.theme = 'light'"
-              >
-                <template #prepend>
-                  <VIcon icon="tabler-sun" size="18" class="me-2" />
-                </template>
-                <VListItemTitle>{{ t('light') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem
                 :active="configStore.theme === 'amberLight'"
                 color="primary"
                 rounded="lg"
@@ -683,19 +604,6 @@ const logout = async () => {
                   <span class="theme-swatch theme-swatch--amber me-2" />
                 </template>
                 <VListItemTitle>{{ t('amberLight') }}</VListItemTitle>
-              </VListItem>
-
-              <VListItem
-                :active="configStore.theme === 'dark'"
-                color="primary"
-                rounded="lg"
-                class="mb-1"
-                @click="configStore.theme = 'dark'"
-              >
-                <template #prepend>
-                  <VIcon icon="tabler-moon" size="18" class="me-2" />
-                </template>
-                <VListItemTitle>{{ t('dark') }}</VListItemTitle>
               </VListItem>
 
               <VListItem
@@ -985,21 +893,9 @@ const logout = async () => {
   }
 }
 
-/* ✅ نفس حجم Vuexy الأصلي */
+/* Keep top area seamless behind floating navbar pill */
 .front-page-navbar::after {
-  position: fixed;
-  z-index: 2;
-  backdrop-filter: saturate(100%) blur(6px);
-  block-size: 4.25rem;
-  content: '';
-  inline-size: 100%;
-  pointer-events: none;
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
-}
-
-.front-page-navbar.navbar-is-hidden::after {
-  transform: translateY(-100%);
-  opacity: 0;
+  content: none;
 }
 </style>
 

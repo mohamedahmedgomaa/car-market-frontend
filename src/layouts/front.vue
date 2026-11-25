@@ -20,7 +20,7 @@ const isCompareModeLayout = computed(() => compareStore.isCompareMode && route.p
     <div class="bg-glow"></div>
     <Navbar :active-id="activeSectionId" />
 
-    <main style="margin-top: 84px">
+    <main class="front-main">
       <CompareModeArena />
       <RouterView v-slot="{ Component }">
         <!-- نخلي الصفحة تبعت للـ Layout الـ activeSectionId -->
@@ -34,10 +34,10 @@ const isCompareModeLayout = computed(() => compareStore.isCompareMode && route.p
 </template>
 
 <style lang="scss">
-main {
-  margin-top: 84px;
+.front-main {
+  padding-top: 84px;
   @media (max-width: 600px) {
-    margin-top: 66px !important;
+    padding-top: 66px !important;
   }
 }
 
@@ -145,7 +145,7 @@ main {
 
 .landing-page-wrapper.is-compare-mode .bg-pattern {
   background-color: #38bdf8 !important;
-  opacity: 0.032 !important;
+  opacity: 0.016 !important;
 }
 
 .bg-glow {
@@ -183,38 +183,38 @@ main {
 /* ✅ Distinct visual ambiance when Compare Selection Mode is active (respecting Dark & Light themes) */
 .v-theme--dark .landing-page-wrapper.is-compare-mode {
   padding-bottom: 165px;
-  background-color: #061322 !important;
+  background-color: #070c13 !important;
   background-image:
-    linear-gradient(rgba(56, 189, 248, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.055) 1px, transparent 1px),
-    linear-gradient(180deg, #061322 0%, #091d34 55%, #050f1c 100%) !important;
-  background-size: 38px 38px, 38px 38px, 100% 100% !important;
-  box-shadow: inset 0 0 0 2.5px rgba(56, 189, 248, 0.55);
+    linear-gradient(rgba(56, 189, 248, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.015) 1px, transparent 1px),
+    linear-gradient(180deg, #070c13 0%, #0a121d 55%, #070a10 100%) !important;
+  background-size: 40px 40px, 40px 40px, 100% 100% !important;
+  box-shadow: inset 0 0 0 1.5px rgba(56, 189, 248, 0.18);
 }
 
 .v-theme--dark .landing-page-wrapper.is-compare-mode .bg-glow {
-  opacity: 0.55 !important;
+  opacity: 0.22 !important;
   background:
-    radial-gradient(circle at 18% 12%, rgba(14, 165, 233, 0.34) 0%, transparent 48%),
-    radial-gradient(circle at 82% 25%, rgba(6, 182, 212, 0.24) 0%, transparent 45%),
-    radial-gradient(circle at 50% 88%, rgba(255, 107, 0, 0.12) 0%, transparent 52%) !important;
+    radial-gradient(circle at 18% 12%, rgba(14, 165, 233, 0.16) 0%, transparent 48%),
+    radial-gradient(circle at 82% 25%, rgba(6, 182, 212, 0.11) 0%, transparent 45%),
+    radial-gradient(circle at 50% 88%, rgba(255, 107, 0, 0.05) 0%, transparent 52%) !important;
 }
 
 .v-theme--light .landing-page-wrapper.is-compare-mode {
   padding-bottom: 165px;
-  background-color: #e4f2fe !important;
+  background-color: #f5f9fe !important;
   background-image:
-    linear-gradient(rgba(14, 165, 233, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(14, 165, 233, 0.07) 1px, transparent 1px),
-    linear-gradient(180deg, #e4f2fe 0%, #d8ecfc 55%, #eaf5ff 100%) !important;
-  background-size: 38px 38px, 38px 38px, 100% 100% !important;
-  box-shadow: inset 0 0 0 2.5px rgba(14, 165, 233, 0.45);
+    linear-gradient(rgba(14, 165, 233, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.02) 1px, transparent 1px),
+    linear-gradient(180deg, #f5f9fe 0%, #eff6fd 55%, #f7fbff 100%) !important;
+  background-size: 40px 40px, 40px 40px, 100% 100% !important;
+  box-shadow: inset 0 0 0 1.5px rgba(14, 165, 233, 0.16);
 }
 
 .v-theme--light .landing-page-wrapper.is-compare-mode .bg-glow {
-  opacity: 0.4 !important;
+  opacity: 0.18 !important;
   background:
-    radial-gradient(circle at 18% 12%, rgba(14, 165, 233, 0.24) 0%, transparent 48%),
-    radial-gradient(circle at 82% 75%, rgba(6, 182, 212, 0.2) 0%, transparent 45%) !important;
+    radial-gradient(circle at 18% 12%, rgba(14, 165, 233, 0.13) 0%, transparent 48%),
+    radial-gradient(circle at 82% 75%, rgba(6, 182, 212, 0.09) 0%, transparent 45%) !important;
 }
 </style>

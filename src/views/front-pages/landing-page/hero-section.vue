@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from 'vue'
-import { useTheme } from 'vuetify'
+import { useTheme, useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '@/api/index.js'
@@ -12,6 +12,7 @@ import { getActiveVideoBanner, resolveVideoSource } from '@/utils/videoBannerSto
 import defaultPromoVideo from '@/assets/vedio/start vedio/فديو الاعلان v8.mp4'
 
 const theme = useTheme()
+const display = useDisplay()
 const router = useRouter()
 const { t, locale } = useI18n({ useScope: 'global' })
 const isDark = computed(() => theme.current.value.dark)
@@ -395,7 +396,22 @@ const resetFilters = () => {
 /* =========================
    ✅ Hero UI state
 ========================= */
-const showAdvanced = ref(true)
+const hasUserToggledAdvanced = ref(false)
+const showAdvanced = ref(typeof window !== 'undefined' ? window.innerWidth >= 960 : true)
+
+watch(
+  () => display.mdAndUp.value,
+  (isDesktop) => {
+    if (!hasUserToggledAdvanced.value) {
+      showAdvanced.value = isDesktop
+    }
+  },
+)
+
+const toggleAdvanced = () => {
+  hasUserToggledAdvanced.value = true
+  showAdvanced.value = !showAdvanced.value
+}
 
 const activeAdvancedCount = computed(() => {
   const f = filters.value
@@ -1004,7 +1020,7 @@ onBeforeUnmount(() => {
               type="button"
               class="advanced-toggle"
               :aria-expanded="showAdvanced"
-              @click="showAdvanced = !showAdvanced"
+              @click="toggleAdvanced"
             >
               <VIcon icon="tabler-adjustments-horizontal" size="16" />
               <span>{{ showAdvanced ? t('lessFilters') : t('moreFilters') }}</span>
@@ -1564,7 +1580,8 @@ onBeforeUnmount(() => {
 
   position: relative;
   z-index: 1;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   padding-block: 20px 38px;
 }
 
@@ -1577,16 +1594,18 @@ onBeforeUnmount(() => {
 
 .hero__bg {
   position: absolute;
-  inset: 0;
+  inset: -84px 0 0 0;
   z-index: 0;
   pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.5) 70px, #000 160px);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.5) 70px, #000 160px);
 }
 
 .hero__glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.55;
+  filter: blur(100px);
+  opacity: 0.32;
 }
 
 .hero__glow--1 {
