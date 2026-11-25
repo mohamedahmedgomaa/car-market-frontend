@@ -552,7 +552,7 @@ onMounted(refreshAll)
                   </VAvatar>
                   <h4 class="text-h5 font-weight-black mb-2">{{ locale === 'ar' ? 'أضف سيارتك للبيع' : 'Sell Your Car' }}</h4>
                   <p class="text-body-2 text-medium-emphasis mb-0">
-                    {{ locale === 'ar' ? 'قم بإضافة سيارة جديدة وعرضها للآلاف المشترين' : 'List a new car and reach thousands of buyers' }}
+                    {{ locale === 'ar' ? 'قم بإضافة سيارة جديدة وعرضها للمشترين المهتمين' : 'List a new car and reach active buyers' }}
                   </p>
                 </VCard>
               </VCol>

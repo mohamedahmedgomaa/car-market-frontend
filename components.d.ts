@@ -20,6 +20,8 @@ declare module 'vue' {
     CarMotionLoader: typeof import('./src/components/CarMotionLoader.vue')['default']
     CarQrDialog: typeof import('./src/components/dialogs/CarQrDialog.vue')['default']
     CarSocialCardDialog: typeof import('./src/components/dialogs/CarSocialCardDialog.vue')['default']
+    CompareModeArena: typeof import('./src/components/compare/CompareModeArena.vue')['default']
+    CompareModeDock: typeof import('./src/components/compare/CompareModeDock.vue')['default']
     ConfirmDialog: typeof import('./src/components/dialogs/ConfirmDialog.vue')['default']
     CustomRadios: typeof import('./src/@core/components/app-form-elements/CustomRadios.vue')['default']
     CustomRadiosWithIcon: typeof import('./src/@core/components/app-form-elements/CustomRadiosWithIcon.vue')['default']

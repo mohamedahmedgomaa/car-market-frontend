@@ -395,7 +395,7 @@ const resetFilters = () => {
 /* =========================
    ✅ Hero UI state
 ========================= */
-const showAdvanced = ref(false)
+const showAdvanced = ref(true)
 
 const activeAdvancedCount = computed(() => {
   const f = filters.value
@@ -1565,7 +1565,7 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   overflow: hidden;
-  padding-block: 28px 48px;
+  padding-block: 20px 38px;
 }
 
 .hero__container {
@@ -1680,11 +1680,11 @@ onBeforeUnmount(() => {
 }
 
 .hero-subtitle {
-  max-width: 560px;
-  margin: 0 0 26px;
+  max-width: 540px;
+  margin: 0 0 20px;
   color: var(--hero-muted);
-  font-size: 1.05rem;
-  line-height: 1.75;
+  font-size: 1.02rem;
+  line-height: 1.7;
 }
 
 /* =========================================
@@ -2702,9 +2702,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 44px;
-  background: rgba(var(--v-theme-on-surface), 0.04);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  height: 46px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   border-radius: 12px;
   padding: 0 12px;
   cursor: pointer;

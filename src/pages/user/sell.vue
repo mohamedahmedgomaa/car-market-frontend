@@ -144,17 +144,17 @@ const trustPills = [
     icon: 'tabler-bolt',
     title_ar: 'انتشار سريع في مصر',
     title_en: 'Nationwide Reach',
-    desc_ar: 'آلاف المشترين يومياً',
-    desc_en: 'Thousands of daily buyers'
+    desc_ar: 'مشترون نشطون يومياً',
+    desc_en: 'Active buyers every day'
   }
 ]
 
 const valueProps = [
   {
-    title_ar: 'وصول لآلاف المشترين',
-    title_en: 'Reach Thousands of Buyers',
-    desc_ar: 'تتعرض سيارتك لآلاف الباحثين عن سيارات يومياً في كافة محافظات مصر مع تخصيص عروضك.',
-    desc_en: 'Get massive exposure to active car seekers across all Egyptian governorates every single day.',
+    title_ar: 'وصول سريع للمشترين',
+    title_en: 'Reach Active Buyers',
+    desc_ar: 'تظهر سيارتك للباحثين عن سيارات في كافة محافظات مصر مع إمكانية إبراز عروضك.',
+    desc_en: 'Get strong exposure to active car seekers across all Egyptian governorates.',
     icon: 'tabler-users',
     color: '#FF6B00'
   },

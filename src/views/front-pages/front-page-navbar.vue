@@ -9,6 +9,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useUserAuth } from '@/stores/userAuth.js'
 import { useSellerAuth } from '@/stores/sellerAuth.js'
+import { useCompareStore } from '@/stores/compare.js'
 import { useConfigStore } from '@core/stores/config'
 import { useI18n } from 'vue-i18n'
 import logoDark from '@images/logo/logo-dark.png'
@@ -23,6 +24,7 @@ const router = useRouter()
 
 const { locale, t } = useI18n({ useScope: 'global' })
 const configStore = useConfigStore()
+const compareStore = useCompareStore()
 const appLogo = useGenerateImageVariant(logoLight, logoDark)
 
 const sidebar = ref(false)
@@ -294,7 +296,7 @@ const logout = async () => {
             <!-- Theme Switcher in Drawer -->
             <div>
               <div class="text-xs font-weight-bold opacity-75 mb-1.5">{{ t('theme') }}</div>
-              <div class="drawer-segmented-group">
+              <div class="drawer-segmented-group drawer-segmented-group--grid">
                 <button
                   type="button"
                   class="drawer-segmented-btn"
@@ -307,11 +309,29 @@ const logout = async () => {
                 <button
                   type="button"
                   class="drawer-segmented-btn"
+                  :class="{ 'is-active': configStore.theme === 'amberLight' }"
+                  @click="configStore.theme = 'amberLight'"
+                >
+                  <span class="theme-swatch theme-swatch--amber me-1" />
+                  <span>{{ t('amberLight') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="drawer-segmented-btn"
                   :class="{ 'is-active': configStore.theme === 'dark' }"
                   @click="configStore.theme = 'dark'"
                 >
                   <VIcon icon="tabler-moon" size="15" class="me-1" />
                   <span>{{ t('dark') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="drawer-segmented-btn"
+                  :class="{ 'is-active': configStore.theme === 'emberDark' }"
+                  @click="configStore.theme = 'emberDark'"
+                >
+                  <span class="theme-swatch theme-swatch--ember me-1" />
+                  <span>{{ t('emberDark') }}</span>
                 </button>
               </div>
             </div>
@@ -325,7 +345,7 @@ const logout = async () => {
   <div class="front-page-navbar" :class="{ 'navbar-is-hidden': isNavHidden }">
     <div class="front-page-navbar">
       <VAppBar
-        height="58"
+        height="64"
         :color="
           $vuetify.theme.current.dark
             ? 'rgba(var(--v-theme-surface), 0.38)'
@@ -338,7 +358,7 @@ const logout = async () => {
               ? 'app-bar-dark'
               : 'app-bar-light',
           $vuetify.theme.current.dark ? 'is-dark-theme' : 'is-light-theme',
-          { 'app-bar-hidden': isNavHidden },
+          { 'app-bar-hidden': isNavHidden, 'app-bar-compare-mode': compareStore.isCompareMode && route.path !== '/user/compare' },
           'elevation-0',
         ]"
         class="navbar-blur"
@@ -431,6 +451,14 @@ const logout = async () => {
 
         <VSpacer class="d-md-none" />
 
+        <div
+          v-if="compareStore.isCompareMode && route.path !== '/user/compare'"
+          class="navbar-compare-chip d-none d-sm-inline-flex me-2"
+        >
+          <span class="navbar-compare-chip__dot" />
+          <span>{{ locale === 'ar' ? 'وضع المقارنة' : 'VS MODE' }}</span>
+        </div>
+
         <!-- ✅ Auth & Settings Area -->
         <template v-if="!isLoggedIn">
           <!-- Settings Dropdown (Before Login) -->
@@ -487,15 +515,41 @@ const logout = async () => {
               </VListItem>
 
               <VListItem
+                :active="configStore.theme === 'amberLight'"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="configStore.theme = 'amberLight'"
+              >
+                <template #prepend>
+                  <span class="theme-swatch theme-swatch--amber me-2" />
+                </template>
+                <VListItemTitle>{{ t('amberLight') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
                 :active="configStore.theme === 'dark'"
                 color="primary"
                 rounded="lg"
+                class="mb-1"
                 @click="configStore.theme = 'dark'"
               >
                 <template #prepend>
                   <VIcon icon="tabler-moon" size="18" class="me-2" />
                 </template>
                 <VListItemTitle>{{ t('dark') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
+                :active="configStore.theme === 'emberDark'"
+                color="primary"
+                rounded="lg"
+                @click="configStore.theme = 'emberDark'"
+              >
+                <template #prepend>
+                  <span class="theme-swatch theme-swatch--ember me-2" />
+                </template>
+                <VListItemTitle>{{ t('emberDark') }}</VListItemTitle>
               </VListItem>
             </VList>
           </VMenu>
@@ -619,15 +673,41 @@ const logout = async () => {
               </VListItem>
 
               <VListItem
+                :active="configStore.theme === 'amberLight'"
+                color="primary"
+                rounded="lg"
+                class="mb-1"
+                @click="configStore.theme = 'amberLight'"
+              >
+                <template #prepend>
+                  <span class="theme-swatch theme-swatch--amber me-2" />
+                </template>
+                <VListItemTitle>{{ t('amberLight') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
                 :active="configStore.theme === 'dark'"
                 color="primary"
                 rounded="lg"
+                class="mb-1"
                 @click="configStore.theme = 'dark'"
               >
                 <template #prepend>
                   <VIcon icon="tabler-moon" size="18" class="me-2" />
                 </template>
                 <VListItemTitle>{{ t('dark') }}</VListItemTitle>
+              </VListItem>
+
+              <VListItem
+                :active="configStore.theme === 'emberDark'"
+                color="primary"
+                rounded="lg"
+                @click="configStore.theme = 'emberDark'"
+              >
+                <template #prepend>
+                  <span class="theme-swatch theme-swatch--ember me-2" />
+                </template>
+                <VListItemTitle>{{ t('emberDark') }}</VListItemTitle>
               </VListItem>
             </VList>
           </VMenu>
@@ -639,7 +719,7 @@ const logout = async () => {
 
 <style lang="scss" scoped>
 .nav-links-pill {
-  gap: 6px;
+  gap: 8px;
   padding: 4px;
   border-radius: 99px;
 }
@@ -648,15 +728,15 @@ const logout = async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.94rem;
   font-weight: 750;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  padding: 6px 15px;
+  padding: 7px 18px;
   border-radius: 99px;
   border: 1px solid transparent;
   white-space: nowrap;
-  height: 36px;
+  height: 38px;
 }
 
 .active-link {
@@ -740,20 +820,24 @@ const logout = async () => {
 }
 
 .app-bar-light {
-  border: 1px solid rgba(47, 43, 61, 0.08) !important;
+  border: 1px solid rgba(47, 43, 61, 0.1) !important;
   border-radius: 99px !important;
-  background-color: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(20px) !important;
-  box-shadow: 0 10px 30px rgba(47, 43, 61, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(22px) !important;
+  box-shadow:
+    0 12px 34px rgba(47, 43, 61, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-bar-dark {
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
   border-radius: 99px !important;
-  background-color: rgba(15, 17, 26, 0.7) !important;
-  backdrop-filter: blur(20px) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  background-color: rgba(13, 17, 28, 0.78) !important;
+  backdrop-filter: blur(22px) !important;
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -785,12 +869,12 @@ const logout = async () => {
 }
 
 .navbar-logo-badge {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 11px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -819,7 +903,7 @@ const logout = async () => {
 }
 
 .app-logo-title {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: -0.5px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -922,12 +1006,12 @@ const logout = async () => {
 <style lang="scss">
 .front-page-navbar {
   .v-toolbar__content {
-    padding-inline: 20px !important;
-    height: 58px !important;
+    padding-inline: 24px !important;
+    height: 64px !important;
 
     @media (max-width: 600px) {
       padding-inline: 10px !important;
-      height: 52px !important;
+      height: 54px !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
@@ -939,8 +1023,8 @@ const logout = async () => {
     inset-inline: 0 !important;
     margin-block-start: 0.75rem !important;
     margin-inline: auto !important;
-    width: min(1040px, calc(100% - 48px)) !important;
-    max-inline-size: 1040px !important;
+    width: min(1308px, calc(100% - 32px)) !important;
+    max-inline-size: 1308px !important;
     transition:
       transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
       opacity 0.28s ease,
@@ -1035,5 +1119,74 @@ const logout = async () => {
     font-weight: 800;
     box-shadow: 0 2px 8px rgba(255, 107, 0, 0.35);
   }
+}
+
+.drawer-segmented-group--grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theme-swatch {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+}
+
+.theme-swatch--amber {
+  background: linear-gradient(135deg, #FFF3E8 0%, #FF6B00 100%);
+  border-color: rgba(255, 107, 0, 0.5);
+}
+
+.theme-swatch--ember {
+  background: linear-gradient(135deg, #240D09 0%, #FF3E1D 100%);
+  border-color: rgba(255, 107, 0, 0.55);
+}
+
+.v-theme--amberLight .front-page-navbar .v-toolbar {
+  background-color: rgba(255, 250, 245, 0.92) !important;
+  border-color: rgba(255, 107, 0, 0.2) !important;
+  box-shadow: 0 12px 34px rgba(124, 60, 20, 0.08) !important;
+}
+
+.v-theme--emberDark .front-page-navbar .v-toolbar {
+  background-color: rgba(24, 12, 9, 0.86) !important;
+  border-color: rgba(255, 107, 0, 0.24) !important;
+  box-shadow: 0 14px 36px rgba(8, 2, 1, 0.55) !important;
+}
+
+.app-bar-compare-mode {
+  border-color: rgba(56, 189, 248, 0.65) !important;
+  box-shadow: 0 8px 30px rgba(14, 165, 233, 0.25) !important;
+}
+
+.navbar-compare-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0284c7, #06b6d4);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45);
+}
+
+.navbar-compare-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fde047;
+  animation: navComparePulse 1.4s infinite;
+}
+
+@keyframes navComparePulse {
+  0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.9); }
+  70% { box-shadow: 0 0 0 7px rgba(253, 224, 71, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); }
 }
 </style>

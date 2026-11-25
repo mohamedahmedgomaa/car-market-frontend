@@ -5,8 +5,16 @@ const themes = [
     icon: 'tabler-sun-high',
   },
   {
+    name: 'amberLight',
+    icon: 'tabler-sunrise',
+  },
+  {
     name: 'dark',
     icon: 'tabler-moon-stars',
+  },
+  {
+    name: 'emberDark',
+    icon: 'tabler-flame',
   },
   {
     name: 'system',

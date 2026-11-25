@@ -6,6 +6,7 @@ import CarsSection from '@/views/front-pages/landing-page/cars-section.vue'
 import api from '@/api/index.js'
 import { translateText } from '@/utils/brandTranslations.js'
 import { getBannerLink } from '@/utils/bannerLinkStorage.js'
+import { useCompareStore } from '@/stores/compare'
 import logoDark from '@images/logo/logo-dark.png'
 import logoLight from '@images/logo/logo-light.png'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
@@ -47,6 +48,44 @@ const API_BASE = import.meta.env.VITE_BASE_URL
 import { useI18n } from 'vue-i18n'
 const { t: _t, locale } = useI18n({ useScope: 'global' })
 const siteLogo = useGenerateImageVariant(logoLight, logoDark)
+const compareStore = useCompareStore()
+
+const isInCompare = computed(() => (car.value?.id ? compareStore.hasCar(car.value.id) : false))
+const canPickThisForCompare = computed(() => {
+  if (!car.value || !compareStore.isCompareMode) return false
+  if (isInCompare.value) return false
+  if (compareStore.cars.length === 1 && compareStore.replacingIndex === 0) return true
+  return !compareStore.activeType || (car.value.type || 'car') === compareStore.activeType
+})
+
+const handleCompareAction = () => {
+  if (!car.value) return
+
+  if (compareStore.isCompareMode) {
+    if (isInCompare.value) {
+      if (compareStore.canCompare) {
+        compareStore.cancelCompareMode()
+        router.push(compareStore.compareRoute)
+      } else {
+        router.push(compareStore.getBrowseRoute(car.value.type))
+      }
+      return
+    }
+
+    if (canPickThisForCompare.value) {
+      const res = compareStore.selectCarInCompareMode(car.value)
+      if (res?.ok && res?.shouldNavigateToCompare) {
+        router.push(compareStore.compareRoute)
+      }
+      return
+    }
+  }
+
+  const browseRoute = compareStore.startCompareFromCar(car.value)
+  if (browseRoute) {
+    router.push(browseRoute)
+  }
+}
 
 const t = (val, parentObj = null) => {
   return translateText(val, locale.value || 'ar', parentObj)
@@ -1127,8 +1166,28 @@ watch(
                   <span class="car-currency-badge ms-2">EG</span>
                 </div>
                 
-                <!-- Contact Actions -->
-                <div class="car-contact-actions-wrap d-flex gap-2 gap-md-3">
+                <!-- Contact & Compare Actions -->
+                <div class="car-contact-actions-wrap d-flex flex-wrap gap-2 gap-md-3">
+                  <VBtn
+                    variant="elevated"
+                    :color="canPickThisForCompare ? 'info' : (isInCompare ? 'success' : 'info')"
+                    class="font-weight-bold flex-grow-1 flex-md-grow-0"
+                    height="42"
+                    rounded="pill"
+                    @click.stop.prevent="handleCompareAction"
+                  >
+                    <VIcon :icon="isInCompare ? 'tabler-check' : 'tabler-arrows-diff'" size="18" class="me-1.5" />
+                    <span>
+                      {{
+                        canPickThisForCompare
+                          ? ($i18n.locale === 'ar' ? 'اختيار للمقارنة' : 'Select to Compare')
+                          : isInCompare && compareStore.isCompareMode
+                            ? ($i18n.locale === 'ar' ? 'مختارة — اختر الثانية' : 'Selected — Pick 2nd')
+                            : ($i18n.locale === 'ar' ? 'قارن بهذه السيارة' : 'Compare')
+                      }}
+                    </span>
+                  </VBtn>
+
                   <VBtn
                     v-if="car.seller?.phone"
                     variant="elevated"

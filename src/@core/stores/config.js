@@ -48,16 +48,24 @@ export const initConfigStore = () => {
   const vuetifyTheme = useTheme()
   const configStore = useConfigStore()
 
-  watch([() => configStore.theme, userPreferredColorScheme], () => {
-    vuetifyTheme.global.name.value = configStore.theme === 'system'
-      ? userPreferredColorScheme.value === 'dark'
-        ? 'dark'
-        : 'light'
+  const applyTheme = () => {
+    const resolved = configStore.theme === 'system'
+      ? (userPreferredColorScheme.value === 'dark' ? 'dark' : 'light')
       : configStore.theme
-  })
-  onMounted(() => {
-    if (configStore.theme === 'system')
-      vuetifyTheme.global.name.value = userPreferredColorScheme.value
-  })
+
+    vuetifyTheme.global.name.value = resolved
+
+    // Keep base .v-theme--dark / .v-theme--light selectors working for custom brand variants
+    const root = document.documentElement
+    root.classList.remove('v-theme--dark', 'v-theme--light')
+    if (resolved === 'emberDark') {
+      root.classList.add('v-theme--dark')
+    } else if (resolved === 'amberLight') {
+      root.classList.add('v-theme--light')
+    }
+  }
+
+  watch([() => configStore.theme, userPreferredColorScheme], applyTheme, { immediate: true })
+  onMounted(applyTheme)
 }
 // !SECTION

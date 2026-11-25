@@ -4,6 +4,7 @@ import carsUserApi from '@/api/user/carUserApi.js'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { translateText } from '@/utils/brandTranslations.js'
+import { useCompareStore } from '@/stores/compare'
 import logoDark from '@images/logo/logo-dark.png'
 import logoLight from '@images/logo/logo-light.png'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
@@ -11,6 +12,52 @@ import { useGenerateImageVariant } from '@core/composable/useGenerateImageVarian
 const router = useRouter()
 const { t, locale } = useI18n({ useScope: 'global' })
 const siteLogo = useGenerateImageVariant(logoLight, logoDark)
+const compareStore = useCompareStore()
+const isAr = computed(() => (locale.value || 'ar') === 'ar')
+
+const isCompareMode = computed(() => compareStore.isCompareMode)
+const baseCompareCarName = computed(() => {
+  const base = compareStore.cars[0]
+  if (!base) return ''
+  return _t(base.model?.name, base.model) || _t(base.brand?.name, base.brand) || _t(base.title, base)
+})
+const isInCompare = (car) => compareStore.hasCar(car?.id)
+const isCompareTypeMismatch = (car) => {
+  if (!isCompareMode.value || !compareStore.activeType) return false
+  if (compareStore.cars.length === 1 && compareStore.replacingIndex === 0) return false
+  return (car?.type || 'car') !== compareStore.activeType
+}
+
+const compareAlert = ref('')
+const handleCardClick = (e, car) => {
+  if (!isCompareMode.value) return
+  e.preventDefault()
+
+  if (isCompareTypeMismatch(car)) {
+    compareAlert.value = isAr.value
+      ? 'يمكن مقارنة نفس نوع المركبة فقط (سيارة مع سيارة أو دراجة مع دراجة).'
+      : 'You can only compare vehicles of the same type.'
+    setTimeout(() => { compareAlert.value = '' }, 3200)
+    return
+  }
+
+  if (isInCompare(car)) {
+    if (compareStore.canCompare) {
+      compareStore.cancelCompareMode()
+      router.push(compareStore.compareRoute)
+    }
+    return
+  }
+
+  const res = compareStore.selectCarInCompareMode(car)
+  if (res?.ok && res?.shouldNavigateToCompare) {
+    router.push(compareStore.compareRoute)
+  }
+}
+
+const previewCarInCompareMode = (car) => {
+  router.push(`/user/cars/${car.id}`)
+}
 
 const props = defineProps({
   title: { type: String, default: 'Cars' },
@@ -341,6 +388,11 @@ watch(
         </RouterLink>
       </div>
 
+      <div v-if="compareAlert" class="compare-inline-alert mb-4">
+        <VIcon icon="tabler-info-circle" size="18" />
+        <span>{{ compareAlert }}</span>
+      </div>
+
       <div v-if="displayLoading" class="cars-section__state"><VProgressCircular indeterminate size="18" width="2" color="primary" class="me-2" /><span>{{ t('loadingCars') }}</span></div>
       <div v-else-if="displayError" class="cars-section__state error"><span>{{ t('failedToLoadCars') }}</span></div>
       <div v-else-if="displayCars.length === 0" class="cars-section__state"><span>{{ t('noCarsFound') }}</span></div>
@@ -353,9 +405,13 @@ watch(
           :class="{
             'car-card--best-deal': Number(car.is_best_deal) === 1,
             'car-card--featured': Number(car.is_featured) === 1 && Number(car.is_best_deal) !== 1,
-            'car-card--global': Number(car.is_global_ad) === 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1
+            'car-card--global': Number(car.is_global_ad) === 1 && Number(car.is_featured) !== 1 && Number(car.is_best_deal) !== 1,
+            'car-card--compare-mode': isCompareMode && !isCompareTypeMismatch(car),
+            'car-card--compare-selected': isCompareMode && isInCompare(car),
+            'car-card--compare-disabled': isCompareMode && isCompareTypeMismatch(car),
           }"
           :to="`/user/cars/${car.id}`"
+          @click="handleCardClick($event, car)"
         >
           <!-- ✅ صورة العربية اختيارية -->
           <div v-if="showImage" class="car-card__image">
@@ -379,6 +435,12 @@ watch(
 
             <!-- ✅ Badges Section -->
             <div class="car-card__badges">
+              <!-- VS Arena Badge in Compare Mode -->
+              <div v-if="isCompareMode && !isCompareTypeMismatch(car)" class="badge-item" :class="isInCompare(car) ? 'badge-compare-base' : 'badge-compare-vs'">
+                <VIcon :icon="isInCompare(car) ? 'tabler-check' : 'tabler-swords'" size="12" class="me-1" />
+                <span>{{ isInCompare(car) ? (isAr ? 'الأساسية' : 'BASE') : 'VS' }}</span>
+              </div>
+
               <!-- Best Deal Badge -->
               <div v-if="Number(car.is_best_deal) === 1" class="badge-item badge-best-deal">
                 <VIcon icon="tabler-tag" size="12" class="me-1" />
@@ -515,6 +577,44 @@ watch(
               <div class="car-card__date d-flex align-center font-weight-bold opacity-80">
                 <VIcon icon="tabler-clock" size="14" class="me-1 text-medium-emphasis" />
                 <span>{{ formatDateTime(car.created_at) }}</span>
+              </div>
+            </div>
+
+            <!-- ✅ Compare Mode Card Action Bar -->
+            <div v-if="isCompareMode" class="car-card__compare-bar mt-3 pt-2">
+              <div
+                v-if="isInCompare(car)"
+                class="compare-card-pill compare-card-pill--selected"
+              >
+                <VIcon icon="tabler-check" size="15" />
+                <span>{{ isAr ? 'السيارة الأساسية / مختارة' : 'Selected for Compare' }}</span>
+              </div>
+              <div
+                v-else-if="isCompareTypeMismatch(car)"
+                class="compare-card-pill compare-card-pill--disabled"
+              >
+                <VIcon icon="tabler-ban" size="15" />
+                <span>{{ isAr ? 'نوع مركبة مختلف' : 'Different Type' }}</span>
+              </div>
+              <div v-else class="d-flex align-center gap-2 w-100">
+                <div class="compare-card-pill compare-card-pill--pick flex-grow-1">
+                  <span class="vs-mini-chip">VS</span>
+                  <span class="text-truncate">
+                    {{
+                      baseCompareCarName
+                        ? (isAr ? `قارن مع ${baseCompareCarName}` : `Compare vs ${baseCompareCarName}`)
+                        : (isAr ? 'قارن مع هذه السيارة' : 'Compare This Vehicle')
+                    }}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="compare-preview-btn"
+                  :title="isAr ? 'معاينة التفاصيل' : 'View Details'"
+                  @click.prevent.stop="previewCarInCompareMode(car)"
+                >
+                  <VIcon icon="tabler-eye" size="16" />
+                </button>
               </div>
             </div>
           </div>
@@ -699,6 +799,35 @@ watch(
 }
 .v-theme--dark .border-t {
   border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ✅ Brand Themes Card Overrides */
+.v-theme--amberLight .car-card {
+  background: linear-gradient(145deg, #fffdfb 0%, #fdf5ee 100%);
+  border: 1px solid rgba(255, 107, 0, 0.15);
+  box-shadow: 0 6px 22px rgba(124, 60, 20, 0.06);
+}
+.v-theme--amberLight .car-card:hover {
+  background: #ffffff;
+  border-color: rgba(255, 107, 0, 0.45);
+  box-shadow: 0 20px 40px rgba(255, 107, 0, 0.14);
+}
+.v-theme--amberLight .car-card__title {
+  color: #1E120D !important;
+}
+
+.v-theme--emberDark .car-card {
+  background: rgba(28, 15, 11, 0.88);
+  border: 1px solid rgba(255, 120, 50, 0.16);
+  box-shadow: 0 10px 30px rgba(8, 2, 1, 0.65);
+}
+.v-theme--emberDark .car-card:hover {
+  background: rgba(38, 19, 14, 0.96);
+  border-color: rgba(255, 107, 0, 0.55);
+  box-shadow: 0 20px 40px rgba(8, 2, 1, 0.85), 0 0 26px rgba(255, 90, 20, 0.22);
+}
+.v-theme--emberDark .border-t {
+  border-top-color: rgba(255, 130, 67, 0.14) !important;
 }
 
 .car-card {
@@ -1059,4 +1188,124 @@ watch(
 .text-platinum { color: #8E2DE2 !important; text-shadow: 0 0 12px rgba(142, 45, 226, 0.6); }
 .v-theme--dark .text-platinum { color: #8E2DE2 !important; text-shadow: 0 0 12px rgba(142, 45, 226, 0.6); }
 .text-silver { color: #78909C !important; }
+
+/* ✅ Compare Mode Card Styles */
+.compare-inline-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.car-card--compare-mode {
+  cursor: pointer;
+  border: 2px solid rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 8px 26px rgba(14, 165, 233, 0.16) !important;
+}
+
+.car-card--compare-mode:hover {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 14px 36px rgba(14, 165, 233, 0.36), 0 0 0 3px rgba(56, 189, 248, 0.18) !important;
+}
+
+.car-card--compare-selected {
+  border: 2.5px solid #10b981 !important;
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.32), 0 0 0 3px rgba(16, 185, 129, 0.16) !important;
+}
+
+.badge-compare-vs {
+  background: linear-gradient(135deg, #0284c7, #06b6d4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.45);
+}
+
+.badge-compare-base {
+  background: linear-gradient(135deg, #059669, #10b981);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
+}
+
+.vs-mini-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 0.68rem;
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.car-card--compare-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.car-card__compare-bar {
+  border-top: 1px dashed rgba(14, 165, 233, 0.3);
+}
+
+.compare-card-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+
+.compare-card-pill--pick {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.32);
+}
+
+.compare-card-pill--selected {
+  background: rgba(16, 185, 129, 0.16);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.compare-card-pill--disabled {
+  background: rgba(148, 163, 184, 0.16);
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.car-card--compare-mode:hover .compare-card-pill--pick {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.45);
+}
+
+.compare-preview-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  color: rgb(var(--v-theme-on-surface));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.compare-preview-btn:hover {
+  background: rgba(14, 165, 233, 0.15);
+  border-color: rgba(14, 165, 233, 0.45);
+  color: #0ea5e9;
+}
 </style>
